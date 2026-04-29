@@ -1,0 +1,28 @@
+spring:
+  application:
+    name: finance-system
+  cloud:
+    nacos:
+      discovery:
+        server-addr: localhost:8848
+      config:
+        server-addr: localhost:8848
+        file-extension: yaml
+  sql:
+    init:
+      # 关闭 SQL 初始化相关依赖检测，避免 Spring Boot 启动阶段
+      # 触发 MyBatis Mapper BeanDefinition 的 factoryBeanObjectType 类型问题。
+      mode: never
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/finance?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false
+    username: root
+    password: 123456
+
+server:
+  port: 8082 
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+  mapper-locations: classpath*:/mapper/**/*.xml
