@@ -27,10 +27,10 @@ public class User {
     // 手机号
     private String phone;
 
-    // 头像
+    // 头像 avatar 2026-4-29
     private String avatar;
 
-    // 状态：0禁用 1正常
+    // 状态：0禁用 1正常  
     private Integer status;
 
     // 逻辑删除：0否 1是
