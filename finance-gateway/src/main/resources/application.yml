@@ -1,0 +1,45 @@
+server:
+  port: 8080
+
+spring:
+  cloud:
+    gateway:
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowed-origin-patterns:
+              - "*"
+            allowed-headers:
+              - "*"
+            allowed-methods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            allow-credentials: false
+      routes:
+        - id: finance-user
+          uri: lb://finance-user
+          predicates:
+            - Path=/user/**
+        - id: finance-system
+          uri: lb://finance-system
+          predicates:
+            - Path=/system/**
+        - id: finance-account
+          uri: lb://finance-account
+          predicates:
+            - Path=/account/**
+        - id: finance-product
+          uri: lb://finance-product
+          predicates:
+            - Path=/product/**
+        - id: finance-message
+          uri: lb://finance-message
+          predicates:
+            - Path=/message/**
+        - id: finance-trade
+          uri: lb://finance-trade
+          predicates:
+            - Path=/trade/**
