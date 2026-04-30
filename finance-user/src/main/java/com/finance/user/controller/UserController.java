@@ -96,4 +96,10 @@ public class UserController {
         boolean removed = userService.removeById(id);
         return Result.success(removed);
     }
+
+    @Operation(summary = "【测试Feign】根据用户ID获取用户+账户信息")
+    @GetMapping("/info/account/{userId}")
+    public Result getUserAndAccountInfo(@PathVariable Long userId) {
+        return userService.getUserAndAccountInfo(userId);
+    }
 }
