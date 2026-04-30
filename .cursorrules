@@ -1,6 +1,6 @@
 # ==============================================
 # 金融项目开发规范（Cursor 自动遵守）
-# 技术栈：SpringBoot3 + SpringCloud + MyBatis-Plus + MySQL8 + Redis + ES + RabbitMQ + JWT + Swagger
+# 技术栈：SpringBoot3 + SpringCloud + MyBatis-Plus + MySQL8 + Redis + ES + RabbitMQ + JWT + Swagger + Nginx
 # 数据库：finance（utf8mb4）
 # ==============================================
 

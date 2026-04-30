@@ -1,0 +1,21 @@
+server:
+  port: 8089
+
+spring:
+  application:
+    name: finance-search
+  elasticsearch:
+    uris: http://10.128.82.54:9200
+    username: elastic
+    password: elastic
+    connection-timeout: 10s
+    socket-timeout: 30s
+
+knife4j:
+  enable: true
+  openapi:
+    title: 金融平台搜索服务接口文档
+    description: 提供产品、资讯等数据的全文检索服务
+    email: admin@finance.com
+    concat: 开发团队
+    version: v1.0.0
