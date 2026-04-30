@@ -1,4 +1,4 @@
-package com.finance.platform.user.entity;
+package com.finance.user.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;

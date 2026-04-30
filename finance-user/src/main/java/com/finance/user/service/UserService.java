@@ -1,7 +1,7 @@
-package com.finance.platform.user.service;
+package com.finance.user.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.finance.platform.user.entity.User;
+import com.finance.user.entity.User;
 
 public interface UserService extends IService<User> {
 }

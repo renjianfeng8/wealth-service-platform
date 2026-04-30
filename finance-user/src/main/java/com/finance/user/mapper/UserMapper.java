@@ -1,7 +1,7 @@
-package com.finance.platform.user.mapper;
+package com.finance.user.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.finance.platform.user.entity.User;
+import com.finance.user.entity.User;
 import org.apache.ibatis.annotations.Mapper;
 
 @Mapper

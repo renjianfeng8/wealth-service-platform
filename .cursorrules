@@ -15,9 +15,9 @@ RabbitMQ: 3.10.20
 ElasticSearch: 8.11.0
 Docker: 29.4.0
 docker-compose: v5.11.0
-SpringBoot: 3.2.x
+SpringBoot: 3.3.x
 SpringCloud: 2023.0.x
-MyBatis-Plus: 3.5.5+
+MyBatis-Plus: 3.5.10+
 
 # ======================
 # 二、数据库规范（必须严格遵守）

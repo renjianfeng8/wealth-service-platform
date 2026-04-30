@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <!-- 注意：namespace 必须和你的 UserMapper 接口全类名一致 -->
-<mapper namespace="com.finance.platform.user.mapper.UserMapper">
+<mapper namespace="com.finance.user.mapper.UserMapper">
 
     <!-- 这里写自定义SQL即可 -->
     <!-- 示例：根据用户名查询用户 -->

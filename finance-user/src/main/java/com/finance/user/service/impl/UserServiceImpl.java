@@ -1,9 +1,9 @@
-package com.finance.platform.user.service.impl;
+package com.finance.user.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.finance.platform.user.entity.User;
-import com.finance.platform.user.mapper.UserMapper;
-import com.finance.platform.user.service.UserService;
+import com.finance.user.entity.User;
+import com.finance.user.mapper.UserMapper;
+import com.finance.user.service.UserService;
 import org.springframework.stereotype.Service;
 
 @Service

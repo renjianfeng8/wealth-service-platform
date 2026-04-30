@@ -1,8 +1,8 @@
-package com.finance.platform.user.controller;
+package com.finance.user.controller;
 
 import com.finance.common.result.Result;
-import com.finance.platform.user.entity.User;
-import com.finance.platform.user.service.UserService;
+import com.finance.user.entity.User;
+import com.finance.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.DeleteMapping;

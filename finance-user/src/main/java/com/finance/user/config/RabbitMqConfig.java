@@ -1,4 +1,4 @@
-package com.finance.platform.user.config;
+package com.finance.user.config;
 
 import org.springframework.amqp.core.*;
 import org.springframework.context.annotation.Bean;

@@ -1,4 +1,4 @@
-package com.finance.platform.user;
+package com.finance.user;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -9,7 +9,7 @@ import org.mybatis.spring.annotation.MapperScan;
 @SpringBootApplication(scanBasePackages = "com.finance")
 @EnableDiscoveryClient
 @EnableFeignClients(basePackages = "com.finance.common.feign")
-@MapperScan("com.finance.platform.user.mapper")
+@MapperScan("com.finance.user.mapper")
 public class FinanceUserApplication {
     /**
      * Spring Boot 启动入口
