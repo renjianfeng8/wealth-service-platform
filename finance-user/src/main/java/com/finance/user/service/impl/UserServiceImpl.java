@@ -1,44 +1,84 @@
 package com.finance.user.service.impl;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.finance.common.feign.AccountFeignClient;
-import com.finance.common.result.Result;
-import com.finance.common.result.ResultCode;
 import com.finance.user.entity.User;
 import com.finance.user.mapper.UserMapper;
 import com.finance.user.service.UserService;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.DigestUtils;
+import org.springframework.util.StringUtils;
+
+import java.nio.charset.StandardCharsets;
+import java.util.Date;
+import javax.crypto.SecretKey;
 
 @Service
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
 
-    private final AccountFeignClient accountFeignClient;
+    @Value("${jwt.secret}")
+    private String jwtSecret;
 
-    // 构造注入 Feign
-    public UserServiceImpl(AccountFeignClient accountFeignClient) {
-        this.accountFeignClient = accountFeignClient;
+    @Value("${jwt.expire}")
+    private Long jwtExpire;
+
+    @Override
+    public IPage<User> page(Page<User> page) {
+        return this.page(page);
     }
 
-    /**
-     * 【微服务调用】
-     * 获取用户信息 + 调用账户服务获取账户信息
-     */
     @Override
-    public Result getUserAndAccountInfo(Long userId) {
-        // 1. 查询当前用户
-        User user = getById(userId);
-        if (user == null) {
-            // 用你已有的 Result.error 方法
-            return Result.error(ResultCode.FAIL.getCode(), "用户不存在");
+    public Boolean register(User user) {
+        if (!StringUtils.hasText(user.getUsername()) || !StringUtils.hasText(user.getPassword())) {
+            throw new RuntimeException("用户名/密码不能为空");
+        }
+        String encryptPwd = DigestUtils.md5DigestAsHex(user.getPassword().getBytes(StandardCharsets.UTF_8));
+        user.setPassword(encryptPwd);
+        return this.save(user);
+    }
+
+    @Override
+    public String login(User user) {
+        if (!StringUtils.hasText(user.getUsername()) || !StringUtils.hasText(user.getPassword())) {
+            throw new RuntimeException("用户名/密码不能为空");
         }
 
-        // 2. 远程调用 account 服务
-        Result accountResult = accountFeignClient.getAccountByUserId(userId);
-        if (accountResult.getCode() != ResultCode.SUCCESS.getCode()) {
-            return Result.error(ResultCode.FAIL.getCode(), "获取账户信息失败：" + accountResult.getMessage());
+        User dbUser = this.lambdaQuery()
+                .eq(User::getUsername, user.getUsername())
+                .one();
+
+        if (dbUser == null) {
+            throw new RuntimeException("用户不存在");
         }
 
-        // 3. 统一返回
-        return Result.success(accountResult.getData());
+        String encryptPwd = DigestUtils.md5DigestAsHex(user.getPassword().getBytes(StandardCharsets.UTF_8));
+        if (!encryptPwd.equals(dbUser.getPassword())) {
+            throw new RuntimeException("密码错误");
+        }
+
+        SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
+        return Jwts.builder()
+                .setSubject(dbUser.getId().toString())
+                .claim("username", dbUser.getUsername())
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + jwtExpire))
+                .signWith(key)
+                .compact();
+    }
+
+    @Override
+    public Boolean resetPassword(User user) {
+        if (user.getId() == null || !StringUtils.hasText(user.getPassword())) {
+            throw new RuntimeException("用户ID/新密码不能为空");
+        }
+        String encryptPwd = DigestUtils.md5DigestAsHex(user.getPassword().getBytes(StandardCharsets.UTF_8));
+        return this.lambdaUpdate()
+                .eq(User::getId, user.getId())
+                .set(User::getPassword, encryptPwd)
+                .update();
     }
 }

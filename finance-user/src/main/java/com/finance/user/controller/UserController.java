@@ -1,5 +1,7 @@
 package com.finance.user.controller;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.finance.common.result.Result;
 import com.finance.user.entity.User;
 import com.finance.user.service.UserService;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -23,21 +26,12 @@ public class UserController {
 
     private final UserService userService;
 
-    // 构造器：用于依赖注入
-    /**
-     * 系统用户控制器构造方法
-     *
-     * @param userService 系统用户业务服务
-     */
     public UserController(UserService userService) {
         this.userService = userService;
     }
 
     /**
      * 根据ID查询系统用户信息
-     *
-     * @param id 系统用户ID
-     * @return 查询结果
      */
     @Operation(summary = "根据ID查询系统用户")
     @GetMapping("/{id}")
@@ -47,8 +41,6 @@ public class UserController {
 
     /**
      * 查询系统用户列表（未分页）
-     *
-     * @return 用户列表
      */
     @Operation(summary = "查询系统用户列表")
     @GetMapping
@@ -57,10 +49,19 @@ public class UserController {
     }
 
     /**
+     * 分页查询系统用户
+     */
+    @Operation(summary = "分页查询系统用户")
+    @GetMapping("/page")
+    public Result<IPage<User>> page(
+            @RequestParam(defaultValue = "1") Integer pageNum,
+            @RequestParam(defaultValue = "10") Integer pageSize) {
+        Page<User> page = new Page<>(pageNum, pageSize);
+        return Result.success(userService.page(page));
+    }
+
+    /**
      * 创建系统用户
-     *
-     * @param user 系统用户信息
-     * @return 是否创建成功
      */
     @Operation(summary = "创建系统用户")
     @PostMapping
@@ -71,10 +72,6 @@ public class UserController {
 
     /**
      * 更新系统用户信息
-     *
-     * @param id 系统用户ID
-     * @param user 系统用户信息
-     * @return 是否更新成功
      */
     @Operation(summary = "更新系统用户信息")
     @PutMapping("/{id}")
@@ -86,9 +83,6 @@ public class UserController {
 
     /**
      * 删除系统用户（逻辑删除）
-     *
-     * @param id 系统用户ID
-     * @return 是否删除成功
      */
     @Operation(summary = "删除系统用户（逻辑删除）")
     @DeleteMapping("/{id}")
@@ -97,9 +91,42 @@ public class UserController {
         return Result.success(removed);
     }
 
-    @Operation(summary = "【测试Feign】根据用户ID获取用户+账户信息")
-    @GetMapping("/info/account/{userId}")
-    public Result getUserAndAccountInfo(@PathVariable Long userId) {
-        return userService.getUserAndAccountInfo(userId);
+    /**
+     * 批量删除系统用户
+     */
+    @Operation(summary = "批量删除系统用户")
+    @DeleteMapping("/batch")
+    public Result<Boolean> deleteBatch(@RequestBody List<Long> ids) {
+        boolean removed = userService.removeByIds(ids);
+        return Result.success(removed);
     }
+
+    /**
+     * 用户注册
+     */
+    @Operation(summary = "用户注册")
+    @PostMapping("/register")
+    public Result<Boolean> register(@RequestBody User user) {
+        return Result.success(userService.register(user));
+    }
+
+    /**
+     * 用户登录
+     */
+    @Operation(summary = "用户登录")
+    @PostMapping("/login")
+    public Result<String> login(@RequestBody User user) {
+        String token = userService.login(user);
+        return Result.success(token);
+    }
+
+    /**
+     * 重置密码
+     */
+    @Operation(summary = "重置密码")
+    @PostMapping("/resetPassword")
+    public Result<Boolean> resetPassword(@RequestBody User user) {
+        return Result.success(userService.resetPassword(user));
+    }
+
 }

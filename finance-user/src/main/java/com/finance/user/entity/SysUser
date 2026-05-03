@@ -1,0 +1,43 @@
+package com.finance.user.entity;
+
+import com.baomidou.mybatisplus.annotation.TableName;
+import com.finance.common.entity.BaseEntity;
+import lombok.Data;
+
+/**
+ * 系统用户实体类
+ */
+@Data
+@TableName("sys_user")
+public class SysUser extends BaseEntity {
+
+    /**
+     * 账号
+     */
+    private String username;
+
+    /**
+     * 密码
+     */
+    private String password;
+
+    /**
+     * 昵称
+     */
+    private String nickname;
+
+    /**
+     * 手机号
+     */
+    private String phone;
+
+    /**
+     * 头像
+     */
+    private String avatar;
+
+    /**
+     * 状态 0禁用 1正常
+     */
+    private Integer status;
+}

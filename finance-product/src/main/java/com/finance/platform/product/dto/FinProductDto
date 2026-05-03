@@ -1,0 +1,40 @@
+package com.finance.product.dto;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
+import lombok.Data;
+import java.math.BigDecimal;
+
+@Data
+@Schema(description = "产品DTO")
+public class FinProductDTO {
+
+    @Schema(description = "ID")
+    private Long id;
+
+    @NotBlank(message = "产品名称不能为空")
+    @Schema(description = "产品名称")
+    private String productName;
+
+    @NotBlank(message = "产品编码不能为空")
+    @Schema(description = "产品编码")
+    private String productCode;
+
+    @Schema(description = "类型 1黄金 2白银 3理财")
+    private Integer productType;
+
+    @Schema(description = "当前单价")
+    private BigDecimal price;
+
+    @Schema(description = "涨跌额")
+    private BigDecimal riseFall;
+
+    @Schema(description = "涨跌幅")
+    private BigDecimal riseFallRate;
+
+    @Schema(description = "状态 0下架 1上架")
+    private Integer status;
+
+    @Schema(description = "排序")
+    private Integer sort;
+}

@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<!-- 注意：namespace 必须和你的 UserMapper 接口全类名一致 -->
+
 <mapper namespace="com.finance.user.mapper.UserMapper">
 
-    <!-- 这里写自定义SQL即可 -->
-    <!-- 示例：根据用户名查询用户 -->
-    <select id="selectByUsername" resultType="com.finance.user.entity.User">
-        SELECT id, username, password, nickname, phone, avatar, status, del_flag, create_time, update_time
-        FROM sys_user
-        WHERE username = #{username} AND del_flag = 0
-    </select>
+
+<!--    &lt;!&ndash; 示例：根据用户名查询用户 &ndash;&gt;-->
+<!--    <select id="selectByUsername" resultType="com.finance.user.entity.User">-->
+<!--        SELECT id, username, password, nickname, phone, avatar, status, del_flag, create_time, update_time-->
+<!--        FROM sys_user-->
+<!--        WHERE username = #{username} AND del_flag = 0-->
+<!--    </select>-->
 
 </mapper>
