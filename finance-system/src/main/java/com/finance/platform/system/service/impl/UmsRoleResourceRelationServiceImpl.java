@@ -1,22 +1,28 @@
 package com.finance.platform.system.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.finance.platform.system.entity.UmsRoleResourceRelation;
 import com.finance.platform.system.mapper.UmsRoleResourceRelationMapper;
 import com.finance.platform.system.service.UmsRoleResourceRelationService;
 import org.springframework.stereotype.Service;
 
-/**
- * 后台角色资源关系表业务层实现类。
- */
-@Service
-public class UmsRoleResourceRelationServiceImpl extends ServiceImpl<UmsRoleResourceRelationMapper, UmsRoleResourceRelation>
-    implements UmsRoleResourceRelationService {
+import java.util.List;
+import java.util.stream.Collectors;
 
-    /**
-     * 默认构造器。
-     */
-    public UmsRoleResourceRelationServiceImpl() {
+@Service
+public class UmsRoleResourceRelationServiceImpl
+        extends ServiceImpl<UmsRoleResourceRelationMapper, UmsRoleResourceRelation>
+        implements UmsRoleResourceRelationService {
+
+    @Override
+    public List<Long> getResourceIdByRoleIds(List<Long> roleIds) {
+        if (roleIds == null || roleIds.isEmpty()) {
+            return List.of();
+        }
+        LambdaQueryWrapper<UmsRoleResourceRelation> wrapper = new LambdaQueryWrapper<>();
+        wrapper.in(UmsRoleResourceRelation::getRoleId, roleIds);
+        List<UmsRoleResourceRelation> list = list(wrapper);
+        return list.stream().map(UmsRoleResourceRelation::getResourceId).collect(Collectors.toList());
     }
 }
-

@@ -12,7 +12,6 @@ public class WebConfig implements WebMvcConfigurer {
 
     private final JwtUtil jwtUtil;
 
-    // 注入JwtUtil
     public WebConfig(JwtUtil jwtUtil) {
         this.jwtUtil = jwtUtil;
     }
@@ -33,6 +32,7 @@ public class WebConfig implements WebMvcConfigurer {
                         "/user/login",
                         "/user/register",
                         "/user/resetPassword",
+                        "/system/umsAdmin/login", // 放行管理员登录接口
                         "/doc.html",
                         "/webjars/**",
                         "/swagger-resources/**",

@@ -1,24 +1,19 @@
 package com.finance.platform.system.controller;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.finance.common.result.Result;
+import com.finance.common.utils.BeanConvertUtil;
+import com.finance.platform.system.dto.UmsRoleDTO;
 import com.finance.platform.system.entity.UmsRole;
 import com.finance.platform.system.service.UmsRoleService;
+import com.finance.platform.system.vo.UmsRoleVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-/**
- * 后台角色表控制器。
- */
 @RestController
 @Tag(name = "角色管理", description = "ums_role 后台角色相关接口")
 @RequestMapping("/umsRole")
@@ -26,77 +21,61 @@ public class UmsRoleController {
 
     private final UmsRoleService umsRoleService;
 
-    /**
-     * 后台角色表控制器构造器。
-     *
-     * @param umsRoleService 后台角色业务服务
-     */
     public UmsRoleController(UmsRoleService umsRoleService) {
         this.umsRoleService = umsRoleService;
     }
 
-    /**
-     * 根据 ID 查询后台角色信息。
-     *
-     * @param id 后台角色 ID
-     * @return 查询结果
-     */
-    @Operation(summary = "根据ID查询后台角色信息")
+    @Operation(summary = "根据ID查询角色信息")
     @GetMapping("/{id}")
-    public Result<UmsRole> getById(@PathVariable Long id) {
-        return Result.success(umsRoleService.getById(id));
+    public Result<UmsRoleVO> getById(@PathVariable Long id) {
+        UmsRole role = umsRoleService.getById(id);
+        return Result.success(BeanConvertUtil.convert(role, UmsRoleVO.class));
     }
 
-    /**
-     * 查询后台角色列表（不分页）。
-     *
-     * @return 后台角色列表
-     */
-    @Operation(summary = "查询后台角色列表")
+    @Operation(summary = "查询角色列表")
     @GetMapping
-    public Result<List<UmsRole>> list() {
-        return Result.success(umsRoleService.list());
+    public Result<List<UmsRoleVO>> list() {
+        List<UmsRole> list = umsRoleService.list();
+        return Result.success(BeanConvertUtil.convertList(list, UmsRoleVO.class));
     }
 
-    /**
-     * 创建后台角色。
-     *
-     * @param umsRole 后台角色入参
-     * @return 是否创建成功
-     */
-    @Operation(summary = "创建后台角色")
+    @Operation(summary = "分页查询角色列表")
+    @GetMapping("/page")
+    public Result<IPage<UmsRoleVO>> page(
+            @RequestParam(defaultValue = "1") Integer pageNum,
+            @RequestParam(defaultValue = "10") Integer pageSize) {
+
+        Page<UmsRole> page = new Page<>(pageNum, pageSize);
+        IPage<UmsRole> rolePage = umsRoleService.page(page);
+
+        Page<UmsRoleVO> voPage = new Page<>();
+        voPage.setCurrent(rolePage.getCurrent());
+        voPage.setSize(rolePage.getSize());
+        voPage.setTotal(rolePage.getTotal());
+        voPage.setPages(rolePage.getPages());
+        voPage.setRecords(BeanConvertUtil.convertList(rolePage.getRecords(), UmsRoleVO.class));
+
+        return Result.success(voPage);
+    }
+
+    @Operation(summary = "创建角色")
     @PostMapping
-    public Result<Boolean> create(@RequestBody UmsRole umsRole) {
-        boolean saved = umsRoleService.save(umsRole);
-        return Result.success(saved);
+    public Result<Boolean> create(@RequestBody UmsRoleDTO dto) {
+        UmsRole role = BeanConvertUtil.convert(dto, UmsRole.class);
+        return Result.success(umsRoleService.save(role));
     }
 
-    /**
-     * 更新后台角色信息。
-     *
-     * @param id 后台角色 ID
-     * @param umsRole 后台角色入参
-     * @return 是否更新成功
-     */
-    @Operation(summary = "更新后台角色信息")
+    @Operation(summary = "更新角色信息")
     @PutMapping("/{id}")
-    public Result<Boolean> update(@PathVariable Long id, @RequestBody UmsRole umsRole) {
-        umsRole.setId(id);
-        boolean updated = umsRoleService.updateById(umsRole);
-        return Result.success(updated);
+    public Result<Boolean> update(@PathVariable Long id, @RequestBody UmsRoleDTO dto) {
+        UmsRole role = BeanConvertUtil.convert(dto, UmsRole.class);
+        role.setId(id);
+        return Result.success(umsRoleService.updateById(role));
     }
 
-    /**
-     * 删除后台角色（物理删除）。
-     *
-     * @param id 后台角色 ID
-     * @return 是否删除成功
-     */
-    @Operation(summary = "删除后台角色（物理删除）")
+    @Operation(summary = "删除角色")
     @DeleteMapping("/{id}")
     public Result<Boolean> delete(@PathVariable Long id) {
-        boolean removed = umsRoleService.removeById(id);
-        return Result.success(removed);
+        return Result.success(umsRoleService.removeById(id));
     }
 }
-

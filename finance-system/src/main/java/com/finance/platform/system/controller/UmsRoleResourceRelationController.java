@@ -1,102 +1,79 @@
 package com.finance.platform.system.controller;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.finance.common.result.Result;
+import com.finance.common.utils.BeanConvertUtil;
+import com.finance.platform.system.dto.UmsRoleResourceRelationDTO;
 import com.finance.platform.system.entity.UmsRoleResourceRelation;
 import com.finance.platform.system.service.UmsRoleResourceRelationService;
+import com.finance.platform.system.vo.UmsRoleResourceRelationVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-/**
- * 后台角色资源关系表控制器。
- */
 @RestController
-@Tag(name = "角色资源关系管理", description = "ums_role_resource_relation 后台角色资源关系相关接口")
 @RequestMapping("/umsRoleResourceRelation")
+@Tag(name = "角色-资源关联", description = "ums_role_resource_relation")
 public class UmsRoleResourceRelationController {
 
     private final UmsRoleResourceRelationService umsRoleResourceRelationService;
 
-    /**
-     * 后台角色资源关系表控制器构造器。
-     *
-     * @param umsRoleResourceRelationService 后台角色资源关系业务服务
-     */
     public UmsRoleResourceRelationController(UmsRoleResourceRelationService umsRoleResourceRelationService) {
         this.umsRoleResourceRelationService = umsRoleResourceRelationService;
     }
 
-    /**
-     * 根据 ID 查询后台角色资源关系列表信息。
-     *
-     * @param id 后台角色资源关系 ID
-     * @return 查询结果
-     */
-    @Operation(summary = "根据ID查询后台角色资源关系")
+    @Operation(summary = "根据ID查询")
     @GetMapping("/{id}")
-    public Result<UmsRoleResourceRelation> getById(@PathVariable Long id) {
-        return Result.success(umsRoleResourceRelationService.getById(id));
+    public Result<UmsRoleResourceRelationVO> getById(@PathVariable Long id) {
+        UmsRoleResourceRelation relation = umsRoleResourceRelationService.getById(id);
+        return Result.success(BeanConvertUtil.convert(relation, UmsRoleResourceRelationVO.class));
     }
 
-    /**
-     * 查询后台角色资源关系列表（不分页）。
-     *
-     * @return 后台角色资源关系列表
-     */
-    @Operation(summary = "查询后台角色资源关系列表")
+    @Operation(summary = "列表")
     @GetMapping
-    public Result<List<UmsRoleResourceRelation>> list() {
-        return Result.success(umsRoleResourceRelationService.list());
+    public Result<List<UmsRoleResourceRelationVO>> list() {
+        List<UmsRoleResourceRelation> list = umsRoleResourceRelationService.list();
+        return Result.success(BeanConvertUtil.convertList(list, UmsRoleResourceRelationVO.class));
     }
 
-    /**
-     * 创建后台角色资源关系。
-     *
-     * @param umsRoleResourceRelation 后台角色资源关系入参
-     * @return 是否创建成功
-     */
-    @Operation(summary = "创建后台角色资源关系")
+    @Operation(summary = "分页")
+    @GetMapping("/page")
+    public Result<IPage<UmsRoleResourceRelationVO>> page(
+            @RequestParam(defaultValue = "1") Integer pageNum,
+            @RequestParam(defaultValue = "10") Integer pageSize) {
+        Page<UmsRoleResourceRelation> page = new Page<>(pageNum, pageSize);
+        IPage<UmsRoleResourceRelation> pageResult = umsRoleResourceRelationService.page(page);
+
+        Page<UmsRoleResourceRelationVO> voPage = new Page<>();
+        voPage.setCurrent(pageResult.getCurrent());
+        voPage.setSize(pageResult.getSize());
+        voPage.setTotal(pageResult.getTotal());
+        voPage.setPages(pageResult.getPages());
+        voPage.setRecords(BeanConvertUtil.convertList(pageResult.getRecords(), UmsRoleResourceRelationVO.class));
+        return Result.success(voPage);
+    }
+
+    @Operation(summary = "创建")
     @PostMapping
-    public Result<Boolean> create(@RequestBody UmsRoleResourceRelation umsRoleResourceRelation) {
-        boolean saved = umsRoleResourceRelationService.save(umsRoleResourceRelation);
-        return Result.success(saved);
+    public Result<Boolean> create(@RequestBody UmsRoleResourceRelationDTO dto) {
+        UmsRoleResourceRelation relation = BeanConvertUtil.convert(dto, UmsRoleResourceRelation.class);
+        return Result.success(umsRoleResourceRelationService.save(relation));
     }
 
-    /**
-     * 更新后台角色资源关系列表信息。
-     *
-     * @param id 后台角色资源关系 ID
-     * @param umsRoleResourceRelation 后台角色资源关系入参
-     * @return 是否更新成功
-     */
-    @Operation(summary = "更新后台角色资源关系列表信息")
+    @Operation(summary = "更新")
     @PutMapping("/{id}")
-    public Result<Boolean> update(@PathVariable Long id, @RequestBody UmsRoleResourceRelation umsRoleResourceRelation) {
-        umsRoleResourceRelation.setId(id);
-        boolean updated = umsRoleResourceRelationService.updateById(umsRoleResourceRelation);
-        return Result.success(updated);
+    public Result<Boolean> update(@PathVariable Long id, @RequestBody UmsRoleResourceRelationDTO dto) {
+        UmsRoleResourceRelation relation = BeanConvertUtil.convert(dto, UmsRoleResourceRelation.class);
+        relation.setId(id);
+        return Result.success(umsRoleResourceRelationService.updateById(relation));
     }
 
-    /**
-     * 删除后台角色资源关系（物理删除）。
-     *
-     * @param id 后台角色资源关系 ID
-     * @return 是否删除成功
-     */
-    @Operation(summary = "删除后台角色资源关系（物理删除）")
+    @Operation(summary = "删除")
     @DeleteMapping("/{id}")
     public Result<Boolean> delete(@PathVariable Long id) {
-        boolean removed = umsRoleResourceRelationService.removeById(id);
-        return Result.success(removed);
+        return Result.success(umsRoleResourceRelationService.removeById(id));
     }
 }
-

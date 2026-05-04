@@ -1,22 +1,62 @@
 package com.finance.platform.message.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.finance.platform.message.dto.FinMessageDTO;
 import com.finance.platform.message.entity.FinMessage;
 import com.finance.platform.message.mapper.FinMessageMapper;
 import com.finance.platform.message.service.FinMessageService;
+import com.finance.platform.message.vo.FinMessageVO;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
-/**
- * 站内消息推送表业务层实现类。
- */
-@Service
-public class FinMessageServiceImpl extends ServiceImpl<FinMessageMapper, FinMessage>
-    implements FinMessageService {
+import java.util.List;
+import java.util.stream.Collectors;
 
-    /**
-     * 默认构造器。
-     */
-    public FinMessageServiceImpl() {
+@Service
+public class FinMessageServiceImpl extends ServiceImpl<FinMessageMapper, FinMessage> implements FinMessageService {
+
+    @Override
+    public FinMessageVO getMessageById(Long id) {
+        FinMessage entity = getById(id);
+        if (entity == null) {
+            return null;
+        }
+        FinMessageVO vo = new FinMessageVO();
+        BeanUtils.copyProperties(entity, vo);
+        return vo;
+    }
+
+    @Override
+    public List<FinMessageVO> getMessageList() {
+        List<FinMessage> list = list();
+        return list.stream().map(entity -> {
+            FinMessageVO vo = new FinMessageVO();
+            BeanUtils.copyProperties(entity, vo);
+            return vo;
+        }).collect(Collectors.toList());
+    }
+
+    @Override
+    public boolean createMessage(FinMessageDTO dto) {
+        FinMessage entity = new FinMessage();
+        BeanUtils.copyProperties(dto, entity);
+        entity.setReadFlag(0);
+        return save(entity);
+    }
+
+    @Override
+    public boolean updateMessage(Long id, FinMessageDTO dto) {
+        FinMessage entity = getById(id);
+        if (entity == null) {
+            return false;
+        }
+        BeanUtils.copyProperties(dto, entity);
+        entity.setId(id);
+        return updateById(entity);
+    }
+
+    @Override
+    public boolean deleteMessage(Long id) {
+        return removeById(id);
     }
 }
-

@@ -4,21 +4,28 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.finance.common.dto.LoginDTO;
 import com.finance.common.utils.JwtUtil;
 import com.finance.platform.system.entity.UmsAdmin;
+import com.finance.platform.system.entity.UmsResource;
 import com.finance.platform.system.mapper.UmsAdminMapper;
 import com.finance.platform.system.service.UmsAdminService;
+import com.finance.platform.system.service.UmsResourceService;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 import org.springframework.util.StringUtils;
 
 import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class UmsAdminServiceImpl extends ServiceImpl<UmsAdminMapper, UmsAdmin> implements UmsAdminService {
 
     private final JwtUtil jwtUtil;
+    private final UmsResourceService resourceService;
 
-    public UmsAdminServiceImpl(JwtUtil jwtUtil) {
+    // 注入依赖
+    public UmsAdminServiceImpl(JwtUtil jwtUtil, UmsResourceService resourceService) {
         this.jwtUtil = jwtUtil;
+        this.resourceService = resourceService;
     }
 
     @Override
@@ -27,7 +34,10 @@ public class UmsAdminServiceImpl extends ServiceImpl<UmsAdminMapper, UmsAdmin> i
             throw new RuntimeException("用户名密码不能为空");
         }
 
-        UmsAdmin admin = lambdaQuery().eq(UmsAdmin::getUsername, dto.getUsername()).one();
+        UmsAdmin admin = lambdaQuery()
+                .eq(UmsAdmin::getUsername, dto.getUsername())
+                .one();
+
         if (admin == null) {
             throw new RuntimeException("用户不存在");
         }
@@ -51,5 +61,17 @@ public class UmsAdminServiceImpl extends ServiceImpl<UmsAdminMapper, UmsAdmin> i
     public Boolean updateAdmin(UmsAdmin admin) {
         admin.setPassword(null);
         return updateById(admin);
+    }
+
+    // ================== 权限查询方法（完整正确） ==================
+    @Override
+    public List<String> getResourceUrlsByIds(List<Long> resourceIds) {
+        return resourceService.lambdaQuery()
+                .in(UmsResource::getId, resourceIds)
+                .eq(UmsResource::getDelFlag, 0)
+                .list()
+                .stream()
+                .map(UmsResource::getUrl)
+                .collect(Collectors.toList());
     }
 }

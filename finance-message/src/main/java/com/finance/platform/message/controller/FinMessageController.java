@@ -1,10 +1,12 @@
 package com.finance.platform.message.controller;
 
 import com.finance.common.result.Result;
-import com.finance.platform.message.entity.FinMessage;
+import com.finance.platform.message.dto.FinMessageDTO;
 import com.finance.platform.message.service.FinMessageService;
+import com.finance.platform.message.vo.FinMessageVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,18 +24,10 @@ import java.util.List;
 @RestController
 @Tag(name = "消息管理", description = "fin_message 站内消息相关接口")
 @RequestMapping("/finMessage")
+@RequiredArgsConstructor
 public class FinMessageController {
 
     private final FinMessageService finMessageService;
-
-    /**
-     * 站内消息推送控制器构造器。
-     *
-     * @param finMessageService 站内消息业务服务
-     */
-    public FinMessageController(FinMessageService finMessageService) {
-        this.finMessageService = finMessageService;
-    }
 
     /**
      * 根据 ID 查询站内消息推送信息。
@@ -43,8 +37,8 @@ public class FinMessageController {
      */
     @Operation(summary = "根据ID查询站内消息推送信息")
     @GetMapping("/{id}")
-    public Result<FinMessage> getById(@PathVariable Long id) {
-        return Result.success(finMessageService.getById(id));
+    public Result<FinMessageVO> getById(@PathVariable Long id) {
+        return Result.success(finMessageService.getMessageById(id));
     }
 
     /**
@@ -54,36 +48,33 @@ public class FinMessageController {
      */
     @Operation(summary = "查询站内消息推送列表")
     @GetMapping
-    public Result<List<FinMessage>> list() {
-        return Result.success(finMessageService.list());
+    public Result<List<FinMessageVO>> list() {
+        return Result.success(finMessageService.getMessageList());
     }
 
     /**
      * 创建站内消息推送。
      *
-     * @param finMessage 站内消息推送入参
+     * @param dto 站内消息推送入参
      * @return 是否创建成功
      */
     @Operation(summary = "创建站内消息推送")
     @PostMapping
-    public Result<Boolean> create(@RequestBody FinMessage finMessage) {
-        boolean saved = finMessageService.save(finMessage);
-        return Result.success(saved);
+    public Result<Boolean> create(@RequestBody FinMessageDTO dto) {
+        return Result.success(finMessageService.createMessage(dto));
     }
 
     /**
      * 更新站内消息推送信息。
      *
      * @param id 站内消息推送 ID
-     * @param finMessage 站内消息推送入参
+     * @param dto 站内消息推送入参
      * @return 是否更新成功
      */
     @Operation(summary = "更新站内消息推送信息")
     @PutMapping("/{id}")
-    public Result<Boolean> update(@PathVariable Long id, @RequestBody FinMessage finMessage) {
-        finMessage.setId(id);
-        boolean updated = finMessageService.updateById(finMessage);
-        return Result.success(updated);
+    public Result<Boolean> update(@PathVariable Long id, @RequestBody FinMessageDTO dto) {
+        return Result.success(finMessageService.updateMessage(id, dto));
     }
 
     /**
@@ -95,8 +86,6 @@ public class FinMessageController {
     @Operation(summary = "删除站内消息推送（逻辑删除）")
     @DeleteMapping("/{id}")
     public Result<Boolean> delete(@PathVariable Long id) {
-        boolean removed = finMessageService.removeById(id);
-        return Result.success(removed);
+        return Result.success(finMessageService.deleteMessage(id));
     }
 }
-

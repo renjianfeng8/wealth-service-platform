@@ -1,10 +1,12 @@
 package com.finance.platform.trade.controller;
 
 import com.finance.common.result.Result;
-import com.finance.platform.trade.entity.FinTradeOrder;
+import com.finance.platform.trade.dto.FinTradeOrderDTO;
 import com.finance.platform.trade.service.FinTradeOrderService;
+import com.finance.platform.trade.vo.FinTradeOrderVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,18 +24,10 @@ import java.util.List;
 @RestController
 @Tag(name = "交易委托管理", description = "fin_trade_order 交易委托相关接口")
 @RequestMapping("/finTradeOrder")
+@RequiredArgsConstructor
 public class FinTradeOrderController {
 
     private final FinTradeOrderService finTradeOrderService;
-
-    /**
-     * 交易委托单控制器构造器。
-     *
-     * @param finTradeOrderService 交易委托单业务服务
-     */
-    public FinTradeOrderController(FinTradeOrderService finTradeOrderService) {
-        this.finTradeOrderService = finTradeOrderService;
-    }
 
     /**
      * 根据 ID 查询交易委托单信息。
@@ -43,8 +37,8 @@ public class FinTradeOrderController {
      */
     @Operation(summary = "根据ID查询交易委托单")
     @GetMapping("/{id}")
-    public Result<FinTradeOrder> getById(@PathVariable Long id) {
-        return Result.success(finTradeOrderService.getById(id));
+    public Result<FinTradeOrderVO> getById(@PathVariable Long id) {
+        return Result.success(finTradeOrderService.getOrderById(id));
     }
 
     /**
@@ -54,36 +48,33 @@ public class FinTradeOrderController {
      */
     @Operation(summary = "查询交易委托单列表")
     @GetMapping
-    public Result<List<FinTradeOrder>> list() {
-        return Result.success(finTradeOrderService.list());
+    public Result<List<FinTradeOrderVO>> list() {
+        return Result.success(finTradeOrderService.getOrderList());
     }
 
     /**
      * 创建交易委托单。
      *
-     * @param finTradeOrder 交易委托单入参
+     * @param dto 交易委托单入参
      * @return 是否创建成功
      */
     @Operation(summary = "创建交易委托单")
     @PostMapping
-    public Result<Boolean> create(@RequestBody FinTradeOrder finTradeOrder) {
-        boolean saved = finTradeOrderService.save(finTradeOrder);
-        return Result.success(saved);
+    public Result<Boolean> create(@RequestBody FinTradeOrderDTO dto) {
+        return Result.success(finTradeOrderService.createOrder(dto));
     }
 
     /**
      * 更新交易委托单信息。
      *
      * @param id 交易委托单 ID
-     * @param finTradeOrder 交易委托单入参
+     * @param dto 交易委托单入参
      * @return 是否更新成功
      */
     @Operation(summary = "更新交易委托单信息")
     @PutMapping("/{id}")
-    public Result<Boolean> update(@PathVariable Long id, @RequestBody FinTradeOrder finTradeOrder) {
-        finTradeOrder.setId(id);
-        boolean updated = finTradeOrderService.updateById(finTradeOrder);
-        return Result.success(updated);
+    public Result<Boolean> update(@PathVariable Long id, @RequestBody FinTradeOrderDTO dto) {
+        return Result.success(finTradeOrderService.updateOrder(id, dto));
     }
 
     /**
@@ -95,8 +86,6 @@ public class FinTradeOrderController {
     @Operation(summary = "删除交易委托单（逻辑删除）")
     @DeleteMapping("/{id}")
     public Result<Boolean> delete(@PathVariable Long id) {
-        boolean removed = finTradeOrderService.removeById(id);
-        return Result.success(removed);
+        return Result.success(finTradeOrderService.deleteOrder(id));
     }
 }
-
