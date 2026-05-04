@@ -1,51 +1,48 @@
-基于 Spring Boot 3.x + Spring Cloud 2023.x 构建的金融业务中台，提供用户、账户、产品、交易等核心金融服务。
-本项目是一个金融业务微服务中台，采用前后端分离架构，基于 Spring Cloud 微服务生态开发，旨在为金融场景提供高可用、可扩展的服务化解决方案。
-主要模块包括：
-用户服务：用户管理、登录认证、权限控制
-账户服务：用户自选、资金账户管理
-产品服务：金融产品信息维护与查询
-交易服务：订单、持仓、交易记录管理
-消息服务：通知、消息推送
-搜索服务：产品与资讯搜索
-系统服务：系统配置、字典管理
-网关服务：请求路由、鉴权、限流
-技术 / 框架	版本	用途
-Spring Boot	3.2.5	微服务基础框架
-Spring Cloud	2023.0.1	微服务治理
-Spring Cloud Alibaba	2023.0.1.1	Nacos、Sentinel 等
-Nacos	2.x	服务注册与配置中心
-OpenFeign	4.x	微服务远程调用
-Knife4j / Swagger	4.x	API 文档
-MyBatis-Plus	3.5.x	ORM 框架
-MySQL	8.x	主数据库
-Redis	6.x	缓存
-Docker	29.x	容器化部署
-Maven	3.9.x	项目构建
-JDK	21	运行环境
-finance-mid-platform
-├── finance-common          # 公共依赖模块（DTO、工具类、Feign 接口）
-├── finance-gateway         # 网关服务
-├── finance-system          # 系统服务（配置、字典）
-├── finance-user            # 用户服务
-├── finance-account         # 账户服务
-├── finance-product         # 产品服务
-├── finance-trade           # 交易服务
-├── finance-message         # 消息服务
-└── finance-search          # 搜索服务
+# 金融中台微服务平台
+> 基于SpringBoot 3.x + SpringCloud Alibaba的金融级微服务架构项目，支撑用户、账户、产品、交易等核心业务场景
 
-# 克隆项目
-git clone https://github.com/renjianfeng8/finance-mid-platform.git
+## 📌 项目背景
+解决传统单体架构在金融业务中的扩展性差、耦合度高问题，实现业务模块解耦、服务独立部署、弹性扩缩容，满足高并发、高可用的金融业务需求。
 
-# 进入项目目录
-cd finance-mid-platform
+## 🛠️ 技术栈
+- 后端：Java 21, SpringBoot 3.2.5, SpringCloud 2023.0.1, SpringCloud Alibaba 2023.0.1
+- 注册/配置中心：Nacos 2.x
+- 网关：Spring Cloud Gateway
+- 持久层：MyBatis-Plus, MySQL 8.0
+- 消息队列：RabbitMQ（待集成）
+- 搜索引擎：Elasticsearch 8.x + IK分词器
+- 认证授权：JWT
+- 接口文档：Knife4j
 
-# 安装公共模块（关键步骤）
-mvn clean install -pl finance-common
+## 📦 模块说明
+| 模块 | 功能 | 技术亮点 |
+| :--- | :--- | :--- |
+| finance-common | 公共依赖、工具类、全局异常处理 | 统一返回结果封装、全局异常拦截 |
+| finance-gateway | 网关服务 | 路由转发、鉴权校验、限流 |
+| finance-user | 用户服务 | 用户注册/登录、权限管理 |
+| finance-account | 账户服务 | 账户开立、余额管理 |
+| finance-product | 产品服务 | 理财产品管理、上架/下架 |
+| finance-trade | 交易服务 | 订单创建、交易流水、幂等性处理 |
+| finance-search | 搜索服务 | 产品全文检索、高亮显示 |
+| finance-message | 消息服务 | 短信通知、异步消息推送 |
+| finance-system | 系统管理服务 | 角色、菜单、字典管理 |
 
-# 编译所有模块
-mvn clean compile
+## 🚀 快速启动
+### 前置条件
+- JDK 21
+- Maven 3.9+
+- Docker（部署Nacos、MySQL、Elasticsearch）
 
-📡 API 文档
-服务启动后，访问地址：
-Swagger 文档：http://localhost:8080/swagger-ui.html
-Knife4j 文档：http://localhost:8080/doc.html
+### 启动步骤
+1.  启动Nacos、MySQL、Elasticsearch
+2.  克隆项目：`git clone https://github.com/renjianfeng8/finance-mid-platform.git`
+3.  修改各模块 `application.yml` 中的数据库、Nacos配置
+4.  按顺序启动服务：`gateway` → `system` → `user` → `account` → `product` → `trade` → `search` → `message`
+5.  访问接口文档：`http://localhost:8080/doc.html`
+
+## ✨ 项目亮点
+- 基于DDD思想划分模块，业务边界清晰
+- 实现VO/DTO/PO分层，数据传输与数据库模型解耦
+- 集成OpenFeign实现服务间调用，支持超时重试与熔断
+- 基于JWT实现无状态认证，网关统一鉴权
+- 集成Elasticsearch实现产品全文检索，支持分词与高亮
