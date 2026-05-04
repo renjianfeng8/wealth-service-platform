@@ -1,4 +1,4 @@
-package com.finance.user.dto;
+package com.finance.common.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;

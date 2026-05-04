@@ -1,102 +1,85 @@
 package com.finance.platform.system.controller;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.finance.common.dto.LoginDTO;
 import com.finance.common.result.Result;
+import com.finance.common.utils.BeanConvertUtil;
 import com.finance.platform.system.entity.UmsAdmin;
 import com.finance.platform.system.service.UmsAdminService;
+import com.finance.platform.system.vo.UmsAdminVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-/**
- * 后台管理员表控制器。
- */
 @RestController
-@Tag(name = "管理员管理", description = "ums_admin 后台管理员相关接口")
 @RequestMapping("/umsAdmin")
+@Tag(name = "后台管理员管理")
 public class UmsAdminController {
 
     private final UmsAdminService umsAdminService;
 
-    /**
-     * 后台管理员表控制器构造器。
-     *
-     * @param umsAdminService 后台管理员业务服务
-     */
     public UmsAdminController(UmsAdminService umsAdminService) {
         this.umsAdminService = umsAdminService;
     }
 
-    /**
-     * 根据 ID 查询后台管理员信息。
-     *
-     * @param id 后台管理员 ID
-     * @return 查询结果
-     */
-    @Operation(summary = "根据ID查询后台管理员信息")
+    @PostMapping("/login")
+    @Operation(summary = "管理员登录")
+    public Result<String> login(@RequestBody LoginDTO dto) {
+        return Result.success(umsAdminService.login(dto));
+    }
+
     @GetMapping("/{id}")
-    public Result<UmsAdmin> getById(@PathVariable Long id) {
-        return Result.success(umsAdminService.getById(id));
+    @Operation(summary = "根据ID查询")
+    public Result<UmsAdminVO> getById(@PathVariable Long id) {
+        UmsAdmin admin = umsAdminService.getById(id);
+        return Result.success(BeanConvertUtil.convert(admin, UmsAdminVO.class));
     }
 
-    /**
-     * 查询后台管理员列表（不分页）。
-     *
-     * @return 后台管理员列表
-     */
-    @Operation(summary = "查询后台管理员列表")
     @GetMapping
-    public Result<List<UmsAdmin>> list() {
-        return Result.success(umsAdminService.list());
+    @Operation(summary = "列表查询")
+    public Result<List<UmsAdminVO>> list() {
+        List<UmsAdmin> list = umsAdminService.list();
+        return Result.success(BeanConvertUtil.convertList(list, UmsAdminVO.class));
     }
 
-    /**
-     * 创建后台管理员。
-     *
-     * @param umsAdmin 后台管理员入参
-     * @return 是否创建成功
-     */
-    @Operation(summary = "创建后台管理员")
+    @GetMapping("/page")
+    @Operation(summary = "分页查询")
+    public Result<IPage<UmsAdminVO>> page(
+            @RequestParam(defaultValue = "1") Integer pageNum,
+            @RequestParam(defaultValue = "10") Integer pageSize) {
+
+        Page<UmsAdmin> page = new Page<>(pageNum, pageSize);
+        IPage<UmsAdmin> userPage = umsAdminService.page(page);
+
+        Page<UmsAdminVO> voPage = new Page<>();
+        voPage.setCurrent(userPage.getCurrent());
+        voPage.setSize(userPage.getSize());
+        voPage.setTotal(userPage.getTotal());
+        voPage.setPages(userPage.getPages());
+        voPage.setRecords(BeanConvertUtil.convertList(userPage.getRecords(), UmsAdminVO.class));
+
+        return Result.success(voPage);
+    }
+
     @PostMapping
+    @Operation(summary = "新增管理员")
     public Result<Boolean> create(@RequestBody UmsAdmin umsAdmin) {
-        boolean saved = umsAdminService.save(umsAdmin);
-        return Result.success(saved);
+        return Result.success(umsAdminService.createAdmin(umsAdmin));
     }
 
-    /**
-     * 更新后台管理员信息。
-     *
-     * @param id 后台管理员 ID
-     * @param umsAdmin 后台管理员入参
-     * @return 是否更新成功
-     */
-    @Operation(summary = "更新后台管理员信息")
     @PutMapping("/{id}")
+    @Operation(summary = "修改管理员")
     public Result<Boolean> update(@PathVariable Long id, @RequestBody UmsAdmin umsAdmin) {
         umsAdmin.setId(id);
-        boolean updated = umsAdminService.updateById(umsAdmin);
-        return Result.success(updated);
+        return Result.success(umsAdminService.updateAdmin(umsAdmin));
     }
 
-    /**
-     * 删除后台管理员（物理删除）。
-     *
-     * @param id 后台管理员 ID
-     * @return 是否删除成功
-     */
-    @Operation(summary = "删除后台管理员（物理删除）")
     @DeleteMapping("/{id}")
+    @Operation(summary = "删除管理员")
     public Result<Boolean> delete(@PathVariable Long id) {
-        boolean removed = umsAdminService.removeById(id);
-        return Result.success(removed);
+        return Result.success(umsAdminService.removeById(id));
     }
 }
-
