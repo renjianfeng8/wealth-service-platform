@@ -3,19 +3,15 @@ package com.finance.user.controller;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.finance.common.result.Result;
+import com.finance.common.utils.BeanConvertUtil;
+import com.finance.user.dto.LoginDTO;
+import com.finance.user.dto.UserDTO;
 import com.finance.user.entity.User;
 import com.finance.user.service.UserService;
+import com.finance.user.vo.UserVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -30,103 +26,83 @@ public class UserController {
         this.userService = userService;
     }
 
-    /**
-     * 根据ID查询系统用户信息
-     */
-    @Operation(summary = "根据ID查询系统用户")
     @GetMapping("/{id}")
-    public Result<User> getById(@PathVariable Long id) {
-        return Result.success(userService.getById(id));
+    @Operation(summary = "根据ID查询用户")
+    public Result<UserVO> getById(@PathVariable Long id) {
+        User user = userService.getById(id);
+        // 工具类一行转换
+        return Result.success(BeanConvertUtil.convert(user, UserVO.class));
     }
 
-    /**
-     * 查询系统用户列表（未分页）
-     */
-    @Operation(summary = "查询系统用户列表")
     @GetMapping
-    public Result<List<User>> list() {
-        return Result.success(userService.list());
+    @Operation(summary = "查询用户列表")
+    public Result<List<UserVO>> list() {
+        List<User> list = userService.list();
+        List<UserVO> voList = BeanConvertUtil.convertList(list, UserVO.class);
+        return Result.success(voList);
     }
 
-    /**
-     * 分页查询系统用户
-     */
-    @Operation(summary = "分页查询系统用户")
     @GetMapping("/page")
-    public Result<IPage<User>> page(
+    @Operation(summary = "分页查询用户")
+    public Result<IPage<UserVO>> page(
             @RequestParam(defaultValue = "1") Integer pageNum,
             @RequestParam(defaultValue = "10") Integer pageSize) {
         Page<User> page = new Page<>(pageNum, pageSize);
-        return Result.success(userService.page(page));
+        IPage<User> userPage = userService.page(page);
+
+        Page<UserVO> voPage = new Page<>();
+        org.springframework.beans.BeanUtils.copyProperties(userPage, voPage, "records");
+        voPage.setRecords(BeanConvertUtil.convertList(userPage.getRecords(), UserVO.class));
+        return Result.success(voPage);
     }
 
-    /**
-     * 创建系统用户
-     */
-    @Operation(summary = "创建系统用户")
     @PostMapping
-    public Result<Boolean> create(@RequestBody User user) {
-        boolean saved = userService.save(user);
-        return Result.success(saved);
+    @Operation(summary = "新增用户")
+    public Result<Boolean> create(@RequestBody UserDTO dto) {
+        User user = BeanConvertUtil.convert(dto, User.class);
+        return Result.success(userService.save(user));
     }
 
-    /**
-     * 更新系统用户信息
-     */
-    @Operation(summary = "更新系统用户信息")
     @PutMapping("/{id}")
-    public Result<Boolean> update(@PathVariable Long id, @RequestBody User user) {
+    @Operation(summary = "修改用户")
+    public Result<Boolean> update(
+            @PathVariable Long id,
+            @RequestBody UserDTO dto) {
+        User user = BeanConvertUtil.convert(dto, User.class);
         user.setId(id);
-        boolean updated = userService.updateById(user);
-        return Result.success(updated);
+        return Result.success(userService.updateById(user));
     }
 
-    /**
-     * 删除系统用户（逻辑删除）
-     */
-    @Operation(summary = "删除系统用户（逻辑删除）")
     @DeleteMapping("/{id}")
+    @Operation(summary = "删除用户")
     public Result<Boolean> delete(@PathVariable Long id) {
-        boolean removed = userService.removeById(id);
-        return Result.success(removed);
+        return Result.success(userService.removeById(id));
     }
 
-    /**
-     * 批量删除系统用户
-     */
-    @Operation(summary = "批量删除系统用户")
     @DeleteMapping("/batch")
+    @Operation(summary = "批量删除")
     public Result<Boolean> deleteBatch(@RequestBody List<Long> ids) {
-        boolean removed = userService.removeByIds(ids);
-        return Result.success(removed);
+        return Result.success(userService.removeByIds(ids));
     }
 
-    /**
-     * 用户注册
-     */
-    @Operation(summary = "用户注册")
     @PostMapping("/register")
-    public Result<Boolean> register(@RequestBody User user) {
+    @Operation(summary = "用户注册")
+    public Result<Boolean> register(@RequestBody UserDTO dto) {
+        User user = BeanConvertUtil.convert(dto, User.class);
         return Result.success(userService.register(user));
     }
 
-    /**
-     * 用户登录
-     */
-    @Operation(summary = "用户登录")
     @PostMapping("/login")
-    public Result<String> login(@RequestBody User user) {
-        String token = userService.login(user);
-        return Result.success(token);
+    @Operation(summary = "用户登录")
+    public Result<String> login(@RequestBody LoginDTO dto) {
+        User user = BeanConvertUtil.convert(dto, User.class);
+        return Result.success(userService.login(user));
     }
 
-    /**
-     * 重置密码
-     */
-    @Operation(summary = "重置密码")
     @PostMapping("/resetPassword")
-    public Result<Boolean> resetPassword(@RequestBody User user) {
+    @Operation(summary = "重置密码")
+    public Result<Boolean> resetPassword(@RequestBody UserDTO dto) {
+        User user = BeanConvertUtil.convert(dto, User.class);
         return Result.success(userService.resetPassword(user));
     }
-
 }

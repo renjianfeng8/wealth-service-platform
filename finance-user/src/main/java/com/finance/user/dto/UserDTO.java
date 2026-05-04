@@ -6,12 +6,12 @@ import lombok.Data;
 
 @Data
 @Schema(description = "用户新增/修改DTO")
-public class SysUserDTO {
+public class UserDTO {
 
-    @Schema(description = "用户ID（修改时必填）")
+    @Schema(description = "ID")
     private Long id;
 
-    @NotBlank(message = "账号不能为空")
+    @NotBlank(message = "用户名不能为空")
     @Schema(description = "账号")
     private String username;
 

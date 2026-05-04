@@ -13,23 +13,29 @@ import java.util.Date;
 
 @Component
 public class JwtUtil {
-    private static final String SECRET_KEY = "FinanceJwtSecretKey2026FinanceJwtSecretKey2026";
-    private static final long EXPIRATION = 24 * 60 * 60 * 1000; // 1天
 
-    private static SecretKey getSigningKey() {
-        byte[] keyBytes = SECRET_KEY.getBytes(StandardCharsets.UTF_8);
+    @Value("${jwt.secret}")
+    private String secretKey;
+
+    @Value("${jwt.expire}")
+    private long expire;
+
+    private SecretKey getSigningKey() {
+        byte[] keyBytes = secretKey.getBytes(StandardCharsets.UTF_8);
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public static String generateToken(String username) {
+    // 生成Token
+    public String generateToken(String username) {
         return Jwts.builder()
                 .setSubject(username)
-                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION))
+                .setExpiration(new Date(System.currentTimeMillis() + expire))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    public static String getUsernameFromToken(String token) {
+    // 从Token获取用户名
+    public String getUsernameFromToken(String token) {
         Claims claims = Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())
                 .build()
@@ -38,15 +44,26 @@ public class JwtUtil {
         return claims.getSubject();
     }
 
-    public static boolean validateToken(String token) {
+    // 验证Token是否有效（带完整日志）
+    public boolean validateToken(String token) {
         try {
             Jwts.parserBuilder()
                     .setSigningKey(getSigningKey())
                     .build()
                     .parseClaimsJws(token);
+            System.out.println("✅ JWT验证成功");
             return true;
+        } catch (io.jsonwebtoken.ExpiredJwtException e) {
+            System.out.println("❌ JWT验证失败：Token 已过期");
+        } catch (io.jsonwebtoken.security.SignatureException e) {
+            System.out.println("❌ JWT验证失败：签名错误（密钥不匹配）");
+        } catch (io.jsonwebtoken.MalformedJwtException e) {
+            System.out.println("❌ JWT验证失败：Token 格式错误/被篡改");
+        } catch (io.jsonwebtoken.UnsupportedJwtException e) {
+            System.out.println("❌ JWT验证失败：不支持的Token算法");
         } catch (Exception e) {
-            return false;
+            System.out.println("❌ JWT验证失败：" + e.getMessage());
         }
+        return false;
     }
 }

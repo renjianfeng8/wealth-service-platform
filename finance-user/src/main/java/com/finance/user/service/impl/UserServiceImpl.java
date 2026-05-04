@@ -27,11 +27,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     private Long jwtExpire;
 
     @Override
-    public IPage<User> page(Page<User> page) {
-        return this.page(page);
-    }
-
-    @Override
     public Boolean register(User user) {
         if (!StringUtils.hasText(user.getUsername()) || !StringUtils.hasText(user.getPassword())) {
             throw new RuntimeException("用户名/密码不能为空");

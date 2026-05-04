@@ -5,10 +5,10 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-@Schema(description = "用户信息返回VO")
-public class SysUserVO {
+@Schema(description = "用户信息VO")
+public class UserVO {
 
-    @Schema(description = "用户ID")
+    @Schema(description = "ID")
     private Long id;
 
     @Schema(description = "账号")
@@ -23,7 +23,7 @@ public class SysUserVO {
     @Schema(description = "头像")
     private String avatar;
 
-    @Schema(description = "状态 0禁用 1正常")
+    @Schema(description = "状态")
     private Integer status;
 
     @Schema(description = "创建时间")

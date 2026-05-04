@@ -1,14 +1,9 @@
 package com.finance.user.service;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.finance.user.entity.User;
 
 public interface UserService extends IService<User> {
-
-    // 分页查询
-    IPage<User> page(Page<User> page);
 
     // 用户注册
     Boolean register(User user);
