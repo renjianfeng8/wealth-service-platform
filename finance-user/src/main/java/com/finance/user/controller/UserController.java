@@ -11,6 +11,7 @@ import com.finance.user.service.UserService;
 import com.finance.user.vo.UserVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -58,7 +59,7 @@ public class UserController {
 
     @PostMapping
     @Operation(summary = "新增用户")
-    public Result<Boolean> create(@RequestBody UserDTO dto) {
+    public Result<Boolean> create(@Valid @RequestBody UserDTO dto) {
         User user = BeanConvertUtil.convert(dto, User.class);
         return Result.success(userService.save(user));
     }
@@ -67,9 +68,10 @@ public class UserController {
     @Operation(summary = "修改用户")
     public Result<Boolean> update(
             @PathVariable Long id,
-            @RequestBody UserDTO dto) {
+            @Valid @RequestBody UserDTO dto) {
         User user = BeanConvertUtil.convert(dto, User.class);
         user.setId(id);
+        user.setPassword(null); // 禁止通过更新接口修改密码，防止明文覆盖
         return Result.success(userService.updateById(user));
     }
 
@@ -87,21 +89,21 @@ public class UserController {
 
     @PostMapping("/register")
     @Operation(summary = "用户注册")
-    public Result<Boolean> register(@RequestBody UserDTO dto) {
+    public Result<Boolean> register(@Valid @RequestBody UserDTO dto) {
         User user = BeanConvertUtil.convert(dto, User.class);
         return Result.success(userService.register(user));
     }
 
     @PostMapping("/login")
     @Operation(summary = "用户登录")
-    public Result<String> login(@RequestBody LoginDTO dto) {
+    public Result<String> login(@Valid @RequestBody LoginDTO dto) {
         User user = BeanConvertUtil.convert(dto, User.class);
         return Result.success(userService.login(user));
     }
 
     @PostMapping("/resetPassword")
     @Operation(summary = "重置密码")
-    public Result<Boolean> resetPassword(@RequestBody UserDTO dto) {
+    public Result<Boolean> resetPassword(@Valid @RequestBody UserDTO dto) {
         User user = BeanConvertUtil.convert(dto, User.class);
         return Result.success(userService.resetPassword(user));
     }

@@ -9,10 +9,9 @@ import com.finance.platform.system.mapper.UmsAdminMapper;
 import com.finance.platform.system.service.UmsAdminService;
 import com.finance.platform.system.service.UmsResourceService;
 import org.springframework.stereotype.Service;
-import org.springframework.util.DigestUtils;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.util.StringUtils;
 
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,6 +27,8 @@ public class UmsAdminServiceImpl extends ServiceImpl<UmsAdminMapper, UmsAdmin> i
         this.resourceService = resourceService;
     }
 
+    private static final BCryptPasswordEncoder PASSWORD_ENCODER = new BCryptPasswordEncoder();
+
     @Override
     public String login(LoginDTO dto) {
         if (!StringUtils.hasText(dto.getUsername()) || !StringUtils.hasText(dto.getPassword())) {
@@ -42,8 +43,7 @@ public class UmsAdminServiceImpl extends ServiceImpl<UmsAdminMapper, UmsAdmin> i
             throw new RuntimeException("用户不存在");
         }
 
-        String encryptPwd = DigestUtils.md5DigestAsHex(dto.getPassword().getBytes(StandardCharsets.UTF_8));
-        if (!encryptPwd.equals(admin.getPassword())) {
+        if (!PASSWORD_ENCODER.matches(dto.getPassword(), admin.getPassword())) {
             throw new RuntimeException("密码错误");
         }
 
@@ -52,8 +52,7 @@ public class UmsAdminServiceImpl extends ServiceImpl<UmsAdminMapper, UmsAdmin> i
 
     @Override
     public Boolean createAdmin(UmsAdmin admin) {
-        String encryptPwd = DigestUtils.md5DigestAsHex(admin.getPassword().getBytes(StandardCharsets.UTF_8));
-        admin.setPassword(encryptPwd);
+        admin.setPassword(PASSWORD_ENCODER.encode(admin.getPassword()));
         return save(admin);
     }
 

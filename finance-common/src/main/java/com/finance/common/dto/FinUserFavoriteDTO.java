@@ -10,7 +10,6 @@ import java.time.LocalDateTime;
 public class FinUserFavoriteDTO {
     private Long id;
     private Long userId;
-    private Long productId;
-    private String productName;
+    private String productCode;
     private LocalDateTime createTime;
 }

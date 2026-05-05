@@ -126,9 +126,9 @@ fin_message       → 消息推送
 ums_*             → 后台权限
 
 # ======================
-# 九、Cursor AI 生成规则
+# 九、AI 生成规则
 # ======================
-1. 必须严格按照上面的表结构生成 Entity、Mapper、Service、Controller
+1. 必须严格按照上面的表结构生成 Entity、Mapper、Service、Controller、Vo、Dto
 2. 必须使用 MyBatis-Plus
 3. 必须包含逻辑删除
 4. 必须自动填充 create_time、update_time

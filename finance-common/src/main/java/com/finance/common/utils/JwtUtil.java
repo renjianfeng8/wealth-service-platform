@@ -4,6 +4,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -11,6 +12,7 @@ import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
+@Slf4j
 @Component
 public class JwtUtil {
 
@@ -51,18 +53,18 @@ public class JwtUtil {
                     .setSigningKey(getSigningKey())
                     .build()
                     .parseClaimsJws(token);
-            System.out.println("✅ JWT验证成功");
+            log.info("JWT验证成功");
             return true;
         } catch (io.jsonwebtoken.ExpiredJwtException e) {
-            System.out.println("❌ JWT验证失败：Token 已过期");
+            log.warn("JWT验证失败：Token 已过期");
         } catch (io.jsonwebtoken.security.SignatureException e) {
-            System.out.println("❌ JWT验证失败：签名错误（密钥不匹配）");
+            log.warn("JWT验证失败：签名错误（密钥不匹配）");
         } catch (io.jsonwebtoken.MalformedJwtException e) {
-            System.out.println("❌ JWT验证失败：Token 格式错误/被篡改");
+            log.warn("JWT验证失败：Token 格式错误/被篡改");
         } catch (io.jsonwebtoken.UnsupportedJwtException e) {
-            System.out.println("❌ JWT验证失败：不支持的Token算法");
+            log.warn("JWT验证失败：不支持的Token算法");
         } catch (Exception e) {
-            System.out.println("❌ JWT验证失败：" + e.getMessage());
+            log.error("JWT验证失败：{}", e.getMessage());
         }
         return false;
     }

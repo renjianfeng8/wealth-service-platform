@@ -1,10 +1,15 @@
 package com.finance.common.interceptor;
 
+import com.finance.common.constants.AuthConstant;
 import com.finance.common.utils.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.servlet.HandlerInterceptor;
 
+import java.util.Arrays;
+
+@Slf4j
 public class LoginInterceptor implements HandlerInterceptor {
 
     private final JwtUtil jwtUtil;
@@ -16,30 +21,29 @@ public class LoginInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         String uri = request.getRequestURI();
-        System.out.println("========================================");
-        System.out.println("📥 进入拦截器 | 请求地址：" + uri);
+        log.info("进入拦截器 | 请求地址：{}", uri);
 
-        // 放行登录相关接口
-        if (uri.equals("/system/umsAdmin/login") || uri.equals("/user/login")) {
+        // 放行放行接口（登录、文档等）
+        if (Arrays.stream(AuthConstant.PERMIT_ALL_URLS).anyMatch(uri::equals)) {
             return true;
         }
 
         // 校验Token
         String authHeader = request.getHeader("Authorization");
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            System.out.println("❌ 无Token，返回401");
+            log.warn("无Token，返回401");
             response.setStatus(401);
             return false;
         }
 
         String token = authHeader.replace("Bearer ", "");
         if (!jwtUtil.validateToken(token)) {
-            System.out.println("❌ Token无效，返回401");
+            log.warn("Token无效，返回401");
             response.setStatus(401);
             return false;
         }
 
-        System.out.println("✅ Token校验通过，放行！");
+        log.info("Token校验通过，放行！");
         return true;
     }
 }

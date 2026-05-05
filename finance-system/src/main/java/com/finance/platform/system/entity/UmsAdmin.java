@@ -1,19 +1,18 @@
 package com.finance.platform.system.entity;
 
-import com.baomidou.mybatisplus.annotation.*;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableName;
+import com.finance.common.entity.BaseEntity;
 import lombok.Data;
 
 import java.time.LocalDateTime;
 
 /**
- * 后台管理员表
+ * 后台管理员表。
  */
 @Data
 @TableName("ums_admin")
-public class UmsAdmin {
-
-    @TableId(type = IdType.AUTO)
-    private Long id;
+public class UmsAdmin extends BaseEntity {
 
     private String username;
 
@@ -27,12 +26,13 @@ public class UmsAdmin {
 
     private String avatar;
 
-    @TableField(fill = FieldFill.INSERT)
-    private LocalDateTime createTime;
-
     private LocalDateTime loginTime;
 
-    // 逻辑删除（和 sys_user 保持统一！）
-    @TableLogic
+    /** ums_admin 表无 update_time 列 */
+    @TableField(exist = false)
+    private LocalDateTime updateTime;
+
+    /** ums_admin 表无 del_flag 列 */
+    @TableField(exist = false)
     private Integer delFlag;
 }

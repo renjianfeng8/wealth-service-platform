@@ -9,12 +9,14 @@ import com.finance.platform.system.service.UmsAdminService;
 import com.finance.platform.system.service.UmsRoleResourceRelationService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Component
 public class PermissionInterceptor implements HandlerInterceptor {
 
@@ -37,8 +39,7 @@ public class PermissionInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         String uri = request.getRequestURI();
-        System.out.println("========================================");
-        System.out.println("🔐 权限拦截器 | 请求地址：" + uri);
+        log.info("权限拦截器 | 请求地址：{}", uri);
 
         // 1. 获取Token
         String authHeader = request.getHeader("Authorization");
@@ -78,7 +79,15 @@ public class PermissionInterceptor implements HandlerInterceptor {
                 .map(UmsAdminRoleRelation::getRoleId)
                 .collect(Collectors.toList());
 
-        // 5. 从数据库查询角色对应的资源ID
+        // 5. 角色ID为空时直接拒绝（无角色则无权限）
+        if (roleIds.isEmpty()) {
+            log.warn("用户无角色，返回403");
+            response.setStatus(403);
+            response.getWriter().write("{\"code\":403,\"message\":\"无权限访问\"}");
+            return false;
+        }
+
+        // 6. 从数据库查询角色对应的资源ID
         List<Long> resourceIds = roleResourceRelationService.lambdaQuery()
                 .in(UmsRoleResourceRelation::getRoleId, roleIds)
                 .list()
@@ -86,18 +95,26 @@ public class PermissionInterceptor implements HandlerInterceptor {
                 .map(UmsRoleResourceRelation::getResourceId)
                 .collect(Collectors.toList());
 
-        // 6. 获取允许访问的URL
-        List<String> allowedUrls = adminService.getResourceUrlsByIds(resourceIds);
-        System.out.println("用户拥有的权限：" + allowedUrls);
+        // 7. 资源ID为空时直接拒绝
+        if (resourceIds.isEmpty()) {
+            log.warn("角色未分配资源，返回403");
+            response.setStatus(403);
+            response.getWriter().write("{\"code\":403,\"message\":\"无权限访问\"}");
+            return false;
+        }
 
-        // 7. 判断是否有权限
+        // 8. 获取允许访问的URL
+        List<String> allowedUrls = adminService.getResourceUrlsByIds(resourceIds);
+        log.info("用户拥有的权限：{}", allowedUrls);
+
+        // 9. 判断是否有权限
         if (!allowedUrls.contains(uri)) {
-            System.out.println("❌ 无权限访问！返回403");
+            log.warn("无权限访问！返回403");
             response.setStatus(403);
             return false;
         }
 
-        System.out.println("✅ 权限校验通过，放行！");
+        log.info("权限校验通过，放行！");
         return true;
     }
 }

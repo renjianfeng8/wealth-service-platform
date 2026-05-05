@@ -1,10 +1,8 @@
 package com.finance.platform.account.entity;
 
-import com.baomidou.mybatisplus.annotation.FieldFill;
-import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.finance.common.entity.BaseEntity;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -14,36 +12,19 @@ import java.time.LocalDateTime;
  */
 @Data
 @TableName("fin_user_favorite")
-public class FinUserFavorite {
+public class FinUserFavorite extends BaseEntity {
 
-    /**
-     * 默认构造器。
-     */
-    public FinUserFavorite() {
-    }
-
-    /**
-     * 主键 ID。
-     */
-    @TableId(type = IdType.AUTO)
-    private Long id;
-
-    /**
-     * 用户ID。
-     */
     @TableField(value = "user_id")
     private Long userId;
 
-    /**
-     * 产品编码。
-     */
     @TableField(value = "product_code")
     private String productCode;
 
-    /**
-     * 创建时间。
-     */
-    @TableField(value = "create_time", fill = FieldFill.INSERT)
-    private LocalDateTime createTime;
-}
+    /** 自选表无 update_time 列 */
+    @TableField(exist = false)
+    private LocalDateTime updateTime;
 
+    /** 自选表无 del_flag 列 */
+    @TableField(exist = false)
+    private Integer delFlag;
+}

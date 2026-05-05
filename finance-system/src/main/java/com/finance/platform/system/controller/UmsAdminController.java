@@ -10,6 +10,7 @@ import com.finance.platform.system.service.UmsAdminService;
 import com.finance.platform.system.vo.UmsAdminVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,7 +28,7 @@ public class UmsAdminController {
 
     @PostMapping("/login")
     @Operation(summary = "管理员登录")
-    public Result<String> login(@RequestBody LoginDTO dto) {
+    public Result<String> login(@Valid @RequestBody LoginDTO dto) {
         return Result.success(umsAdminService.login(dto));
     }
 
@@ -66,13 +67,13 @@ public class UmsAdminController {
 
     @PostMapping
     @Operation(summary = "新增管理员")
-    public Result<Boolean> create(@RequestBody UmsAdmin umsAdmin) {
+    public Result<Boolean> create(@Valid @RequestBody UmsAdmin umsAdmin) {
         return Result.success(umsAdminService.createAdmin(umsAdmin));
     }
 
     @PutMapping("/{id}")
     @Operation(summary = "修改管理员")
-    public Result<Boolean> update(@PathVariable Long id, @RequestBody UmsAdmin umsAdmin) {
+    public Result<Boolean> update(@PathVariable Long id, @Valid @RequestBody UmsAdmin umsAdmin) {
         umsAdmin.setId(id);
         return Result.success(umsAdminService.updateAdmin(umsAdmin));
     }

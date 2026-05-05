@@ -1,36 +1,31 @@
 package com.finance.user.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.finance.common.utils.JwtUtil;
 import com.finance.user.entity.User;
 import com.finance.user.mapper.UserMapper;
 import com.finance.user.service.UserService;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.util.DigestUtils;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.util.StringUtils;
-
-import java.nio.charset.StandardCharsets;
-import java.util.Date;
-import javax.crypto.SecretKey;
 
 @Service
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
 
-    @Value("${jwt.secret}")
-    private String jwtSecret;
+    private static final BCryptPasswordEncoder PASSWORD_ENCODER = new BCryptPasswordEncoder();
 
-    @Value("${jwt.expire}")
-    private Long jwtExpire;
+    private final JwtUtil jwtUtil;
+
+    public UserServiceImpl(JwtUtil jwtUtil) {
+        this.jwtUtil = jwtUtil;
+    }
 
     @Override
     public Boolean register(User user) {
         if (!StringUtils.hasText(user.getUsername()) || !StringUtils.hasText(user.getPassword())) {
             throw new RuntimeException("用户名/密码不能为空");
         }
-        String encryptPwd = DigestUtils.md5DigestAsHex(user.getPassword().getBytes(StandardCharsets.UTF_8));
-        user.setPassword(encryptPwd);
+        user.setPassword(PASSWORD_ENCODER.encode(user.getPassword()));
         return this.save(user);
     }
 
@@ -48,19 +43,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             throw new RuntimeException("用户不存在");
         }
 
-        String encryptPwd = DigestUtils.md5DigestAsHex(user.getPassword().getBytes(StandardCharsets.UTF_8));
-        if (!encryptPwd.equals(dbUser.getPassword())) {
+        if (dbUser.getStatus() != null && dbUser.getStatus() == 0) {
+            throw new RuntimeException("账号已被禁用");
+        }
+
+        if (!PASSWORD_ENCODER.matches(user.getPassword(), dbUser.getPassword())) {
             throw new RuntimeException("密码错误");
         }
 
-        SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
-        return Jwts.builder()
-                .setSubject(dbUser.getId().toString())
-                .claim("username", dbUser.getUsername())
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + jwtExpire))
-                .signWith(key)
-                .compact();
+        return jwtUtil.generateToken(dbUser.getUsername());
     }
 
     @Override
@@ -68,10 +59,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (user.getId() == null || !StringUtils.hasText(user.getPassword())) {
             throw new RuntimeException("用户ID/新密码不能为空");
         }
-        String encryptPwd = DigestUtils.md5DigestAsHex(user.getPassword().getBytes(StandardCharsets.UTF_8));
         return this.lambdaUpdate()
                 .eq(User::getId, user.getId())
-                .set(User::getPassword, encryptPwd)
+                .set(User::getPassword, PASSWORD_ENCODER.encode(user.getPassword()))
                 .update();
     }
 }

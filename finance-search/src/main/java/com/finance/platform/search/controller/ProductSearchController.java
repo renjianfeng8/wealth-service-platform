@@ -1,5 +1,6 @@
 package com.finance.platform.search.controller;
 
+import com.finance.common.result.Result;
 import com.finance.platform.search.entity.ProductDocument;
 import com.finance.platform.search.service.ProductSearchService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -18,29 +19,29 @@ public class ProductSearchController {
 
     @PostMapping
     @Operation(summary = "新增/更新产品到ES")
-    public ProductDocument save(@RequestBody ProductDocument document) {
-        return productSearchService.save(document);
+    public Result<ProductDocument> save(@RequestBody ProductDocument document) {
+        return Result.success(productSearchService.save(document));
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "根据ID查询ES产品")
-    public ProductDocument getById(@PathVariable Long id) {
-        return productSearchService.getById(id);
+    public Result<ProductDocument> getById(@PathVariable Long id) {
+        return Result.success(productSearchService.getById(id));
     }
 
     @GetMapping("/search")
     @Operation(summary = "关键词搜索产品")
-    public Page<ProductDocument> search(
+    public Result<Page<ProductDocument>> search(
             @RequestParam String keyword,
             @RequestParam(defaultValue = "1") Integer page,
             @RequestParam(defaultValue = "10") Integer size) {
-        return productSearchService.search(keyword, page, size);
+        return Result.success(productSearchService.search(keyword, page, size));
     }
 
     @DeleteMapping("/{id}")
     @Operation(summary = "删除ES产品")
-    public String delete(@PathVariable Long id) {
+    public Result<Void> delete(@PathVariable Long id) {
         productSearchService.deleteById(id);
-        return "success";
+        return Result.success();
     }
 }

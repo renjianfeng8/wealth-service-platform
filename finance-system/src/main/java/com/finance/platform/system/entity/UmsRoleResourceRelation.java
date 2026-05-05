@@ -1,18 +1,18 @@
 package com.finance.platform.system.entity;
 
-import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.baomidou.mybatisplus.annotation.TableLogic;
+import com.finance.common.entity.BaseEntity;
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
+/**
+ * 后台角色资源关系表。
+ */
 @Data
 @TableName("ums_role_resource_relation")
-public class UmsRoleResourceRelation {
-
-    @TableId(type = IdType.AUTO)
-    private Long id;
+public class UmsRoleResourceRelation extends BaseEntity {
 
     @TableField(value = "role_id")
     private Long roleId;
@@ -20,7 +20,15 @@ public class UmsRoleResourceRelation {
     @TableField(value = "resource_id")
     private Long resourceId;
 
-    // 统一加逻辑删除
-    @TableLogic
+    /** 关联表无 create_time 列 */
+    @TableField(exist = false)
+    private LocalDateTime createTime;
+
+    /** 关联表无 update_time 列 */
+    @TableField(exist = false)
+    private LocalDateTime updateTime;
+
+    /** 关联表无 del_flag 列 */
+    @TableField(exist = false)
     private Integer delFlag;
 }

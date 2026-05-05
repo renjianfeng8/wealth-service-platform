@@ -9,7 +9,7 @@ public class BeanConvertUtil {
     public static <S, T> T convert(S source, Class<T> targetCls) {
         if (source == null) return null;
         try {
-            T target = targetCls.newInstance();
+            T target = targetCls.getDeclaredConstructor().newInstance();
             BeanUtils.copyProperties(source, target);
             return target;
         } catch (Exception e) {
