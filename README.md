@@ -67,6 +67,18 @@
 | RabbitMQ | 3.10.20 | 消息队列 |
 | Elasticsearch | 8.11.0 | 搜索引擎 |
 
+### 前端
+
+| 技术 | 说明 |
+|------|------|
+| Vue 3 | 渐进式前端框架 |
+| TypeScript | 类型安全的 JavaScript 超集 |
+| Element Plus | 基于 Vue 3 的企业级 UI 组件库 |
+| Vite | 前端构建与开发服务器 |
+| Pinia | 状态管理 |
+| Axios | HTTP 请求库 |
+| Vue Router | 前端路由 |
+
 ### 核心依赖
 
 | 组件 | 用途 |
@@ -120,7 +132,7 @@ finance-mid-platform (pom)
 | finance-trade | 8085 | /trade | finance-trade |
 | finance-account | 8086 | /account | finance-account |
 | finance-message | 8087 | /message | finance-message |
-| finance-user | 8088 | /user | finance-user |
+| finance-user | 8083 | /user | finance-user |
 | finance-search | 8089 | - | finance-search |
 
 ### 包路径规范
@@ -327,7 +339,19 @@ mvn spring-boot:run -pl finance-search
 
 > 各模块启动时依赖 Nacos 配置中心。如果 Nacos 中未创建对应配置，模块将使用本地 `application.yml` 中的默认配置启动（finance-user 已内置，其他模块需确保 Nacos 有对应配置）。
 
-### 4. 验证启动
+### 4. 启动前端
+
+```bash
+cd front
+npm install    # 首次需要安装依赖
+npm run dev    # 启动开发服务器
+```
+
+前端开发服务器默认运行在 `http://localhost:3000`，Vite 已配置代理将 `/api` 请求转发至网关（`http://localhost:8080`）。
+
+> 前端默认登录账号：admin / admin
+
+### 5. 验证启动
 
 应用启动后，通过网关访问各模块健康检查接口：
 
@@ -345,7 +369,7 @@ GET http://localhost:8080/actuator/health
 |------|----------|
 | 网关统一入口 | http://localhost:8080/doc.html |
 | 系统服务 | http://localhost:8082/system/doc.html |
-| 用户服务 | http://localhost:8088/user/doc.html |
+| 用户服务 | http://localhost:8083/user/doc.html |
 | 产品服务 | http://localhost:8084/product/doc.html |
 | 账户服务 | http://localhost:8086/account/doc.html |
 | 交易服务 | http://localhost:8085/trade/doc.html |

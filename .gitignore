@@ -32,3 +32,4 @@ build/
 ### VS Code ###
 .vscode/
 front/dist/
+front/node_modules/

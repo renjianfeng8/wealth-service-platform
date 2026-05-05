@@ -13,7 +13,7 @@ spring:
 
         # 用户服务
         - id: finance-user
-          uri: http://localhost:8088
+          uri: http://localhost:8083
           predicates:
             - Path=/user/**
 
