@@ -1,0 +1,88 @@
+<template>
+  <div class="page">
+    <div class="page-header"><h3>管理员管理</h3></div>
+    <el-card shadow="never" class="search-card">
+      <el-form :model="query" inline>
+        <el-form-item label="用户名"><el-input v-model="query.username" placeholder="搜索" clearable /></el-form-item>
+        <el-form-item label="状态"><el-select v-model="query.status" clearable style="width:120px"><el-option label="正常" :value="1" /><el-option label="禁用" :value="0" /></el-select></el-form-item>
+        <el-form-item><el-button type="primary" @click="handleSearch">查询</el-button><el-button @click="handleReset">重置</el-button></el-form-item>
+      </el-form>
+    </el-card>
+    <el-card shadow="never" style="margin-top:16px;">
+      <div style="margin-bottom:16px;"><el-button type="primary" @click="handleAdd">新增管理员</el-button></div>
+      <el-table :data="tableData" stripe v-loading="loading" border>
+        <el-table-column prop="id" label="ID" width="60" />
+        <el-table-column prop="username" label="用户名" min-width="120" />
+        <el-table-column prop="nickName" label="昵称" width="120" />
+        <el-table-column prop="email" label="邮箱" width="180" />
+        <el-table-column prop="status" label="状态" width="70">
+          <template #default="{ row }"><el-tag :type="statusTag(row.status)">{{ statusText(row.status) }}</el-tag></template>
+        </el-table-column>
+        <el-table-column prop="createTime" label="创建时间" width="160" :formatter="(_r:any,_c:any,v:any)=>formatDateTime(v)" />
+        <el-table-column label="操作" width="180" fixed="right">
+          <template #default="{ row }">
+            <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
+            <el-popconfirm title="确定删除？" @confirm="handleDelete(row.id)"><template #reference><el-button type="danger" link>删除</el-button></template></el-popconfirm>
+          </template>
+        </el-table-column>
+      </el-table>
+      <div class="pagination-wrap">
+        <el-pagination v-model:current-page="query.pageNum" v-model:page-size="query.pageSize" :total="total" :page-sizes="[10,20,50]" layout="total, sizes, prev, pager, next" @size-change="fetchData" @current-change="fetchData" />
+      </div>
+    </el-card>
+    <el-dialog v-model="dialogVisible" :title="isEdit?'编辑管理员':'新增管理员'" width="500px">
+      <el-form ref="formRef" :model="form" :rules="rules" label-width="80px">
+        <el-form-item label="用户名" prop="username"><el-input v-model="form.username" /></el-form-item>
+        <el-form-item label="密码" prop="password"><el-input v-model="form.password" type="password" show-password /></el-form-item>
+        <el-form-item label="昵称" prop="nickName"><el-input v-model="form.nickName" /></el-form-item>
+        <el-form-item label="邮箱" prop="email"><el-input v-model="form.email" /></el-form-item>
+        <el-form-item label="状态"><el-radio-group v-model="form.status"><el-radio :value="1">正常</el-radio><el-radio :value="0">禁用</el-radio></el-radio-group></el-form-item>
+      </el-form>
+      <template #footer><el-button @click="dialogVisible=false">取消</el-button><el-button type="primary" :loading="saving" @click="handleSave">保存</el-button></template>
+    </el-dialog>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { onMounted, reactive, ref } from 'vue'
+import { ElMessage } from 'element-plus'
+import type { FormInstance, FormRules } from 'element-plus'
+import { getAdminPage, createAdmin, updateAdmin, deleteAdmin } from '@/api/system'
+import { formatDateTime, statusTag, statusText } from '@/utils/format'
+
+const loading = ref(false); const saving = ref(false)
+const tableData = ref<any[]>([]); const total = ref(0)
+const dialogVisible = ref(false); const isEdit = ref(false)
+const formRef = ref<FormInstance>()
+const query = reactive({ pageNum: 1, pageSize: 10, username: '', status: '' })
+const form = reactive({ id: undefined, username: '', password: '', nickName: '', email: '', status: 1 })
+const rules: FormRules = { username: [{ required: true, message: '必填' }], password: [{ required: true, message: '必填' }] }
+
+async function fetchData() {
+  loading.value = true
+  try {
+    const params: any = { pageNum: query.pageNum, pageSize: query.pageSize }
+    if (query.username) params.username = query.username; if (query.status !== '') params.status = query.status
+    const res = await getAdminPage(params)
+    tableData.value = res.data.records || []; total.value = res.data.total || 0
+  } finally { loading.value = false }
+}
+function handleSearch() { query.pageNum = 1; fetchData() }
+function handleReset() { query.username = ''; query.status = ''; handleSearch() }
+function handleAdd() { isEdit.value = false; Object.assign(form, { id: undefined, username: '', password: '', nickName: '', email: '', status: 1 }); dialogVisible.value = true }
+function handleEdit(row: any) { isEdit.value = true; Object.assign(form, row); form.password = ''; dialogVisible.value = true }
+async function handleSave() {
+  const valid = await formRef.value?.validate().catch(() => false)
+  if (!valid) return; saving.value = true
+  try {
+    isEdit.value ? await updateAdmin(form.id!, form) : await createAdmin(form)
+    ElMessage.success(isEdit.value ? '更新成功' : '创建成功'); dialogVisible.value = false; fetchData()
+  } finally { saving.value = false }
+}
+async function handleDelete(id: number) { await deleteAdmin(id); ElMessage.success('删除成功'); fetchData() }
+onMounted(fetchData)
+</script>
+<style scoped>
+.page-header h3 { margin-bottom: 16px; }
+.pagination-wrap { margin-top: 16px; display: flex; justify-content: flex-end; }
+</style>
