@@ -1,8 +1,12 @@
 package com.finance.platform.product.controller;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.finance.common.result.Result;
 import com.finance.common.result.ResultCode;
+import com.finance.common.utils.BeanConvertUtil;
 import com.finance.platform.product.dto.FinProductDTO;
+import com.finance.platform.product.entity.FinProduct;
 import com.finance.platform.product.service.FinProductService;
 import com.finance.platform.product.vo.FinProductVO;
 import io.swagger.v3.oas.annotations.Operation;
@@ -35,6 +39,22 @@ public class FinProductController {
     @GetMapping
     public Result<List<FinProductVO>> list() {
         return Result.success(finProductService.getProductList());
+    }
+
+    @Operation(summary = "分页查询产品")
+    @GetMapping("/page")
+    public Result<IPage<FinProductVO>> page(
+            @RequestParam(defaultValue = "1") Integer pageNum,
+            @RequestParam(defaultValue = "10") Integer pageSize) {
+        Page<FinProduct> page = new Page<>(pageNum, pageSize);
+        IPage<FinProduct> entityPage = finProductService.page(page);
+        Page<FinProductVO> voPage = new Page<>();
+        voPage.setCurrent(entityPage.getCurrent());
+        voPage.setSize(entityPage.getSize());
+        voPage.setTotal(entityPage.getTotal());
+        voPage.setPages(entityPage.getPages());
+        voPage.setRecords(BeanConvertUtil.convertList(entityPage.getRecords(), FinProductVO.class));
+        return Result.success(voPage);
     }
 
     @Operation(summary = "创建产品")

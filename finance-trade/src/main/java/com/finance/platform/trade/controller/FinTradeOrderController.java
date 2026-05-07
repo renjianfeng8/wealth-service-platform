@@ -1,8 +1,12 @@
 package com.finance.platform.trade.controller;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.finance.common.result.Result;
 import com.finance.common.result.ResultCode;
+import com.finance.common.utils.BeanConvertUtil;
 import com.finance.platform.trade.dto.FinTradeOrderDTO;
+import com.finance.platform.trade.entity.FinTradeOrder;
 import com.finance.platform.trade.service.FinTradeOrderService;
 import com.finance.platform.trade.vo.FinTradeOrderVO;
 import io.swagger.v3.oas.annotations.Operation;
@@ -16,6 +20,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -56,6 +61,22 @@ public class FinTradeOrderController {
     @GetMapping
     public Result<List<FinTradeOrderVO>> list() {
         return Result.success(finTradeOrderService.getOrderList());
+    }
+
+    @Operation(summary = "分页查询交易委托单")
+    @GetMapping("/page")
+    public Result<IPage<FinTradeOrderVO>> page(
+            @RequestParam(defaultValue = "1") Integer pageNum,
+            @RequestParam(defaultValue = "10") Integer pageSize) {
+        Page<FinTradeOrder> page = new Page<>(pageNum, pageSize);
+        IPage<FinTradeOrder> entityPage = finTradeOrderService.page(page);
+        Page<FinTradeOrderVO> voPage = new Page<>();
+        voPage.setCurrent(entityPage.getCurrent());
+        voPage.setSize(entityPage.getSize());
+        voPage.setTotal(entityPage.getTotal());
+        voPage.setPages(entityPage.getPages());
+        voPage.setRecords(BeanConvertUtil.convertList(entityPage.getRecords(), FinTradeOrderVO.class));
+        return Result.success(voPage);
     }
 
     /**

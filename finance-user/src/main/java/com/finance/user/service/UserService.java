@@ -1,6 +1,7 @@
 package com.finance.user.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.finance.common.dto.LoginDTO;
 import com.finance.user.entity.User;
 
 public interface UserService extends IService<User> {
@@ -9,7 +10,7 @@ public interface UserService extends IService<User> {
     Boolean register(User user);
 
     // 用户登录
-    String login(User user);
+    String login(LoginDTO dto);
 
     // 重置密码
     Boolean resetPassword(User user);

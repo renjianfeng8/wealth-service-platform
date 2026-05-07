@@ -2,6 +2,7 @@ package com.finance.user.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.finance.common.utils.JwtUtil;
+import com.finance.common.dto.LoginDTO;
 import com.finance.user.entity.User;
 import com.finance.user.mapper.UserMapper;
 import com.finance.user.service.UserService;
@@ -32,13 +33,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
-    public String login(User user) {
-        if (!StringUtils.hasText(user.getUsername()) || !StringUtils.hasText(user.getPassword())) {
+    public String login(LoginDTO dto) {
+        if (!StringUtils.hasText(dto.getUsername()) || !StringUtils.hasText(dto.getPassword())) {
             throw new RuntimeException("用户名/密码不能为空");
         }
 
         User dbUser = this.lambdaQuery()
-                .eq(User::getUsername, user.getUsername())
+                .eq(User::getUsername, dto.getUsername())
                 .one();
 
         if (dbUser == null) {
@@ -49,7 +50,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             throw new RuntimeException("账号已被禁用");
         }
 
-        if (!PASSWORD_ENCODER.matches(user.getPassword(), dbUser.getPassword())) {
+        if (!PASSWORD_ENCODER.matches(dto.getPassword(), dbUser.getPassword())) {
             throw new RuntimeException("密码错误");
         }
 

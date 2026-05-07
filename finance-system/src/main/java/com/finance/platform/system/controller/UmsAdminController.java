@@ -6,6 +6,7 @@ import com.finance.common.dto.LoginDTO;
 import com.finance.common.result.Result;
 import com.finance.common.result.ResultCode;
 import com.finance.common.utils.BeanConvertUtil;
+import com.finance.platform.system.dto.UmsAdminDTO;
 import com.finance.platform.system.entity.UmsAdmin;
 import com.finance.platform.system.service.UmsAdminService;
 import com.finance.platform.system.vo.UmsAdminVO;
@@ -71,15 +72,17 @@ public class UmsAdminController {
 
     @PostMapping
     @Operation(summary = "新增管理员")
-    public Result<Boolean> create(@Valid @RequestBody UmsAdmin umsAdmin) {
-        return Result.success(umsAdminService.createAdmin(umsAdmin));
+    public Result<Boolean> create(@Valid @RequestBody UmsAdminDTO dto) {
+        UmsAdmin admin = BeanConvertUtil.convert(dto, UmsAdmin.class);
+        return Result.success(umsAdminService.createAdmin(admin));
     }
 
     @PutMapping("/{id}")
     @Operation(summary = "修改管理员")
-    public Result<Boolean> update(@PathVariable Long id, @Valid @RequestBody UmsAdmin umsAdmin) {
-        umsAdmin.setId(id);
-        return Result.success(umsAdminService.updateAdmin(umsAdmin));
+    public Result<Boolean> update(@PathVariable Long id, @Valid @RequestBody UmsAdminDTO dto) {
+        UmsAdmin admin = BeanConvertUtil.convert(dto, UmsAdmin.class);
+        admin.setId(id);
+        return Result.success(umsAdminService.updateAdmin(admin));
     }
 
     @DeleteMapping("/{id}")

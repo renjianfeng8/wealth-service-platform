@@ -1,8 +1,12 @@
 package com.finance.platform.message.controller;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.finance.common.result.Result;
 import com.finance.common.result.ResultCode;
+import com.finance.common.utils.BeanConvertUtil;
 import com.finance.platform.message.dto.FinNewsDTO;
+import com.finance.platform.message.entity.FinNews;
 import com.finance.platform.message.service.FinNewsService;
 import com.finance.platform.message.vo.FinNewsVO;
 import io.swagger.v3.oas.annotations.Operation;
@@ -16,6 +20,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -56,6 +61,22 @@ public class FinNewsController {
     @GetMapping
     public Result<List<FinNewsVO>> list() {
         return Result.success(finNewsService.getNewsList());
+    }
+
+    @Operation(summary = "分页查询财经资讯公告")
+    @GetMapping("/page")
+    public Result<IPage<FinNewsVO>> page(
+            @RequestParam(defaultValue = "1") Integer pageNum,
+            @RequestParam(defaultValue = "10") Integer pageSize) {
+        Page<FinNews> page = new Page<>(pageNum, pageSize);
+        IPage<FinNews> entityPage = finNewsService.page(page);
+        Page<FinNewsVO> voPage = new Page<>();
+        voPage.setCurrent(entityPage.getCurrent());
+        voPage.setSize(entityPage.getSize());
+        voPage.setTotal(entityPage.getTotal());
+        voPage.setPages(entityPage.getPages());
+        voPage.setRecords(BeanConvertUtil.convertList(entityPage.getRecords(), FinNewsVO.class));
+        return Result.success(voPage);
     }
 
     /**

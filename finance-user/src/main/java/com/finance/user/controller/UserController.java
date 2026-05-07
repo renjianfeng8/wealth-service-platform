@@ -100,8 +100,7 @@ public class UserController {
     @PostMapping("/login")
     @Operation(summary = "用户登录")
     public Result<String> login(@Valid @RequestBody LoginDTO dto) {
-        User user = BeanConvertUtil.convert(dto, User.class);
-        return Result.success(userService.login(user));
+        return Result.success(userService.login(dto));
     }
 
     @PostMapping("/resetPassword")

@@ -1,8 +1,12 @@
 package com.finance.platform.product.controller;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.finance.common.result.Result;
 import com.finance.common.result.ResultCode;
+import com.finance.common.utils.BeanConvertUtil;
 import com.finance.platform.product.dto.FinMarketDataDTO;
+import com.finance.platform.product.entity.FinMarketData;
 import com.finance.platform.product.service.FinMarketDataService;
 import com.finance.platform.product.vo.FinMarketDataVO;
 import io.swagger.v3.oas.annotations.Operation;
@@ -35,6 +39,22 @@ public class FinMarketDataController {
     @GetMapping
     public Result<List<FinMarketDataVO>> list() {
         return Result.success(finMarketDataService.getMarketDataList());
+    }
+
+    @Operation(summary = "分页查询行情数据")
+    @GetMapping("/page")
+    public Result<IPage<FinMarketDataVO>> page(
+            @RequestParam(defaultValue = "1") Integer pageNum,
+            @RequestParam(defaultValue = "10") Integer pageSize) {
+        Page<FinMarketData> page = new Page<>(pageNum, pageSize);
+        IPage<FinMarketData> entityPage = finMarketDataService.page(page);
+        Page<FinMarketDataVO> voPage = new Page<>();
+        voPage.setCurrent(entityPage.getCurrent());
+        voPage.setSize(entityPage.getSize());
+        voPage.setTotal(entityPage.getTotal());
+        voPage.setPages(entityPage.getPages());
+        voPage.setRecords(BeanConvertUtil.convertList(entityPage.getRecords(), FinMarketDataVO.class));
+        return Result.success(voPage);
     }
 
     @Operation(summary = "创建行情数据")
