@@ -392,3 +392,58 @@ public class XxxController {
     public Result<XxxVO> method(@RequestBody XxxDTO dto) { ... }
 }
 ```
+
+# ======================
+
+# 十五、项目健康检查规则（强制遵守）
+
+# ======================
+
+**每次执行项目健康检查、错误扫描、启动异常排查时，必须优先调用 memory 中的 health-check-skill 并严格按其规则执行。**
+
+## 配置管理原则
+
+所有业务配置统一托管在 Nacos 配置中心，本地 application.yml 不存放业务配置，以 Nacos 远端配置为准。
+本地 application.yml 仅保留：server.port、server.servlet.context-path、spring.datasource、mybatis-plus、基础框架配置。
+
+数据库密码使用环境变量：`password: ${DB_PASSWORD:123456}`
+
+## JWT 配置（固定值，必须存在于 Nacos）
+
+```yaml
+jwt:
+  secret: finance-micro-service-20260501-very-safe-secret-key-123456789
+  expire: 604800000
+```
+
+## 各模块实际端口
+
+| 模块 | 端口 | context-path |
+|------|------|-------------|
+| finance-gateway | 8080 | - |
+| finance-system  | 8082 | /system |
+| finance-user    | 8083 | /user |
+| finance-product | 8084 | /product |
+| finance-trade   | 8085 | /trade |
+| finance-account | 8086 | /account |
+| finance-message | 8087 | /message |
+| finance-search  | 8089 | - |
+
+## 已知高频问题（启动排查速查）
+
+1. **JWT 配置缺失** → 检查 Nacos 配置是否已发布/刷新，而非本地配置缺失
+2. **SystemWebConfig 拦截器不生效** → addPathPatterns 使用了 context-path 前缀（错误），应改为 `/**`
+3. **AuthConstant 通配符不匹配** → LoginInterceptor 使用 equals() 而非 PathMatcher
+4. **UmsResource.delFlag 查询条件被忽略** → entity 标记了 @TableField(exist = false)
+5. **网关启动异常** → 父 pom 的 spring-boot-starter-web 与 Gateway WebFlux 冲突
+
+## 扫描检查清单（每次排查逐项过）
+
+- [ ] 全量编译：mvn clean compile
+- [ ] 所有实体类 @EqualsAndHashCode(callSuper=true)
+- [ ] 所有写操作 @Transactional
+- [ ] 所有 @RequestBody DTO 有 @Valid
+- [ ] getById 返回 null 时返回 404
+- [ ] list() 接口有分页
+- [ ] application.yml 无明文密码、无硬编码 IP
+- [ ] 拦截器 pathPatterns 与 context-path 一致

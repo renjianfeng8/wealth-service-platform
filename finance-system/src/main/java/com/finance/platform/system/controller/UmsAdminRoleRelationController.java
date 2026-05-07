@@ -3,6 +3,7 @@ package com.finance.platform.system.controller;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.finance.common.result.Result;
+import com.finance.common.result.ResultCode;
 import com.finance.common.utils.BeanConvertUtil;
 import com.finance.platform.system.dto.UmsAdminRoleRelationDTO;
 import com.finance.platform.system.entity.UmsAdminRoleRelation;
@@ -29,6 +30,9 @@ public class UmsAdminRoleRelationController {
     @GetMapping("/{id}")
     public Result<UmsAdminRoleRelationVO> getById(@PathVariable Long id) {
         UmsAdminRoleRelation relation = umsAdminRoleRelationService.getById(id);
+        if (relation == null) {
+            return Result.error(ResultCode.NOT_FOUND);
+        }
         return Result.success(BeanConvertUtil.convert(relation, UmsAdminRoleRelationVO.class));
     }
 

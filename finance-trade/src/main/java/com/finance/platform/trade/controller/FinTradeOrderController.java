@@ -1,11 +1,13 @@
 package com.finance.platform.trade.controller;
 
 import com.finance.common.result.Result;
+import com.finance.common.result.ResultCode;
 import com.finance.platform.trade.dto.FinTradeOrderDTO;
 import com.finance.platform.trade.service.FinTradeOrderService;
 import com.finance.platform.trade.vo.FinTradeOrderVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -38,7 +40,11 @@ public class FinTradeOrderController {
     @Operation(summary = "根据ID查询交易委托单")
     @GetMapping("/{id}")
     public Result<FinTradeOrderVO> getById(@PathVariable Long id) {
-        return Result.success(finTradeOrderService.getOrderById(id));
+        FinTradeOrderVO vo = finTradeOrderService.getOrderById(id);
+        if (vo == null) {
+            return Result.error(ResultCode.NOT_FOUND);
+        }
+        return Result.success(vo);
     }
 
     /**
@@ -60,7 +66,7 @@ public class FinTradeOrderController {
      */
     @Operation(summary = "创建交易委托单")
     @PostMapping
-    public Result<Boolean> create(@RequestBody FinTradeOrderDTO dto) {
+    public Result<Boolean> create(@Valid @RequestBody FinTradeOrderDTO dto) {
         return Result.success(finTradeOrderService.createOrder(dto));
     }
 
@@ -73,7 +79,7 @@ public class FinTradeOrderController {
      */
     @Operation(summary = "更新交易委托单信息")
     @PutMapping("/{id}")
-    public Result<Boolean> update(@PathVariable Long id, @RequestBody FinTradeOrderDTO dto) {
+    public Result<Boolean> update(@PathVariable Long id, @Valid @RequestBody FinTradeOrderDTO dto) {
         return Result.success(finTradeOrderService.updateOrder(id, dto));
     }
 

@@ -5,9 +5,8 @@ import com.finance.common.utils.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.servlet.HandlerInterceptor;
-
-import java.util.Arrays;
 
 @Slf4j
 public class LoginInterceptor implements HandlerInterceptor {
@@ -18,14 +17,18 @@ public class LoginInterceptor implements HandlerInterceptor {
         this.jwtUtil = jwtUtil;
     }
 
+    private static final AntPathMatcher PATH_MATCHER = new AntPathMatcher();
+
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         String uri = request.getRequestURI();
         log.info("进入拦截器 | 请求地址：{}", uri);
 
-        // 放行放行接口（登录、文档等）
-        if (Arrays.stream(AuthConstant.PERMIT_ALL_URLS).anyMatch(uri::equals)) {
-            return true;
+        // 使用 PathMatcher 匹配放行路径（支持 Ant 风格通配符）
+        for (String permitUrl : AuthConstant.PERMIT_ALL_URLS) {
+            if (PATH_MATCHER.match(permitUrl, uri)) {
+                return true;
+            }
         }
 
         // 校验Token

@@ -1,8 +1,12 @@
 package com.finance.common.exception;
 
-import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
+@EqualsAndHashCode(callSuper = false)
 public class ServiceException extends RuntimeException {
     private int code;
 

@@ -4,14 +4,18 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.finance.common.entity.BaseEntity;
-import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 
 /**
  * 理财/贵金属产品表实体。
  */
-@Data
+@Getter
+@Setter
+@EqualsAndHashCode(callSuper = true)
 @TableName("fin_product")
 public class FinProduct extends BaseEntity {
 

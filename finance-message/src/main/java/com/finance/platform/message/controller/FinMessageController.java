@@ -1,11 +1,13 @@
 package com.finance.platform.message.controller;
 
 import com.finance.common.result.Result;
+import com.finance.common.result.ResultCode;
 import com.finance.platform.message.dto.FinMessageDTO;
 import com.finance.platform.message.service.FinMessageService;
 import com.finance.platform.message.vo.FinMessageVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -38,7 +40,11 @@ public class FinMessageController {
     @Operation(summary = "根据ID查询站内消息推送信息")
     @GetMapping("/{id}")
     public Result<FinMessageVO> getById(@PathVariable Long id) {
-        return Result.success(finMessageService.getMessageById(id));
+        FinMessageVO vo = finMessageService.getMessageById(id);
+        if (vo == null) {
+            return Result.error(ResultCode.NOT_FOUND);
+        }
+        return Result.success(vo);
     }
 
     /**
@@ -60,7 +66,7 @@ public class FinMessageController {
      */
     @Operation(summary = "创建站内消息推送")
     @PostMapping
-    public Result<Boolean> create(@RequestBody FinMessageDTO dto) {
+    public Result<Boolean> create(@Valid @RequestBody FinMessageDTO dto) {
         return Result.success(finMessageService.createMessage(dto));
     }
 
@@ -73,7 +79,7 @@ public class FinMessageController {
      */
     @Operation(summary = "更新站内消息推送信息")
     @PutMapping("/{id}")
-    public Result<Boolean> update(@PathVariable Long id, @RequestBody FinMessageDTO dto) {
+    public Result<Boolean> update(@PathVariable Long id, @Valid @RequestBody FinMessageDTO dto) {
         return Result.success(finMessageService.updateMessage(id, dto));
     }
 

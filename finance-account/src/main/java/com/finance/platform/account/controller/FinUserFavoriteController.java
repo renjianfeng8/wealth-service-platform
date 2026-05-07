@@ -1,11 +1,13 @@
 package com.finance.platform.account.controller;
 
 import com.finance.common.result.Result;
+import com.finance.common.result.ResultCode;
 import com.finance.platform.account.dto.FinUserFavoriteDTO;
 import com.finance.platform.account.service.FinUserFavoriteService;
 import com.finance.platform.account.vo.FinUserFavoriteVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -38,7 +40,11 @@ public class FinUserFavoriteController {
     @Operation(summary = "根据ID查询用户自选关注信息")
     @GetMapping("/{id}")
     public Result<FinUserFavoriteVO> getById(@PathVariable Long id) {
-        return Result.success(finUserFavoriteService.getFavoriteById(id));
+        FinUserFavoriteVO vo = finUserFavoriteService.getFavoriteById(id);
+        if (vo == null) {
+            return Result.error(ResultCode.NOT_FOUND);
+        }
+        return Result.success(vo);
     }
 
     /**
@@ -60,7 +66,7 @@ public class FinUserFavoriteController {
      */
     @Operation(summary = "创建用户自选关注")
     @PostMapping
-    public Result<Boolean> create(@RequestBody FinUserFavoriteDTO dto) {
+    public Result<Boolean> create(@Valid @RequestBody FinUserFavoriteDTO dto) {
         return Result.success(finUserFavoriteService.createFavorite(dto));
     }
 
@@ -73,7 +79,7 @@ public class FinUserFavoriteController {
      */
     @Operation(summary = "更新用户自选关注信息")
     @PutMapping("/{id}")
-    public Result<Boolean> update(@PathVariable Long id, @RequestBody FinUserFavoriteDTO dto) {
+    public Result<Boolean> update(@PathVariable Long id, @Valid @RequestBody FinUserFavoriteDTO dto) {
         return Result.success(finUserFavoriteService.updateFavorite(id, dto));
     }
 

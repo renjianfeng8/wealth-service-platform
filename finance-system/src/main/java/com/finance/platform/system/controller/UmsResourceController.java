@@ -3,6 +3,7 @@ package com.finance.platform.system.controller;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.finance.common.result.Result;
+import com.finance.common.result.ResultCode;
 import com.finance.common.utils.BeanConvertUtil;
 import com.finance.platform.system.dto.UmsResourceDTO;
 import com.finance.platform.system.entity.UmsResource;
@@ -43,6 +44,9 @@ public class UmsResourceController {
     @GetMapping("/{id}")
     public Result<UmsResourceVO> getById(@PathVariable Long id) {
         UmsResource resource = umsResourceService.getById(id);
+        if (resource == null) {
+            return Result.error(ResultCode.NOT_FOUND);
+        }
         return Result.success(BeanConvertUtil.convert(resource, UmsResourceVO.class));
     }
 

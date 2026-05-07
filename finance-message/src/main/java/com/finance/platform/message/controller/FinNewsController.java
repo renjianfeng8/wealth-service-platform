@@ -1,11 +1,13 @@
 package com.finance.platform.message.controller;
 
 import com.finance.common.result.Result;
+import com.finance.common.result.ResultCode;
 import com.finance.platform.message.dto.FinNewsDTO;
 import com.finance.platform.message.service.FinNewsService;
 import com.finance.platform.message.vo.FinNewsVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -38,7 +40,11 @@ public class FinNewsController {
     @Operation(summary = "根据ID查询财经资讯公告")
     @GetMapping("/{id}")
     public Result<FinNewsVO> getById(@PathVariable Long id) {
-        return Result.success(finNewsService.getNewsById(id));
+        FinNewsVO vo = finNewsService.getNewsById(id);
+        if (vo == null) {
+            return Result.error(ResultCode.NOT_FOUND);
+        }
+        return Result.success(vo);
     }
 
     /**
@@ -60,7 +66,7 @@ public class FinNewsController {
      */
     @Operation(summary = "创建财经资讯公告")
     @PostMapping
-    public Result<Boolean> create(@RequestBody FinNewsDTO dto) {
+    public Result<Boolean> create(@Valid @RequestBody FinNewsDTO dto) {
         return Result.success(finNewsService.createNews(dto));
     }
 
@@ -73,7 +79,7 @@ public class FinNewsController {
      */
     @Operation(summary = "更新财经资讯公告信息")
     @PutMapping("/{id}")
-    public Result<Boolean> update(@PathVariable Long id, @RequestBody FinNewsDTO dto) {
+    public Result<Boolean> update(@PathVariable Long id, @Valid @RequestBody FinNewsDTO dto) {
         return Result.success(finNewsService.updateNews(id, dto));
     }
 

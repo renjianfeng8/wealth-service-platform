@@ -8,6 +8,7 @@ import com.finance.platform.account.service.FinUserFavoriteService;
 import com.finance.platform.account.vo.FinUserFavoriteVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -38,6 +39,7 @@ public class FinUserFavoriteServiceImpl extends ServiceImpl<FinUserFavoriteMappe
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean createFavorite(FinUserFavoriteDTO dto) {
         FinUserFavorite entity = new FinUserFavorite();
         BeanUtils.copyProperties(dto, entity);

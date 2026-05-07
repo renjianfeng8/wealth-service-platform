@@ -7,6 +7,7 @@ import com.finance.platform.product.mapper.FinProductMapper;
 import com.finance.platform.product.service.FinProductService;
 import com.finance.platform.product.vo.FinProductVO;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.BeanUtils;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -37,6 +38,7 @@ public class FinProductServiceImpl extends ServiceImpl<FinProductMapper, FinProd
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean createProduct(FinProductDTO dto) {
         FinProduct entity = new FinProduct();
         BeanUtils.copyProperties(dto, entity);

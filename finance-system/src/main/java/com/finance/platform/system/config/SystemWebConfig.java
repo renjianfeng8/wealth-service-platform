@@ -18,7 +18,15 @@ public class SystemWebConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(permissionInterceptor)
-                .addPathPatterns("/system/**")
-                .excludePathPatterns(AuthConstant.PERMIT_ALL_URLS);
+                // 注意：addPathPatterns 匹配的是 context-path 剥离后的路径，不能加 /system 前缀
+                .addPathPatterns("/**")
+                // excludePathPatterns 也是 context-path 剥离后的路径
+                .excludePathPatterns(
+                        "/umsAdmin/login",
+                        "/doc.html",
+                        "/webjars/**",
+                        "/swagger-resources/**",
+                        "/v3/api-docs/**"
+                );
     }
 }

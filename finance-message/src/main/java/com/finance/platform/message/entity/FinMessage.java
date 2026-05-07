@@ -4,14 +4,18 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.finance.common.entity.BaseEntity;
-import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
 /**
  * 站内消息推送表实体。
  */
-@Data
+@Getter
+@Setter
+@EqualsAndHashCode(callSuper = true)
 @TableName("fin_message")
 public class FinMessage extends BaseEntity {
 

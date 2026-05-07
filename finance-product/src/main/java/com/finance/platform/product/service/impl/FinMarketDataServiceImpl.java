@@ -7,6 +7,7 @@ import com.finance.platform.product.mapper.FinMarketDataMapper;
 import com.finance.platform.product.service.FinMarketDataService;
 import com.finance.platform.product.vo.FinMarketDataVO;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.BeanUtils;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -37,6 +38,7 @@ public class FinMarketDataServiceImpl extends ServiceImpl<FinMarketDataMapper, F
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean createMarketData(FinMarketDataDTO dto) {
         FinMarketData entity = new FinMarketData();
         BeanUtils.copyProperties(dto, entity);

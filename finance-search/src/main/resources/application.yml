@@ -2,12 +2,10 @@ server:
   port: 8089
 
 spring:
-  application:
-    name: finance-search
   elasticsearch:
-    uris: http://10.128.82.54:9200
-    username: elastic
-    password: elastic
+    uris: ${ES_URIS:http://localhost:9200}
+    username: ${ES_USERNAME:elastic}
+    password: ${ES_PASSWORD:elastic}
     connection-timeout: 10s
     socket-timeout: 30s
 
@@ -19,3 +17,5 @@ knife4j:
     email: admin@finance.com
     concat: 开发团队
     version: v1.0.0
+
+# 业务配置统一在 Nacos 配置中心管理

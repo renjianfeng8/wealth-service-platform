@@ -8,6 +8,7 @@ import com.finance.platform.message.service.FinNewsService;
 import com.finance.platform.message.vo.FinNewsVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -38,6 +39,7 @@ public class FinNewsServiceImpl extends ServiceImpl<FinNewsMapper, FinNews>
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean createNews(FinNewsDTO dto) {
         FinNews entity = new FinNews();
         BeanUtils.copyProperties(dto, entity);

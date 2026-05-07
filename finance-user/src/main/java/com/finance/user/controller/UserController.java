@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.finance.common.dto.LoginDTO;
 import com.finance.common.result.Result;
+import com.finance.common.result.ResultCode;
 import com.finance.common.utils.BeanConvertUtil;
 import com.finance.user.dto.UserDTO;
 import com.finance.user.entity.User;
@@ -31,7 +32,9 @@ public class UserController {
     @Operation(summary = "根据ID查询用户")
     public Result<UserVO> getById(@PathVariable Long id) {
         User user = userService.getById(id);
-        // 工具类一行转换
+        if (user == null) {
+            return Result.error(ResultCode.NOT_FOUND);
+        }
         return Result.success(BeanConvertUtil.convert(user, UserVO.class));
     }
 

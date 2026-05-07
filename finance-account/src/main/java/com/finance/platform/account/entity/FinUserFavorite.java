@@ -3,14 +3,18 @@ package com.finance.platform.account.entity;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.finance.common.entity.BaseEntity;
-import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
 /**
  * 用户自选关注表实体。
  */
-@Data
+@Getter
+@Setter
+@EqualsAndHashCode(callSuper = true)
 @TableName("fin_user_favorite")
 public class FinUserFavorite extends BaseEntity {
 

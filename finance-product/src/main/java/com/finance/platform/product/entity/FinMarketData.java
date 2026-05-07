@@ -4,7 +4,9 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.finance.common.entity.BaseEntity;
-import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -12,7 +14,9 @@ import java.time.LocalDateTime;
 /**
  * 行情数据表实体。
  */
-@Data
+@Getter
+@Setter
+@EqualsAndHashCode(callSuper = true)
 @TableName("fin_market_data")
 public class FinMarketData extends BaseEntity {
 

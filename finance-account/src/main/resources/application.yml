@@ -1,20 +1,21 @@
 server:
   port: 8086
   servlet:
-    context-path: /account  # 必须加
+    context-path: /account
 
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/finance?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false
     username: root
-    password: 123456
+    password: ${DB_PASSWORD:123456}
 
 mybatis-plus:
   configuration:
     map-underscore-to-camel-case: true
-  mapper-locations: classpath*:/mapper/**/*.xml
 
 springdoc:
   api-docs:
     enabled: true
+
+# 业务配置统一在 Nacos 配置中心管理

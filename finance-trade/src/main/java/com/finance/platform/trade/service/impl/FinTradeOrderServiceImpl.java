@@ -8,6 +8,7 @@ import com.finance.platform.trade.service.FinTradeOrderService;
 import com.finance.platform.trade.vo.FinTradeOrderVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -39,6 +40,7 @@ public class FinTradeOrderServiceImpl extends ServiceImpl<FinTradeOrderMapper, F
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean createOrder(FinTradeOrderDTO dto) {
         FinTradeOrder order = new FinTradeOrder();
         BeanUtils.copyProperties(dto, order);

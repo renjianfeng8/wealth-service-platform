@@ -8,6 +8,7 @@ import com.finance.platform.message.service.FinMessageService;
 import com.finance.platform.message.vo.FinMessageVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -37,6 +38,7 @@ public class FinMessageServiceImpl extends ServiceImpl<FinMessageMapper, FinMess
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean createMessage(FinMessageDTO dto) {
         FinMessage entity = new FinMessage();
         BeanUtils.copyProperties(dto, entity);

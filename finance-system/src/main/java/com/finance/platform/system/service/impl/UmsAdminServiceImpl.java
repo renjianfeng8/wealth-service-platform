@@ -9,6 +9,7 @@ import com.finance.platform.system.mapper.UmsAdminMapper;
 import com.finance.platform.system.service.UmsAdminService;
 import com.finance.platform.system.service.UmsResourceService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.util.StringUtils;
 
@@ -51,6 +52,7 @@ public class UmsAdminServiceImpl extends ServiceImpl<UmsAdminMapper, UmsAdmin> i
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Boolean createAdmin(UmsAdmin admin) {
         admin.setPassword(PASSWORD_ENCODER.encode(admin.getPassword()));
         return save(admin);
@@ -62,12 +64,11 @@ public class UmsAdminServiceImpl extends ServiceImpl<UmsAdminMapper, UmsAdmin> i
         return updateById(admin);
     }
 
-    // ================== 权限查询方法（完整正确） ==================
+    // ================== 权限查询方法 ==================
     @Override
     public List<String> getResourceUrlsByIds(List<Long> resourceIds) {
         return resourceService.lambdaQuery()
                 .in(UmsResource::getId, resourceIds)
-                .eq(UmsResource::getDelFlag, 0)
                 .list()
                 .stream()
                 .map(UmsResource::getUrl)

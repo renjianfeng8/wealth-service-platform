@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.finance.common.dto.LoginDTO;
 import com.finance.common.result.Result;
+import com.finance.common.result.ResultCode;
 import com.finance.common.utils.BeanConvertUtil;
 import com.finance.platform.system.entity.UmsAdmin;
 import com.finance.platform.system.service.UmsAdminService;
@@ -36,6 +37,9 @@ public class UmsAdminController {
     @Operation(summary = "根据ID查询")
     public Result<UmsAdminVO> getById(@PathVariable Long id) {
         UmsAdmin admin = umsAdminService.getById(id);
+        if (admin == null) {
+            return Result.error(ResultCode.NOT_FOUND);
+        }
         return Result.success(BeanConvertUtil.convert(admin, UmsAdminVO.class));
     }
 
