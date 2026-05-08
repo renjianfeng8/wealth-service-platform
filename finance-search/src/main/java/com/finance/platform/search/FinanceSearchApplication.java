@@ -10,7 +10,7 @@ import org.springframework.data.elasticsearch.repository.config.EnableElasticsea
 /**
  * ES搜索微服务启动类
  */
-@SpringBootApplication(exclude = DataSourceAutoConfiguration.class)
+@SpringBootApplication(exclude = DataSourceAutoConfiguration.class, scanBasePackages = "com.finance")
 @EnableDiscoveryClient
 @EnableFeignClients(basePackages = "com.finance.common.feign")
 @EnableElasticsearchRepositories(basePackages = "com.finance.platform.search.repository")
