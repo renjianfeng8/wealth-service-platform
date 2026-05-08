@@ -1,6 +1,7 @@
 package com.finance.platform.search.controller;
 
 import com.finance.common.result.Result;
+import com.finance.common.result.ResultCode;
 import com.finance.platform.search.entity.ProductDocument;
 import com.finance.platform.search.service.ProductSearchService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -26,7 +27,11 @@ public class ProductSearchController {
     @GetMapping("/{id}")
     @Operation(summary = "根据ID查询ES产品")
     public Result<ProductDocument> getById(@PathVariable Long id) {
-        return Result.success(productSearchService.getById(id));
+        ProductDocument doc = productSearchService.getById(id);
+        if (doc == null) {
+            return Result.error(ResultCode.NOT_FOUND);
+        }
+        return Result.success(doc);
     }
 
     @GetMapping("/search")

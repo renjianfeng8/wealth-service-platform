@@ -23,7 +23,9 @@
         <el-table-column prop="productType" label="类型" width="80">
           <template #default="{ row }"><el-tag>{{ row.productType===1?'股票':row.productType===2?'基金':'其他' }}</el-tag></template>
         </el-table-column>
-        <el-table-column prop="price" label="价格" width="100" />
+        <el-table-column prop="price" label="价格" width="100">
+          <template #default="{ row }">{{ formatPrice(row.price) }}</template>
+        </el-table-column>
         <el-table-column prop="description" label="描述" min-width="200" show-overflow-tooltip />
         <el-table-column label="操作" width="120">
           <template #default="{ row }">
@@ -42,6 +44,7 @@
 import { reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { searchProduct, deleteProductDocument } from '@/api/search'
+import { formatPrice } from '@/utils/format'
 
 const loading = ref(false)
 const searched = ref(false)
@@ -60,9 +63,11 @@ async function handleSearch() {
 }
 
 async function handleDelete(id: string) {
-  await deleteProductDocument(id)
-  ElMessage.success('删除成功')
-  handleSearch()
+  try {
+    await deleteProductDocument(id)
+    ElMessage.success('删除成功')
+    handleSearch()
+  } catch { /* handled by interceptor */ }
 }
 </script>
 <style scoped>

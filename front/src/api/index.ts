@@ -23,7 +23,7 @@ request.interceptors.response.use(
       window.location.hash = '#/login'
       return Promise.reject(new Error(res.message || '未登录'))
     }
-    if (res.code !== 200 && res.code !== undefined) {
+    if (res.code !== 200 && res.code !== 0 && res.code !== undefined) {
       ElMessage.error(res.message || '请求失败')
       return Promise.reject(new Error(res.message))
     }

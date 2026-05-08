@@ -265,7 +265,7 @@ finance-mid-platform (pom)
 | finance-search  | 8089 | - |
 | finance-account | 8086 | /account |
 | finance-product | 8084 | /product |
-| finance-user    | 8088 | /user |
+| finance-user    | 8083 | /user |
 
 ## 各模块 Java 包基路径
 

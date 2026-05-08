@@ -10,7 +10,7 @@
     </el-card>
     <el-card shadow="never" style="margin-top:16px;">
       <div style="margin-bottom:16px;"><el-button type="primary" @click="handleAdd">新增管理员</el-button></div>
-      <el-table :data="tableData" stripe v-loading="loading" border>
+      <el-table :data="tableData" stripe v-loading="loading" border empty-text="暂无数据">
         <el-table-column prop="id" label="ID" width="60" />
         <el-table-column prop="username" label="用户名" min-width="120" />
         <el-table-column prop="nickName" label="昵称" width="120" />
@@ -27,7 +27,7 @@
         </el-table-column>
       </el-table>
       <div class="pagination-wrap">
-        <el-pagination v-model:current-page="query.pageNum" v-model:page-size="query.pageSize" :total="total" :page-sizes="[10,20,50]" layout="total, sizes, prev, pager, next" @size-change="fetchData" @current-change="fetchData" />
+        <el-pagination v-model:current-page="query.pageNum" v-model:page-size="query.pageSize" :total="total" :page-sizes="[10,20,50]" layout="total, sizes, prev, pager, next" @size-change="handleSizeChange" @current-change="fetchData" />
       </div>
     </el-card>
     <el-dialog v-model="dialogVisible" :title="isEdit?'编辑管理员':'新增管理员'" width="500px">
@@ -56,7 +56,18 @@ const dialogVisible = ref(false); const isEdit = ref(false)
 const formRef = ref<FormInstance>()
 const query = reactive({ pageNum: 1, pageSize: 10, username: '', status: '' })
 const form = reactive({ id: undefined, username: '', password: '', nickName: '', email: '', status: 1 })
-const rules: FormRules = { username: [{ required: true, message: '必填' }], password: [{ required: true, message: '必填' }] }
+const validateEmail = (_rule: any, value: string, callback: any) => {
+  if (value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) { callback(new Error('邮箱格式不正确')) } else { callback() }
+}
+const rules: FormRules = {
+  username: [{ required: true, message: '必填' }],
+  password: [{
+    validator: (_rule: any, value: string, callback: any) => {
+      if (!isEdit.value && !value) { callback(new Error('必填')) } else { callback() }
+    }, trigger: 'blur'
+  }],
+  email: [{ validator: validateEmail, trigger: 'blur' }],
+}
 
 async function fetchData() {
   loading.value = true
@@ -69,6 +80,7 @@ async function fetchData() {
 }
 function handleSearch() { query.pageNum = 1; fetchData() }
 function handleReset() { query.username = ''; query.status = ''; handleSearch() }
+function handleSizeChange() { query.pageNum = 1; fetchData() }
 function handleAdd() { isEdit.value = false; Object.assign(form, { id: undefined, username: '', password: '', nickName: '', email: '', status: 1 }); dialogVisible.value = true }
 function handleEdit(row: any) { isEdit.value = true; Object.assign(form, row); form.password = ''; dialogVisible.value = true }
 async function handleSave() {
@@ -79,7 +91,7 @@ async function handleSave() {
     ElMessage.success(isEdit.value ? '更新成功' : '创建成功'); dialogVisible.value = false; fetchData()
   } finally { saving.value = false }
 }
-async function handleDelete(id: number) { await deleteAdmin(id); ElMessage.success('删除成功'); fetchData() }
+async function handleDelete(id: number) { try { await deleteAdmin(id); ElMessage.success('删除成功'); fetchData() } catch { /* handled by interceptor */ } }
 onMounted(fetchData)
 </script>
 <style scoped>

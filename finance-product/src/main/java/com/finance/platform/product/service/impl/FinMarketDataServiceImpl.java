@@ -46,6 +46,7 @@ public class FinMarketDataServiceImpl extends ServiceImpl<FinMarketDataMapper, F
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean updateMarketData(Long id, FinMarketDataDTO dto) {
         FinMarketData entity = getById(id);
         if (entity == null) {
@@ -57,6 +58,7 @@ public class FinMarketDataServiceImpl extends ServiceImpl<FinMarketDataMapper, F
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean deleteMarketData(Long id) {
         return removeById(id);
     }

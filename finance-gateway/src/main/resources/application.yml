@@ -5,45 +5,38 @@ spring:
   cloud:
     gateway:
       routes:
-        # 系统服务（后台权限管理）
         - id: finance-system
-          uri: http://localhost:8082
+          uri: lb://finance-system
           predicates:
             - Path=/system/**
 
-        # 用户服务
         - id: finance-user
-          uri: http://localhost:8083
+          uri: lb://finance-user
           predicates:
             - Path=/user/**
 
-        # 产品服务
         - id: finance-product
-          uri: http://localhost:8084
+          uri: lb://finance-product
           predicates:
             - Path=/product/**
 
-        # 账户服务（自选）
         - id: finance-account
-          uri: http://localhost:8086
+          uri: lb://finance-account
           predicates:
             - Path=/account/**
 
-        # 交易服务
         - id: finance-trade
-          uri: http://localhost:8085
+          uri: lb://finance-trade
           predicates:
             - Path=/trade/**
 
-        # 消息服务
         - id: finance-message
-          uri: http://localhost:8087
+          uri: lb://finance-message
           predicates:
             - Path=/message/**
 
-        # 搜索服务
         - id: finance-search
-          uri: http://localhost:8089
+          uri: lb://finance-search
           predicates:
             - Path=/search/**
 
@@ -51,7 +44,9 @@ spring:
         cors-configurations:
           '[/**]':
             allowed-origin-patterns:
-              - "*"
+              - "http://localhost:3000"
+              - "http://localhost:8080"
+              - "http://127.0.0.1:3000"
             allowed-headers:
               - "*"
             allowed-methods:

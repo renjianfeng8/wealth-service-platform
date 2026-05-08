@@ -26,7 +26,7 @@
       <div style="margin-bottom:16px;">
         <el-button type="primary" @click="handleAdd">新增用户</el-button>
       </div>
-      <el-table :data="tableData" stripe v-loading="loading" border>
+      <el-table :data="tableData" stripe v-loading="loading" border empty-text="暂无数据">
         <el-table-column prop="id" label="ID" width="70" />
         <el-table-column prop="username" label="用户名" min-width="120" />
         <el-table-column prop="nickname" label="昵称" min-width="120" />
@@ -55,7 +55,7 @@
           :total="total"
           :page-sizes="[10,20,50]"
           layout="total, sizes, prev, pager, next"
-          @size-change="fetchData"
+          @size-change="handleSizeChange"
           @current-change="fetchData"
         />
       </div>
@@ -108,7 +108,18 @@ const formRef = ref<FormInstance>()
 
 const query = reactive({ pageNum: 1, pageSize: 10, username: '', status: '' })
 const form = reactive({ id: undefined, username: '', password: '', nickname: '', phone: '', status: 1 })
-const rules: FormRules = { username: [{ required: true, message: '请输入用户名', trigger: 'blur' }] }
+const validatePhone = (_rule: any, value: string, callback: any) => {
+  if (value && !/^1\d{10}$/.test(value)) { callback(new Error('手机号格式不正确')) } else { callback() }
+}
+const rules: FormRules = {
+  username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
+  password: [{
+    validator: (_rule: any, value: string, callback: any) => {
+      if (!isEdit.value && !value) { callback(new Error('请输入密码')) } else { callback() }
+    }, trigger: 'blur'
+  }],
+  phone: [{ validator: validatePhone, trigger: 'blur' }],
+}
 
 async function fetchData() {
   loading.value = true
@@ -121,6 +132,7 @@ async function fetchData() {
 
 function handleSearch() { query.pageNum = 1; fetchData() }
 function handleReset() { query.username = ''; query.status = ''; handleSearch() }
+function handleSizeChange() { query.pageNum = 1; fetchData() }
 function handleAdd() { isEdit.value = false; form.id = undefined; form.username = ''; form.password = ''; form.nickname = ''; form.phone = ''; form.status = 1; dialogVisible.value = true }
 function handleEdit(row: any) { isEdit.value = true; Object.assign(form, row); form.password = ''; dialogVisible.value = true }
 
@@ -142,9 +154,11 @@ async function handleSave() {
 }
 
 async function handleDelete(id: number) {
-  await deleteUser(id)
-  ElMessage.success('删除成功')
-  fetchData()
+  try {
+    await deleteUser(id)
+    ElMessage.success('删除成功')
+    fetchData()
+  } catch { /* handled by interceptor */ }
 }
 
 onMounted(fetchData)

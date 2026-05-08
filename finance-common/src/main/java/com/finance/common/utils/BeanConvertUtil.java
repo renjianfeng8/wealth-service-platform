@@ -13,7 +13,7 @@ public class BeanConvertUtil {
             BeanUtils.copyProperties(source, target);
             return target;
         } catch (Exception e) {
-            throw new RuntimeException("转换失败");
+            throw new RuntimeException("转换失败", e);
         }
     }
 

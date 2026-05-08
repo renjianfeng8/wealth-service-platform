@@ -46,6 +46,7 @@ public class FinProductServiceImpl extends ServiceImpl<FinProductMapper, FinProd
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean updateProduct(Long id, FinProductDTO dto) {
         FinProduct entity = getById(id);
         if (entity == null) {
@@ -57,6 +58,7 @@ public class FinProductServiceImpl extends ServiceImpl<FinProductMapper, FinProd
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean deleteProduct(Long id) {
         return removeById(id);
     }

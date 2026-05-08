@@ -47,6 +47,7 @@ public class FinUserFavoriteServiceImpl extends ServiceImpl<FinUserFavoriteMappe
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean updateFavorite(Long id, FinUserFavoriteDTO dto) {
         FinUserFavorite entity = getById(id);
         if (entity == null) {
@@ -58,6 +59,7 @@ public class FinUserFavoriteServiceImpl extends ServiceImpl<FinUserFavoriteMappe
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean deleteFavorite(Long id) {
         return removeById(id);
     }

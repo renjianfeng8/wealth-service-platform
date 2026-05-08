@@ -59,6 +59,7 @@ public class UmsAdminServiceImpl extends ServiceImpl<UmsAdminMapper, UmsAdmin> i
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Boolean updateAdmin(UmsAdmin admin) {
         admin.setPassword(null);
         return updateById(admin);

@@ -1,4 +1,4 @@
-package com.finance.user.config;
+package com.finance.platform.product.config;
 
 import com.finance.common.interceptor.LoginInterceptor;
 import com.finance.common.utils.JwtUtil;
@@ -7,7 +7,7 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
- * 用户模块 Web 配置 — 注册 JWT 登录拦截器
+ * 产品模块 Web 配置 — 注册 JWT 登录拦截器
  */
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
@@ -23,9 +23,6 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addInterceptor(new LoginInterceptor(jwtUtil))
                 .addPathPatterns("/**")
                 .excludePathPatterns(
-                        "/user/login",
-                        "/user/register",
-                        "/user/resetPassword",
                         "/doc.html",
                         "/webjars/**",
                         "/swagger-resources/**",

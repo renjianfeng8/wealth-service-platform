@@ -17,7 +17,7 @@ public interface AccountFeignClient {
     @GetMapping("/account/finUserFavorite/{id}")
     Result<FinUserFavoriteDTO> getById(@PathVariable("id") Long id);
 
-    @GetMapping("/account/finUserFavorite/list")
+    @GetMapping("/account/finUserFavorite")
     Result<List<FinUserFavoriteDTO>> list();
 
     @GetMapping("/account/finUserFavorite/byUser")

@@ -1,6 +1,7 @@
 package com.finance.platform.system.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 @Data
@@ -9,6 +10,7 @@ public class UmsRoleDTO {
     @Schema(description = "ID")
     private Long id;
 
+    @NotBlank(message = "角色名称不能为空")
     @Schema(description = "角色名称")
     private String name;
 

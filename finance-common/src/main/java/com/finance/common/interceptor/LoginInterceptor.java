@@ -36,6 +36,8 @@ public class LoginInterceptor implements HandlerInterceptor {
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             log.warn("无Token，返回401");
             response.setStatus(401);
+            response.setContentType("application/json;charset=UTF-8");
+            response.getWriter().write("{\"code\":401,\"message\":\"未登录\"}");
             return false;
         }
 
@@ -43,6 +45,8 @@ public class LoginInterceptor implements HandlerInterceptor {
         if (!jwtUtil.validateToken(token)) {
             log.warn("Token无效，返回401");
             response.setStatus(401);
+            response.setContentType("application/json;charset=UTF-8");
+            response.getWriter().write("{\"code\":401,\"message\":\"Token无效或已过期\"}");
             return false;
         }
 

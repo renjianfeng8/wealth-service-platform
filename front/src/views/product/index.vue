@@ -10,7 +10,7 @@
     </el-card>
     <el-card shadow="never" style="margin-top:16px;">
       <div style="margin-bottom:16px;"><el-button type="primary" @click="handleAdd">新增产品</el-button></div>
-      <el-table :data="tableData" stripe v-loading="loading" border>
+      <el-table :data="tableData" stripe v-loading="loading" border empty-text="暂无数据">
         <el-table-column prop="id" label="ID" width="60" />
         <el-table-column prop="productName" label="产品名称" min-width="140" />
         <el-table-column prop="productCode" label="编码" width="120" />
@@ -33,7 +33,7 @@
         </el-table-column>
       </el-table>
       <div class="pagination-wrap">
-        <el-pagination v-model:current-page="query.pageNum" v-model:page-size="query.pageSize" :total="total" :page-sizes="[10,20,50]" layout="total, sizes, prev, pager, next" @size-change="fetchData" @current-change="fetchData" />
+        <el-pagination v-model:current-page="query.pageNum" v-model:page-size="query.pageSize" :total="total" :page-sizes="[10,20,50]" layout="total, sizes, prev, pager, next" @size-change="handleSizeChange" @current-change="fetchData" />
       </div>
     </el-card>
     <el-dialog v-model="dialogVisible" :title="isEdit?'编辑产品':'新增产品'" width="550px">
@@ -87,6 +87,7 @@ async function fetchData() {
 }
 function handleSearch() { query.pageNum = 1; fetchData() }
 function handleReset() { query.productName = ''; query.productCode = ''; handleSearch() }
+function handleSizeChange() { query.pageNum = 1; fetchData() }
 function handleAdd() { isEdit.value = false; Object.assign(form, { id: undefined, productName: '', productCode: '', productType: 1, price: 0, riseFall: 0, riseFallRate: 0, status: 1, sort: 0 }); dialogVisible.value = true }
 function handleEdit(row: any) { isEdit.value = true; Object.assign(form, row); dialogVisible.value = true }
 async function handleSave() {
@@ -97,7 +98,7 @@ async function handleSave() {
     ElMessage.success(isEdit.value ? '更新成功' : '创建成功'); dialogVisible.value = false; fetchData()
   } finally { saving.value = false }
 }
-async function handleDelete(id: number) { await deleteProduct(id); ElMessage.success('删除成功'); fetchData() }
+async function handleDelete(id: number) { try { await deleteProduct(id); ElMessage.success('删除成功'); fetchData() } catch { /* handled by interceptor */ } }
 onMounted(fetchData)
 </script>
 <style scoped>

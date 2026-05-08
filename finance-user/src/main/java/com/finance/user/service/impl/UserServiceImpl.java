@@ -58,6 +58,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Boolean resetPassword(User user) {
         if (user.getId() == null || !StringUtils.hasText(user.getPassword())) {
             throw new RuntimeException("用户ID/新密码不能为空");

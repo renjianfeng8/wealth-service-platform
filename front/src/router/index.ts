@@ -2,6 +2,15 @@ import { createRouter, createWebHashHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
 import { getToken } from '@/utils/auth'
 
+// 扩展 RouteMeta 类型
+declare module 'vue-router' {
+  interface RouteMeta {
+    title?: string
+    icon?: string
+    requiresAuth?: boolean
+  }
+}
+
 const routes: RouteRecordRaw[] = [
   {
     path: '/login',
@@ -76,6 +85,12 @@ const routes: RouteRecordRaw[] = [
       },
     ],
   },
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'NotFound',
+    component: () => import('@/views/login/index.vue'),
+    meta: { title: '404 - 页面不存在' },
+  },
 ]
 
 const router = createRouter({
@@ -85,7 +100,7 @@ const router = createRouter({
 
 router.beforeEach((to, _from, next) => {
   if (to.meta.requiresAuth && !getToken()) {
-    next('/login')
+    next({ path: '/login', query: { redirect: to.fullPath } })
   } else if (to.path === '/login' && getToken()) {
     next('/')
   } else {

@@ -56,6 +56,7 @@ public class FinTradeOrderServiceImpl extends ServiceImpl<FinTradeOrderMapper, F
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean updateOrder(Long id, FinTradeOrderDTO dto) {
         FinTradeOrder order = getById(id);
         if (order == null) {
@@ -67,6 +68,7 @@ public class FinTradeOrderServiceImpl extends ServiceImpl<FinTradeOrderMapper, F
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean deleteOrder(Long id) {
         return removeById(id);
     }

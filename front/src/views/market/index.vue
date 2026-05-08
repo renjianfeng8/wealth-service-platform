@@ -9,7 +9,7 @@
     </el-card>
     <el-card shadow="never" style="margin-top:16px;">
       <div style="margin-bottom:16px;"><el-button type="primary" @click="handleAdd">新增行情</el-button></div>
-      <el-table :data="tableData" stripe v-loading="loading" border>
+      <el-table :data="tableData" stripe v-loading="loading" border empty-text="暂无数据">
         <el-table-column prop="id" label="ID" width="60" />
         <el-table-column prop="productCode" label="产品编码" width="110" />
         <el-table-column prop="currentPrice" label="当前价" width="100" :formatter="(_r:any,_c:any,v:any)=>formatPrice(v)" />
@@ -29,7 +29,7 @@
         </el-table-column>
       </el-table>
       <div class="pagination-wrap">
-        <el-pagination v-model:current-page="query.pageNum" v-model:page-size="query.pageSize" :total="total" :page-sizes="[10,20,50]" layout="total, sizes, prev, pager, next" @size-change="fetchData" @current-change="fetchData" />
+        <el-pagination v-model:current-page="query.pageNum" v-model:page-size="query.pageSize" :total="total" :page-sizes="[10,20,50]" layout="total, sizes, prev, pager, next" @size-change="handleSizeChange" @current-change="fetchData" />
       </div>
     </el-card>
     <el-dialog v-model="dialogVisible" :title="isEdit?'编辑行情':'新增行情'" width="600px">
@@ -83,6 +83,7 @@ async function fetchData() {
 }
 function handleSearch() { query.pageNum = 1; fetchData() }
 function handleReset() { query.productCode = ''; handleSearch() }
+function handleSizeChange() { query.pageNum = 1; fetchData() }
 function handleAdd() { isEdit.value = false; Object.assign(form, { id: undefined, productCode: '', currentPrice: 0, openPrice: 0, closePrice: 0, highestPrice: 0, lowestPrice: 0, riseFall: 0, riseFallRate: 0, marketTime: '' }); dialogVisible.value = true }
 function handleEdit(row: any) { isEdit.value = true; Object.assign(form, row); dialogVisible.value = true }
 async function handleSave() {
@@ -93,7 +94,7 @@ async function handleSave() {
     ElMessage.success(isEdit.value ? '更新成功' : '创建成功'); dialogVisible.value = false; fetchData()
   } finally { saving.value = false }
 }
-async function handleDelete(id: number) { await deleteMarketData(id); ElMessage.success('删除成功'); fetchData() }
+async function handleDelete(id: number) { try { await deleteMarketData(id); ElMessage.success('删除成功'); fetchData() } catch { /* handled by interceptor */ } }
 onMounted(fetchData)
 </script>
 <style scoped>

@@ -47,6 +47,7 @@ public class FinMessageServiceImpl extends ServiceImpl<FinMessageMapper, FinMess
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean updateMessage(Long id, FinMessageDTO dto) {
         FinMessage entity = getById(id);
         if (entity == null) {
@@ -58,6 +59,7 @@ public class FinMessageServiceImpl extends ServiceImpl<FinMessageMapper, FinMess
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean deleteMessage(Long id) {
         return removeById(id);
     }

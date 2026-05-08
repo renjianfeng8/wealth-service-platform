@@ -47,6 +47,7 @@ public class FinNewsServiceImpl extends ServiceImpl<FinNewsMapper, FinNews>
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean updateNews(Long id, FinNewsDTO dto) {
         FinNews entity = getById(id);
         if (entity == null) {
@@ -58,6 +59,7 @@ public class FinNewsServiceImpl extends ServiceImpl<FinNewsMapper, FinNews>
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean deleteNews(Long id) {
         return removeById(id);
     }

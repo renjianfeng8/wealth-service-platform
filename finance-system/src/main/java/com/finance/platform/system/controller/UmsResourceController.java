@@ -11,6 +11,7 @@ import com.finance.platform.system.service.UmsResourceService;
 import com.finance.platform.system.vo.UmsResourceVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -96,7 +97,7 @@ public class UmsResourceController {
      */
     @Operation(summary = "创建后台资源")
     @PostMapping
-    public Result<Boolean> create(@RequestBody UmsResourceDTO dto) {
+    public Result<Boolean> create(@Valid @RequestBody UmsResourceDTO dto) {
         UmsResource resource = BeanConvertUtil.convert(dto, UmsResource.class);
         boolean saved = umsResourceService.save(resource);
         return Result.success(saved);
@@ -111,7 +112,7 @@ public class UmsResourceController {
      */
     @Operation(summary = "更新后台资源信息")
     @PutMapping("/{id}")
-    public Result<Boolean> update(@PathVariable Long id, @RequestBody UmsResourceDTO dto) {
+    public Result<Boolean> update(@PathVariable Long id, @Valid @RequestBody UmsResourceDTO dto) {
         UmsResource resource = BeanConvertUtil.convert(dto, UmsResource.class);
         resource.setId(id);
         boolean updated = umsResourceService.updateById(resource);

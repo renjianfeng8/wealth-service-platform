@@ -10,7 +10,7 @@
     </el-card>
     <el-card shadow="never" style="margin-top:16px;">
       <div style="margin-bottom:16px;"><el-button type="primary" @click="handleAdd">新增资讯</el-button></div>
-      <el-table :data="tableData" stripe v-loading="loading" border>
+      <el-table :data="tableData" stripe v-loading="loading" border empty-text="暂无数据">
         <el-table-column prop="id" label="ID" width="60" />
         <el-table-column prop="title" label="标题" min-width="160" show-overflow-tooltip />
         <el-table-column prop="newsType" label="类型" width="80">
@@ -29,7 +29,7 @@
         </el-table-column>
       </el-table>
       <div class="pagination-wrap">
-        <el-pagination v-model:current-page="query.pageNum" v-model:page-size="query.pageSize" :total="total" :page-sizes="[10,20,50]" layout="total, sizes, prev, pager, next" @size-change="fetchData" @current-change="fetchData" />
+        <el-pagination v-model:current-page="query.pageNum" v-model:page-size="query.pageSize" :total="total" :page-sizes="[10,20,50]" layout="total, sizes, prev, pager, next" @size-change="handleSizeChange" @current-change="fetchData" />
       </div>
     </el-card>
     <el-dialog v-model="dialogVisible" :title="isEdit?'编辑资讯':'新增资讯'" width="600px">
@@ -76,6 +76,7 @@ async function fetchData() {
 }
 function handleSearch() { query.pageNum = 1; fetchData() }
 function handleReset() { query.title = ''; query.source = ''; handleSearch() }
+function handleSizeChange() { query.pageNum = 1; fetchData() }
 function handleAdd() { isEdit.value = false; Object.assign(form, { id: undefined, title: '', content: '', newsType: 1, source: '', status: 1, publishTime: '' }); dialogVisible.value = true }
 function handleEdit(row: any) { isEdit.value = true; Object.assign(form, row); dialogVisible.value = true }
 async function handleSave() {
@@ -86,7 +87,7 @@ async function handleSave() {
     ElMessage.success(isEdit.value ? '更新成功' : '创建成功'); dialogVisible.value = false; fetchData()
   } finally { saving.value = false }
 }
-async function handleDelete(id: number) { await deleteNews(id); ElMessage.success('删除成功'); fetchData() }
+async function handleDelete(id: number) { try { await deleteNews(id); ElMessage.success('删除成功'); fetchData() } catch { /* handled by interceptor */ } }
 onMounted(fetchData)
 </script>
 <style scoped>

@@ -27,6 +27,106 @@ export interface DictItem {
   value: any
 }
 
+export interface UserInfo {
+  id?: number
+  username: string
+  nickname?: string
+  phone?: string
+  avatar?: string
+  status?: number
+}
+
+export interface UmsAdmin {
+  id?: number
+  username: string
+  password?: string
+  email?: string
+  nickName?: string
+  status?: number
+  avatar?: string
+}
+
+export interface UmsRole {
+  id?: number
+  name: string
+  description?: string
+  status?: number
+  sort?: number
+}
+
+export interface UmsResource {
+  id?: number
+  name: string
+  url: string
+  description?: string
+  categoryId?: number
+}
+
+export interface FinProduct {
+  id?: number
+  productName: string
+  productCode: string
+  productType?: number
+  price: number
+  riseFall?: number
+  riseFallRate?: number
+  status?: number
+  sort?: number
+  createTime?: string
+}
+
+export interface FinMarketData {
+  id?: number
+  productCode: string
+  currentPrice: number
+  openPrice?: number
+  closePrice?: number
+  highestPrice?: number
+  lowestPrice?: number
+  riseFall?: number
+  riseFallRate?: number
+  marketTime?: string
+}
+
+export interface FinTradeOrder {
+  id?: number
+  orderNo?: string
+  userId: number
+  productCode: string
+  tradeType: number
+  entrustPrice: number
+  entrustNum: number
+  orderStatus?: number
+  createTime?: string
+}
+
+export interface FinUserFavorite {
+  id?: number
+  userId: number
+  productCode: string
+  createTime?: string
+}
+
+export interface FinNews {
+  id?: number
+  title: string
+  content?: string
+  newsType?: number
+  source?: string
+  status?: number
+  publishTime?: string
+}
+
+export interface FinMessage {
+  id?: number
+  userId: number
+  msgType?: number
+  msgTitle: string
+  msgContent: string
+  readFlag?: number
+  createTime?: string
+}
+
 export const STATUS_OPTIONS: DictItem[] = [
   { label: '正常', value: 1 },
   { label: '禁用', value: 0 },

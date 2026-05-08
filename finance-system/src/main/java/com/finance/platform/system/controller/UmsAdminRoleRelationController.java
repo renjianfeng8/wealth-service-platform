@@ -11,6 +11,7 @@ import com.finance.platform.system.service.UmsAdminRoleRelationService;
 import com.finance.platform.system.vo.UmsAdminRoleRelationVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -62,14 +63,14 @@ public class UmsAdminRoleRelationController {
 
     @Operation(summary = "创建")
     @PostMapping
-    public Result<Boolean> create(@RequestBody UmsAdminRoleRelationDTO dto) {
+    public Result<Boolean> create(@Valid @RequestBody UmsAdminRoleRelationDTO dto) {
         UmsAdminRoleRelation relation = BeanConvertUtil.convert(dto, UmsAdminRoleRelation.class);
         return Result.success(umsAdminRoleRelationService.save(relation));
     }
 
     @Operation(summary = "更新")
     @PutMapping("/{id}")
-    public Result<Boolean> update(@PathVariable Long id, @RequestBody UmsAdminRoleRelationDTO dto) {
+    public Result<Boolean> update(@PathVariable Long id, @Valid @RequestBody UmsAdminRoleRelationDTO dto) {
         UmsAdminRoleRelation relation = BeanConvertUtil.convert(dto, UmsAdminRoleRelation.class);
         relation.setId(id);
         return Result.success(umsAdminRoleRelationService.updateById(relation));

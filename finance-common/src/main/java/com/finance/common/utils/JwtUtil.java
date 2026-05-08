@@ -12,14 +12,18 @@ import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
+/**
+ * JWT Token 生成与验证工具。
+ * jwt.secret / jwt.expire 须在 Nacos 共享配置中定义，无默认值以确保生产环境强制配置。
+ */
 @Slf4j
 @Component
 public class JwtUtil {
 
-    @Value("${jwt.secret:finance-micro-service-20260501-very-safe-secret-key-123456789}")
+    @Value("${jwt.secret}")
     private String secretKey;
 
-    @Value("${jwt.expire:604800000}")
+    @Value("${jwt.expire}")
     private long expire;
 
     private SecretKey getSigningKey() {
@@ -27,7 +31,7 @@ public class JwtUtil {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    // 生成Token
+    /** 生成 Token */
     public String generateToken(String username) {
         return Jwts.builder()
                 .setSubject(username)
@@ -36,7 +40,7 @@ public class JwtUtil {
                 .compact();
     }
 
-    // 从Token获取用户名
+    /** 从 Token 获取用户名 */
     public String getUsernameFromToken(String token) {
         Claims claims = Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())
@@ -46,7 +50,7 @@ public class JwtUtil {
         return claims.getSubject();
     }
 
-    // 验证Token是否有效（带完整日志）
+    /** 验证 Token 是否有效 */
     public boolean validateToken(String token) {
         try {
             Jwts.parserBuilder()
