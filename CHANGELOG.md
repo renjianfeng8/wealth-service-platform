@@ -1,5 +1,60 @@
 # 更新日志
 
+## v1.2.0 (2026-05-09)
+
+### 全链路连通测试与修复
+
+首次完成完整的前后端全链路 E2E 自动化测试，覆盖 8 个微服务 + 网关 + 前端，测试项 35 项全部通过。
+
+#### 测试覆盖范围
+- **基础设施**: Nacos、MySQL、Redis、Docker 容器连通性验证
+- **页面加载**: 标题渲染、白屏检测、未登录自动跳转
+- **登录流程**: 表单填写、JWT Token获取、登录后跳转控制台
+- **菜单导航**: 12 个页面（控制台/用户管理/产品/行情/交易/自选/消息/资讯/系统管理/搜索）
+- **API 请求**: 10 个业务接口通过网关调用（管理员/角色/资源/用户/产品/行情/自选/交易/消息/资讯）
+- **前端代理**: Vite `/api` 代理到网关全链路验证
+- **错误检查**: 浏览器控制台 JS 错误、路由跳转报错、页面内容渲染
+
+#### 后端实体修复
+- **UmsAdmin/UmsRole/UmsResource** — delFlag 从 `@TableField(exist = false)` 修正为 `@TableLogic @TableField("del_flag")`，修复 MyBatis-Plus Lambda 查询缓存崩溃（`can not find lambda cache for this property [delFlag]`）
+- **UmsAdminRoleRelation/UmsRoleResourceRelation** — 同上修复，两表实际存在 `del_flag` 列
+- 新增 `@TableLogic` 依赖导入
+
+#### 用户服务路径修复
+- **UserController** — 移除 `@RequestMapping("/user")`，消除与 `context-path: /user` 的路径冲突（修复 "No static resource page" 错误）
+- **WebConfig** — 同步修正拦截器排除路径（`/user/login` → `/login`，依此类推）
+
+#### 权限数据补充
+- 创建管理员资源权限（`/system/umsAdmin/**`、`/system/umsRole/**`、`/system/umsResource/**` 等）
+- 激活超级管理员角色并关联资源，修复 PermissionInterceptor 403 阻断
+
+#### 自动化测试
+- 新增 `e2e-test.mjs` — Playwright + Node.js 全链路测试脚本
+- 支持基础设施自动检测、API 连通测试、真实浏览器交互、详细报告生成
+- 测试环境：headless Chromium、1920x1080 viewport、30s 超时
+
+#### 测试结果
+
+| 类别 | 通过 |
+|------|:---:|
+| 基础设施检查 | 3/3 |
+| 后端 API 直接测试 | 1/1 |
+| 页面加载测试 | 3/3 |
+| 登录流程测试 | 3/3 |
+| 菜单导航测试 | 12/12 |
+| API 请求测试 | 10/10 |
+| 前端代理测试 | 3/3 |
+| 错误检查 | 3/3 |
+| **合计** | **35/35 (100%)** |
+
+#### 运行环境
+- JDK 21.0.3 / SpringBoot 3.3.5 / SpringCloud 2023.0.3
+- Vue 3.5.13 / Vite 6.3.1 / Element Plus 2.9.7
+- Nacos 2.x / Redis 5.0.14 / MySQL 8.0.37 / RabbitMQ 3.10.20 / ES 8.11.0
+- Playwright 1.59.1 | Node.js 22.14.0
+
+---
+
 ## v1.1.0 (2026-05-08)
 
 ### 全栈健康检查与修复
