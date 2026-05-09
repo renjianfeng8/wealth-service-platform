@@ -1,5 +1,26 @@
 # 更新日志
 
+## v1.3.0 (2026-05-09)
+
+### 数据库全量扫描 & init.sql 重建
+
+完整扫描 `finance` 数据库全部 12 张表的实际结构，重新生成并覆盖 `init.sql`，确保初始化脚本与数据库完全一致。
+
+#### 变更内容
+- 使用 `information_schema` + `SHOW CREATE TABLE` 全面扫描所有表的字段、类型、默认值、注释、索引
+- 覆盖 12 张表：`sys_user`、`fin_product`、`fin_market_data`、`fin_user_favorite`、`fin_trade_order`、`fin_news`、`fin_message`、`ums_admin`、`ums_role`、`ums_resource`、`ums_admin_role_relation`、`ums_role_resource_relation`
+
+#### 修复
+- **ums_admin** — 补充 `del_flag` 列（INT DEFAULT 0）
+- **ums_role** — 补充 `del_flag` 列（INT DEFAULT 0）
+- **ums_resource** — 补充 `del_flag` 列（INT DEFAULT 0）
+- **ums_admin_role_relation** — 补充 `del_flag` 列（INT DEFAULT 0）
+- **ums_role_resource_relation** — 补充 `del_flag` 列（INT DEFAULT 0）
+- 所有表字符集统一为 `utf8mb4`（旧脚本 ums_* 表为 `utf8`）
+- 所有字段补全完整中文注释
+
+---
+
 ## v1.2.0 (2026-05-09)
 
 ### 全链路连通测试与修复
