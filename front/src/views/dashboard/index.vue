@@ -69,6 +69,4 @@ const modules = [
 .stat-card:hover { transform: translateY(-4px); }
 .stat-value { font-size: 32px; font-weight: 700; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; line-height: 1.3; }
 .stat-label { font-size: 14px; color: var(--text-secondary); margin-top: 8px; letter-spacing: 0.5px; }
-
-.dashboard-section-title { font-size: 15px; font-weight: 600; color: var(--text-primary); }
 </style>

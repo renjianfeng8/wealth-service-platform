@@ -1,6 +1,7 @@
 package com.finance.common.utils;
 
 import org.springframework.beans.BeanUtils;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -18,7 +19,7 @@ public class BeanConvertUtil {
     }
 
     public static <S, T> List<T> convertList(List<S> sourceList, Class<T> targetCls) {
-        if (sourceList == null || sourceList.isEmpty()) return List.of();
+        if (sourceList == null || sourceList.isEmpty()) return new ArrayList<>();
         return sourceList.stream().map(s -> convert(s, targetCls)).collect(Collectors.toList());
     }
 }

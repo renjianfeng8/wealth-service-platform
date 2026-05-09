@@ -64,7 +64,7 @@
 import { onMounted, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
-import { getProductPage, getProductList, createProduct, updateProduct, deleteProduct } from '@/api/product'
+import { getProductPage, createProduct, updateProduct, deleteProduct } from '@/api/product'
 import { formatDateTime, formatPrice, formatRate, statusTag, statusText } from '@/utils/format'
 
 const loading = ref(false); const saving = ref(false)
@@ -73,7 +73,7 @@ const dialogVisible = ref(false); const isEdit = ref(false)
 const formRef = ref<FormInstance>()
 const query = reactive({ pageNum: 1, pageSize: 10, productName: '', productCode: '' })
 const form = reactive({ id: undefined, productName: '', productCode: '', productType: 1, price: 0, riseFall: 0, riseFallRate: 0, status: 1, sort: 0 })
-const rules: FormRules = { productName: [{ required: true, message: '必填' }], productCode: [{ required: true, message: '必填' }] }
+const rules: FormRules = { productName: [{ required: true, message: '必填' }], productCode: [{ required: true, message: '必填' }], price: [{ required: true, message: '请输入价格' }] }
 
 async function fetchData() {
   loading.value = true
@@ -103,6 +103,4 @@ onMounted(fetchData)
 </script>
 <style scoped>
 .page-header h3 { margin-bottom: 16px; }
-
-.table-action-bar { margin-bottom: 16px; }
 </style>

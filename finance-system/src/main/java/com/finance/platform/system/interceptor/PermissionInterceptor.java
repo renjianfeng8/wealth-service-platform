@@ -45,8 +45,11 @@ public class PermissionInterceptor implements HandlerInterceptor {
         String authHeader = request.getHeader("Authorization");
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             log.warn("无Token，返回401");
+            response.setCharacterEncoding("UTF-8");
+            response.setContentType("application/json;charset=UTF-8");
             response.setStatus(401);
             response.getWriter().write("{\"code\":401,\"message\":\"未登录\"}");
+            response.getWriter().flush();
             return false;
         }
 
@@ -55,8 +58,11 @@ public class PermissionInterceptor implements HandlerInterceptor {
         // 2. 校验Token
         if (!jwtUtil.validateToken(token)) {
             log.warn("Token无效，返回401");
+            response.setCharacterEncoding("UTF-8");
+            response.setContentType("application/json;charset=UTF-8");
             response.setStatus(401);
             response.getWriter().write("{\"code\":401,\"message\":\"Token无效或已过期\"}");
+            response.getWriter().flush();
             return false;
         }
 
@@ -69,8 +75,11 @@ public class PermissionInterceptor implements HandlerInterceptor {
 
         if (admin == null) {
             log.warn("用户不存在，返回401");
+            response.setCharacterEncoding("UTF-8");
+            response.setContentType("application/json;charset=UTF-8");
             response.setStatus(401);
             response.getWriter().write("{\"code\":401,\"message\":\"用户不存在\"}");
+            response.getWriter().flush();
             return false;
         }
 
@@ -86,8 +95,11 @@ public class PermissionInterceptor implements HandlerInterceptor {
         // 5. 角色ID为空时直接拒绝（无角色则无权限）
         if (roleIds.isEmpty()) {
             log.warn("用户无角色，返回403");
+            response.setCharacterEncoding("UTF-8");
+            response.setContentType("application/json;charset=UTF-8");
             response.setStatus(403);
             response.getWriter().write("{\"code\":403,\"message\":\"无权限访问\"}");
+            response.getWriter().flush();
             return false;
         }
 
@@ -102,8 +114,11 @@ public class PermissionInterceptor implements HandlerInterceptor {
         // 7. 资源ID为空时直接拒绝
         if (resourceIds.isEmpty()) {
             log.warn("角色未分配资源，返回403");
+            response.setCharacterEncoding("UTF-8");
+            response.setContentType("application/json;charset=UTF-8");
             response.setStatus(403);
             response.getWriter().write("{\"code\":403,\"message\":\"无权限访问\"}");
+            response.getWriter().flush();
             return false;
         }
 
@@ -115,8 +130,11 @@ public class PermissionInterceptor implements HandlerInterceptor {
         AntPathMatcher pathMatcher = new AntPathMatcher();
         boolean hasPermission = allowedUrls.stream().anyMatch(pattern -> pathMatcher.match(pattern, uri));
         if (!hasPermission) {
-            log.warn("无权限访问！返回403");
+            response.setCharacterEncoding("UTF-8");
+            response.setContentType("application/json;charset=UTF-8");
             response.setStatus(403);
+            response.getWriter().write("{\"code\":403,\"message\":\"无权限访问\"}");
+            response.getWriter().flush();
             return false;
         }
 

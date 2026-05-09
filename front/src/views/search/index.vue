@@ -28,7 +28,6 @@
         <el-table-column prop="price" label="价格" width="100">
           <template #default="{ row }">{{ formatPrice(row.price) }}</template>
         </el-table-column>
-        <el-table-column prop="description" label="描述" min-width="200" show-overflow-tooltip />
         <el-table-column label="操作" width="120">
           <template #default="{ row }">
             <el-popconfirm title="确定从ES删除？" @confirm="handleDelete(row.id)"><template #reference><el-button type="danger" link>删除</el-button></template></el-popconfirm>

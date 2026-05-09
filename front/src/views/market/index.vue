@@ -61,7 +61,7 @@
 import { onMounted, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
-import { getMarketDataPage, getMarketDataList, createMarketData, updateMarketData, deleteMarketData } from '@/api/product'
+import { getMarketDataPage, createMarketData, updateMarketData, deleteMarketData } from '@/api/product'
 import { formatDateTime, formatPrice, formatRate } from '@/utils/format'
 
 const loading = ref(false); const saving = ref(false)
