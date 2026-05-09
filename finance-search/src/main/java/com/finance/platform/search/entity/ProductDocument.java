@@ -25,13 +25,13 @@ public class ProductDocument {
     @Field(type = FieldType.Integer)
     private Integer productType;
 
-    @Field(type = FieldType.Double)
+    @Field(type = FieldType.Scaled_Float, scalingFactor = 10000)
     private BigDecimal price;
 
-    @Field(type = FieldType.Double)
+    @Field(type = FieldType.Scaled_Float, scalingFactor = 10000)
     private BigDecimal riseFall;
 
-    @Field(type = FieldType.Double)
+    @Field(type = FieldType.Scaled_Float, scalingFactor = 10000)
     private BigDecimal riseFallRate;
 
     @Field(type = FieldType.Integer)

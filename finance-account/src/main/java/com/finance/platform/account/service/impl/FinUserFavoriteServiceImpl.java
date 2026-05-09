@@ -41,6 +41,14 @@ public class FinUserFavoriteServiceImpl extends ServiceImpl<FinUserFavoriteMappe
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean createFavorite(FinUserFavoriteDTO dto) {
+        // 检查是否已关注该产品
+        long count = lambdaQuery()
+                .eq(FinUserFavorite::getUserId, dto.getUserId())
+                .eq(FinUserFavorite::getProductCode, dto.getProductCode())
+                .count();
+        if (count > 0) {
+            return false;
+        }
         FinUserFavorite entity = new FinUserFavorite();
         BeanUtils.copyProperties(dto, entity);
         return save(entity);

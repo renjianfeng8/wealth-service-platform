@@ -1,6 +1,7 @@
 package com.finance.platform.message.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.finance.common.utils.BeanConvertUtil;
 import com.finance.platform.message.dto.FinMessageDTO;
 import com.finance.platform.message.entity.FinMessage;
 import com.finance.platform.message.mapper.FinMessageMapper;
@@ -53,7 +54,7 @@ public class FinMessageServiceImpl extends ServiceImpl<FinMessageMapper, FinMess
         if (entity == null) {
             return false;
         }
-        BeanUtils.copyProperties(dto, entity);
+        BeanConvertUtil.copyNonNullProperties(dto, entity);
         entity.setId(id);
         return updateById(entity);
     }

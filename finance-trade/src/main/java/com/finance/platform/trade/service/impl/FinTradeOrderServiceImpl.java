@@ -1,6 +1,7 @@
 package com.finance.platform.trade.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.finance.common.utils.BeanConvertUtil;
 import com.finance.platform.trade.dto.FinTradeOrderDTO;
 import com.finance.platform.trade.entity.FinTradeOrder;
 import com.finance.platform.trade.mapper.FinTradeOrderMapper;
@@ -62,7 +63,7 @@ public class FinTradeOrderServiceImpl extends ServiceImpl<FinTradeOrderMapper, F
         if (order == null) {
             return false;
         }
-        BeanUtils.copyProperties(dto, order);
+        BeanConvertUtil.copyNonNullProperties(dto, order);
         order.setId(id);
         return updateById(order);
     }

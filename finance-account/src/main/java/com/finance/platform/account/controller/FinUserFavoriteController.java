@@ -88,7 +88,11 @@ public class FinUserFavoriteController {
     @Operation(summary = "创建用户自选关注")
     @PostMapping
     public Result<Boolean> create(@Valid @RequestBody FinUserFavoriteDTO dto) {
-        return Result.success(finUserFavoriteService.createFavorite(dto));
+        boolean success = finUserFavoriteService.createFavorite(dto);
+        if (!success) {
+            return Result.error(ResultCode.FAIL.getCode(), "已关注该产品，请勿重复添加");
+        }
+        return Result.success(true);
     }
 
     /**

@@ -1,7 +1,6 @@
 package com.finance.platform.product.entity;
 
 import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.finance.common.entity.BaseEntity;
 import lombok.EqualsAndHashCode;
@@ -42,8 +41,4 @@ public class FinProduct extends BaseEntity {
 
     @TableField("sort")
     private Integer sort;
-
-    @TableLogic
-    @TableField("del_flag")
-    private Integer delFlag;
 }

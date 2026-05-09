@@ -1,7 +1,6 @@
 package com.finance.platform.trade.entity;
 
 import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.finance.common.entity.BaseEntity;
 import lombok.EqualsAndHashCode;
@@ -39,8 +38,4 @@ public class FinTradeOrder extends BaseEntity {
 
     @TableField(value = "order_status")
     private Integer orderStatus;
-
-    @TableLogic
-    @TableField(value = "del_flag")
-    private Integer delFlag;
 }

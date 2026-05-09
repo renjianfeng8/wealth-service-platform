@@ -1,7 +1,6 @@
 package com.finance.platform.message.entity;
 
 import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.finance.common.entity.BaseEntity;
 import lombok.EqualsAndHashCode;
@@ -37,8 +36,4 @@ public class FinMessage extends BaseEntity {
     /** 消息表无 update_time 列 */
     @TableField(exist = false)
     private LocalDateTime updateTime;
-
-    @TableLogic
-    @TableField(value = "del_flag")
-    private Integer delFlag;
 }

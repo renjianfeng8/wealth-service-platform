@@ -16,7 +16,7 @@
 | S-2 | **HIGH** | UmsAdminRoleRelationService/Impl | 13/19 | `getRoleIdByAdminId()` 定义并实现但从未被调用 |
 | S-3 | **HIGH** | UmsRoleResourceRelationService/Impl | 13/19 | `getResourceIdByRoleIds()` 定义并实现但从未被调用 |
 | S-4 | **HIGH** | UmsResourceService/Impl | 12/17 | `getUrlByResourceIds()` 定义并实现但从未被调用 |
-| S-5 | **HIGH** | UmsAdminServiceImpl | 36,44,48 | login() 抛出 `RuntimeException`，被全局异常捕获为 500，应返回 401 |
+| S-5 | **HIGH** | UmsAdminServiceImpl | 36,44,48 | login() 抛出 `RuntimeException`，被全局异常捕获为 500，应返回 401 **✅ 已修复** |
 | S-6 | MEDIUM | SystemWebConfig | 3 | 未使用的导入 `AuthConstant` |
 | S-7 | MEDIUM | AuthConstant/SystemWebConfig | 7/24-30 | PERMIT_ALL_URLS 常量路径含 `/system` 前缀但 WebConfig 使用去掉前缀的路径 |
 | S-8 | ~~MEDIUM~~ | PermissionInterceptor | 多处 | 中文编码问题 **✅ 已修复** |
@@ -34,23 +34,23 @@
 
 | # | 严重度 | 模块 | 文件 | 行号 | 问题描述 |
 |---|--------|------|------|------|---------|
-| U-1 | **HIGH** | user | User.java | 34 | `delFlag` 字段在 BaseEntity 和子类中重复声明，内存双份 |
-| U-2 | **HIGH** | common | JwtUtil.java | 31 | JWT secret key 长度无检查，短于 32 字符运行时崩溃 |
+| U-1 | **HIGH** | user | User.java | 34 | `delFlag` 字段在 BaseEntity 和子类中重复声明，内存双份 **✅ 已修复** |
+| U-2 | **HIGH** | common | JwtUtil.java | 31 | JWT secret key 长度无检查，短于 32 字符运行时崩溃 **✅ 已修复** |
 | U-3 | MEDIUM | user | UserController.java | 77 | update 端口的 `@Valid` 要求 password 但立即置 null |
 | U-4 | LOW | user | UserController.java | 77 | 依赖 MyBatis-Plus 默认 `FieldStrategy.NOT_NULL` 保护密码 |
 | U-5 | MEDIUM | user | WebConfig/UserServiceImpl | 23-33 | JWT 路径/设计问题 |
 | U-6 | LOW | user | UserController.java | 93-98 | register() 接受可控的 id 字段 |
 | U-7 | MEDIUM | user | UserServiceImpl.java | 57 | JWT 只含 username，不含 userId |
-| P-1 | **HIGH** | product | FinProduct/FinMarketData | 48/51-56 | `delFlag` 字段重复声明 |
+| P-1 | **HIGH** | product | FinProduct/FinMarketData | 48/51-56 | `delFlag` 字段重复声明 **✅ 已修复** |
 | P-2 | **HIGH** | product | FinMarketData.java | 50-52 | `updateTime` 字段冲突 |
 | P-3 | MEDIUM | product | FinProduct/FinMarketDataServiceImpl | 51-53 | update 查不到实体静默返回 false |
 | P-4 | LOW | product | FinProductServiceImpl | 42-46 | 缺少 `productName` 的 `@NotBlank` 校验 |
 | P-5 | LOW | product | FinProduct.java | 22-44 | `@TableField` 全部冗余 |
-| A-1 | **HIGH** | account | FinUserFavorite.java | 28-33 | `delFlag`/`updateTime` 字段重复声明 |
+| A-1 | **HIGH** | account | FinUserFavorite.java | 28-33 | `delFlag`/`updateTime` 字段重复声明（fin_user_favorite 表确无对应列，保留 `@TableField(exist=false)` 正确） |
 | A-2 | **HIGH** | account/common | FinUserFavoriteDTO | 两处 | `FinUserFavoriteDTO` 在两个模块中重复定义 |
 | A-3 | MEDIUM | account | FinUserFavoriteServiceImpl | 51-53 | update 查不到实体静默返回 false |
 | A-4 | MEDIUM | account | FinUserFavoriteController | 113-117 | 物理删除文档注释需确认 |
-| A-5 | MEDIUM | account | FinUserFavoriteServiceImpl | 42-47 | create 未检查重复关注 |
+| A-5 | MEDIUM | account | FinUserFavoriteServiceImpl | 42-47 | create 未检查重复关注 **✅ 已修复** |
 | C-1 | MEDIUM | common | ProductFeignClient | 13 | 返回类型为 `Result<?>` 擦除类型 |
 | C-2 | LOW | product/account | pom.xml | 多处 | 缺少显式 openfeign 依赖声明 |
 | C-3 | **HIGH** | all three | application.yml | 多处 | 缺少 `jwt.secret`/`jwt.expire` 本地开发默认值 |
@@ -61,18 +61,18 @@
 
 | # | 严重度 | 模块 | 文件 | 行号 | 问题描述 |
 |---|--------|------|------|------|---------|
-| T-1 | **HIGH** | trade | FinTradeOrderServiceImpl | 65 | BeanUtils.copyProperties 覆盖 null 值到实体 |
+| T-1 | **HIGH** | trade | FinTradeOrderServiceImpl | 65 | BeanUtils.copyProperties 覆盖 null 值到实体 **✅ 已修复** |
 | T-2 | MEDIUM | trade | FinTradeOrderServiceImpl | 34 | list() 无分页/排序 |
 | T-3 | LOW | trade | FinTradeOrderServiceImpl | 72-74 | delete 未找到时静默返回 false |
 | T-4 | LOW | trade | FinTradeOrderController | 73-78 | 分页代码冗余可抽取 |
-| M-1 | **HIGH** | message | FinNewsServiceImpl | 56 | BeanUtils.copyProperties 覆盖 null 值 |
-| M-2 | **HIGH** | message | FinMessageServiceImpl | 56 | BeanUtils.copyProperties 覆盖 null 值 |
+| M-1 | **HIGH** | message | FinNewsServiceImpl | 56 | BeanUtils.copyProperties 覆盖 null 值 **✅ 已修复** |
+| M-2 | **HIGH** | message | FinMessageServiceImpl | 56 | BeanUtils.copyProperties 覆盖 null 值 **✅ 已修复** |
 | M-3 | MEDIUM | message | RabbitMqConfig | 全部 | 声明了 Queue/Exchange 但无消费者 |
 | M-4 | MEDIUM | message | FinMessage/FinNewsServiceImpl | 33 | list() 无分页/排序 |
 | M-5 | LOW | message | FinMessageDTO | 17 | msgType 缺少 @NotNull 校验 |
 | M-6 | LOW | message | FinMessage/FinNews.java | 38-42 | updateTime 覆盖冲突 |
-| E-1 | **HIGH** | search | ProductDocument | 29,33,36 | BigDecimal 使用 FieldType.Double 精度丢失 |
-| E-2 | **HIGH** | search | pom.xml | 19-38 | 未排除 `spring-boot-starter-amqp` 传递依赖 |
+| E-1 | **HIGH** | search | ProductDocument | 29,33,36 | BigDecimal 使用 FieldType.Double 精度丢失 **✅ 已修复** |
+| E-2 | **HIGH** | search | pom.xml | 19-38 | 未排除 `spring-boot-starter-amqp` 传递依赖 **✅ 已修复** |
 | E-3 | MEDIUM | search | ProductRepository | 11 | Containing 在 Keyword 字段上生成慢速通配符查询 |
 | E-4 | MEDIUM | search | ProductSearchServiceImpl | 36 | deleteById 未处理文档不存在的异常 |
 | E-5 | MEDIUM | search | ProductSearchController | 23 | POST 直接接受 ProductDocument 实体 |
@@ -141,21 +141,33 @@
 | 9 | 添加 price 表单校验 | product/index.vue | `rules` 添加 `price: [{ required: true }]` |
 | 10 | 移除不存在的 desc 列 | search/index.vue | 移除 `description` 列（ProductDocument 无此字段） |
 
+## 三、P0/P1 高危修复（7项高优先级修改）
+
+| # | 严重度 | 修复内容 | 涉及文件 | 修改说明 |
+|---|--------|---------|---------|---------|
+| 1 | P0 | JWT Secret 长度校验 | JwtUtil.java | 添加 `@PostConstruct init()` 校验 ≥32 字节 |
+| 2 | P0 | BeanUtils.copyProperties null 覆盖 | FinTradeOrderServiceImpl, FinNewsServiceImpl, FinMessageServiceImpl | 改用 `BeanConvertUtil.copyNonNullProperties()` 跳过 null 字段 |
+| 3 | P0 | ES 价格字段精度修复 | ProductDocument.java | `FieldType.Double` → `FieldType.Scaled_Float`, `scalingFactor = 10000` |
+| 4 | P0 | 排除 AMQP 传递依赖 | finance-search/pom.xml | 排除 `spring-boot-starter-amqp` 和 `spring-boot-starter-data-redis` |
+| 5 | P1 | login() 异常类型修复 | UmsAdminServiceImpl.java | `RuntimeException` → `ServiceException(401, ...)` |
+| 6 | P1 | 实体类 delFlag 重复声明 | 11个实体类 | 移除子类 delFlag 声明，统一继承 BaseEntity 的 `@TableLogic` |
+| 7 | P1 | 重复关注检查 | FinUserFavoriteServiceImpl, FinUserFavoriteController | 新增 `lambdaQuery()` 重复校验，返回错误提示 |
+
 ---
 
 ## 三、推荐修复优先级
 
 ### P0 — 运行时崩溃（需立即修复）
-- [ ] U-2: JWT Secret 长度校验
-- [ ] T-1/M-1/M-2: BeanUtils.copyProperties null 覆盖（3处）
-- [ ] E-1: ES 价格字段 Double → Scaled_Float
-- [ ] E-2/CF-2: search 模块排除 AMQP
+- [x] U-2: JWT Secret 长度校验
+- [x] T-1/M-1/M-2: BeanUtils.copyProperties null 覆盖（3处）
+- [x] E-1: ES 价格字段 Double → Scaled_Float
+- [x] E-2/CF-2: search 模块排除 AMQP
 - [ ] S-1: 登录空指针风险
 
 ### P1 — 业务逻辑错误
-- [ ] S-5: login() RuntimeException → ServiceException(401)
-- [ ] U-1/P-1/P-2/A-1: 实体字段重复声明修复
-- [ ] A-5: 重复关注检查
+- [x] S-5: login() RuntimeException → ServiceException(401)
+- [x] U-1/P-1/P-2/A-1: 实体字段重复声明修复
+- [x] A-5: 重复关注检查
 - [ ] C-3: 本地开发 JWT 默认值
 - [ ] S-2/S-3/S-4: 删除或重构死方法
 

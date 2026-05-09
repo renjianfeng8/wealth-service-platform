@@ -1,6 +1,7 @@
 package com.finance.platform.system.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.finance.common.exception.ServiceException;
 import com.finance.common.dto.LoginDTO;
 import com.finance.common.utils.JwtUtil;
 import com.finance.platform.system.entity.UmsAdmin;
@@ -33,7 +34,7 @@ public class UmsAdminServiceImpl extends ServiceImpl<UmsAdminMapper, UmsAdmin> i
     @Override
     public String login(LoginDTO dto) {
         if (!StringUtils.hasText(dto.getUsername()) || !StringUtils.hasText(dto.getPassword())) {
-            throw new RuntimeException("用户名密码不能为空");
+            throw new ServiceException(401, "用户名密码不能为空");
         }
 
         UmsAdmin admin = lambdaQuery()
@@ -41,11 +42,11 @@ public class UmsAdminServiceImpl extends ServiceImpl<UmsAdminMapper, UmsAdmin> i
                 .one();
 
         if (admin == null) {
-            throw new RuntimeException("用户不存在");
+            throw new ServiceException(401, "用户不存在");
         }
 
         if (!PASSWORD_ENCODER.matches(dto.getPassword(), admin.getPassword())) {
-            throw new RuntimeException("密码错误");
+            throw new ServiceException(401, "密码错误");
         }
 
         return jwtUtil.generateToken(admin.getUsername());
