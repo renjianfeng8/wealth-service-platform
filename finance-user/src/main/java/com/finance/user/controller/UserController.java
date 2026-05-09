@@ -19,7 +19,7 @@ import java.util.List;
 
 @RestController
 @Tag(name = "系统用户管理", description = "系统用户相关接口")
-@RequestMapping("/user")
+@RequestMapping
 public class UserController {
 
     private final UserService userService;

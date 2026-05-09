@@ -23,9 +23,9 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addInterceptor(new LoginInterceptor(jwtUtil))
                 .addPathPatterns("/**")
                 .excludePathPatterns(
-                        "/user/login",
-                        "/user/register",
-                        "/user/resetPassword",
+                        "/login",
+                        "/register",
+                        "/resetPassword",
                         "/doc.html",
                         "/webjars/**",
                         "/swagger-resources/**",

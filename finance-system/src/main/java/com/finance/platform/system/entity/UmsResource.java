@@ -1,6 +1,7 @@
 package com.finance.platform.system.entity;
 
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.finance.common.entity.BaseEntity;
 import lombok.EqualsAndHashCode;
@@ -34,7 +35,8 @@ public class UmsResource extends BaseEntity {
     @TableField(exist = false)
     private LocalDateTime updateTime;
 
-    /** ums_resource 表无 del_flag 列 */
-    @TableField(exist = false)
+    /** ums_resource 表有 del_flag 列，使用逻辑删除 */
+    @TableLogic
+    @TableField("del_flag")
     private Integer delFlag;
 }
