@@ -1,7 +1,7 @@
 import request from './index'
 
 export function getTradeOrderPage(params: any) {
-  return request.get('/trade/finTradeOrder', { params })
+  return request.get('/trade/finTradeOrder/page', { params })
 }
 
 export function getTradeOrderList() {

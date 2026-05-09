@@ -1,7 +1,7 @@
 import request from './index'
 
 export function getFavoritePage(params: any) {
-  return request.get('/account/finUserFavorite', { params })
+  return request.get('/account/finUserFavorite/page', { params })
 }
 
 export function getFavoriteList() {

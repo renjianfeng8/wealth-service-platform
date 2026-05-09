@@ -2,7 +2,7 @@ import request from './index'
 
 // 站内消息
 export function getMessagePage(params: any) {
-  return request.get('/message/finMessage', { params })
+  return request.get('/message/finMessage/page', { params })
 }
 
 export function getMessageList() {
@@ -27,7 +27,7 @@ export function deleteMessage(id: number) {
 
 // 资讯
 export function getNewsPage(params: any) {
-  return request.get('/message/finNews', { params })
+  return request.get('/message/finNews/page', { params })
 }
 
 export function getNewsList() {

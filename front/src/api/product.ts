@@ -2,7 +2,7 @@ import request from './index'
 
 // 产品
 export function getProductPage(params: { pageNum: number; pageSize: number }) {
-  return request.get('/product/finProduct', { params })
+  return request.get('/product/finProduct/page', { params })
 }
 
 export function getProductList() {
@@ -27,7 +27,7 @@ export function deleteProduct(id: number) {
 
 // 行情数据
 export function getMarketDataPage(params: { pageNum: number; pageSize: number }) {
-  return request.get('/product/finMarketData', { params })
+  return request.get('/product/finMarketData/page', { params })
 }
 
 export function getMarketDataList() {

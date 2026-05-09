@@ -1,41 +1,41 @@
 import request from './index'
 
 export function getUserPage(params: { pageNum: number; pageSize: number }) {
-  return request.get('/user/user/page', { params })
+  return request.get('/user/page', { params })
 }
 
 export function getUserList() {
-  return request.get('/user/user')
+  return request.get('/user')
 }
 
 export function getUserById(id: number) {
-  return request.get(`/user/user/${id}`)
+  return request.get(`/user/${id}`)
 }
 
 export function createUser(data: any) {
-  return request.post('/user/user', data)
+  return request.post('/user', data)
 }
 
 export function updateUser(id: number, data: any) {
-  return request.put(`/user/user/${id}`, data)
+  return request.put(`/user/${id}`, data)
 }
 
 export function deleteUser(id: number) {
-  return request.delete(`/user/user/${id}`)
+  return request.delete(`/user/${id}`)
 }
 
 export function deleteUserBatch(ids: number[]) {
-  return request.delete('/user/user/batch', { data: ids })
+  return request.delete('/user/batch', { data: ids })
 }
 
 export function registerUser(data: any) {
-  return request.post('/user/user/register', data)
+  return request.post('/user/register', data)
 }
 
 export function resetPassword(data: any) {
-  return request.post('/user/user/resetPassword', data)
+  return request.post('/user/resetPassword', data)
 }
 
 export function userLogin(data: { username: string; password: string }) {
-  return request.post('/user/user/login', data)
+  return request.post('/user/login', data)
 }
