@@ -103,6 +103,6 @@ onMounted(fetchData)
 </script>
 <style scoped>
 .page-header h3 { margin-bottom: 16px; }
-.search-card .el-form { margin-bottom: 0; }
-.pagination-wrap { margin-top: 16px; display: flex; justify-content: flex-end; }
+
+.table-action-bar { margin-bottom: 16px; }
 </style>

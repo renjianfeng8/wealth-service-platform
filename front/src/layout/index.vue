@@ -18,8 +18,8 @@ import Navbar from './Navbar.vue'
 </script>
 
 <style scoped>
-.layout-container { display: flex; height: 100vh; }
-.layout-sidebar { width: var(--sidebar-width); background: #304156; overflow-y: auto; }
-.layout-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-.layout-content { flex: 1; padding: 20px; background: #f0f2f5; overflow-y: auto; }
+.layout-container { display: flex; height: 100vh; background: var(--bg-page); }
+.layout-sidebar { width: var(--sidebar-width); overflow-y: auto; flex-shrink: 0; }
+.layout-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+.layout-content { flex: 1; padding: 20px 24px; background: var(--bg-page); overflow-y: auto; }
 </style>

@@ -78,8 +78,35 @@ const activeMenu = computed(() => route.path)
 </script>
 
 <style scoped>
-.sidebar { height: 100%; display: flex; flex-direction: column; }
-.sidebar-logo { height: 50px; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
-.sidebar-logo-text { color: #fff; font-size: 16px; font-weight: 600; letter-spacing: 1px; }
-.el-menu { border-right: none; }
+.sidebar {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-sidebar);
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.08);
+}
+
+.sidebar-logo {
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.15);
+}
+
+.sidebar-logo-text {
+  color: #fff;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  background: linear-gradient(135deg, #409eff, #6ab0ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.el-menu {
+  border-right: none !important;
+}
 </style>

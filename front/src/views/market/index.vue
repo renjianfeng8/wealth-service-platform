@@ -98,6 +98,5 @@ async function handleDelete(id: number) { try { await deleteMarketData(id); ElMe
 onMounted(fetchData)
 </script>
 <style scoped>
-.page-header h3 { margin-bottom: 16px; }
-.pagination-wrap { margin-top: 16px; display: flex; justify-content: flex-end; }
+/* Global styles handle pagination-wrap and page-header */
 </style>

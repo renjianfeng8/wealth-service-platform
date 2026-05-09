@@ -12,9 +12,11 @@
       </el-form>
     </el-card>
     <el-card shadow="never" style="margin-top:16px;">
-      <div style="margin-bottom:16px;">
-        <span style="font-size:14px;color:#909399;" v-if="total > 0">共找到 {{ total }} 条结果</span>
-        <span style="font-size:14px;color:#909399;" v-else-if="searched">未找到相关结果</span>
+      <div class="search-result-info" v-if="total > 0">
+        共找到 {{ total }} 条结果
+      </div>
+      <div class="search-result-info" v-else-if="searched">
+        未找到相关结果
       </div>
       <el-table :data="tableData" stripe v-loading="loading" border>
         <el-table-column prop="id" label="ID" width="200" />
@@ -72,5 +74,14 @@ async function handleDelete(id: string) {
 </script>
 <style scoped>
 .page-header h3 { margin-bottom: 16px; }
-.pagination-wrap { margin-top: 16px; display: flex; justify-content: flex-end; }
+
+.search-result-info {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+  padding: 8px 12px;
+  background: var(--bg-table-stripe);
+  border-radius: var(--radius-sm);
+  border-left: 3px solid var(--primary);
+}
 </style>

@@ -163,3 +163,7 @@ async function handleDelete(id: number) {
 
 onMounted(fetchData)
 </script>
+
+<style scoped>
+.user-page { padding: 0; }
+</style>

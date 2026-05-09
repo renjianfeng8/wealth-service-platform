@@ -28,7 +28,44 @@ function handleLogout() {
 </script>
 
 <style scoped>
-.navbar { height: var(--navbar-height); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; background: #fff; border-bottom: 1px solid #e6e6e6; }
-.navbar-right { display: flex; align-items: center; gap: 12px; }
-.navbar-user { font-size: 14px; color: #333; }
+.navbar {
+  height: var(--navbar-height);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  background: #fff;
+  border-bottom: 1px solid var(--border-color);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+  position: relative;
+  z-index: 10;
+}
+
+.navbar-left {
+  display: flex;
+  align-items: center;
+}
+
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.navbar-user {
+  font-size: 14px;
+  color: var(--text-regular);
+  font-weight: 500;
+}
+
+.navbar-user::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--success);
+  margin-right: 8px;
+  vertical-align: middle;
+}
 </style>
