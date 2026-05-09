@@ -2,9 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-# ==============================================
 # 金融项目开发规范（自动遵守）
-# ==============================================
 
 技术栈：SpringBoot 3.3.5 + SpringCloud 2023.0.3 + Spring Cloud Alibaba 2023.0.1.2 + MyBatis-Plus 3.5.7 + MySQL 8 + Redis 5 + RabbitMQ 3.10 + ES 8.11 + JWT (jjwt 0.11.5) + Knife4j 4.4.0 + Swagger + Nginx
 
@@ -12,9 +10,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 数据库：finance（utf8mb4）
 
-# ======================
 # 一、环境版本（严格锁定）
-# ======================
 
 JDK: 21.0.3
 Maven: 3.9.9
@@ -43,9 +39,7 @@ Knife4j: 4.4.0
   TypeScript: 5.7
   vue-tsc: 2.2.8
 
-# ======================
 # 二、数据库规范（必须严格遵守）
-# ======================
 
 1. 数据库名：finance
 2. 字符集：utf8mb4
@@ -62,9 +56,7 @@ Knife4j: 4.4.0
 - `fin_user_favorite` 无 del_flag 和 update_time 列（唯一无逻辑删除的表）
 - `ums_admin` 无 update_time 列
 
-# ======================
 # 三、当前项目所有表（必须严格对应）
-# ======================
 
 ## 1. 用户模块
 sys_user              # 系统用户表
@@ -90,9 +82,7 @@ ums_resource          # 资源
 ums_admin_role_relation
 ums_role_resource_relation
 
-# ======================
 # 四、代码结构规范（强制）
-# ======================
 
 包结构必须如下：
 com.finance.platform.模块名
@@ -109,9 +99,7 @@ constant      # 常量
 exception     # 异常
 common        # 公共
 
-# ======================
 # 五、MyBatis-Plus 规范
-# ======================
 
 ## 实体类规范
 
@@ -184,9 +172,7 @@ public class MyBatisPlusConfig {
 
 各业务模块无需重复配置，引入 finance-common 依赖后自动生效。
 
-# ======================
 # 六、接口统一返回格式
-# ======================
 
 ```json
 {
@@ -204,9 +190,7 @@ public class MyBatisPlusConfig {
 404 资源不存在
 500 服务器异常
 
-# ======================
 # 七、命名规范（强制）
-# ======================
 
 类名：大驼峰
 方法名：小驼峰
@@ -215,9 +199,7 @@ public class MyBatisPlusConfig {
 表名：小写+下划线
 字段名：小写+下划线
 
-# ======================
 # 八、业务模块对应关系（必须遵守）
-# ======================
 
 sys_user          → 用户管理
 fin_product       → 产品管理
@@ -228,9 +210,7 @@ fin_news          → 资讯
 fin_message       → 消息推送
 ums_*             → 后台权限
 
-# ======================
 # 九、AI 生成规则
-# ======================
 
 1. 必须严格按照上面的表结构生成 Entity（继承 BaseEntity）、Mapper、Service、Controller、Vo、Dto
 2. 必须使用 MyBatis-Plus
@@ -243,9 +223,7 @@ ums_*             → 后台权限
 9. 不允许生成不存在的表或字段
 10. 生成代码必须能直接运行
 
-# ======================
 # 十、禁止行为
-# ======================
 
 - 禁止修改表结构
 - 禁止使用不兼容的依赖版本
@@ -254,9 +232,7 @@ ums_*             → 后台权限
 - 禁止 hardcode 密码/IP
 - 禁止无注释
 
-# ======================
 # 十一、项目模块架构（多模块 Maven + Spring Cloud Alibaba）
-# ======================
 
 finance-mid-platform (pom)
 ├── finance-common      # 公共依赖模块（DTO、工具类、Feign接口、统一返回、异常处理、通用配置）
@@ -321,9 +297,7 @@ gateway（端口 8080）负责统一路由转发，所有前端请求统一经�
 | /message/** | finance-message |
 | /search/** | finance-search |
 
-# ======================
 # 十二、开发常用命令
-# ======================
 
 ```bash
 # 1. 编译公共模块（必须先执行，修改 common 后要重新 install）
@@ -348,9 +322,7 @@ java -jar finance-system/target/finance-system-1.0.0.jar
 mvn test -pl finance-common -DskipTests=false
 ```
 
-# ======================
 # 十三、核心基础设施类说明
-# ======================
 
 | 类 | 路径 | 用途 |
 |----|------|------|
@@ -369,9 +341,7 @@ mvn test -pl finance-common -DskipTests=false
 | RedisUtil | finance-common/utils/RedisUtil.java | Redis 操作工具类 |
 | AuthConstant | finance-common/constants/AuthConstant.java | 权限相关常量 |
 
-# ======================
 # 十四、常见代码模式
-# ======================
 
 ## Entity → VO 转换
 
@@ -472,9 +442,7 @@ if (count > 0) {
 }
 ```
 
-# ======================
 # 十五、项目健康检查规则（强制遵守）
-# ======================
 
 **每次执行项目健康检查、错误扫描、启动异常排查时，必须优先调用 memory 中的 health-check-skill 并严格按其规则执行。**
 
