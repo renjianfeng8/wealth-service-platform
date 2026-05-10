@@ -102,37 +102,37 @@ INSERT INTO fin_message (user_id, msg_type, msg_title, msg_content, read_flag) V
 -- ============================================================
 -- 8. ums_admin — 后台管理员（6条）
 -- ============================================================
-INSERT INTO ums_admin (username, password, email, nick_name, status, login_time) VALUES
-('admin',    '$2b$04$.IbVq3aPZ5lZnfaoo22sJeECer7ertr5zY7fB1l2J8ZlGGYn.UVmy', 'admin@finance.com',    '超级管理员', 1, '2026-05-10 08:30:00'),
-('zhangsan', '$2b$04$hy8tzH1X1GAaVNI/NH/YV.burYsETKkkXwpC4yQkYfh/TDSws.Cv2', 'zhangsan@finance.com', '张三',       1, '2026-05-09 16:00:00'),
-('lisi',     '$2b$04$T3t2IvIofOd0pg5D37Mwrue/sjmnFzv0xk9Zw7H7kwB.l/8YfO/Ra', 'lisi@finance.com',     '李四',       1, '2026-05-08 10:00:00'),
-('wangwu',   '$2b$04$LI/0on7HMMrs2D.lcVen8.QKFTW.9paFicW6fP2oaJ40p4EwadpY2', 'wangwu@finance.com',   '王五',       1, NULL),
-('zhaoqi',   '$2b$04$rZ0iu.8n7XCFVg46y6ObKe4hFBsz6IC3amlUVsGhkSJ0DvkCob8Ey', 'zhaoqi@finance.com',   '赵琦',       0, NULL),
-('sunjiu',   '$2b$04$sdW2N6KoDwdV753sh7eFduKcJg9s5aAinXPiEylrqlQI1VOsGulyS', 'sunjiu@finance.com',   '孙九',       1, NULL);
+INSERT INTO ums_admin (username, password, email, nick_name, status, login_time, create_time) VALUES
+('admin',    '$2b$04$.IbVq3aPZ5lZnfaoo22sJeECer7ertr5zY7fB1l2J8ZlGGYn.UVmy', 'admin@finance.com',    '超级管理员', 1, '2026-05-10 08:30:00', '2026-04-01 08:00:00'),
+('zhangsan', '$2b$04$hy8tzH1X1GAaVNI/NH/YV.burYsETKkkXwpC4yQkYfh/TDSws.Cv2', 'zhangsan@finance.com', '张三',       1, '2026-05-09 16:00:00', '2026-04-02 10:00:00'),
+('lisi',     '$2b$04$T3t2IvIofOd0pg5D37Mwrue/sjmnFzv0xk9Zw7H7kwB.l/8YfO/Ra', 'lisi@finance.com',     '李四',       1, '2026-05-08 10:00:00', '2026-04-03 10:00:00'),
+('wangwu',   '$2b$04$LI/0on7HMMrs2D.lcVen8.QKFTW.9paFicW6fP2oaJ40p4EwadpY2', 'wangwu@finance.com',   '王五',       1, NULL,                '2026-04-04 10:00:00'),
+('zhaoqi',   '$2b$04$rZ0iu.8n7XCFVg46y6ObKe4hFBsz6IC3amlUVsGhkSJ0DvkCob8Ey', 'zhaoqi@finance.com',   '赵琦',       0, NULL,                '2026-04-05 10:00:00'),
+('sunjiu',   '$2b$04$sdW2N6KoDwdV753sh7eFduKcJg9s5aAinXPiEylrqlQI1VOsGulyS', 'sunjiu@finance.com',   '孙九',       1, NULL,                '2026-04-06 10:00:00');
 -- 密码对照: admin=admin123, zhangsan=123456, lisi=abc123, wangwu=test123, zhaoqi=password, sunjiu=hello123
 
 -- ============================================================
 -- 9. ums_role — 后台角色（5条）
 -- ============================================================
-INSERT INTO ums_role (name, description, status, sort) VALUES
-('超级管理员', '拥有所有权限',         1, 1),
-('内容管理员', '管理资讯和消息发布',   1, 2),
-('风控审核员', '审核交易和产品上下架', 1, 3),
-('数据查询员', '仅查看看板和数据报表', 1, 4),
-('实习运营',   '有限的内容管理权限',   0, 5);
+INSERT INTO ums_role (name, description, status, sort, create_time) VALUES
+('超级管理员', '拥有所有权限',         1, 1, '2026-04-20 08:00:00'),
+('内容管理员', '管理资讯和消息发布',   1, 2, '2026-04-21 08:00:00'),
+('风控审核员', '审核交易和产品上下架', 1, 3, '2026-04-22 08:00:00'),
+('数据查询员', '仅查看看板和数据报表', 1, 4, '2026-04-23 08:00:00'),
+('实习运营',   '有限的内容管理权限',   0, 5, '2026-04-24 08:00:00');
 
 -- ============================================================
 -- 10. ums_resource — 后台资源（8条）
 -- ============================================================
-INSERT INTO ums_resource (name, url, description, category_id) VALUES
-('用户管理',   '/user/**',     '系统用户管理',    1),
-('产品管理',   '/product/**',  '产品上下架管理',  2),
-('行情管理',   '/product/market/**', '行情数据管理', 2),
-('交易管理',   '/trade/**',    '交易订单管理',    3),
-('资讯管理',   '/message/news/**', '财经资讯管理', 4),
-('消息管理',   '/message/**',  '站内消息管理',    4),
-('数据报表',   '/report/**',   '数据统计报表',    5),
-('系统配置',   '/system/**',   '系统参数配置',    1);
+INSERT INTO ums_resource (name, url, description, category_id, create_time) VALUES
+('用户管理',   '/user/**',     '系统用户管理',    1, '2026-04-15 08:00:00'),
+('产品管理',   '/product/**',  '产品上下架管理',  2, '2026-04-15 08:01:00'),
+('行情管理',   '/product/market/**', '行情数据管理', 2, '2026-04-15 08:02:00'),
+('交易管理',   '/trade/**',    '交易订单管理',    3, '2026-04-15 08:03:00'),
+('资讯管理',   '/message/news/**', '财经资讯管理', 4, '2026-04-15 08:04:00'),
+('消息管理',   '/message/**',  '站内消息管理',    4, '2026-04-15 08:05:00'),
+('数据报表',   '/report/**',   '数据统计报表',    5, '2026-04-15 08:06:00'),
+('系统配置',   '/system/**',   '系统参数配置',    1, '2026-04-15 08:07:00');
 
 -- ============================================================
 -- 11. ums_admin_role_relation — 管理员角色关联（8条）
