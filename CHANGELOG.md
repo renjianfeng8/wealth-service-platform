@@ -1,5 +1,105 @@
 # 更新日志
 
+## v1.4.0 (2026-05-10)
+
+### 双端架构落地：用户前台 front-user + Playwright E2E
+
+新增独立用户门户 `front-user/`，面向普通用户，与现有管理员后台 `front/` 构成完整的双端架构体系。同时配套 Playwright E2E 自动化测试套件，覆盖全部用户端业务场景。
+
+#### 新增：用户前台 (front-user/)
+
+全新的 Vue 3 + TypeScript 企业级金融用户端门户（端口 3001），包含 8 个核心功能模块：
+
+- **登录/注册** — 基于 `sys_user` 表的普通用户 JWT 登录，包含错误密码验证
+- **仪表盘** — 用户资产概览与全局数据看板
+- **产品中心** — 金融产品浏览与查询
+- **实时行情** — 产品市场价格数据实时展示
+- **我的自选** — 用户自选产品管理（基于 `fin_user_favorite`）
+- **交易委托** — 下单委托与订单历史查看（基于 `fin_trade_order`）
+- **财经资讯** — 资讯列表与详情（基于 `fin_news`）
+- **消息中心** — 站内消息接收与管理（基于 `fin_message`）
+- **个人中心** — 用户信息查看与修改
+
+技术特点：
+- 企业级 UI 设计，移动端自适应布局（rem/vw 响应式方案）
+- Vite 代理配置：`/api` → `http://localhost:8080`（网关统一入口）
+- Pinia 状态管理（useUserStore），与后端 `sys_user` 接口对接
+- Vue Router 路由守卫实现未登录自动拦截跳转
+
+#### 新增：Playwright E2E 自动化测试
+
+为 front-user 配置 37 条 Playwright 端到端测试用例，覆盖 11 个业务模块：
+
+| 测试模块 | 测试内容 |
+|---------|---------|
+| 登录测试 | 正常登录、错误密码验证（错误提示文案检查） |
+| 仪表盘 | 页面加载与核心元素渲染 |
+| 产品中心 | 产品列表渲染、产品搜索 |
+| 实时行情 | 行情数据表格加载、价格展示 |
+| 我的自选 | 自选列表展示、添加/删除自选 |
+| 交易委托 | 下单表单操作、订单历史查询 |
+| 财经资讯 | 资讯列表、资讯详情页跳转 |
+| 消息中心 | 消息列表、消息标记已读 |
+| 个人中心 | 用户信息展示、个人信息编辑 |
+| 退出登录 | 登出流程、登出后跳转登录页 |
+| 导航菜单 | 所有菜单项的可点击性与路由跳转 |
+
+测试命令：
+```bash
+cd front-user
+npx playwright install chromium   # 首次安装浏览器
+npm run test:e2e                  # 运行全部 37 条测试
+npm run test:e2e:report           # 查看测试报告
+npm run test:e2e:ui               # 调试模式
+```
+
+测试账号：`zhangwei` / `123456`（`sys_user` 表）
+
+#### 文档重构
+
+- **Startup.md** — 全面重构启动指南，新增 front-user 启动步骤、双端 E2E 测试说明、双测试账号对照表、全链路验证命令、端口对照表更新（增加用户前台 3001 端口）、常见问题排查更新
+- 双端架构说明：管理员后台（`front/`, 端口 3000）+ 用户前台（`front-user/`, 端口 3001）
+
+### 测试数据补充
+
+#### 追加全量测试数据
+
+在 `init.sql` 中追加 12 张表的完整测试数据，共计 83 条记录，覆盖全业务场景：
+
+| 表名 | 记录数 | 说明 |
+|------|:-----:|------|
+| `sys_user` | 5 | 前台测试用户（含 zhangwei） |
+| `fin_product` | 12 | 不同类别金融产品 |
+| `fin_market_data` | 15 | 行情历史数据 |
+| `fin_user_favorite` | 5 | 用户自选关联 |
+| `fin_trade_order` | 8 | 不同状态交易委托 |
+| `fin_news` | 10 | 财经资讯文章 |
+| `fin_message` | 8 | 站内消息 |
+| `ums_admin` | 3 | 系统管理员 |
+| `ums_role` | 3 | 角色定义 |
+| `ums_resource` | 8 | 权限资源 |
+| `ums_admin_role_relation` | 3 | 管理员-角色关联 |
+| `ums_role_resource_relation` | 8 | 角色-资源关联 |
+
+密码统一使用 BCrypt 加密，关键关联字段（`product_code`、`user_id`）保持跨表一致性。
+
+#### 修复测试数据空值
+
+修复 `ums_admin`、`ums_role`、`ums_resource` 表 `INSERT` 语句中 `create_time` 为 `NULL` 的问题，确保数据导入后时间字段均有值。
+
+### 项目规范更新
+
+- **CLAUDE.md** — 全面同步项目最新状态：
+  - 新增前端技术栈版本锁定（Vue/Vite/Element Plus/Pinia/TypeScript/vue-tsc）
+  - BaseEntity 继承规则表（明确各字段子类处理方式，含 @TableLogic 统一继承）
+  - 新增基础设施类说明表（BaseEntity/Result/BeanConvertUtil/JwtUtil 等 13 个类）
+  - 新增 6 种常见代码模式（Entity→VO 转换、分页查询、null 安全更新、业务异常、Feign 调用、JWT 流程、重复检查）
+  - 更新健康检查清单和高频问题（JWT 配置、拦截器 context-path、LoginInterceptor 通配符等）
+  - 合并端口表并补充网关路由说明
+  - 新增第十五节「项目健康检查规则」
+
+---
+
 ## v1.3.0 (2026-05-09)
 
 ### 数据库全量扫描 & init.sql 重建
