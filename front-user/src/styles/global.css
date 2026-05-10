@@ -1,0 +1,226 @@
+/* ====================================
+   金融投资平台 — 全局样式表
+   ==================================== */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body, #app {
+  height: 100%;
+  font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ====================================
+   Design Tokens
+   ==================================== */
+:root {
+  --navbar-height: 56px;
+  --primary: #1a6dff;
+  --primary-light: #e8f0fe;
+  --primary-dark: #0a4dcc;
+  --success: #34c759;
+  --warning: #ff9500;
+  --danger: #ff3b30;
+  --info: #8e8e93;
+
+  --bg-page: #f5f7fa;
+  --bg-card: #ffffff;
+  --bg-navbar: #ffffff;
+  --bg-footer: #1c1c1e;
+
+  --text-primary: #1c1c1e;
+  --text-regular: #3a3a3c;
+  --text-secondary: #8e8e93;
+  --text-placeholder: #c7c7cc;
+
+  --border-color: #e5e5ea;
+  --border-light: #f0f0f0;
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.12);
+
+  --radius: 10px;
+  --radius-sm: 6px;
+  --radius-lg: 16px;
+
+  --transition: all 0.3s ease;
+  --transition-fast: all 0.15s ease;
+
+  --rise-color: #34c759;
+  --fall-color: #ff3b30;
+}
+
+/* ====================================
+   通用
+   ==================================== */
+a {
+  text-decoration: none;
+  color: var(--primary);
+}
+
+.page-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.page-title::before {
+  content: '';
+  width: 4px;
+  height: 20px;
+  background: var(--primary);
+  border-radius: 2px;
+}
+
+/* 涨跌色 */
+.rise-text { color: var(--rise-color); font-weight: 600; }
+.fall-text { color: var(--fall-color); font-weight: 600; }
+
+/* ====================================
+   Element Plus 覆盖
+   ==================================== */
+.el-card {
+  border-radius: var(--radius) !important;
+  border: 1px solid var(--border-color) !important;
+  transition: var(--transition);
+}
+
+.el-card:hover {
+  box-shadow: var(--shadow-md) !important;
+}
+
+.el-card__header {
+  padding: 14px 20px !important;
+  border-bottom: 1px solid var(--border-color) !important;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.el-table {
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+}
+
+.el-table th.el-table__cell {
+  background-color: #f5f7fa !important;
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.el-table__body tr:hover > td.el-table__cell {
+  background-color: var(--primary-light) !important;
+}
+
+.el-button {
+  border-radius: 6px;
+  font-weight: 500;
+  transition: var(--transition-fast);
+  letter-spacing: 0.3px;
+}
+
+.el-button--primary {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  border: none;
+}
+
+.el-button--primary:hover {
+  background: linear-gradient(135deg, #4a8aff 0%, var(--primary) 100%);
+  box-shadow: 0 2px 8px rgba(26, 109, 255, 0.4);
+  transform: translateY(-1px);
+}
+
+.el-button--primary:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.el-dialog {
+  border-radius: var(--radius-lg) !important;
+}
+
+.el-dialog__header {
+  padding: 18px 24px 12px;
+  margin-right: 0 !important;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.el-dialog__title {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.el-dialog__body {
+  padding: 20px 24px;
+}
+
+.el-dialog__footer {
+  padding: 12px 24px 18px;
+  border-top: 1px solid var(--border-color);
+}
+
+.el-form-item {
+  margin-bottom: 20px;
+}
+
+.el-form-item__label {
+  font-weight: 500;
+}
+
+.el-input__inner {
+  border-radius: 6px;
+  transition: var(--transition-fast);
+}
+
+.el-input__inner:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(26, 109, 255, 0.15);
+}
+
+.el-pagination {
+  font-weight: 400;
+}
+
+.el-pagination .el-pager li.active {
+  background: var(--primary);
+  color: #fff;
+}
+
+.el-tag {
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.el-empty__image {
+  opacity: 0.6;
+}
+
+/* 滚动条 */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c7c7cc;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #8e8e93;
+}
