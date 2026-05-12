@@ -10,6 +10,7 @@ import com.finance.user.dto.UserDTO;
 import com.finance.user.entity.User;
 import com.finance.user.service.UserService;
 import com.finance.user.vo.UserVO;
+import com.finance.user.vo.LoginVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -99,7 +100,7 @@ public class UserController {
 
     @PostMapping("/login")
     @Operation(summary = "用户登录")
-    public Result<String> login(@Valid @RequestBody LoginDTO dto) {
+    public Result<LoginVO> login(@Valid @RequestBody LoginDTO dto) {
         return Result.success(userService.login(dto));
     }
 

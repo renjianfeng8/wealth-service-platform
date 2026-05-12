@@ -127,3 +127,80 @@ docker exec es curl -s 'http://localhost:9200/finance_product/_count'
 
 - `finance-search/src/main/java/com/finance/platform/search/controller/ProductSearchController.java`
 - `finance-product/src/main/java/com/finance/platform/product/controller/FinProductController.java`
+
+---
+
+## Bug-004: 交易委托提交提示"用户信息异常"（userId 为 0）
+
+**日期**: 2026-05-12
+**模块**: front-user / finance-user
+**影响**: 登录后无法提交交易委托单
+
+### 现象
+
+用户已登录（持有 JWT Token，能正常访问各页面），但提交交易委托时弹窗提示"用户信息异常，请重新登录"。Playwright 测试全部通过（34项），仅手动提交流程触发该错误。
+
+### 根因
+
+`front-user/src/store/index.ts` 中 `login()` 方法流程：
+
+```
+登录成功 → 获取 token → setToken() → 调用 getUserList() 查询所有用户
+→ users.find(u => u.username === 登录用户名) → 匹配到则设置 userId
+```
+
+`getUserList()` 发 GET `/user` 请求依赖后端拦截器验证 Token，若该请求因任何原因失败（网络超时、服务未就绪、Token 校验异常等），`catch` 块静默吞掉错误，`userId` 保持为 0。`setStoredUser({ userId: 0, ... })` 将 0 写入 localStorage。后续页面 reload 后 `userId` 依然是 0。
+
+交易委托页 `handleSubmit()` 检查 `if (!userStore.userId)` → `!0 === true` → 显示"用户信息异常"。
+
+### 修复
+
+**方案**：登录接口不再返回纯字符串 Token，改为返回 `LoginVO { token, userId, nickname }`，前端直接从登录响应中获取 userId，消除对 `getUserList()` 的二次调用依赖。
+
+#### 后端改动
+
+1. 新增 `LoginVO`（`finance-user/vo/LoginVO.java`）
+   ```java
+   public class LoginVO {
+       private String token;
+       private Long userId;
+       private String nickname;
+   }
+   ```
+
+2. `UserService.login()` 返回类型从 `String` 改为 `LoginVO`
+3. `UserController.login()` 返回类型从 `Result<String>` 改为 `Result<LoginVO>`
+
+#### 前端改动
+
+`front-user/src/store/index.ts` 中 `login()`：
+
+```typescript
+// 之前：取 token 后二次调用 getUserList()
+const token = res.data as string
+this.token = token
+setToken(token)
+// getUserList() 可能失败...
+
+// 之后：直接从登录响应解构 token + userId
+const { token, userId } = res.data
+this.token = token
+this.userId = userId
+setToken(token)
+setStoredUser({ username, userId, nickname, avatar })
+```
+
+### 排查要点（添加到已有清单）
+
+- [ ] 前端"用户信息异常" → 检查 `userStore.userId` 是否为 0
+- [ ] 检查登录接口响应中是否包含 `userId`
+- [ ] 检查 localStorage 中 `finance_user_info.userId` 值
+- [ ] 更新代码后须重启 finance-user 服务使 VO 变更生效
+
+### 涉及文件
+
+- `finance-user/src/main/java/com/finance/user/vo/LoginVO.java`（新增）
+- `finance-user/src/main/java/com/finance/user/service/UserService.java`
+- `finance-user/src/main/java/com/finance/user/service/impl/UserServiceImpl.java`
+- `finance-user/src/main/java/com/finance/user/controller/UserController.java`
+- `front-user/src/store/index.ts`

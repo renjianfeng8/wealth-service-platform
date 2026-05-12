@@ -6,6 +6,7 @@ import com.finance.common.dto.LoginDTO;
 import com.finance.user.entity.User;
 import com.finance.user.mapper.UserMapper;
 import com.finance.user.service.UserService;
+import com.finance.user.vo.LoginVO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -33,7 +34,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
-    public String login(LoginDTO dto) {
+    public LoginVO login(LoginDTO dto) {
         if (!StringUtils.hasText(dto.getUsername()) || !StringUtils.hasText(dto.getPassword())) {
             throw new RuntimeException("用户名/密码不能为空");
         }
@@ -54,7 +55,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             throw new RuntimeException("密码错误");
         }
 
-        return jwtUtil.generateToken(dbUser.getUsername());
+        return new LoginVO(jwtUtil.generateToken(dbUser.getUsername()), dbUser.getId(), dbUser.getNickname());
     }
 
     @Override
