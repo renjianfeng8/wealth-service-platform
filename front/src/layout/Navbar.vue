@@ -1,5 +1,5 @@
 <template>
-  <div class="navbar">
+  <div class="navbar" :class="{ 'navbar-dark': dark }">
     <div class="navbar-left">
       <el-breadcrumb>
         <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
@@ -16,6 +16,8 @@
 <script setup lang="ts">
 import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '@/store/index'
+
+defineProps<{ dark?: boolean }>()
 
 const route = useRoute()
 const router = useRouter()
@@ -40,6 +42,14 @@ function handleLogout() {
   position: relative;
   z-index: 10;
 }
+.navbar-dark {
+  background: #161b22 !important;
+  border-bottom-color: #21262d !important;
+}
+.navbar-dark .navbar-user { color: #e6edf3; }
+:deep(.navbar-dark .el-breadcrumb__inner) { color: #8b949e; }
+:deep(.navbar-dark .el-breadcrumb__inner.is-link) { color: #e6edf3; }
+:deep(.navbar-dark .el-breadcrumb__separator) { color: #484f58; }
 
 .navbar-left {
   display: flex;
