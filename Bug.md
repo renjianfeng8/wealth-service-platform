@@ -238,3 +238,21 @@ public Result<IPage<FinTradeOrderVO>> page(
 - `finance-trade/src/main/java/com/finance/platform/trade/controller/FinTradeOrderController.java`
 - `finance-trade/src/main/java/com/finance/platform/trade/service/FinTradeOrderService.java`
 - `finance-trade/src/main/java/com/finance/platform/trade/service/impl/FinTradeOrderServiceImpl.java`
+
+---
+
+## Bug-006: 产品中心分类筛选不生效（productType 参数被忽略）
+
+**日期**: 2026-05-12
+**模块**: finance-product
+**影响**: 前端筛选"贵金属/理财产品/基金/股票"无效果，始终显示全部产品
+
+### 根因
+
+与 Bug-005 相同模式 — `FinProductController.page()` 只接收 `pageNum` 和 `pageSize`，未声明 `productType` 参数，前端传参被 Spring MVC 忽略。
+
+### 涉及文件
+
+- `finance-product/src/main/java/com/finance/platform/product/controller/FinProductController.java`
+- `finance-product/src/main/java/com/finance/platform/product/service/FinProductService.java`
+- `finance-product/src/main/java/com/finance/platform/product/service/impl/FinProductServiceImpl.java`

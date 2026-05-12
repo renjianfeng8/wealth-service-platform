@@ -45,16 +45,10 @@ public class FinProductController {
     @GetMapping("/page")
     public Result<IPage<FinProductVO>> page(
             @RequestParam(defaultValue = "1") Integer pageNum,
-            @RequestParam(defaultValue = "10") Integer pageSize) {
+            @RequestParam(defaultValue = "10") Integer pageSize,
+            @RequestParam(required = false) Integer productType) {
         Page<FinProduct> page = new Page<>(pageNum, pageSize);
-        IPage<FinProduct> entityPage = finProductService.page(page);
-        Page<FinProductVO> voPage = new Page<>();
-        voPage.setCurrent(entityPage.getCurrent());
-        voPage.setSize(entityPage.getSize());
-        voPage.setTotal(entityPage.getTotal());
-        voPage.setPages(entityPage.getPages());
-        voPage.setRecords(BeanConvertUtil.convertList(entityPage.getRecords(), FinProductVO.class));
-        return Result.success(voPage);
+        return Result.success(finProductService.pageProducts(page, productType));
     }
 
     @Operation(summary = "创建产品")

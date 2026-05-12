@@ -1,11 +1,15 @@
 package com.finance.platform.product.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.finance.platform.product.dto.FinProductDTO;
 import com.finance.platform.product.entity.FinProduct;
 import com.finance.platform.product.mapper.FinProductMapper;
 import com.finance.platform.product.service.FinProductService;
 import com.finance.platform.product.vo.FinProductVO;
+import com.finance.common.utils.BeanConvertUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.BeanUtils;
@@ -43,6 +47,24 @@ public class FinProductServiceImpl extends ServiceImpl<FinProductMapper, FinProd
         FinProduct entity = new FinProduct();
         BeanUtils.copyProperties(dto, entity);
         return save(entity);
+    }
+
+    @Override
+    public IPage<FinProductVO> pageProducts(Page<FinProduct> page, Integer productType) {
+        LambdaQueryWrapper<FinProduct> wrapper = new LambdaQueryWrapper<>();
+        if (productType != null && productType > 0) {
+            wrapper.eq(FinProduct::getProductType, productType);
+        }
+        wrapper.orderByAsc(FinProduct::getSort);
+
+        IPage<FinProduct> entityPage = page(page, wrapper);
+        Page<FinProductVO> voPage = new Page<>();
+        voPage.setCurrent(entityPage.getCurrent());
+        voPage.setSize(entityPage.getSize());
+        voPage.setTotal(entityPage.getTotal());
+        voPage.setPages(entityPage.getPages());
+        voPage.setRecords(BeanConvertUtil.convertList(entityPage.getRecords(), FinProductVO.class));
+        return voPage;
     }
 
     @Override
