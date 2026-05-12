@@ -100,7 +100,7 @@ public class FinMessageController {
      */
     @Operation(summary = "更新站内消息推送信息")
     @PutMapping("/{id}")
-    public Result<Boolean> update(@PathVariable Long id, @Valid @RequestBody FinMessageDTO dto) {
+    public Result<Boolean> update(@PathVariable Long id, @RequestBody FinMessageDTO dto) {
         return Result.success(finMessageService.updateMessage(id, dto));
     }
 
