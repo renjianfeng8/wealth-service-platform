@@ -256,3 +256,24 @@ public Result<IPage<FinTradeOrderVO>> page(
 - `finance-product/src/main/java/com/finance/platform/product/controller/FinProductController.java`
 - `finance-product/src/main/java/com/finance/platform/product/service/FinProductService.java`
 - `finance-product/src/main/java/com/finance/platform/product/service/impl/FinProductServiceImpl.java`
+
+---
+
+## Bug-007: 财经资讯/消息中心分类筛选不生效（newsType/userId 参数被忽略）
+
+**日期**: 2026-05-12
+**模块**: finance-message
+**影响**: 财经资讯的分类筛选（行业动态/市场分析/政策解读/公司公告）和消息中心的用户筛选不生效
+
+### 根因
+
+与 Bug-005/Bug-006 相同模式 — `FinNewsController.page()` 和 `FinMessageController.page()` 只接收分页参数，未声明 `newsType`/`userId` 筛选参数。
+
+### 涉及文件
+
+- `finance-message/src/main/java/com/finance/platform/message/controller/FinNewsController.java`
+- `finance-message/src/main/java/com/finance/platform/message/service/FinNewsService.java`
+- `finance-message/src/main/java/com/finance/platform/message/service/impl/FinNewsServiceImpl.java`
+- `finance-message/src/main/java/com/finance/platform/message/controller/FinMessageController.java`
+- `finance-message/src/main/java/com/finance/platform/message/service/FinMessageService.java`
+- `finance-message/src/main/java/com/finance/platform/message/service/impl/FinMessageServiceImpl.java`

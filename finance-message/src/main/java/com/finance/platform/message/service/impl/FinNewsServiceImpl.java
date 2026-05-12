@@ -1,5 +1,8 @@
 package com.finance.platform.message.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.finance.common.utils.BeanConvertUtil;
 import com.finance.platform.message.dto.FinNewsDTO;
@@ -45,6 +48,24 @@ public class FinNewsServiceImpl extends ServiceImpl<FinNewsMapper, FinNews>
         FinNews entity = new FinNews();
         BeanUtils.copyProperties(dto, entity);
         return save(entity);
+    }
+
+    @Override
+    public IPage<FinNewsVO> pageNews(Page<FinNews> page, Integer newsType) {
+        LambdaQueryWrapper<FinNews> wrapper = new LambdaQueryWrapper<>();
+        if (newsType != null && newsType > 0) {
+            wrapper.eq(FinNews::getNewsType, newsType);
+        }
+        wrapper.orderByDesc(FinNews::getCreateTime);
+
+        IPage<FinNews> entityPage = page(page, wrapper);
+        Page<FinNewsVO> voPage = new Page<>();
+        voPage.setCurrent(entityPage.getCurrent());
+        voPage.setSize(entityPage.getSize());
+        voPage.setTotal(entityPage.getTotal());
+        voPage.setPages(entityPage.getPages());
+        voPage.setRecords(BeanConvertUtil.convertList(entityPage.getRecords(), FinNewsVO.class));
+        return voPage;
     }
 
     @Override

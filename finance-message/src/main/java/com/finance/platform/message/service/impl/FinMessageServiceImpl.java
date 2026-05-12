@@ -1,5 +1,8 @@
 package com.finance.platform.message.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.finance.common.utils.BeanConvertUtil;
 import com.finance.platform.message.dto.FinMessageDTO;
@@ -57,6 +60,24 @@ public class FinMessageServiceImpl extends ServiceImpl<FinMessageMapper, FinMess
         BeanConvertUtil.copyNonNullProperties(dto, entity);
         entity.setId(id);
         return updateById(entity);
+    }
+
+    @Override
+    public IPage<FinMessageVO> pageMessages(Page<FinMessage> page, Long userId) {
+        LambdaQueryWrapper<FinMessage> wrapper = new LambdaQueryWrapper<>();
+        if (userId != null) {
+            wrapper.eq(FinMessage::getUserId, userId);
+        }
+        wrapper.orderByDesc(FinMessage::getCreateTime);
+
+        IPage<FinMessage> entityPage = page(page, wrapper);
+        Page<FinMessageVO> voPage = new Page<>();
+        voPage.setCurrent(entityPage.getCurrent());
+        voPage.setSize(entityPage.getSize());
+        voPage.setTotal(entityPage.getTotal());
+        voPage.setPages(entityPage.getPages());
+        voPage.setRecords(BeanConvertUtil.convertList(entityPage.getRecords(), FinMessageVO.class));
+        return voPage;
     }
 
     @Override

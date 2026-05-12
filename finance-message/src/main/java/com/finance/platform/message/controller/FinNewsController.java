@@ -67,16 +67,10 @@ public class FinNewsController {
     @GetMapping("/page")
     public Result<IPage<FinNewsVO>> page(
             @RequestParam(defaultValue = "1") Integer pageNum,
-            @RequestParam(defaultValue = "10") Integer pageSize) {
+            @RequestParam(defaultValue = "10") Integer pageSize,
+            @RequestParam(required = false) Integer newsType) {
         Page<FinNews> page = new Page<>(pageNum, pageSize);
-        IPage<FinNews> entityPage = finNewsService.page(page);
-        Page<FinNewsVO> voPage = new Page<>();
-        voPage.setCurrent(entityPage.getCurrent());
-        voPage.setSize(entityPage.getSize());
-        voPage.setTotal(entityPage.getTotal());
-        voPage.setPages(entityPage.getPages());
-        voPage.setRecords(BeanConvertUtil.convertList(entityPage.getRecords(), FinNewsVO.class));
-        return Result.success(voPage);
+        return Result.success(finNewsService.pageNews(page, newsType));
     }
 
     /**

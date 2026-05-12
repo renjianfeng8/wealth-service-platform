@@ -67,16 +67,10 @@ public class FinMessageController {
     @GetMapping("/page")
     public Result<IPage<FinMessageVO>> page(
             @RequestParam(defaultValue = "1") Integer pageNum,
-            @RequestParam(defaultValue = "10") Integer pageSize) {
+            @RequestParam(defaultValue = "10") Integer pageSize,
+            @RequestParam(required = false) Long userId) {
         Page<FinMessage> page = new Page<>(pageNum, pageSize);
-        IPage<FinMessage> entityPage = finMessageService.page(page);
-        Page<FinMessageVO> voPage = new Page<>();
-        voPage.setCurrent(entityPage.getCurrent());
-        voPage.setSize(entityPage.getSize());
-        voPage.setTotal(entityPage.getTotal());
-        voPage.setPages(entityPage.getPages());
-        voPage.setRecords(BeanConvertUtil.convertList(entityPage.getRecords(), FinMessageVO.class));
-        return Result.success(voPage);
+        return Result.success(finMessageService.pageMessages(page, userId));
     }
 
     /**
