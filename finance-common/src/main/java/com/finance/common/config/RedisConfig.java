@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -17,8 +18,10 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
  *
  * <p>放在 {@code finance-common} 中，确保所有业务模块在扫描到公共组件时
  * 都能获得 {@code RedisTemplate<String, Object>} Bean。</p>
+ * <p>标注 {@code @ConditionalOnClass} 防止无 Redis 依赖的模块（如 finance-search）启动失败。</p>
  */
 @Configuration
+@ConditionalOnClass(name = "org.springframework.data.redis.core.RedisTemplate")
 public class RedisConfig {
 
     /**

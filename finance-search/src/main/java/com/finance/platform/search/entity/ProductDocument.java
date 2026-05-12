@@ -15,8 +15,7 @@ public class ProductDocument {
     @Id
     private Long id;
 
-    //@Field(type = FieldType.Text, analyzer = "ik_max_word")  暂时不装iK分词器
-    @Field(type = FieldType.Text)
+    @Field(type = FieldType.Text, analyzer = "ik_max_word", searchAnalyzer = "ik_smart")
     private String productName;
 
     @Field(type = FieldType.Keyword)

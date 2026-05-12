@@ -1,5 +1,6 @@
 package com.finance.common.utils;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
@@ -7,6 +8,7 @@ import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
 @Component
+@ConditionalOnClass(name = "org.springframework.data.redis.core.RedisTemplate")
 public class RedisUtil {
     private final RedisTemplate<String, Object> redisTemplate;
 

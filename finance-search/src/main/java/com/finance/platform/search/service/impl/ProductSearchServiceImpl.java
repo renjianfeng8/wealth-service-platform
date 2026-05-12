@@ -27,8 +27,7 @@ public class ProductSearchServiceImpl implements ProductSearchService {
     @Override
     public Page<ProductDocument> search(String keyword, Integer page, Integer size) {
         PageRequest pageRequest = PageRequest.of(page - 1, size);
-        return productRepository.findByProductNameContainingOrProductCodeContaining(
-                keyword, keyword, pageRequest);
+        return productRepository.searchByKeyword(keyword, pageRequest);
     }
 
     @Override

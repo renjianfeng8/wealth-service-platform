@@ -17,7 +17,7 @@ Maven: 3.9.9
 MySQL: 8.0.37
 Redis: 5.0.14.1
 RabbitMQ: 3.10.20
-ElasticSearch: 8.11.0
+ElasticSearch: 8.8.2
 Docker: 29.4.0
 docker-compose: v5.11.0
 
