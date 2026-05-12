@@ -67,16 +67,11 @@ public class FinTradeOrderController {
     @GetMapping("/page")
     public Result<IPage<FinTradeOrderVO>> page(
             @RequestParam(defaultValue = "1") Integer pageNum,
-            @RequestParam(defaultValue = "10") Integer pageSize) {
+            @RequestParam(defaultValue = "10") Integer pageSize,
+            @RequestParam(required = false) Long userId,
+            @RequestParam(required = false) Integer orderStatus) {
         Page<FinTradeOrder> page = new Page<>(pageNum, pageSize);
-        IPage<FinTradeOrder> entityPage = finTradeOrderService.page(page);
-        Page<FinTradeOrderVO> voPage = new Page<>();
-        voPage.setCurrent(entityPage.getCurrent());
-        voPage.setSize(entityPage.getSize());
-        voPage.setTotal(entityPage.getTotal());
-        voPage.setPages(entityPage.getPages());
-        voPage.setRecords(BeanConvertUtil.convertList(entityPage.getRecords(), FinTradeOrderVO.class));
-        return Result.success(voPage);
+        return Result.success(finTradeOrderService.pageOrders(page, userId, orderStatus));
     }
 
     /**

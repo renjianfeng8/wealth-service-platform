@@ -1,5 +1,7 @@
 package com.finance.platform.trade.service;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.finance.platform.trade.dto.FinTradeOrderDTO;
 import com.finance.platform.trade.entity.FinTradeOrder;
@@ -20,6 +22,11 @@ public interface FinTradeOrderService extends IService<FinTradeOrder> {
      * 查询订单列表
      */
     List<FinTradeOrderVO> getOrderList();
+
+    /**
+     * 分页查询订单，支持按用户和状态筛选
+     */
+    IPage<FinTradeOrderVO> pageOrders(Page<FinTradeOrder> page, Long userId, Integer orderStatus);
 
     /**
      * 创建订单

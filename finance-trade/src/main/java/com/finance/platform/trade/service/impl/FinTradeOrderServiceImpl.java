@@ -1,5 +1,8 @@
 package com.finance.platform.trade.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.finance.common.utils.BeanConvertUtil;
 import com.finance.platform.trade.dto.FinTradeOrderDTO;
@@ -54,6 +57,27 @@ public class FinTradeOrderServiceImpl extends ServiceImpl<FinTradeOrderMapper, F
         order.setOrderStatus(1);
 
         return save(order);
+    }
+
+    @Override
+    public IPage<FinTradeOrderVO> pageOrders(Page<FinTradeOrder> page, Long userId, Integer orderStatus) {
+        LambdaQueryWrapper<FinTradeOrder> wrapper = new LambdaQueryWrapper<>();
+        if (userId != null) {
+            wrapper.eq(FinTradeOrder::getUserId, userId);
+        }
+        if (orderStatus != null) {
+            wrapper.eq(FinTradeOrder::getOrderStatus, orderStatus);
+        }
+        wrapper.orderByDesc(FinTradeOrder::getCreateTime);
+
+        IPage<FinTradeOrder> entityPage = page(page, wrapper);
+        Page<FinTradeOrderVO> voPage = new Page<>();
+        voPage.setCurrent(entityPage.getCurrent());
+        voPage.setSize(entityPage.getSize());
+        voPage.setTotal(entityPage.getTotal());
+        voPage.setPages(entityPage.getPages());
+        voPage.setRecords(BeanConvertUtil.convertList(entityPage.getRecords(), FinTradeOrderVO.class));
+        return voPage;
     }
 
     @Override
