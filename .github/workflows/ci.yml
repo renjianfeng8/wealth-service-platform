@@ -1,4 +1,4 @@
-name: Java CI
+name: Build & Test
 
 on:
   push:
@@ -6,9 +6,14 @@ on:
   pull_request:
     branches: [ main ]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  build:
+  backend:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
       - name: 检出代码
@@ -21,5 +26,42 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: 编译与验证项目
+      - name: 编译
         run: mvn clean compile
+
+      - name: 运行测试
+        run: mvn test -DskipTests=false
+
+      - name: 打包
+        run: mvn package -DskipTests -Dmaven.test.skip=true
+
+      - name: 上传测试报告
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports
+          path: '**/target/surefire-reports/**'
+          retention-days: 7
+
+  frontend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: front-user/package-lock.json
+
+      - name: 安装依赖
+        run: npm ci
+        working-directory: front-user
+
+      - name: 构建
+        run: npm run build
+        working-directory: front-user
