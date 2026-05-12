@@ -1,0 +1,93 @@
+# ==============================================
+# finance-mid-platform Docker Image Build Script
+# Usage: ./docker-build.ps1
+# ==============================================
+
+$modules = @(
+    @{Name="gateway"; Port=8080},
+    @{Name="system"; Port=8082},
+    @{Name="user"; Port=8083},
+    @{Name="product"; Port=8084},
+    @{Name="account"; Port=8086},
+    @{Name="trade"; Port=8085},
+    @{Name="message"; Port=8087},
+    @{Name="search"; Port=8089}
+)
+
+$rootDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+$results = @()
+$allSuccess = $true
+
+Write-Host "==============================================" -ForegroundColor Cyan
+Write-Host "  Finance Microservice Platform - Docker Build" -ForegroundColor Cyan
+Write-Host "==============================================" -ForegroundColor Cyan
+
+# Check Docker
+Write-Host ""
+Write-Host "[Check] Docker daemon ... " -NoNewline
+$dockerOk = docker info 2>&1 | Select-String -Pattern "Server Version"
+if (-not $dockerOk) {
+    Write-Host "NOT RUNNING" -ForegroundColor Red
+    Write-Host "  Please start Docker Desktop first." -ForegroundColor Red
+    exit 1
+}
+Write-Host "OK" -ForegroundColor Green
+
+# Step 1: Maven package
+Write-Host ""
+Write-Host "[Step 1/2] Maven packaging ..." -ForegroundColor Yellow
+Set-Location $rootDir
+mvn clean package -DskipTests
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "  Maven packaging failed." -ForegroundColor Red
+    exit 1
+}
+Write-Host "  Maven packaging done." -ForegroundColor Green
+
+# Step 2: Docker build
+Write-Host ""
+Write-Host "[Step 2/2] Building Docker images ..." -ForegroundColor Yellow
+
+foreach ($mod in $modules) {
+    $name = $mod.Name
+    $port = $mod.Port
+    $imageName = "finance-$name`:1.0.0"
+    $buildDir = (Join-Path $rootDir "finance-$name")
+    $dockerfile = (Join-Path $buildDir "Dockerfile")
+
+    Write-Host ""
+    Write-Host "  Building finance-$name (port $port) ..." -ForegroundColor Yellow
+
+    $output = & docker build -t $imageName -f $dockerfile $buildDir 2>&1
+    $exitCode = $LASTEXITCODE
+
+    if ($exitCode -eq 0) {
+        Write-Host "  >> finance-$name built OK" -ForegroundColor Green
+        $results += @{Module="finance-$name"; Port=$port; Status="OK"}
+    } else {
+        Write-Host "  >> finance-$name BUILD FAILED" -ForegroundColor Red
+        Write-Host "  Error output:" -ForegroundColor Red
+        $output | ForEach-Object { Write-Host "    $_" }
+        $results += @{Module="finance-$name"; Port=$port; Status="FAILED"}
+        $allSuccess = $false
+    }
+}
+
+# Summary
+Write-Host ""
+Write-Host "==============================================" -ForegroundColor Cyan
+Write-Host "  Summary" -ForegroundColor Cyan
+Write-Host "==============================================" -ForegroundColor Cyan
+
+$results | Format-Table -Property Module, Port, Status -AutoSize
+
+if ($allSuccess) {
+    Write-Host "  All $($results.Count) images built successfully." -ForegroundColor Green
+} else {
+    $failed = ($results | Where-Object { $_.Status -eq "FAILED" }).Count
+    Write-Host "  $failed image(s) failed." -ForegroundColor Red
+}
+
+Write-Host ""
+Write-Host "List built images:" -ForegroundColor Cyan
+Write-Host "  docker images --filter reference='finance-*'" -ForegroundColor Gray
