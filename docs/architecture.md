@@ -1,0 +1,307 @@
+# 模块架构与配置体系
+
+> 跨模块开发时引用 — 模块架构、端口、依赖层级、网关路由、Nacos 配置体系。
+
+---
+
+# 一、项目模块架构
+
+finance-mid-platform (pom)
+├── finance-common      # 公共依赖模块（DTO、工具类、Feign接口、统一返回、异常处理、通用配置）
+├── finance-gateway     # 网关服务（Spring Cloud Gateway 路由转发、全局CORS）
+├── finance-system      # 系统服务（后台权限管理 ums_* 表、管理员JWT登录、RBAC权限拦截）
+├── finance-user        # 用户服务（前端用户管理 sys_user）
+├── finance-account     # 账户服务（自选管理 fin_user_favorite）
+├── finance-product     # 产品服务（产品 fin_product + 行情 fin_market_data）
+├── finance-trade       # 交易服务（委托交易 fin_trade_order）
+├── finance-message     # 消息服务（资讯 fin_news + 站内消息 fin_message）
+└── finance-search      # 搜索服务（基于 ES 8 的产品搜索，无数据库依赖）
+
+## 依赖层级
+
+- finance-common 被除 gateway 外的所有模块依赖（修改后需先 mvn clean install -pl finance-common）
+- finance-gateway 不依赖 finance-common（避免 spring-boot-starter-web 与 WebFlux 冲突）
+- 业务模块间通过 Feign 接口调用（FeignClient 定义在 finance-common 中）
+- finance-system 显式覆盖 mybatis-spring 版本为 3.0.5（父 POM 为 3.0.4）
+
+## 各模块端口号
+
+| 模块 | 端口 | context-path | 说明 |
+|------|------|-------------|------|
+| finance-gateway | 8080 | - | Spring Cloud Gateway（WebFlux） |
+| finance-system  | 8082 | /system | 后台权限管理 |
+| finance-user    | 8083 | /user | 前端用户管理 |
+| finance-product | 8084 | /product | 产品 + 行情 |
+| finance-trade   | 8085 | /trade | 交易委托 |
+| finance-account | 8086 | /account | 用户自选 |
+| finance-message | 8087 | /message | 资讯 + 消息 |
+| finance-search  | 8089 | - | ES 搜索 |
+
+## 各模块 Java 包基路径
+
+| 模块 | 基础包 |
+|------|--------|
+| finance-common  | com.finance.common |
+| finance-gateway | com.finance.gateway |
+| finance-user    | com.finance.user |
+| 其余业务模块    | com.finance.platform.{模块名} |
+
+## 网关路由
+
+gateway（端口 8080）负责统一路由转发，所有前端请求统一经网关访问各模块：
+
+| 路由前缀 | 目标服务 |
+|---------|---------|
+| /system/** | finance-system |
+| /user/** | finance-user |
+| /product/** | finance-product |
+| /account/** | finance-account |
+| /trade/** | finance-trade |
+| /message/** | finance-message |
+| /search/** | finance-search |
+
+---
+
+# 二、配置体系（强制锁定，不得修改）
+
+## 配置总则（铁律）
+
+> **🚫 禁止修改任何配置文件** — 包括但不限于：所有模块的 application.yml、bootstrap.yml、pom.xml、Nacos 配置。
+>
+> 所有业务配置已在 Nacos 配置中心统一管理，本地配置文件为一次性写入的固定值。
+> 任何配置变更需求必须经过架构评审，不得私自修改。
+
+---
+
+## Nacos 配置中心（Docker: nacos/nacos-server:v2.3.2）
+
+地址：`localhost:8848`（无需认证）
+
+### finance-shared.yaml（DEFAULT_GROUP，YAML 格式）
+
+所有模块共享的唯一 Nacos 配置。内容如下：
+
+```yaml
+jwt:
+  secret: finance-micro-service-20260501-very-safe-secret-key-123456789
+  expire: 604800000
+
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/finance?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false
+    username: root
+    password: 123456
+```
+
+> **作用范围**：`finance-shared.yaml` 通过各模块 bootstrap.yml 的 `shared-configs` 引用，被所有模块加载。
+> **覆盖优先级**：Nacos shared-configs 的优先级低于各模块本地 application.yml，但高于 bootstrap.yml 中的默认值。
+> 本配置提供 JWT 密钥/过期时间和 MySQL 数据源，各模块凭此连接数据库。
+
+### 配置加载链路
+
+```
+bootstrap.yml                     # 1. 启动时加载 —— 配置 Nacos 地址、应用名
+  └→ Nacos (finance-shared.yaml)  # 2. Nacos 远程配置 —— JWT + 数据源
+      └→ application.yml          # 3. 本地配置 —— 端口、context-path、mybatis-plus
+```
+
+---
+
+## 本地配置文件清单（已有内容，禁止修改）
+
+### 1. bootstrap.yml（所有业务模块统一模式）
+
+所有 8 个模块的 `bootstrap.yml` 内容完全一致（仅 `application.name` 不同）：
+
+```yaml
+spring:
+  application:
+    name: finance-{模块名}
+  cloud:
+    nacos:
+      discovery:
+        server-addr: localhost:8848
+      config:
+        server-addr: localhost:8848
+        file-extension: yaml
+        shared-configs:
+          - data-id: finance-shared.yaml
+            refresh: true
+```
+
+各模块 `application.name` 对应值：
+
+| 模块 | application.name |
+|------|-----------------|
+| gateway | finance-gateway |
+| system | finance-system |
+| user | finance-user |
+| product | finance-product |
+| account | finance-account |
+| trade | finance-trade |
+| message | finance-message |
+| search | finance-search |
+
+### 2. application.yml 各模块详情
+
+#### finance-gateway（端口 8080，无 context-path）
+```yaml
+server:
+  port: 8080
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: finance-system
+        - id: finance-user
+        - id: finance-product
+        - id: finance-account
+        - id: finance-trade
+        - id: finance-message
+        - id: finance-search
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowed-origin-patterns: http://localhost:3000, http://localhost:8080, http://127.0.0.1:3000
+```
+> gateway 无数据源，不依赖 finance-common（WebFlux 与 spring-boot-starter-web 冲突）。
+
+#### finance-system（端口 8082，context-path: /system）
+```yaml
+server:
+  port: 8082
+  servlet:
+    context-path: /system
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/finance?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false
+    username: root
+    password: ${DB_PASSWORD}
+```
+> 注：`password: ${DB_PASSWORD}` 由 Nacos `finance-shared.yaml` 中的 `spring.datasource.password: 123456` 覆盖。
+
+#### finance-user（端口 8083，context-path: /user）
+```yaml
+server:
+  port: 8083
+  servlet:
+    context-path: /user
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/finance?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false
+    username: root
+    password: ${DB_PASSWORD}
+```
+
+#### finance-product（端口 8084，context-path: /product）
+```yaml
+server:
+  port: 8084
+  servlet:
+    context-path: /product
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/finance?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false
+    username: root
+    password: ${DB_PASSWORD}
+```
+
+#### finance-account（端口 8086，context-path: /account）
+```yaml
+server:
+  port: 8086
+  servlet:
+    context-path: /account
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/finance?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false
+    username: root
+    password: ${DB_PASSWORD}
+```
+
+#### finance-trade（端口 8085，context-path: /trade）
+```yaml
+server:
+  port: 8085
+  servlet:
+    context-path: /trade
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/finance?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false
+    username: root
+    password: ${DB_PASSWORD}
+```
+
+#### finance-message（端口 8087，context-path: /message）
+```yaml
+server:
+  port: 8087
+  servlet:
+    context-path: /message
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/finance?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false
+    username: root
+    password: ${DB_PASSWORD}
+```
+
+#### finance-search（端口 8089，无 context-path，无数据源）
+```yaml
+server:
+  port: 8089
+spring:
+  elasticsearch:
+    uris: ${ES_URIS:http://localhost:9200}
+    username: ${ES_USERNAME:elastic}
+    password: ${ES_PASSWORD:}
+```
+> finance-search 不连接 MySQL，仅连接 ElasticSearch 8。无 `spring.datasource` 配置。
+
+---
+
+## 本地配置文件与 Nacos 覆盖关系
+
+| 配置项 | 本地区域 | Nacos 覆盖 | 生效结果 |
+|--------|---------|-----------|---------|
+| server.port | application.yml | 无 | 本地值 |
+| server.servlet.context-path | application.yml | 无 | 本地值 |
+| spring.datasource.url | application.yml | 无 | 本地值（Nacos 同名配置已被此覆盖） |
+| spring.datasource.username | application.yml | N/A | 本地值 |
+| **spring.datasource.password** | application.yml (`${DB_PASSWORD}`) | **`123456`** | **Nacos 覆盖生效** |
+| spring.elasticsearch.* | application.yml (search) | 无 | 本地值 |
+| mybatis-plus.* | application.yml | 无 | 本地值 |
+| springdoc.* | application.yml | 无 | 本地值 |
+| **jwt.secret** | 无 | **finance-shared.yaml** | **仅 Nacos** |
+| **jwt.expire** | 无 | **finance-shared.yaml** | **仅 Nacos** |
+
+> 关键：`password: ${DB_PASSWORD}` 本身是无效的环境变量引用（系统中未设置 `DB_PASSWORD`），数据库密码由 Nacos `finance-shared.yaml` 中的 `spring.datasource.password: 123456` 提供。Nacos 配置优先级高于本地配置中的环境变量引用。
+
+---
+
+## 基础设施 Docker 容器
+
+| 服务 | 镜像 | 端口 |
+|------|------|------|
+| Nacos | nacos/nacos-server:v2.3.2 | 8848, 9848-9849 |
+| MySQL | 8.0.37 (本地安装) | 3306 |
+| Redis | redis:latest | 6379 |
+| RabbitMQ | rabbitmq:3.10-management | 5672, 15672 |
+| ElasticSearch | elasticsearch:8.8.2 | 9200, 9300 |
+| Nginx | nginx:latest | 80 |
+
+---
+
+## 已知 v1.4.0 配置限制（待修复，但不可直接改配置）
+
+| 问题 | 影响 | 说明 |
+|------|------|------|
+| **RedisConfig 缺少 @ConditionalOnClass** | finance-search 启动失败 | `RedisConfig.java` 和 `RedisUtil.java` 缺少 `@ConditionalOnClass` 条件注解，导致无 Redis 依赖的模块（finance-search）启动时 `NoClassDefFoundError`。修复需改 Java 源码，不改配置。 |
+| **AuthConstant.PERMIT_ALL_URLS 缺少 user 模块路径** | finance-user 全部接口返回 401 | 当前只有 `/system/umsAdmin/login` 在放行列表中，`/user/user/login` 等路径被 LoginInterceptor 拦截。新增模块时须同时更新 `AuthConstant.java`。 |
+| **PERMIT_ALL_URLS 未在 LoginInterceptor 注册模块中使用** | 该常量目前未被 LoginInterceptor 所在模块引用 | LoginInterceptor 位于 finance-common，但 user 模块未注册此拦截器。当前 user 模块没有 WebMvcConfigurer。 |
