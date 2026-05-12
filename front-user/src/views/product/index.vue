@@ -114,7 +114,7 @@
       </div>
       <template #footer>
         <el-button @click="detailVisible = false">关闭</el-button>
-        <el-button type="primary" @click="goTrade(detailItem)">去交易</el-button>
+        <el-button type="primary" :disabled="detailItem?.status !== 1" @click="goTrade(detailItem)">去交易</el-button>
       </template>
     </el-dialog>
   </div>
