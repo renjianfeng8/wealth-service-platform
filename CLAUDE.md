@@ -735,3 +735,50 @@ JwtUtil 在 @PostConstruct 中校验密钥字节≥32，启动时即失败而非
 - [ ] 拦截器 pathPatterns 与 context-path 一致（不能加前缀）
 - [ ] update 方法使用 BeanConvertUtil.copyNonNullProperties 而非 BeanUtils.copyProperties
 - [ ] 业务异常使用 ServiceException(code, message) 而非 RuntimeException
+
+# 十七、Git 提交规范（强制遵守）
+
+所有 git 提交必须遵循 [约定式提交 (Conventional Commits)](https://www.conventionalcommits.org/) 规范，格式如下：
+
+```
+<type>(<scope>): <description>
+```
+
+## type 类型
+
+| type | 说明 |
+|------|------|
+| feat | 新功能 |
+| fix | 修复 bug |
+| docs | 文档变更 |
+| style | 代码格式调整（不影响功能） |
+| refactor | 代码重构（既非 feat 也非 fix） |
+| perf | 性能优化 |
+| test | 添加或修改测试 |
+| chore | 构建过程或辅助工具变动 |
+| ci | CI 配置变更 |
+| build | 影响构建系统或外部依赖的变更 |
+| revert | 回退提交 |
+
+## scope 可选范围
+
+本项目的 scope 对应模块名：common、gateway、system、user、product、account、trade、message、search。
+
+## description 要求
+
+- 简洁的命令式语气（如 "添加用户登录接口" 而非 "添加了用户登录接口"）
+- 首字母小写
+- 末尾不加句号
+
+## 示例
+
+```
+feat(product): 添加产品分页查询接口
+fix(trade): 修复交易委托金额计算精度问题
+docs: 更新 README 部署说明
+refactor(gateway): 提取 CORS 配置为独立类
+chore: 升级 MyBatis-Plus 依赖版本
+ci: 添加 GitHub Actions 自动构建
+```
+
+> 注：scope 可省略，type 不可省略。提交信息中英文均可，本项目统一使用中文描述。
