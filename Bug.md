@@ -277,3 +277,31 @@ public Result<IPage<FinTradeOrderVO>> page(
 - `finance-message/src/main/java/com/finance/platform/message/controller/FinMessageController.java`
 - `finance-message/src/main/java/com/finance/platform/message/service/FinMessageService.java`
 - `finance-message/src/main/java/com/finance/platform/message/service/impl/FinMessageServiceImpl.java`
+
+---
+
+## Bug-008: 停售产品仍可点击"去交易"跳转交易页
+
+**日期**: 2026-05-12
+**模块**: front-user
+**影响**: 标记为"停售"的产品，用户仍可通过详情弹窗中的"去交易"按钮进入交易页下单
+
+### 现象
+
+产品卡片上显示"停售"标签的产品，点击查看详情后，详情弹窗底部的"去交易"按钮仍可点击，会跳转到交易委托页并带入产品代码，用户可能对停售产品下单。
+
+### 根因
+
+详情弹窗的"去交易"按钮未根据 `status` 字段做条件禁用，始终可点击：
+
+```html
+<!-- 修复前：始终可点击 -->
+<el-button type="primary" @click="goTrade(detailItem)">去交易</el-button>
+
+<!-- 修复后：停售时禁用 -->
+<el-button type="primary" :disabled="detailItem?.status !== 1" @click="goTrade(detailItem)">去交易</el-button>
+```
+
+### 涉及文件
+
+- `front-user/src/views/product/index.vue`
