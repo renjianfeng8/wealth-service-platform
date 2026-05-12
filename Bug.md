@@ -204,3 +204,37 @@ setStoredUser({ username, userId, nickname, avatar })
 - `finance-user/src/main/java/com/finance/user/service/impl/UserServiceImpl.java`
 - `finance-user/src/main/java/com/finance/user/controller/UserController.java`
 - `front-user/src/store/index.ts`
+
+---
+
+## Bug-005: 交易委托分页筛选不生效（orderStatus 参数被忽略）
+
+**日期**: 2026-05-12
+**模块**: finance-trade
+**影响**: 前端筛选"已成交/待成交/已撤销"无效果，始终返回全部数据
+
+### 现象
+
+前端委托单列表的筛选下拉框选择"已成交"或"已撤销"后，列表数据未变化，始终展示全部订单。浏览器 Network 面板可看到 `orderStatus` 参数已正常发送。
+
+### 根因
+
+`FinTradeOrderController.page()` 方法只接收 `pageNum` 和 `pageSize` 两个参数，未声明 `orderStatus` 和 `userId` 参数。`orderStatus` 和 `userId` 虽以 query string 形式发送到后端，但被 Spring MVC 忽略。
+
+```java
+// 修复前：只有分页参数，无筛选参数
+@GetMapping("/page")
+public Result<IPage<FinTradeOrderVO>> page(
+        @RequestParam(defaultValue = "1") Integer pageNum,
+        @RequestParam(defaultValue = "10") Integer pageSize) {
+    Page<FinTradeOrder> page = new Page<>(pageNum, pageSize);
+    IPage<FinTradeOrder> entityPage = finTradeOrderService.page(page); // 无条件查询全部
+    ...
+}
+```
+
+### 涉及文件
+
+- `finance-trade/src/main/java/com/finance/platform/trade/controller/FinTradeOrderController.java`
+- `finance-trade/src/main/java/com/finance/platform/trade/service/FinTradeOrderService.java`
+- `finance-trade/src/main/java/com/finance/platform/trade/service/impl/FinTradeOrderServiceImpl.java`
