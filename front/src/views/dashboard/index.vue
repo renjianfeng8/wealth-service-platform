@@ -1,372 +1,273 @@
 <template>
-  <div class="dark-dashboard">
-    <!-- Loading -->
-    <div v-if="loading" class="db-loading">
-      <el-icon class="spin" :size="32"><Loading /></el-icon>
+  <div class="finance-light">
+    <div v-if="loading" class="fl-loading">
+      <div class="fl-loading-spinner" />
       <span>加载中...</span>
     </div>
 
     <template v-else>
-      <!-- ==================== 趋势图行：左 资产 2/3 + 右 余额 1/3 ==================== -->
-      <el-row :gutter="10" class="db-section eq-height-row">
-        <!-- 左侧：资产总值趋势 -->
-        <el-col :xs="24" :md="16">
-          <el-card class="db-card" shadow="never">
-            <div class="trend-header">
-              <div>
-                <div class="trend-label">资产总值 (估算)</div>
-                <div class="trend-value">¥{{ formatNumber(totalAsset) }}</div>
-                <div class="trend-sub">
-                  <span :class="assetChange >= 0 ? 'rise' : 'fall'">
-                    <el-icon :size="12"><Top v-if="assetChange >= 0" /><Bottom v-else /></el-icon>
-                    {{ Math.abs(assetChange).toFixed(2) }}%
-                  </span>
-                  <span class="sub-muted">过去24小时</span>
+      <div class="fl-dashboard">
+        <!-- Row 1: 核心数据卡片 -->
+        <div class="fl-stats-row">
+          <div class="fl-stat-card">
+            <div class="fl-stat-icon fl-icon-blue">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+            </div>
+            <div class="fl-stat-body">
+              <div class="fl-stat-label">资产总值 (估算)</div>
+              <div class="fl-stat-value">¥{{ formatNumber(totalAsset) }}</div>
+              <div class="fl-stat-change">
+                <span :class="assetChange >= 0 ? 'fl-rise' : 'fl-fall'">
+                  <svg v-if="assetChange >= 0" width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M7 14l5-5 5 5z"/></svg>
+                  <svg v-else width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg>
+                  {{ Math.abs(assetChange).toFixed(2) }}%
+                </span>
+                <span class="fl-stat-sub">过去24小时</span>
+              </div>
+            </div>
+          </div>
+          <div class="fl-stat-card">
+            <div class="fl-stat-icon fl-icon-yellow">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+            </div>
+            <div class="fl-stat-body">
+              <div class="fl-stat-label">账户余额</div>
+              <div class="fl-stat-value fl-text-yellow">¥{{ formatNumber(balanceValue) }}</div>
+              <div class="fl-stat-change">
+                <span :class="balanceChange >= 0 ? 'fl-rise' : 'fl-fall'">
+                  <svg v-if="balanceChange >= 0" width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M7 14l5-5 5 5z"/></svg>
+                  <svg v-else width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg>
+                  {{ Math.abs(balanceChange).toFixed(2) }}%
+                </span>
+                <span class="fl-stat-sub">本期变化</span>
+              </div>
+            </div>
+          </div>
+          <div class="fl-stat-card">
+            <div class="fl-stat-icon fl-icon-green">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+            </div>
+            <div class="fl-stat-body">
+              <div class="fl-stat-label">今日收益</div>
+              <div class="fl-stat-value" :class="dailyIncome >= 0 ? 'fl-text-green' : 'fl-text-red'">¥{{ formatNumber(dailyIncome) }}</div>
+              <div class="fl-stat-change">
+                <span :class="dailyIncome >= 0 ? 'fl-rise' : 'fl-fall'">
+                  <svg v-if="dailyIncome >= 0" width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M7 14l5-5 5 5z"/></svg>
+                  <svg v-else width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg>
+                  {{ Math.abs(dailyIncomeRate).toFixed(2) }}%
+                </span>
+                <span class="fl-stat-sub">日收益率</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Row 2: 资产趋势 + 余额走势 -->
+        <div class="fl-chart-row">
+          <div class="fl-chart-col-main">
+            <div class="fl-card">
+              <div class="fl-card-header">
+                <div>
+                  <div class="fl-card-title">资产趋势</div>
+                  <div class="fl-card-subtitle">资产总值变化曲线</div>
+                </div>
+                <div class="fl-time-filters">
+                  <button v-for="t in timeRanges" :key="t.key"
+                    :class="['fl-tm-btn', { active: tmActive === t.key }]"
+                    @click="tmActive = t.key; updateAssetChart()"
+                  >{{ t.label }}</button>
                 </div>
               </div>
-              <div class="time-filters">
-                <button
-                  v-for="t in timeRanges" :key="t.key"
-                  :class="['tm-btn', { active: tmActive === t.key }]"
-                  @click="tmActive = t.key"
-                >{{ t.label }}</button>
-              </div>
+              <div ref="assetChartRef" class="fl-chart-box" />
             </div>
-            <div class="chart-wrap chart-expand">
-              <svg viewBox="0 0 800 180" class="chart-svg">
-                <defs>
-                  <linearGradient id="areaUp" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stop-color="#34c759" stop-opacity="0.3" />
-                    <stop offset="100%" stop-color="#34c759" stop-opacity="0" />
-                  </linearGradient>
-                  <linearGradient id="areaDn" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stop-color="#409eff" stop-opacity="0.3" />
-                    <stop offset="100%" stop-color="#409eff" stop-opacity="0" />
-                  </linearGradient>
-                </defs>
-                <line v-for="i in 4" :key="'g'+i" x1="0" :y1="15+i*38" x2="800" :y2="15+i*38" stroke="#21262d" stroke-width="1" />
-                <path :d="areaPath" :fill="assetChange >= 0 ? 'url(#areaUp)' : 'url(#areaDn)'" />
-                <path :d="linePath" :stroke="assetChange >= 0 ? '#34c759' : '#409eff'" stroke-width="2" fill="none" stroke-linejoin="round" />
-                <g v-for="(pt, i) in trendPts" :key="'a'+i">
-                  <circle v-if="pt.tag" :cx="pt.x" :cy="pt.y" r="4" :fill="pt.tag === 'buy' ? '#34c759' : '#f56c6c'" stroke="#0d1117" stroke-width="2" />
-                  <text v-if="pt.tag" :x="pt.x" :y="pt.y - 12" text-anchor="middle" fill="#8b949e" font-size="9">{{ pt.tag === 'buy' ? '买入' : '卖出' }}</text>
-                </g>
-                <text v-for="(l, i) in xLbls" :key="'xl'+i" :x="l.x" y="176" text-anchor="middle" fill="#484f58" font-size="9">{{ l.text }}</text>
-              </svg>
-            </div>
-          </el-card>
-        </el-col>
-
-        <!-- 右侧：账户余额走势 -->
-        <el-col :xs="24" :md="8">
-          <el-card class="db-card" shadow="never">
-            <div class="trend-header">
-              <div>
-                <div class="trend-label">账户余额</div>
-                <div class="trend-value" style="color: #e6a23c;">¥{{ formatNumber(balanceValue) }}</div>
-                <div class="trend-sub">
-                  <span :class="balanceChange >= 0 ? 'rise' : 'fall'">
-                    <el-icon :size="12"><Top v-if="balanceChange >= 0" /><Bottom v-else /></el-icon>
-                    {{ Math.abs(balanceChange).toFixed(2) }}%
-                  </span>
-                  <span class="sub-muted">本期变化</span>
+          </div>
+          <div class="fl-chart-col-side">
+            <div class="fl-card">
+              <div class="fl-card-header">
+                <div>
+                  <div class="fl-card-title">余额走势</div>
+                  <div class="fl-card-subtitle">账户余额变化</div>
+                </div>
+                <div class="fl-time-filters">
+                  <button v-for="t in balanceRanges" :key="t.key"
+                    :class="['fl-tm-btn', { active: balActive === t.key }]"
+                    @click="balActive = t.key; updateBalanceChart()"
+                  >{{ t.label }}</button>
                 </div>
               </div>
-              <div class="time-filters">
-                <button
-                  v-for="t in balanceRanges" :key="t.key"
-                  :class="['tm-btn', { active: balActive === t.key }]"
-                  @click="balActive = t.key"
-                >{{ t.label }}</button>
-              </div>
+              <div ref="balanceChartRef" class="fl-chart-box" />
             </div>
-            <div class="chart-wrap chart-expand">
-              <svg viewBox="0 0 340 180" class="chart-svg">
-                <defs>
-                  <linearGradient id="balGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stop-color="#e6a23c" stop-opacity="0.25" />
-                    <stop offset="100%" stop-color="#e6a23c" stop-opacity="0" />
-                  </linearGradient>
-                </defs>
-                <line v-for="i in 3" :key="'bg'+i" x1="0" :y1="20+i*48" x2="340" :y2="20+i*48" stroke="#21262d" stroke-width="1" />
-                <path :d="balAreaPath" fill="url(#balGrad)" />
-                <path :d="balLinePath" stroke="#e6a23c" stroke-width="2" fill="none" stroke-linejoin="round" />
-                <g v-for="(pt, i) in balPts" :key="'ba'+i">
-                  <circle v-if="pt.tag" :cx="pt.x" :cy="pt.y" r="4" :fill="pt.tag === 'deposit' ? '#67c23a' : '#f56c6c'" stroke="#0d1117" stroke-width="2" />
-                  <text v-if="pt.tag" :x="pt.x" :y="pt.y - 10" text-anchor="middle" fill="#8b949e" font-size="8">{{ pt.tag === 'deposit' ? '入金' : '出金' }}</text>
-                </g>
-                <text v-for="(l, i) in balXLbls" :key="'bxl'+i" :x="l.x" y="175" text-anchor="middle" fill="#484f58" font-size="8">{{ l.text }}</text>
-              </svg>
-            </div>
-          </el-card>
-        </el-col>
-      </el-row>
+          </div>
+        </div>
 
-      <!-- ==================== 产品涨跌卡片 ==================== -->
-      <el-row :gutter="8" class="db-section">
-        <el-col
-          v-for="p in miniProducts"
-          :key="p.productCode"
-          :xs="8" :sm="6" :md="4" :lg="3"
-        >
-          <el-card class="db-card mini-card" shadow="never" :class="(p.riseFallRate || 0) >= 0 ? 'bdr-rise' : 'bdr-fall'">
-            <div class="mc-name">{{ p.productName }}</div>
-            <div class="mc-price" :class="(p.riseFallRate || 0) >= 0 ? 'rise' : 'fall'">{{ formatPrice(p.price) }}</div>
-            <div class="mc-chg" :class="(p.riseFallRate || 0) >= 0 ? 'rise' : 'fall'">
-              <el-icon :size="10"><Top v-if="(p.riseFallRate || 0) >= 0" /><Bottom v-else /></el-icon>
+        <!-- Row 3: 产品涨跌卡片 -->
+        <div class="fl-mini-row">
+          <div v-for="p in miniProducts" :key="p.productCode"
+            :class="['fl-mini-card', (p.riseFallRate || 0) >= 0 ? 'fl-bdr-green' : 'fl-bdr-red']"
+          >
+            <div class="fl-mc-name">{{ p.productName }}</div>
+            <div class="fl-mc-price" :class="(p.riseFallRate || 0) >= 0 ? 'fl-rise' : 'fl-fall'">{{ formatPrice(p.price) }}</div>
+            <div class="fl-mc-chg" :class="(p.riseFallRate || 0) >= 0 ? 'fl-rise' : 'fl-fall'">
+              <svg v-if="(p.riseFallRate || 0) >= 0" width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M7 14l5-5 5 5z"/></svg>
+              <svg v-else width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg>
               {{ formatRate(p.riseFallRate) }}
             </div>
-          </el-card>
-        </el-col>
-      </el-row>
+          </div>
+        </div>
 
-      <!-- ==================== 走势图 + 行情列表 ==================== -->
-      <el-row :gutter="10" class="db-section eq-height-row">
-        <el-col :xs="24" :md="14">
-          <el-card class="db-card" shadow="never">
-            <template #header>
-              <div class="card-header-row">
-                <span class="sect-title">行情走势</span>
-                <el-radio-group v-model="symbolSel" size="small" class="symb-group">
-                  <el-radio-button
-                    v-for="p in topProds" :key="p.productCode" :value="p.productCode"
-                  >{{ p.productName }}</el-radio-button>
-                </el-radio-group>
+        <!-- Row 4: K线图 + 行情列表 -->
+        <div class="fl-chart-row">
+          <div class="fl-chart-col-kline">
+            <div class="fl-card">
+              <div class="fl-card-header">
+                <div>
+                  <div class="fl-card-title">
+                    <span class="fl-symbol-name">{{ curSym?.productName || '--' }}</span>
+                    <span class="fl-symbol-code">{{ curSym?.productCode || '' }}</span>
+                  </div>
+                  <div class="fl-card-subtitle">K线走势图</div>
+                </div>
+                <div class="fl-kline-controls">
+                  <el-radio-group v-model="symbolSel" size="small" class="fl-symb-group">
+                    <el-radio-button v-for="p in topProds" :key="p.productCode" :value="p.productCode">{{ p.productName }}</el-radio-button>
+                  </el-radio-group>
+                  <div class="fl-time-filters">
+                    <button v-for="t in klineRanges" :key="t.key"
+                      :class="['fl-tm-btn', { active: klineActive === t.key }]"
+                      @click="klineActive = t.key; updateKlineChart()"
+                    >{{ t.label }}</button>
+                  </div>
+                </div>
               </div>
-            </template>
-            <div class="chart-wrap chart-expand">
-              <svg viewBox="0 0 700 220" class="chart-svg">
-                <line v-for="i in 5" :key="'kg'+i" x1="0" :y1="15+i*38" x2="700" :y2="15+i*38" stroke="#21262d" stroke-width="1" />
-                <line v-for="i in 6" :key="'kv'+i" :x1="30+(i-1)*100" y1="15" :x2="30+(i-1)*100" y2="205" stroke="#21262d" stroke-width="1" stroke-dasharray="3,3" />
-                <g v-for="(c, idx) in kPts" :key="idx" :transform="`translate(${c.x},0)`">
-                  <line :x1="6" :y1="c.high" x2="6" :y2="c.low" :stroke="c.color" stroke-width="1.5" />
-                  <rect :x="1" :y="Math.min(c.open,c.close)" width="10" :height="Math.max(Math.abs(c.close-c.open),1)" :fill="c.color" rx="1" />
-                </g>
-                <text v-for="(l, i) in priceLbls" :key="'kp'+i" x="695" :y="19+i*38" text-anchor="end" fill="#484f58" font-size="9">{{ l }}</text>
-                <text v-for="(l, i) in dateLbls" :key="'kd'+i" :x="l.x" y="217" text-anchor="middle" fill="#484f58" font-size="9">{{ l.text }}</text>
-              </svg>
+              <div ref="klineChartRef" class="fl-chart-box fl-chart-kline" />
             </div>
-          </el-card>
-        </el-col>
-        <el-col :xs="24" :md="10">
-          <el-card class="db-card fill-card" shadow="never">
-            <template #header>
-              <div class="card-header-row">
-                <span class="sect-title">实时行情</span>
+          </div>
+          <div class="fl-chart-col-list">
+            <div class="fl-card fl-card-list">
+              <div class="fl-card-header">
+                <span class="fl-card-title">实时行情</span>
                 <el-select v-model="mktFilter" size="small" placeholder="筛选" style="width:85px">
                   <el-option label="全部" value="" />
                   <el-option label="上涨" value="rise" />
                   <el-option label="下跌" value="fall" />
                 </el-select>
               </div>
-            </template>
-            <div class="mkt-list">
-              <div v-for="p in filteredList" :key="p.productCode" class="mkt-row">
-                <div class="mkt-l">
-                  <div class="mkt-name">{{ p.productName }}</div>
-                  <div class="mkt-code">{{ p.productCode }}</div>
+              <div class="fl-list-wrap">
+                <div v-for="p in filteredList" :key="p.productCode" class="fl-list-row">
+                  <div class="fl-list-l">
+                    <div class="fl-list-name">{{ p.productName }}</div>
+                    <div class="fl-list-code">{{ p.productCode }}</div>
+                  </div>
+                  <div class="fl-list-r">
+                    <div class="fl-list-price">¥{{ formatPrice(p.price) }}</div>
+                    <div class="fl-list-chg" :class="(p.riseFallRate || 0) >= 0 ? 'fl-rise' : 'fl-fall'">{{ formatRate(p.riseFallRate) }}</div>
+                  </div>
                 </div>
-                <div class="mkt-r">
-                  <div class="mkt-price">¥{{ formatPrice(p.price) }}</div>
-                  <div class="mkt-chg" :class="(p.riseFallRate || 0) >= 0 ? 'rise' : 'fall'">{{ formatRate(p.riseFallRate) }}</div>
-                </div>
+                <el-empty v-if="!filteredList.length" description="暂无数据" :image-size="50" />
               </div>
-              <el-empty v-if="!filteredList.length" description="暂无数据" :image-size="60" />
             </div>
-          </el-card>
-        </el-col>
-      </el-row>
-
-      <!-- ==================== 快捷入口 ==================== -->
-      <el-card class="db-card ent-card" shadow="never">
-        <template #header><span class="sect-title">快捷入口</span></template>
-        <div class="ent-grid">
-          <div v-for="e in entries" :key="e.label" class="ent-item" @click="$router.push(e.path)">
-            <div class="ent-icon" :style="{ background: e.bg }"><el-icon :size="20"><component :is="e.icon" /></el-icon></div>
-            <span class="ent-label">{{ e.label }}</span>
           </div>
         </div>
-      </el-card>
+
+        <!-- Row 5: 快捷入口 -->
+        <div class="fl-card">
+          <div class="fl-card-header">
+            <span class="fl-card-title">快捷入口</span>
+          </div>
+          <div class="fl-entry-grid">
+            <div v-for="e in entries" :key="e.label" class="fl-entry-item" @click="$router.push(e.path)">
+              <div class="fl-entry-icon" :style="{ background: e.bg }">
+                <el-icon :size="20"><component :is="e.icon" /></el-icon>
+              </div>
+              <span class="fl-entry-label">{{ e.label }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </template>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
+import * as echarts from 'echarts'
 import { getProductList } from '@/api/product'
 import { formatPrice, formatRate } from '@/utils/format'
 import {
-  Top, Bottom, Loading,
   User, Goods, DataLine, List, Message,
   Star, Reading, Search, Setting,
 } from '@element-plus/icons-vue'
 import type { FinProduct } from '@/types'
+import '@/styles/light-theme.css'
 
+/* ============================================
+   Types
+   ============================================ */
+interface CandleData { time: string; open: number; close: number; high: number; low: number; volume: number }
+
+/* ============================================
+   State
+   ============================================ */
 const loading = ref(true)
 const products = ref<FinProduct[]>([])
+const assetChartRef = ref<HTMLDivElement>()
+const balanceChartRef = ref<HTMLDivElement>()
+const klineChartRef = ref<HTMLDivElement>()
 
-// ============================
-// 左侧：资产趋势
-// ============================
+let assetChart: echarts.ECharts | null = null
+let balanceChart: echarts.ECharts | null = null
+let klineChart: echarts.ECharts | null = null
+const observers: ResizeObserver[] = []
+
+/* ============================================
+   Time Ranges
+   ============================================ */
 const tmActive = ref('1D')
-
 const timeRanges = [
   { key: '30m', label: '30m' },
   { key: '1H', label: '1H' },
   { key: '4H', label: '4H' },
   { key: '1D', label: '1D' },
 ]
-
-const totalAsset = computed(() => {
-  if (!products.value.length) return 0
-  return products.value.reduce((s, p) => s + (p.price || 0) * (Math.floor(Math.random() * 100 + 20)), 0)
-})
-
-const assetChange = computed(() => (Math.random() - 0.35) * 10)
-
-interface TrendPt { x: number; y: number; tag: 'buy' | 'sell' | null }
-
-const trendPts = computed<TrendPt[]>(() => {
-  const base = totalAsset.value || 1000000
-  const n = 20
-  const pts: TrendPt[] = []
-  let v = base * 0.86
-  for (let i = 0; i < n; i++) {
-    v += (Math.random() - 0.46) * base * 0.018
-    v *= assetChange.value >= 0 ? 1.0035 : 0.997
-    const x = 40 + (i / (n - 1)) * 720
-    const y = 162 - ((v - base * 0.78) / (base * 0.44)) * 130
-    const tag = i === 5 ? 'buy' : i === 13 ? 'sell' : i === 17 ? 'buy' : null
-    pts.push({ x, y, tag })
-  }
-  return pts
-})
-
-const linePath = computed(() =>
-  trendPts.value.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ')
-)
-const areaPath = computed(() => {
-  if (!trendPts.value.length) return ''
-  const top = trendPts.value.map(p => `${p.x},${p.y}`).join(' ')
-  return `M${trendPts.value[0].x},165 L${top} L${trendPts.value[trendPts.value.length - 1].x},165 Z`
-})
-
-const xLbls = computed(() => [0, 6, 12, 18].map(h => ({
-  x: 40 + (h / 23) * 720,
-  text: `${String(h).padStart(2, '0')}:00`,
-})))
-
-// ============================
-// 右侧：账户余额走势
-// ============================
 const balActive = ref('1D')
-
 const balanceRanges = [
   { key: '30m', label: '30m' },
   { key: '1H', label: '1H' },
   { key: '4H', label: '4H' },
   { key: '1D', label: '1D' },
-  { key: '1W', label: '1W' },
-  { key: '1M', label: '1M' },
+]
+const klineActive = ref('1D')
+const klineRanges = [
+  { key: '30m', label: '30m' },
+  { key: '1H', label: '1H' },
+  { key: '4H', label: '4H' },
+  { key: '1D', label: '1D' },
 ]
 
-interface BalPt { x: number; y: number; tag: 'deposit' | 'withdraw' | null }
-
+/* ============================================
+   Computed
+   ============================================ */
+const totalAsset = computed(() => {
+  if (!products.value.length) return 0
+  return products.value.reduce((s, p) => s + (p.price || 0) * (Math.floor(Math.random() * 100 + 20)), 0)
+})
+const assetChange = computed(() => (Math.random() - 0.35) * 10)
 const balanceValue = computed(() => {
   if (!products.value.length) return 0
   return products.value.reduce((s, p) => s + (p.price || 0) * Math.floor(Math.random() * 30 + 5), 0)
 })
-
 const balanceChange = computed(() => (Math.random() - 0.4) * 6)
-
-const balPts = computed<BalPt[]>(() => {
-  const base = balanceValue.value || 500000
-  const n = 14
-  const pts: BalPt[] = []
-  let v = base * 0.9
-  for (let i = 0; i < n; i++) {
-    v += (Math.random() - 0.44) * base * 0.015
-    v *= balanceChange.value >= 0 ? 1.004 : 0.998
-    const x = 20 + (i / (n - 1)) * 300
-    const y = 160 - ((v - base * 0.82) / (base * 0.36)) * 120
-    const tag = i === 3 ? 'deposit' : i === 8 ? 'withdraw' : i === 12 ? 'deposit' : null
-    pts.push({ x, y, tag })
-  }
-  return pts
+const dailyIncome = computed(() => {
+  if (!products.value.length) return 0
+  return products.value.reduce((s, p) => s + (p.price || 0) * (Math.random() - 0.45) * 0.5, 0)
 })
+const dailyIncomeRate = computed(() => (Math.random() - 0.35) * 4)
 
-const balLinePath = computed(() =>
-  balPts.value.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ')
-)
-
-const balAreaPath = computed(() => {
-  if (!balPts.value.length) return ''
-  const top = balPts.value.map(p => `${p.x},${p.y}`).join(' ')
-  return `M${balPts.value[0].x},165 L${top} L${balPts.value[balPts.value.length - 1].x},165 Z`
-})
-
-const balXLbls = computed(() =>
-  [0, 4, 8, 12].map(i => ({
-    x: 20 + (i / 13) * 300,
-    text: [`12:00`, `14:00`, `16:00`, `18:00`][i],
-  }))
-)
-
-// ============================
-// 公共
-// ============================
-function formatNumber(v: number): string {
-  if (v >= 1e8) return (v / 1e8).toFixed(2) + '亿'
-  if (v >= 1e4) return (v / 1e4).toFixed(2) + '万'
-  return v.toFixed(2)
-}
-
-// ---- 产品卡片 ----
-const topProds = computed(() => products.value.slice(0, 5))
+const topProds = computed(() => products.value.slice(0, 6))
 const miniProducts = computed(() => products.value.slice(0, 12))
-
-// ---- K 线 SVG ----
-interface KPt { x: number; open: number; close: number; high: number; low: number; color: string }
 const symbolSel = ref('')
 const curSym = computed(() => products.value.find(p => p.productCode === symbolSel.value))
 
-const kPts = computed<KPt[]>(() => {
-  const bp = curSym.value?.price || 100
-  const n = 20
-  const raw: { o: number; c: number; h: number; l: number }[] = []
-  let p = bp * 0.9
-  let mn = p, mx = p
-  for (let i = 0; i < n; i++) {
-    const o = p
-    const c = o + (Math.random() - 0.48) * bp * 0.04
-    const h = Math.max(o, c) + Math.random() * bp * 0.012
-    const l = Math.min(o, c) - Math.random() * bp * 0.012
-    mn = Math.min(mn, l); mx = Math.max(mx, h)
-    raw.push({ o, c, h, l })
-    p = c
-  }
-  const rng = mx - mn || 1
-  return raw.map((r, i) => ({
-    x: 40 + i * 30,
-    open: 200 - ((r.o - mn) / rng) * 170,
-    close: 200 - ((r.c - mn) / rng) * 170,
-    high: 200 - ((r.h - mn) / rng) * 170,
-    low: 200 - ((r.l - mn) / rng) * 170,
-    color: r.c >= r.o ? '#67c23a' : '#f56c6c',
-  }))
-})
-
-const priceLbls = computed(() => {
-  const bp = curSym.value?.price || 100
-  const mn = bp * 0.82, mx = bp * 1.18
-  return [0, 1, 2, 3, 4].map(i => (mx - (mx - mn) / 4 * i).toFixed(2))
-})
-
-const dateLbls = computed(() =>
-  [0, 5, 10, 15, 19].map(i => ({ x: 40 + i * 30, text: `${String(9 + i).padStart(2, '0')}:30` }))
-)
-
-// ---- 行情过滤 ----
 const mktFilter = ref('')
 const filteredList = computed(() => {
   if (!mktFilter.value) return products.value
@@ -376,19 +277,313 @@ const filteredList = computed(() => {
   })
 })
 
-// ---- 快捷入口 ----
+function formatNumber(v: number): string {
+  if (v >= 1e8) return (v / 1e8).toFixed(2) + '亿'
+  if (v >= 1e4) return (v / 1e4).toFixed(2) + '万'
+  return v.toFixed(2)
+}
+
+/* ============================================
+   Mock data generators
+   ============================================ */
+function generateTrendData(base: number, count: number, volatility: number, drift: number): number[] {
+  const data: number[] = []
+  let v = base * 0.86
+  for (let i = 0; i < count; i++) {
+    v += (Math.random() - 0.46) * base * volatility
+    v *= drift >= 0 ? 1.0035 : 0.997
+    data.push(v)
+  }
+  return data
+}
+
+function generateCandleData(basePrice: number, count: number): CandleData[] {
+  const data: CandleData[] = []
+  let p = basePrice * 0.92
+  const now = Date.now()
+  for (let i = count - 1; i >= 0; i--) {
+    const o = p
+    const c = o + (Math.random() - 0.48) * basePrice * 0.03
+    const h = Math.max(o, c) + Math.random() * basePrice * 0.01
+    const l = Math.min(o, c) - Math.random() * basePrice * 0.01
+    const v = Math.floor(Math.random() * 5000 + 1000)
+    const t = new Date(now - i * 3600000)
+    data.push({
+      time: `${String(t.getHours()).padStart(2, '0')}:${String(t.getMinutes()).padStart(2, '0')}`,
+      open: Number(o.toFixed(2)),
+      close: Number(c.toFixed(2)),
+      high: Number(h.toFixed(2)),
+      low: Number(l.toFixed(2)),
+      volume: v,
+    })
+    p = c
+  }
+  return data
+}
+
+/* ============================================
+   ECharts — Light Axis Theme
+   ============================================ */
+function lightAxis() {
+  return {
+    axisLine: { lineStyle: { color: '#e4e7ed' } },
+    axisTick: { lineStyle: { color: '#e4e7ed' } },
+    splitLine: { lineStyle: { color: '#f0f2f5', type: 'dashed' as const } },
+    axisLabel: { color: '#909399', fontSize: 11 },
+  }
+}
+
+function createChart(dom: HTMLDivElement): echarts.ECharts {
+  const chart = echarts.init(dom, undefined, { renderer: 'canvas' })
+  const observer = new ResizeObserver(() => chart.resize())
+  observer.observe(dom)
+  observers.push(observer)
+  return chart
+}
+
+/* ============================================
+   Asset Trend Chart
+   ============================================ */
+function buildAssetOption(): echarts.EChartsOption {
+  const count = tmActive.value === '30m' ? 48 : tmActive.value === '1H' ? 24 : tmActive.value === '4H' ? 30 : 24
+  const data = generateTrendData(totalAsset.value, count, 0.018, assetChange.value)
+  const isUp = data[data.length - 1] >= data[0]
+  const color = isUp ? '#19be6b' : '#1a6dff'
+
+  const now = Date.now()
+  const interval = tmActive.value === '30m' ? 1800000 : tmActive.value === '1H' ? 3600000 : tmActive.value === '4H' ? 14400000 : 3600000
+  const times: string[] = Array.from({ length: count }, (_, i) => {
+    const t = new Date(now - (count - 1 - i) * interval)
+    return `${String(t.getHours()).padStart(2, '0')}:${String(t.getMinutes()).padStart(2, '0')}`
+  })
+
+  return {
+    tooltip: {
+      trigger: 'axis',
+      backgroundColor: 'rgba(255,255,255,0.96)',
+      borderColor: '#e4e7ed',
+      borderWidth: 1,
+      textStyle: { color: '#303133', fontSize: 12 },
+      formatter: (params: any) => {
+        const p = params[0]
+        return `<div style="font-size:12px;color:#909399;margin-bottom:4px">${p.axisValue}</div>
+                <div style="font-size:14px;font-weight:600;color:#303133">¥${formatNumber(p.value)}</div>`
+      },
+    },
+    grid: { left: 50, right: 16, top: 10, bottom: 24 },
+    xAxis: {
+      type: 'category',
+      data: times,
+      boundaryGap: false,
+      ...lightAxis(),
+      axisLabel: { color: '#909399', fontSize: 10, interval: Math.floor(count / 6) },
+    },
+    yAxis: {
+      type: 'value',
+      ...lightAxis(),
+      axisLabel: {
+        color: '#909399', fontSize: 10,
+        formatter: (v: number) => v >= 10000 ? `${(v / 10000).toFixed(0)}万` : v.toFixed(0),
+      },
+      splitNumber: 4,
+    },
+    series: [{
+      type: 'line',
+      smooth: true,
+      symbol: 'none',
+      lineStyle: { color, width: 2 },
+      areaStyle: {
+        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+          { offset: 0, color: isUp ? 'rgba(25,190,107,0.15)' : 'rgba(26,109,255,0.12)' },
+          { offset: 1, color: isUp ? 'rgba(25,190,107,0)' : 'rgba(26,109,255,0)' },
+        ]),
+      },
+      data,
+    }],
+  }
+}
+
+/* ============================================
+   Balance Chart
+   ============================================ */
+function buildBalanceOption(): echarts.EChartsOption {
+  const count = balActive.value === '30m' ? 30 : balActive.value === '1H' ? 20 : balActive.value === '4H' ? 24 : 16
+  const data = generateTrendData(balanceValue.value, count, 0.015, balanceChange.value)
+
+  const now = Date.now()
+  const times: string[] = Array.from({ length: count }, (_, i) => {
+    const t = new Date(now - (count - 1 - i) * 3600000)
+    return `${String(t.getHours()).padStart(2, '0')}:${String(t.getMinutes()).padStart(2, '0')}`
+  })
+
+  return {
+    tooltip: {
+      trigger: 'axis',
+      backgroundColor: 'rgba(255,255,255,0.96)',
+      borderColor: '#e4e7ed',
+      borderWidth: 1,
+      textStyle: { color: '#303133', fontSize: 12 },
+      formatter: (params: any) => {
+        const p = params[0]
+        return `<div style="font-size:12px;color:#909399;margin-bottom:4px">${p.axisValue}</div>
+                <div style="font-size:14px;font-weight:600;color:#f5a623">¥${formatNumber(p.value)}</div>`
+      },
+    },
+    grid: { left: 50, right: 16, top: 10, bottom: 24 },
+    xAxis: {
+      type: 'category',
+      data: times,
+      boundaryGap: false,
+      ...lightAxis(),
+      axisLabel: { color: '#909399', fontSize: 10, interval: Math.floor(count / 4) },
+    },
+    yAxis: {
+      type: 'value',
+      ...lightAxis(),
+      axisLabel: {
+        color: '#909399', fontSize: 10,
+        formatter: (v: number) => v >= 10000 ? `${(v / 10000).toFixed(0)}万` : v.toFixed(0),
+      },
+      splitNumber: 3,
+    },
+    series: [{
+      type: 'line',
+      smooth: true,
+      symbol: 'none',
+      lineStyle: { color: '#f5a623', width: 2 },
+      areaStyle: {
+        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+          { offset: 0, color: 'rgba(245,166,35,0.12)' },
+          { offset: 1, color: 'rgba(245,166,35,0)' },
+        ]),
+      },
+      data,
+    }],
+  }
+}
+
+/* ============================================
+   K-line Chart
+   ============================================ */
+function buildKlineOption(): echarts.EChartsOption {
+  const bp = curSym.value?.price || 100
+  const count = klineActive.value === '30m' ? 30 : klineActive.value === '1H' ? 24 : klineActive.value === '4H' ? 24 : 20
+  const data = generateCandleData(bp, count)
+  const ohlc = data.map(d => [d.open, d.close, d.low, d.high])
+  const times = data.map(d => d.time)
+
+  const ma5 = data.map((_, i, arr) => {
+    if (i < 4) return '-'
+    return (arr.slice(i - 4, i + 1).reduce((s, d) => s + d.close, 0) / 5).toFixed(2)
+  })
+
+  return {
+    tooltip: {
+      trigger: 'axis',
+      backgroundColor: 'rgba(255,255,255,0.96)',
+      borderColor: '#e4e7ed',
+      borderWidth: 1,
+      textStyle: { color: '#303133', fontSize: 12 },
+      formatter: (params: any) => {
+        const idx = params[0].dataIndex
+        const d = data[idx]
+        const c = d.close >= d.open ? '#19be6b' : '#ed4014'
+        return `
+          <div style="font-size:12px;color:#909399;margin-bottom:6px">${d.time}</div>
+          <div style="display:flex;justify-content:space-between;gap:16px;margin:2px 0;font-size:12px">
+            <span style="color:#909399">开盘</span><span style="color:#303133;font-weight:500">${d.open.toFixed(2)}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;gap:16px;margin:2px 0;font-size:12px">
+            <span style="color:#909399">收盘</span><span style="color:${c};font-weight:600">${d.close.toFixed(2)}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;gap:16px;margin:2px 0;font-size:12px">
+            <span style="color:#909399">最高</span><span style="color:#303133">${d.high.toFixed(2)}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;gap:16px;margin:2px 0;font-size:12px">
+            <span style="color:#909399">最低</span><span style="color:#303133">${d.low.toFixed(2)}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;gap:16px;margin:2px 0;font-size:12px">
+            <span style="color:#909399">成交量</span><span style="color:#303133">${d.volume.toLocaleString()}</span>
+          </div>`
+      },
+    },
+    grid: { left: 50, right: 16, top: 12, bottom: 28 },
+    xAxis: {
+      type: 'category',
+      data: times,
+      ...lightAxis(),
+      axisLabel: { color: '#909399', fontSize: 10, interval: Math.floor(count / 6) },
+    },
+    yAxis: {
+      type: 'value',
+      scale: true,
+      ...lightAxis(),
+      axisLabel: { color: '#909399', fontSize: 10 },
+      splitNumber: 4,
+    },
+    dataZoom: [{ type: 'inside', start: 0, end: 100 }],
+    series: [
+      {
+        type: 'candlestick',
+        name: 'K线',
+        data: ohlc,
+        itemStyle: { color: '#19be6b', color0: '#ed4014', borderColor: '#19be6b', borderColor0: '#ed4014' },
+      },
+      {
+        type: 'line',
+        name: 'MA5',
+        data: ma5,
+        smooth: true,
+        symbol: 'none',
+        lineStyle: { color: '#f5a623', width: 1.5, opacity: 0.7 },
+      },
+    ],
+  }
+}
+
+function updateAssetChart() { assetChart?.setOption(buildAssetOption(), true) }
+function updateBalanceChart() { balanceChart?.setOption(buildBalanceOption(), true) }
+function updateKlineChart() { klineChart?.setOption(buildKlineOption(), true) }
+
+function initAllCharts() {
+  if (assetChartRef.value) {
+    assetChart = createChart(assetChartRef.value)
+    assetChart.setOption(buildAssetOption())
+  }
+  if (balanceChartRef.value) {
+    balanceChart = createChart(balanceChartRef.value)
+    balanceChart.setOption(buildBalanceOption())
+  }
+  if (klineChartRef.value) {
+    klineChart = createChart(klineChartRef.value)
+    klineChart.setOption(buildKlineOption())
+  }
+}
+
+function disposeAllCharts() {
+  observers.forEach(o => o.disconnect())
+  observers.length = 0
+  assetChart?.dispose()
+  balanceChart?.dispose()
+  klineChart?.dispose()
+  assetChart = null
+  balanceChart = null
+  klineChart = null
+}
+
+watch(symbolSel, () => nextTick(updateKlineChart))
+
 const entries = [
-  { label: '用户管理', path: '/user', icon: User, bg: '#409eff' },
-  { label: '产品管理', path: '/product', icon: Goods, bg: '#67c23a' },
-  { label: '行情数据', path: '/market', icon: DataLine, bg: '#e6a23c' },
-  { label: '交易管理', path: '/trade', icon: List, bg: '#f56c6c' },
+  { label: '用户管理', path: '/user', icon: User, bg: '#1a6dff' },
+  { label: '产品管理', path: '/product', icon: Goods, bg: '#19be6b' },
+  { label: '行情数据', path: '/market', icon: DataLine, bg: '#f5a623' },
+  { label: '交易管理', path: '/trade', icon: List, bg: '#ed4014' },
   { label: '自选管理', path: '/favorite', icon: Star, bg: '#d29922' },
   { label: '消息管理', path: '/message', icon: Message, bg: '#00b894' },
-  { label: '管理员', path: '/system/admin', icon: Setting, bg: '#8e44ad' },
+  { label: '管理员', path: '/system/admin', icon: Setting, bg: '#8b5cf6' },
   { label: 'ES 搜索', path: '/search', icon: Search, bg: '#1a6dff' },
 ]
 
-// ---- 加载数据 ----
 async function fetchAll() {
   loading.value = true
   try {
@@ -396,156 +591,375 @@ async function fetchAll() {
     products.value = (res.data || []) as FinProduct[]
     if (products.value.length && !symbolSel.value) symbolSel.value = products.value[0].productCode
   } catch { /* ignore */ }
-  finally { loading.value = false }
+  finally {
+    loading.value = false
+    await nextTick()
+    initAllCharts()
+  }
 }
 
 onMounted(fetchAll)
+onUnmounted(disposeAllCharts)
 </script>
 
-<style>
+<style scoped>
 /* ============================================
-   深色金融仪表盘 — 通过 .dark-dashboard 隔离
+   浅色金融仪表盘 — 样式模块化
    ============================================ */
-.dark-dashboard {
-  --dbbg: #0d1117;
-  --dbcard: #161b22;
-  --dbbrd: #21262d;
-  --dbtxt: #e6edf3;
-  --dbsec: #8b949e;
-  --dbdim: #484f58;
-  --dbgreen: #67c23a;
-  --dbred: #f56c6c;
-  --dbblue: #409eff;
 
-  max-width: 1280px;
-}
-.db-loading {
-  display: flex; flex-direction: column; align-items: center;
-  padding: 100px 0; gap: 14px; color: var(--dbsec); font-size: 14px;
-}
-.spin { animation: spin 1s linear infinite; }
-@keyframes spin { to { transform: rotate(360deg); } }
-
-.db-section { margin-bottom: 8px; }
-
-/* ===== Equal-height flex rows ===== */
-.dark-dashboard .eq-height-row { display: flex; flex-wrap: wrap; }
-.dark-dashboard .eq-height-row > .el-col { display: flex; flex-direction: column; }
-.dark-dashboard .eq-height-row .db-card { flex: 1; display: flex; flex-direction: column; }
-.dark-dashboard .eq-height-row .db-card .el-card__body {
-  flex: 1; display: flex; flex-direction: column;
-}
-.dark-dashboard .eq-height-row .chart-expand { flex: 1; display: flex; align-items: center; }
-.dark-dashboard .eq-height-row .chart-expand .chart-svg {
-  width: 100%; height: auto; max-height: 100%;
-}
-.dark-dashboard .eq-height-row .fill-card .mkt-list {
-  flex: 1; max-height: none; overflow-y: auto;
+.fl-dashboard {
+  max-width: 1320px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
-/* ===== Card ===== */
-.dark-dashboard .el-card.db-card {
-  background: var(--dbcard) !important;
-  border: 1px solid var(--dbbrd) !important;
-  border-radius: 10px !important;
-  margin-bottom: 8px;
-  transition: border-color 0.2s;
+/* ---------- Loading ---------- */
+.fl-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 120px 0;
+  gap: 16px;
+  color: #909399;
+  font-size: 14px;
 }
-.dark-dashboard .el-card.db-card:hover {
-  border-color: #30363d !important;
-  box-shadow: none !important;
+.fl-loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #e4e7ed;
+  border-top-color: #1a6dff;
+  border-radius: 50%;
+  animation: fl-spin 0.8s linear infinite;
 }
-.dark-dashboard .el-card__header {
-  padding: 10px 16px !important;
-  border-bottom: 1px solid var(--dbbrd) !important;
-  color: var(--dbtxt); font-size: 13px; font-weight: 600;
+@keyframes fl-spin { to { transform: rotate(360deg); } }
+
+/* ---------- Cards ---------- */
+.fl-card {
+  background: #fff;
+  border: 1px solid #e4e7ed;
+  border-radius: 10px;
+  padding: 18px 20px;
+  transition: all 0.25s ease;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+.fl-card:hover {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 }
 
-/* ===== Trend ===== */
-.trend-header { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
-.trend-label { font-size: 12px; color: var(--dbsec); margin-bottom: 2px; }
-.trend-value {
-  font-size: 22px; font-weight: 700; color: var(--dbtxt);
-  font-family: 'Courier New', monospace; line-height: 1.2;
+.fl-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 14px;
 }
-.trend-sub { display: flex; align-items: center; gap: 8px; margin-top: 4px; font-size: 12px; }
-.sub-muted { color: var(--dbdim); }
-.time-filters { display: flex; gap: 4px; flex-wrap: wrap; }
-.tm-btn {
-  background: transparent; border: 1px solid var(--dbbrd); color: var(--dbsec);
-  padding: 3px 10px; border-radius: 5px; font-size: 11px; cursor: pointer; transition: all 0.15s;
+.fl-card-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #303133;
 }
-.tm-btn:hover { border-color: var(--dbblue); color: var(--dbblue); }
-.tm-btn.active { background: var(--dbblue); border-color: var(--dbblue); color: #fff; }
-.chart-wrap { margin-top: 8px; }
-.chart-svg { width: 100%; height: auto; display: block; }
+.fl-card-subtitle {
+  font-size: 11px;
+  color: #909399;
+  margin-top: 2px;
+}
 
-.rise { color: var(--dbgreen) !important; }
-.fall { color: var(--dbred) !important; }
+/* ---------- Stats Row ---------- */
+.fl-stats-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
 
-/* ===== Mini Cards ===== */
-.mini-card.bdr-rise { border-left: 3px solid var(--dbgreen) !important; }
-.mini-card.bdr-fall { border-left: 3px solid var(--dbred) !important; }
-.mc-name { font-size: 12px; font-weight: 600; color: var(--dbtxt); }
-.mc-price { font-size: 16px; font-weight: 700; margin-top: 6px; font-family: 'Courier New', monospace; }
-.mc-chg { font-size: 11px; font-weight: 600; margin-top: 3px; display: flex; align-items: center; gap: 2px; }
+.fl-stat-card {
+  background: #fff;
+  border: 1px solid #e4e7ed;
+  border-radius: 10px;
+  padding: 20px;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  transition: all 0.25s ease;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+.fl-stat-card:hover {
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.10);
+  transform: translateY(-2px);
+}
 
-/* ===== Section title ===== */
-.sect-title { font-size: 13px; font-weight: 600; color: var(--dbtxt); }
-.card-header-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px; }
+.fl-stat-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.fl-icon-blue { background: rgba(26, 109, 255, 0.08); color: #1a6dff; }
+.fl-icon-yellow { background: rgba(245, 166, 35, 0.08); color: #f5a623; }
+.fl-icon-green { background: rgba(25, 190, 107, 0.08); color: #19be6b; }
 
-/* ===== Market List ===== */
-.mkt-list { max-height: 410px; overflow-y: auto; }
-.mkt-row {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 9px 0; border-bottom: 1px solid var(--dbbrd); transition: background 0.15s;
+.fl-stat-body { flex: 1; min-width: 0; }
+.fl-stat-label {
+  font-size: 13px;
+  color: #909399;
+  margin-bottom: 4px;
 }
-.mkt-row:last-child { border-bottom: none; }
-.mkt-row:hover { background: rgba(255,255,255,0.03); }
-.mkt-l { display: flex; flex-direction: column; gap: 1px; }
-.mkt-name { font-size: 12px; font-weight: 600; color: var(--dbtxt); }
-.mkt-code { font-size: 10px; color: var(--dbdim); }
-.mkt-r { text-align: right; }
-.mkt-price { font-size: 13px; font-weight: 600; color: var(--dbtxt); font-family: 'Courier New', monospace; }
-.mkt-chg { font-size: 11px; font-weight: 600; margin-top: 1px; }
-.mkt-list::-webkit-scrollbar { width: 4px; }
-.mkt-list::-webkit-scrollbar-thumb { background: var(--dbbrd); border-radius: 2px; }
+.fl-stat-value {
+  font-size: 26px;
+  font-weight: 700;
+  color: #303133;
+  font-family: 'Courier New', monospace;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.fl-text-yellow { color: #f5a623; }
 
-/* ===== Entries ===== */
-.ent-card .ent-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 8px; }
-.ent-item {
-  display: flex; flex-direction: column; align-items: center; gap: 6px;
-  padding: 14px 6px; border-radius: 8px; cursor: pointer; transition: background 0.15s;
+.fl-stat-change {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+  font-size: 13px;
 }
-.ent-item:hover { background: rgba(255,255,255,0.05); }
-.ent-icon {
-  width: 40px; height: 40px; border-radius: 10px;
-  display: flex; align-items: center; justify-content: center; color: #fff;
-}
-.ent-label { font-size: 11px; color: var(--dbsec); white-space: nowrap; }
+.fl-stat-sub { color: #c0c4cc; }
 
-/* ===== Element Plus overrides ===== */
-.dark-dashboard .symb-group .el-radio-button__inner {
-  background: transparent; border-color: var(--dbbrd); color: var(--dbsec);
-  font-size: 11px; padding: 4px 10px;
+/* ---------- Charts Row ---------- */
+.fl-chart-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 14px;
 }
-.dark-dashboard .symb-group .el-radio-button__orig-radio:checked + .el-radio-button__inner {
-  background: var(--dbblue); border-color: var(--dbblue); color: #fff; box-shadow: none;
+.fl-chart-col-main,
+.fl-chart-col-side {
+  display: flex;
+  flex-direction: column;
 }
-.dark-dashboard .symb-group .el-radio-button:not(:first-child) .el-radio-button__inner {
-  border-left-color: var(--dbbrd);
+.fl-chart-col-main .fl-card,
+.fl-chart-col-side .fl-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
-.dark-dashboard .el-select .el-input__wrapper {
-  background: transparent; box-shadow: 0 0 0 1px var(--dbbrd) inset;
+.fl-chart-box {
+  flex: 1;
+  min-height: 200px;
+  width: 100%;
 }
-.dark-dashboard .el-select .el-input__inner { color: var(--dbtxt); }
-.dark-dashboard .el-empty__description p { color: var(--dbdim); }
+.fl-chart-kline { min-height: 380px; }
 
-/* ===== Responsive ===== */
+/* ---------- Time Filters ---------- */
+.fl-time-filters {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.fl-tm-btn {
+  background: transparent;
+  border: 1px solid #dcdfe6;
+  color: #909399;
+  padding: 3px 12px;
+  border-radius: 5px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: inherit;
+}
+.fl-tm-btn:hover {
+  border-color: #1a6dff;
+  color: #1a6dff;
+}
+.fl-tm-btn.active {
+  background: #1a6dff;
+  border-color: #1a6dff;
+  color: #fff;
+}
+
+/* ---------- K-line controls ---------- */
+.fl-kline-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.fl-symbol-name {
+  font-size: 16px;
+  font-weight: 600;
+  margin-right: 8px;
+  color: #303133;
+}
+.fl-symbol-code {
+  font-size: 12px;
+  color: #909399;
+  font-weight: 400;
+}
+
+:deep(.fl-symb-group .el-radio-button__inner) {
+  font-size: 11px;
+  padding: 4px 10px;
+}
+
+/* ---------- Mini Cards ---------- */
+.fl-mini-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(105px, 1fr));
+  gap: 10px;
+}
+.fl-mini-card {
+  background: #fff;
+  border: 1px solid #e4e7ed;
+  border-radius: 8px;
+  padding: 12px 10px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+.fl-mini-card:hover {
+  box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+  transform: translateY(-1px);
+}
+
+.fl-mc-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: #303133;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.fl-mc-price {
+  font-size: 16px;
+  font-weight: 700;
+  margin-top: 6px;
+  font-family: 'Courier New', monospace;
+}
+.fl-mc-chg {
+  font-size: 12px;
+  font-weight: 600;
+  margin-top: 3px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+
+/* ---------- K-line + List Row ---------- */
+.fl-chart-col-kline {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.fl-chart-col-kline .fl-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.fl-chart-col-list {
+  width: 340px;
+  flex-shrink: 0;
+}
+.fl-card-list {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.fl-list-wrap {
+  flex: 1;
+  overflow-y: auto;
+  max-height: 380px;
+}
+.fl-list-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid #f0f2f5;
+  transition: background 0.15s;
+}
+.fl-list-row:last-child { border-bottom: none; }
+.fl-list-row:hover { background: #f8f9fb; }
+
+.fl-list-l {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.fl-list-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #303133;
+}
+.fl-list-code {
+  font-size: 10px;
+  color: #909399;
+}
+.fl-list-r { text-align: right; }
+.fl-list-price {
+  font-size: 13px;
+  font-weight: 600;
+  color: #303133;
+  font-family: 'Courier New', monospace;
+}
+.fl-list-chg {
+  font-size: 12px;
+  font-weight: 600;
+  margin-top: 1px;
+}
+
+.fl-list-wrap::-webkit-scrollbar { width: 4px; }
+.fl-list-wrap::-webkit-scrollbar-thumb { background: #dcdfe6; border-radius: 2px; }
+
+/* ---------- Entry Grid ---------- */
+.fl-entry-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 10px;
+}
+.fl-entry-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 8px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.fl-entry-item:hover { background: #f5f7fa; }
+.fl-entry-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  transition: transform 0.2s;
+}
+.fl-entry-item:hover .fl-entry-icon { transform: scale(1.08); }
+.fl-entry-label {
+  font-size: 12px;
+  color: #606266;
+  white-space: nowrap;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1024px) {
+  .fl-chart-row { grid-template-columns: 1fr; }
+  .fl-chart-col-list { width: 100%; }
+  .fl-stats-row { gap: 10px; }
+}
 @media (max-width: 768px) {
-  .trend-header { flex-direction: column; }
-  .trend-value { font-size: 18px; }
-  .card-header-row { flex-direction: column; align-items: flex-start; }
-  .ent-grid { grid-template-columns: repeat(4, 1fr) !important; }
+  .fl-stats-row { grid-template-columns: 1fr; }
+  .fl-card-header { flex-direction: column; align-items: flex-start; }
+  .fl-kline-controls { flex-direction: column; align-items: flex-start; }
 }
 </style>
