@@ -16,12 +16,12 @@ import org.springframework.util.StringUtils;
 @Service
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
 
-    private static final BCryptPasswordEncoder PASSWORD_ENCODER = new BCryptPasswordEncoder();
-
     private final JwtUtil jwtUtil;
+    private final BCryptPasswordEncoder passwordEncoder;
 
-    public UserServiceImpl(JwtUtil jwtUtil) {
+    public UserServiceImpl(JwtUtil jwtUtil, BCryptPasswordEncoder passwordEncoder) {
         this.jwtUtil = jwtUtil;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -30,7 +30,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (!StringUtils.hasText(user.getUsername()) || !StringUtils.hasText(user.getPassword())) {
             throw new ServiceException(400, "用户名/密码不能为空");
         }
-        user.setPassword(PASSWORD_ENCODER.encode(user.getPassword()));
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         return this.save(user);
     }
 
@@ -52,7 +52,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             throw new ServiceException(401, "账号已被禁用");
         }
 
-        if (!PASSWORD_ENCODER.matches(dto.getPassword(), dbUser.getPassword())) {
+        if (!passwordEncoder.matches(dto.getPassword(), dbUser.getPassword())) {
             throw new ServiceException(401, "密码错误");
         }
 
@@ -67,7 +67,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
         return this.lambdaUpdate()
                 .eq(User::getId, user.getId())
-                .set(User::getPassword, PASSWORD_ENCODER.encode(user.getPassword()))
+                .set(User::getPassword, passwordEncoder.encode(user.getPassword()))
                 .update();
     }
 }

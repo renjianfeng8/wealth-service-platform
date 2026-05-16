@@ -22,14 +22,13 @@ public class UmsAdminServiceImpl extends ServiceImpl<UmsAdminMapper, UmsAdmin> i
 
     private final JwtUtil jwtUtil;
     private final UmsResourceService resourceService;
+    private final BCryptPasswordEncoder passwordEncoder;
 
-    // 注入依赖
-    public UmsAdminServiceImpl(JwtUtil jwtUtil, UmsResourceService resourceService) {
+    public UmsAdminServiceImpl(JwtUtil jwtUtil, UmsResourceService resourceService, BCryptPasswordEncoder passwordEncoder) {
         this.jwtUtil = jwtUtil;
         this.resourceService = resourceService;
+        this.passwordEncoder = passwordEncoder;
     }
-
-    private static final BCryptPasswordEncoder PASSWORD_ENCODER = new BCryptPasswordEncoder();
 
     @Override
     public String login(LoginDTO dto) {
@@ -45,7 +44,7 @@ public class UmsAdminServiceImpl extends ServiceImpl<UmsAdminMapper, UmsAdmin> i
             throw new ServiceException(401, "用户不存在");
         }
 
-        if (!PASSWORD_ENCODER.matches(dto.getPassword(), admin.getPassword())) {
+        if (!passwordEncoder.matches(dto.getPassword(), admin.getPassword())) {
             throw new ServiceException(401, "密码错误");
         }
 
@@ -55,7 +54,7 @@ public class UmsAdminServiceImpl extends ServiceImpl<UmsAdminMapper, UmsAdmin> i
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean createAdmin(UmsAdmin admin) {
-        admin.setPassword(PASSWORD_ENCODER.encode(admin.getPassword()));
+        admin.setPassword(passwordEncoder.encode(admin.getPassword()));
         return save(admin);
     }
 
