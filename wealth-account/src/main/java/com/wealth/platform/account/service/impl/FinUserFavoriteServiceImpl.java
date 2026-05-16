@@ -7,6 +7,7 @@ import com.wealth.platform.account.mapper.FinUserFavoriteMapper;
 import com.wealth.platform.account.service.FinUserFavoriteService;
 import com.wealth.platform.account.vo.FinUserFavoriteVO;
 import org.springframework.beans.BeanUtils;
+import com.wealth.common.utils.BeanConvertUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -61,7 +62,7 @@ public class FinUserFavoriteServiceImpl extends ServiceImpl<FinUserFavoriteMappe
         if (entity == null) {
             return false;
         }
-        BeanUtils.copyProperties(dto, entity);
+        BeanConvertUtil.copyNonNullProperties(dto, entity);
         entity.setId(id);
         return updateById(entity);
     }

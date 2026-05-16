@@ -9,6 +9,7 @@ import com.wealth.platform.product.vo.FinMarketDataVO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.BeanUtils;
+import com.wealth.common.utils.BeanConvertUtil;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -52,7 +53,7 @@ public class FinMarketDataServiceImpl extends ServiceImpl<FinMarketDataMapper, W
         if (entity == null) {
             return false;
         }
-        BeanUtils.copyProperties(dto, entity);
+        BeanConvertUtil.copyNonNullProperties(dto, entity);
         entity.setId(id);
         return updateById(entity);
     }

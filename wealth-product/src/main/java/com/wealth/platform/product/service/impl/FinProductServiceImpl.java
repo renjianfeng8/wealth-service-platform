@@ -74,7 +74,7 @@ public class FinProductServiceImpl extends ServiceImpl<FinProductMapper, WeaProd
         if (entity == null) {
             return false;
         }
-        BeanUtils.copyProperties(dto, entity);
+        BeanConvertUtil.copyNonNullProperties(dto, entity);
         entity.setId(id);
         return updateById(entity);
     }
