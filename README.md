@@ -1,4 +1,4 @@
-# 金融微服务平台 (Wealth Service Platform)
+# 理财服务平台 (Wealth Service Platform)
 
 > 基于 Spring Boot 3.x + Spring Cloud Alibaba 的金融级微服务中台架构项目，覆盖用户、账户、产品、交易、消息等核心业务领域，提供高可用、高扩展的企业级金融解决方案。
 
