@@ -3,7 +3,7 @@ import { ElMessage } from 'element-plus'
 import { getToken, removeToken } from '@/utils/auth'
 
 const request = axios.create({
-  baseURL: '/api',
+  baseURL: '/api/v1',
   timeout: 30000,
 })
 
