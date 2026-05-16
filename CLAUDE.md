@@ -231,8 +231,8 @@ return Result.success(voPage);
 避免 DTO 中 null 字段覆盖数据库已有值，使用 copyNonNullProperties：
 
 ```java
-public boolean updateOrder(Long id, FinTradeOrderDTO dto) {
-    FinTradeOrder order = getById(id);
+public boolean updateOrder(Long id, WeaTradeOrderDTO dto) {
+    WeaTradeOrder order = getById(id);
     if (order == null) return false;
     BeanConvertUtil.copyNonNullProperties(dto, order);
     order.setId(id);
@@ -308,7 +308,7 @@ if (count > 0) {
 
 ```yaml
 jwt:
-  secret: finance-micro-service-20260501-very-safe-secret-key-123456789
+  secret: wealth-micro-service-20260501-very-safe-secret-key-123456789
   expire: 604800000
 ```
 

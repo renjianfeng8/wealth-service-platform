@@ -1,47 +1,49 @@
-﻿# 閲戣瀺涓彴椤圭洰 鈥?鍚姩鎸囧崡
+# 金融微服务平台 — 启动指南
 
-## 椤圭洰绠€浠?
-閲戣瀺涓彴锛團inance Mid Platform锛夋槸涓€涓潰鍚戦噾铻嶄笟鍔＄殑鍙岀鏋舵瀯绯荤粺锛屽寘鍚細
+## 项目简介
+金融微服务平台（Wealth Service Platform）是一个面向金融业务的双端架构系统，包含：
 
-- **绠＄悊鍛樺悗鍙?*锛坒ront/锛夛細鍚庡彴绠＄悊绯荤粺锛岄潰鍚戣繍钀ヤ汉鍛橈紝绠＄悊鐢ㄦ埛銆佷骇鍝併€佹潈闄愮瓑
-- **鐢ㄦ埛鍓嶅彴**锛坒ront-user/锛夛細鐢ㄦ埛绔棬鎴凤紝闈㈠悜鏅€氱敤鎴凤紝鎻愪緵琛屾儏鏌ョ湅銆佷氦鏄撳鎵樸€佽嚜閫夌鐞嗙瓑
+- **管理员后台**（front/）：后台管理系统，面向运营人员，管理用户、产品、权限等
+- **用户前台**（front-user/）：用户端门户，面向普通用户，提供行情查看、交易委托、自选管理等
 
-鍚庣閲囩敤 Spring Cloud Alibaba 寰湇鍔℃灦鏋勶紝缁熶竴閫氳繃 Nacos 娉ㄥ唽涓績 + Spring Cloud Gateway 缃戝叧瀵瑰鎻愪緵鏈嶅姟銆?
+后端采用 Spring Cloud Alibaba 微服务架构，统一通过 Nacos 注册中心 + Spring Cloud Gateway 网关对外提供服务。
+
 ---
 
-## 涓€銆佹妧鏈爤
+## 一、技术栈
 
-| 灞傞潰 | 鎶€鏈?| 鐗堟湰 |
+| 层面 | 技术 | 版本 |
 |------|------|------|
-| 鍚庣妗嗘灦 | Spring Boot / Spring Cloud / Alibaba | 3.3.5 / 2023.0.3 / 2023.0.1.2 |
+| 后端框架 | Spring Boot / Spring Cloud / Alibaba | 3.3.5 / 2023.0.3 / 2023.0.1.2 |
 | ORM | MyBatis-Plus | 3.5.7 |
-| 娉ㄥ唽涓績/閰嶇疆涓績 | Nacos | 2.3.0 |
-| 缃戝叧 | Spring Cloud Gateway | 4.1.5 |
-| 鏁版嵁搴?| MySQL | 8.0.37 |
-| 缂撳瓨 | Redis | 5.0.14.1 |
-| 娑堟伅闃熷垪 | RabbitMQ | 3.10.20 |
-| 鎼滅储寮曟搸 | Elasticsearch | 8.11.0 |
-| 鍓嶇锛堝弻绔級 | Vue 3 + Vite + Element Plus + Pinia + TypeScript | 3.5.13 / 6.3.1 / 2.9.7 / 2.3.1 / 5.7 |
-| E2E 娴嬭瘯 | Playwright | 1.59+ |
+| 注册中心/配置中心 | Nacos | 2.3.2 |
+| 网关 | Spring Cloud Gateway | 4.1.5 |
+| 数据库 | MySQL | 8.0.37 |
+| 缓存 | Redis | 5.0.14.1 |
+| 消息队列 | RabbitMQ | 3.10.20 |
+| 搜索引擎 | Elasticsearch | 8.8.2 |
+| 前端（双端） | Vue 3 + Vite + Element Plus + Pinia + TypeScript | 3.5.13 / 6.3.1 / 2.9.7 / 2.3.1 / 5.7 |
+| E2E 测试 | Playwright | 1.59+ |
 
 ---
 
-## 浜屻€佸墠缃幆澧冨噯澶?
-| 缁勪欢 | 鐗堟湰瑕佹眰 | 妫€鏌ュ懡浠?|
+## 二、前置环境准备
+| 组件 | 版本要求 | 检查命令 |
 |------|---------|---------|
 | JDK | 21.0.3+ | `java -version` |
 | Maven | 3.9.9+ | `mvn -version` |
 | Node.js | 18+ | `node -v` |
 | Docker | 24.0+ | `docker --version` |
-| MySQL 瀹㈡埛绔?| 8.0+ | `mysql --version` |
+| MySQL 客户端 | 8.0+ | `mysql --version` |
 
 ---
 
-## 涓夈€佷腑闂翠欢鍚姩锛圖ocker锛?
-### 3.1 鍚姩瀹瑰櫒
+## 三、中间件启动（Docker）
+### 3.1 启动容器
 
 ```bash
-# Nacos锛堟敞鍐屼腑蹇?+ 閰嶇疆涓績锛?docker run -d --name nacos -p 8848:8848 -p 9848:9848 -e MODE=standalone nacos/nacos-server:v2.3.0
+# Nacos（注册中心 + 配置中心）
+docker run -d --name nacos -p 8848:8848 -p 9848:9848 -e MODE=standalone nacos/nacos-server:v2.3.2
 
 # MySQL
 docker run -d --name mysql -p 3306:3306 -e MYSQL_ROOT_PASSWORD=123456 mysql:8.0.37
@@ -49,66 +51,71 @@ docker run -d --name mysql -p 3306:3306 -e MYSQL_ROOT_PASSWORD=123456 mysql:8.0.
 # Redis
 docker run -d --name redis -p 6379:6379 redis:5.0.14.1
 
-# RabbitMQ锛堝惈绠＄悊鎺у埗鍙帮級
+# RabbitMQ（含管理控制台）
 docker run -d --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:3.10.20-management
 
 # Elasticsearch
-docker run -d --name es -p 9200:9200 -p 9300:9300 -e "discovery.type=single-node" elasticsearch:8.11.0
+docker run -d --name es -p 9200:9200 -p 9300:9300 -e "discovery.type=single-node" elasticsearch:8.8.2
 ```
 
-楠岃瘉杩愯鐘舵€侊細
+验证运行状态：
 
 ```bash
 docker ps --format "table {{.Names}}\t{{.Status}}"
 ```
 
-### 3.2 Nacos 閰嶇疆涓績璁剧疆
+### 3.2 Nacos 配置中心设置
 
-璁块棶 Nacos 鎺у埗鍙?[http://localhost:8848/nacos](http://localhost:8848/nacos)锛堥粯璁よ处鍙凤細nacos / nacos锛夛紝鍒涘缓鍏变韩閰嶇疆锛?
-- **Data ID**锛歚wealth-shared.yaml`
-- **閰嶇疆鏍煎紡**锛歒AML
-- **鍐呭**锛?
+访问 Nacos 控制台 [http://localhost:8848/nacos](http://localhost:8848/nacos)（默认账号：nacos / nacos），创建共享配置：
+- **Data ID**：`wealth-shared.yaml`
+- **配置格式**：YAML
+- **内容**：
 ```yaml
 jwt:
   secret: wealth-micro-service-20260501-very-safe-secret-key-123456789
   expire: 604800000
 ```
 
-> JWT 瀵嗛挜蹇呴』 鈮?32 瀛楄妭锛堝綋鍓嶅瘑閽?58 瀛楄妭锛夛紝鍚﹀垯鏈嶅姟鍚姩鏃朵細鐩存帴鎶ラ敊銆?
+> JWT 密钥必须 ≥ 32 字节（当前密钥 58 字节），否则服务启动时会直接报错。
+
 ---
 
-## 鍥涖€佹暟鎹簱鍒濆鍖?
+## 四、数据库初始化
 ```bash
-# 鍒涘缓鏁版嵁搴?mysql -u root -p123456 -e "CREATE DATABASE IF NOT EXISTS Wealth DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+# 创建数据库
+mysql -u root -p123456 -e "CREATE DATABASE IF NOT EXISTS Wealth DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
 
-# 瀵煎叆寤鸿〃璇彞 + 娴嬭瘯鏁版嵁
+# 导入建表语句 + 测试数据
 mysql -u root -p123456 Wealth < wealth-common/src/main/resources/sql/init.sql
 ```
 
-鏁版嵁搴?`Wealth` 鍖呭惈 12 寮犺〃锛岃鐩栧叏涓氬姟鍦烘櫙銆?
+数据库 `Wealth` 包含 12 张表，覆盖全业务场景。
+
 ---
 
-## 浜斻€佺紪璇戦」鐩?
-**缂栬瘧椤哄簭**锛氬繀椤诲厛缂栬瘧 `wealth-common`锛屽啀缂栬瘧鍏朵粬妯″潡銆?
+## 五、编译项目
+**编译顺序**：必须先编译 `wealth-common`，再编译其他模块。
 ```bash
-# 1. 缂栬瘧鍏叡妯″潡骞跺畨瑁呭埌鏈湴浠撳簱锛堜慨鏀?common 鍚庡繀椤婚噸鏂版墽琛屾姝ワ級
+# 1. 编译公共模块并安装到本地仓库（修改 common 后必须重新执行此步）
 mvn clean install -pl wealth-common -DskipTests
 
-# 2. 鍏ㄩ噺缂栬瘧
+# 2. 全量编译
 mvn clean compile
 
-# 3. 鎵撳寘鎵€鏈夋ā鍧?mvn clean package -DskipTests
+# 3. 打包所有模块
+mvn clean package -DskipTests
 
-# 4. 锛堝彲閫夛級瀹夎鎵€鏈夋ā鍧?mvn clean install -DskipTests
+# 4. （可选）安装所有模块
+mvn clean install -DskipTests
 ```
 
-鍚勬ā鍧?JAR 鍖呰矾寰勶細`{妯″潡鍚峿/target/{妯″潡鍚峿-1.0.0.jar`
+各模块 JAR 包路径：`{模块名}/target/{模块名}-1.0.0.jar`
 
 ---
 
-## 鍏€佸悗绔湇鍔″惎鍔紙鎸夐『搴忥級
+## 六、后端服务启动（按顺序）
 
-鏁版嵁搴撳瘑鐮佺粺涓€閫氳繃鐜鍙橀噺浼犲叆锛圵indows 浣跨敤 `set`锛孡inux/Mac 浣跨敤 `export`锛夛細
+数据库密码统一通过环境变量传入（Windows 使用 `set`，Linux/Mac 使用 `export`）：
 
 ```bash
 # Windows PowerShell
@@ -121,109 +128,114 @@ set DB_PASSWORD=123456
 export DB_PASSWORD=123456
 ```
 
-### 6.1 缃戝叧锛堟渶鍏堝惎鍔紝渚濊禆 Nacos锛?
+### 6.1 网关（最先启动，依赖 Nacos）
 ```bash
 java -jar wealth-gateway/target/wealth-gateway-1.0.0.jar > gateway.log 2>&1 &
 ```
 
-- 绔彛锛?*8080**
-- Nacos 鏈嶅姟鍚嶏細wealth-gateway
-- 绫诲瀷锛歋pring Cloud Gateway锛圵ebFlux锛?
-### 6.2 绯荤粺鏈嶅姟锛堟彁渚涚櫥褰曢壌鏉冨拰 RBAC 鏉冮檺锛?
+- 端口：**8080**
+- Nacos 服务名：wealth-gateway
+- 类型：Spring Cloud Gateway（WebFlux）
+### 6.2 系统服务（提供登录鉴权和 RBAC 权限）
 ```bash
 DB_PASSWORD=123456 java -jar wealth-system/target/wealth-system-1.0.0.jar > system.log 2>&1 &
 ```
 
-- 绔彛锛?*8082**锛宑ontext-path锛歚/system`
-- Nacos 鏈嶅姟鍚嶏細wealth-system
-- 鍔熻兘锛氱鐞嗗憳 CRUD銆佽鑹茬鐞嗐€佽祫婧愮鐞嗐€丣WT 鐧诲綍銆佹潈闄愭嫤鎴?
-### 6.3 涓氬姟鏈嶅姟锛堟棤鍏堝悗渚濊禆锛屽彲骞惰鍚姩锛?
+- 端口：**8082**，context-path：`/system`
+- Nacos 服务名：wealth-system
+- 功能：管理员 CRUD、角色管理、资源管理、JWT 登录、权限拦截
+### 6.3 业务服务（无先后依赖，可并行启动）
 ```bash
-# 鐢ㄦ埛鏈嶅姟锛堝墠绔敤鎴风鐞嗭級
+# 用户服务（前端用户管理）
 DB_PASSWORD=123456 java -jar wealth-user/target/wealth-user-1.0.0.jar > user.log 2>&1 &
 
-# 浜у搧鏈嶅姟锛堜骇鍝?+ 琛屾儏锛?DB_PASSWORD=123456 java -jar wealth-product/target/wealth-product-1.0.0.jar > product.log 2>&1 &
+# 产品服务（产品 + 行情）
+DB_PASSWORD=123456 java -jar wealth-product/target/wealth-product-1.0.0.jar > product.log 2>&1 &
 
-# 璐︽埛鏈嶅姟锛堢敤鎴疯嚜閫夛級
+# 账户服务（用户自选）
 DB_PASSWORD=123456 java -jar wealth-account/target/wealth-account-1.0.0.jar > account.log 2>&1 &
 
-# 浜ゆ槗鏈嶅姟锛堝鎵樹氦鏄擄級
+# 交易服务（委托交易）
 DB_PASSWORD=123456 java -jar wealth-trade/target/wealth-trade-1.0.0.jar > trade.log 2>&1 &
 
-# 娑堟伅鏈嶅姟锛堣祫璁?+ 绔欏唴娑堟伅锛?DB_PASSWORD=123456 java -jar wealth-message/target/wealth-message-1.0.0.jar > message.log 2>&1 &
+# 消息服务（资讯 + 站内消息）
+DB_PASSWORD=123456 java -jar wealth-message/target/wealth-message-1.0.0.jar > message.log 2>&1 &
 
-# 鎼滅储鏈嶅姟锛圗S 浜у搧鎼滅储锛屾棤鏁版嵁搴撲緷璧栵級
+# 搜索服务（ES 产品搜索，无数据库依赖）
 DB_PASSWORD=123456 java -jar wealth-search/target/wealth-search-1.0.0.jar > search.log 2>&1 &
 ```
 
-### 6.4 楠岃瘉鍚庣鏈嶅姟
+### 6.4 验证后端服务
 
 ```bash
-# 妫€鏌ョ鍙ｇ洃鍚?netstat -ano | findstr ':8080 :8082 :8083 :8084 :8085 :8086 :8087 :8089'
+# 检查端口监听
+netstat -ano | findstr ':8080 :8082 :8083 :8084 :8085 :8086 :8087 :8089'
 
-# 妫€鏌ュ惎鍔ㄦ棩蹇?grep "Started" gateway.log system.log user.log product.log account.log trade.log message.log search.log
+# 检查启动日志
+grep "Started" gateway.log system.log user.log product.log account.log trade.log message.log search.log
 ```
 
-棰勬湡杈撳嚭 8 琛?`Started xxxApplication in ...`锛堟瘡涓湇鍔′竴琛岋級銆?
+预期输出 8 行 `Started xxxApplication in ...`（每个服务一行）。
+
 ---
 
-## 涓冦€佺鐞嗗憳鍚庡彴鍚姩锛坒ront/锛?
+## 七、管理员后台启动（front/）
 ```bash
 cd front
 
-# 瀹夎渚濊禆锛堥娆℃垨渚濊禆鍙樻洿鏃舵墽琛岋級
+# 安装依赖（首次或依赖变更时执行）
 npm install
 
-# 鍚姩寮€鍙戞湇鍔″櫒
+# 启动开发服务器
 npm run dev
 ```
 
-- 绔彛锛?*3000**
-- Vite 浠ｇ悊锛歚/api` 鈫?`http://localhost:8080`锛堢綉鍏筹級
-- 鐧诲綍璐﹀彿锛歚admin` / `admin123`锛坲ms_admin 琛級
+- 端口：**3000**
+- Vite 代理：`/api` → `http://localhost:8080`（网关）
+- 登录账号：`admin` / `admin123`（ums_admin 表）
 
-楠岃瘉锛?
+验证：
 ```bash
 curl -s http://localhost:3000 | head -5
-# 搴斿寘鍚?<div id="app"></div>
+# 应包含 <div id="app"></div>
 ```
 
 ---
 
-## 鍏€佺敤鎴峰墠鍙板惎鍔紙front-user/锛?
+## 八、用户前台启动（front-user/）
 ```bash
 cd front-user
 
-# 瀹夎渚濊禆锛堥娆℃垨渚濊禆鍙樻洿鏃舵墽琛岋級
+# 安装依赖（首次或依赖变更时执行）
 npm install
 
-# 鍚姩寮€鍙戞湇鍔″櫒
+# 启动开发服务器
 npm run dev
 ```
 
-- 绔彛锛?*3001**
-- Vite 浠ｇ悊锛歚/api` 鈫?`http://localhost:8080`锛堢綉鍏筹級
-- 鐧诲綍璐﹀彿锛歚zhangwei` / `123456`锛坰ys_user 琛級
+- 端口：**3001**
+- Vite 代理：`/api` → `http://localhost:8080`（网关）
+- 登录账号：`zhangwei` / `123456`（sys_user 表）
 
-楠岃瘉锛?
+验证：
 ```bash
 curl -s http://localhost:3001 | head -5
-# 搴斿寘鍚?<div id="app"></div>
+# 应包含 <div id="app"></div>
 ```
 
 ---
 
-## 涔濄€佸叏閾捐矾楠岃瘉
+## 九、全链路验证
 
-### 9.1 鐧诲綍鎺ュ彛锛堢鐞嗗憳锛?
+### 9.1 登录接口（管理员）
 ```bash
 curl -s --noproxy "*" -X POST "http://localhost:8080/system/umsAdmin/login" \
   -H "Content-Type: application/json" \
   -d '{"username":"admin","password":"admin123"}'
 ```
 
-棰勬湡杩斿洖 `200` + JWT Token銆?
-### 9.2 鐧诲綍鎺ュ彛锛堢敤鎴峰墠鍙帮級
+预期返回 `200` + JWT Token。
+### 9.2 登录接口（用户前台）
 
 ```bash
 curl -s --noproxy "*" -X POST "http://localhost:8080/user/login" \
@@ -231,159 +243,183 @@ curl -s --noproxy "*" -X POST "http://localhost:8080/user/login" \
   -d '{"username":"zhangwei","password":"123456"}'
 ```
 
-棰勬湡杩斿洖 `200` + JWT Token銆?
-### 9.3 涓氬姟鎺ュ彛娴嬭瘯锛堟惡甯?Token锛?
+预期返回 `200` + JWT Token。
+### 9.3 业务接口测试（携带 Token）
 ```bash
-# 璁剧疆 Token锛堟浛鎹负瀹為檯杩斿洖鐨?token锛?TOKEN="eyJhbGciOiJIUzUxMiJ9..."
+# 设置 Token（替换为实际返回的 token）
+TOKEN="eyJhbGciOiJIUzUxMiJ9..."
 
-# 绠＄悊鍛樺垎椤?curl -s --noproxy "*" -H "Authorization: Bearer $TOKEN" \
+# 管理员分页
+curl -s --noproxy "*" -H "Authorization: Bearer $TOKEN" \
   "http://localhost:8080/system/umsAdmin/page?pageNum=1&pageSize=10"
 
-# 鐢ㄦ埛鍒嗛〉
+# 用户分页
 curl -s --noproxy "*" -H "Authorization: Bearer $TOKEN" \
   "http://localhost:8080/user/page?pageNum=1&pageSize=10"
 
-# 浜у搧鍒嗛〉
+# 产品分页
 curl -s --noproxy "*" -H "Authorization: Bearer $TOKEN" \
   "http://localhost:8080/product/WeaProduct/page?pageNum=1&pageSize=10"
 
-# 琛屾儏鏁版嵁
+# 行情数据
 curl -s --noproxy "*" -H "Authorization: Bearer $TOKEN" \
   "http://localhost:8080/product/WeaMarketData/list?productCode=GOLD001"
 
-# 浜ゆ槗璁㈠崟鍒嗛〉
+# 交易订单分页
 curl -s --noproxy "*" -H "Authorization: Bearer $TOKEN" \
   "http://localhost:8080/trade/WeaTradeOrder/page?pageNum=1&pageSize=10"
 
-# 鏂伴椈鍒嗛〉
+# 新闻分页
 curl -s --noproxy "*" -H "Authorization: Bearer $TOKEN" \
   "http://localhost:8080/message/WeaNews/page?pageNum=1&pageSize=10"
 
-# 鐢ㄦ埛鑷€夊垪琛?curl -s --noproxy "*" -H "Authorization: Bearer $TOKEN" \
+# 用户自选列表
+curl -s --noproxy "*" -H "Authorization: Bearer $TOKEN" \
   "http://localhost:8080/account/WeaUserFavorite/list?userId=1"
 
-# 鎼滅储锛堥渶 ES 杩愯锛?curl -s --noproxy "*" -H "Authorization: Bearer $TOKEN" \
-  "http://localhost:8080/search/product/search?keyword=榛勯噾&page=1&size=10"
+# 搜索（需 ES 运行）
+curl -s --noproxy "*" -H "Authorization: Bearer $TOKEN" \
+  "http://localhost:8080/search/product/search?keyword=黄金&page=1&size=10"
 ```
 
-### 9.4 娴忚鍣ㄨ闂?
-| 搴旂敤 | URL |
+### 9.4 浏览器访问
+| 应用 | URL |
 |------|-----|
-| 绠＄悊鍛樺悗鍙?| [http://localhost:3000](http://localhost:3000) |
-| 鐢ㄦ埛鍓嶅彴 | [http://localhost:3001](http://localhost:3001) |
+| 管理员后台 | [http://localhost:3000](http://localhost:3000) |
+| 用户前台 | [http://localhost:3001](http://localhost:3001) |
 
 ---
 
-## 鍗併€丒2E 鑷姩鍖栨祴璇曪紙Playwright锛?
-### 10.1 鐢ㄦ埛鍓嶅彴 E2E 娴嬭瘯锛堟柊澧?Playwright 濂椾欢锛?
+## 十、E2E 自动化测试（Playwright）
+### 10.1 用户前台 E2E 测试（Playwright 套件）
 ```bash
 cd front-user
 
-# 棣栨杩愯瀹夎 Playwright 娴忚鍣?npx playwright install chromium
+# 首次运行安装 Playwright 浏览器
+npx playwright install chromium
 
-# 杩愯鍏ㄩ儴 37 涓祴璇曠敤渚?npm run test:e2e
+# 运行全部 37 个测试用例
+npm run test:e2e
 
-# 鏌ョ湅娴嬭瘯鎶ュ憡
+# 查看测试报告
 npm run test:e2e:report
 
-# 璋冭瘯妯″紡锛堝甫 UI锛?npm run test:e2e:ui
+# 调试模式（带 UI）
+npm run test:e2e:ui
 ```
 
-娴嬭瘯瑕嗙洊锛?1 涓ā鍧楀叡 37 涓敤渚嬶級锛氱櫥褰曪紙鍚敊璇瘑鐮侀獙璇侊級銆佷华琛ㄧ洏銆佷骇鍝佷腑蹇冦€佸疄鏃惰鎯呫€佹垜鐨勮嚜閫夈€佷氦鏄撳鎵樸€佽储缁忚祫璁€佹秷鎭腑蹇冦€佷釜浜轰腑蹇冦€侀€€鍑虹櫥褰曘€佸鑸彍鍗曘€?
-娴嬭瘯璐﹀彿锛歚zhangwei` / `123456`锛坰ys_user 琛級
+测试覆盖（11 个模块共 37 个用例）：登录（含错误密码验证）、仪表盘、产品中心、实时行情、我的自选、交易委托、财经资讯、消息中心、个人中心、退出登录、导航菜单。
+测试账号：`zhangwei` / `123456`（sys_user 表）
 
-### 10.2 鍏ㄩ摼璺?E2E 娴嬭瘯锛堟棫鐗堣剼鏈級
+### 10.2 全链路 E2E 测试（旧版脚本）
 
 ```bash
-# 纭繚鍦ㄩ」鐩牴鐩綍
+# 确保在项目根目录
 cd wealth-service-platform
 
-# 瀹夎渚濊禆锛堥娆★級
+# 安装依赖（首次）
 npm install
 
-# 杩愯鍏ㄩ摼璺祴璇?node e2e-test.mjs
+# 运行全链路测试
+node e2e-test.mjs
 ```
 
-娴嬭瘯瑕嗙洊 35 椤癸紝鍖呮嫭锛氬熀纭€璁炬柦妫€鏌ワ紙Nacos/缃戝叧/鍓嶇锛夈€丄PI 鐧诲綍銆侀〉闈㈠姞杞姐€佽彍鍗曞鑸紙12 椤甸潰锛夈€丄PI 璇锋眰锛?0 鎺ュ彛锛夈€佸墠绔唬鐞嗐€丣S 閿欒妫€鏌ャ€傛姤鍛婅緭鍑哄埌 `e2e-test-report.md`銆?
-娴嬭瘯璐﹀彿锛歚admin` / `admin123`锛坲ms_admin 琛級
+测试覆盖 35 项，包括：基础设施检查（Nacos/网关/前端）、API 登录、页面加载、菜单导航（12 页面）、API 请求（10 接口）、前端代理、JS 错误检查。报告输出到 `e2e-test-report.md`。
+测试账号：`admin` / `admin123`（ums_admin 表）
 
 ---
 
-## 鍗佷竴銆佺鍙ｅ鐓ц〃
+## 十一、端口对照表
 
-| 妯″潡 | 绔彛 | context-path | Nacos 鏈嶅姟鍚?| 璇存槑 |
+| 模块 | 端口 | context-path | Nacos 服务名 | 说明 |
 |------|:----:|:-----------:|-------------|------|
-| **涓棿浠?* | | | | |
-| Nacos | 8848 | - | - | 娉ㄥ唽涓績/閰嶇疆涓績 |
-| MySQL | 3306 | - | - | 鏁版嵁搴?|
-| Redis | 6379 | - | - | 缂撳瓨 |
-| RabbitMQ | 5672 / 15672 | - | - | 娑堟伅闃熷垪 / 绠＄悊鎺у埗鍙?|
-| Elasticsearch | 9200 / 9300 | - | - | 鎼滅储寮曟搸 |
-| **鍚庣鏈嶅姟** | | | | |
-| wealth-gateway | **8080** | - | wealth-gateway | 缃戝叧锛堢粺涓€鍏ュ彛锛?|
-| wealth-system | **8082** | /system | wealth-system | 鍚庡彴鏉冮檺绠＄悊 |
-| wealth-user | **8083** | /user | wealth-user | 鍓嶇鐢ㄦ埛绠＄悊 |
-| wealth-product | **8084** | /product | wealth-product | 浜у搧 + 琛屾儏 |
-| wealth-trade | **8085** | /trade | wealth-trade | 浜ゆ槗濮旀墭 |
-| wealth-account | **8086** | /account | wealth-account | 鐢ㄦ埛鑷€?|
-| wealth-message | **8087** | /message | wealth-message | 璧勮 + 娑堟伅 |
-| wealth-search | **8089** | - | wealth-search | ES 鎼滅储 |
-| **鍓嶇** | | | | |
-| 绠＄悊鍛樺悗鍙?| **3000** | - | - | front/锛圴ite 寮€鍙戞湇鍔″櫒锛?|
-| 鐢ㄦ埛鍓嶅彴 | **3001** | - | - | front-user/锛圴ite 寮€鍙戞湇鍔″櫒锛?|
+| **中间件** | | | | |
+| Nacos | 8848 | - | - | 注册中心/配置中心 |
+| MySQL | 3306 | - | - | 数据库 |
+| Redis | 6379 | - | - | 缓存 |
+| RabbitMQ | 5672 / 15672 | - | - | 消息队列 / 管理控制台 |
+| Elasticsearch | 9200 / 9300 | - | - | 搜索引擎 |
+| **后端服务** | | | | |
+| wealth-gateway | **8080** | - | wealth-gateway | 网关（统一入口） |
+| wealth-system | **8082** | /system | wealth-system | 后台权限管理 |
+| wealth-user | **8083** | /user | wealth-user | 前端用户管理 |
+| wealth-product | **8084** | /product | wealth-product | 产品 + 行情 |
+| wealth-trade | **8085** | /trade | wealth-trade | 交易委托 |
+| wealth-account | **8086** | /account | wealth-account | 用户自选 |
+| wealth-message | **8087** | /message | wealth-message | 资讯 + 消息 |
+| wealth-search | **8089** | - | wealth-search | ES 搜索 |
+| **前端** | | | | |
+| 管理员后台 | **3000** | - | - | front/（Vite 开发服务器）|
+| 用户前台 | **3001** | - | - | front-user/（Vite 开发服务器）|
 
 ---
 
-## 鍗佷簩銆佹祴璇曡处鍙疯鏄?
-| 韬唤 | 鐢ㄦ埛鍚?| 瀵嗙爜 | 鎵€灞炶〃 | 鐧诲綍绔?| 璇存槑 |
+## 十二、测试账号说明
+| 身份 | 用户名 | 密码 | 所属表 | 登录端 | 说明 |
 |------|--------|------|--------|--------|------|
-| 绠＄悊鍛?| `admin` | `admin123` | ums_admin | 绠＄悊鍛樺悗鍙?(port 3000) | 鎷ユ湁鍚庡彴鍏ㄩ儴鏉冮檺 |
-| 鍓嶅彴鐢ㄦ埛 | `zhangwei` | `123456` | sys_user | 鐢ㄦ埛鍓嶅彴 (port 3001) | E2E 娴嬭瘯榛樿鐢ㄦ埛 |
+| 管理员 | `admin` | `admin123` | ums_admin | 管理员后台(port 3000) | 拥有后台全部权限 |
+| 前台用户 | `zhangwei` | `123456` | sys_user | 用户前台 (port 3001) | E2E 测试默认用户 |
 
 ---
 
-## 鍗佷笁銆佸父瑙侀棶棰樻帓鏌?
-### 绔彛鍗犵敤
+## 十三、常见问题排查
+### 端口占用
 
 ```bash
-# 鏌ョ湅鍗犵敤绔彛鐨勮繘绋?netstat -ano | findstr ":8080"
+# 查看占用端口的进程
+netstat -ano | findstr ":8080"
 
-# 寮哄埗缁堟杩涚▼锛圵indows锛?taskkill /PID <PID> /F
+# 强制终止进程（Windows）
+taskkill /PID <PID> /F
 ```
 
-### 鍚庣鍚姩澶辫触
+### 后端启动失败
 
-1. **Nacos 杩炴帴澶辫触** 鈥?妫€鏌?Nacos 瀹瑰櫒鏄惁杩愯锛歚docker ps | findstr nacos`
-2. **JWT 閰嶇疆缂哄け** 鈥?纭 `wealth-shared.yaml` 宸插彂甯冨埌 Nacos
-3. **鏁版嵁搴撹繛鎺ュけ璐?* 鈥?纭 `DB_PASSWORD` 鐜鍙橀噺宸茶缃笖瀵嗙爜姝ｇ‘
-4. **鏁版嵁搴撹〃涓嶅瓨鍦?* 鈥?纭宸叉墽琛?`init.sql`
+1. **Nacos 连接失败** → 检查 Nacos 容器是否运行：`docker ps | findstr nacos`
+2. **JWT 配置缺失** → 确认 `wealth-shared.yaml` 已发布到 Nacos
+3. **数据库连接失败** → 确认 `DB_PASSWORD` 环境变量已设置且密码正确
+4. **数据库表不存在** → 确认已执行 `init.sql`
 
-### 鍓嶇鍚姩澶辫触
+### 前端启动失败
 
-1. **渚濊禆瀹夎澶辫触** 鈥?鍒犻櫎 `node_modules` 閲嶆柊瀹夎锛?   ```bash
+1. **依赖安装失败** → 删除 `node_modules` 重新安装：  
+   ```bash
    rm -rf node_modules && npm install
    ```
-2. **绔彛琚崰鐢?* 鈥?淇敼 `vite.config.ts` 涓殑 `server.port`
-3. **浠ｇ悊 502** 鈥?纭缃戝叧宸插惎鍔ㄥ苟鍙闂?`http://localhost:8080`
+2. **端口被占用** → 修改 `vite.config.ts` 中的 `server.port`
+3. **代理 502** → 确认网关已启动并可访问 `http://localhost:8080`
 
-### 璺ㄥ煙闂
+### 跨域问题
 
-缃戝叧宸插湪 `wealth-gateway` 涓叏灞€閰嶇疆 CORS锛屽厑璁?`localhost:3000`銆乣localhost:3001` 鍜?`localhost:8080`銆傚鏋滈亣鍒拌法鍩熼敊璇紝妫€鏌ョ綉鍏虫槸鍚︽甯歌繍琛屻€?
-### E2E 娴嬭瘯澶辫触
+网关已在 `wealth-gateway` 中全局配置 CORS，允许 `localhost:3000`、`localhost:3001` 和 `localhost:8080`。如果遇到跨域错误，检查网关是否正常运行。
+### E2E 测试失败
 
-1. **娴忚鍣ㄦ湭瀹夎** 鈥?鎵ц `npx playwright install chromium`
-2. **鍚庣鏈惎鍔?* 鈥?纭繚鎵€鏈?8 涓悗绔湇鍔″凡鍦ㄨ繍琛?3. **娴嬭瘯鐢ㄦ埛涓嶅瓨鍦?* 鈥?妫€鏌?`sys_user` 琛ㄤ腑鏄惁鏈?`zhangwei` 涓斿瘑鐮佷负 BCrypt 鍔犲瘑鐨?`123456`
+1. **浏览器未安装** → 执行 `npx playwright install chromium`
+2. **后端未启动** → 确保所有 8 个后端服务已在运行
+3. **测试用户不存在** → 检查 `sys_user` 表中是否有 `zhangwei` 且密码为 BCrypt 加密的 `123456`
 
 ---
 
-## 鍗佸洓銆佸惎鍔ㄩ『搴忎緷璧栧浘
+## 十四、启动顺序依赖图
 
 ```
-Docker 瀹瑰櫒锛圢acos / MySQL / Redis / RabbitMQ / ES锛?        鈹?        鈻?wealth-common锛圡aven 渚濊禆锛屽繀椤诲厛 mvn install锛?        鈹?        鈻?wealth-gateway锛堟渶鍏堝惎鍔紝渚濊禆 Nacos锛?        鈹?        鈻?wealth-system锛堢浜屽惎鍔紝鎻愪緵鐧诲綍閴存潈 + 鏉冮檺鎷︽埅锛?        鈹?        鈻?wealth-user 鈹?wealth-product 鈹?wealth-account
-wealth-trade 鈹?wealth-message 鈹?wealth-search
-锛堟棤鍏堝悗渚濊禆锛屽彲骞惰鍚姩锛?        鈹?        鈹溾攢鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€ 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹?        鈻?                            鈻?  绠＄悊鍛樺悗鍙?front/             鐢ㄦ埛鍓嶅彴 front-user/
+Docker 容器（Nacos / MySQL / Redis / RabbitMQ / ES）         
+         ↓         
+wealth-common（Maven 依赖，必须先 mvn install）         
+         ↓         
+wealth-gateway（最先启动，依赖 Nacos）         
+         ↓         
+wealth-system（第二启动，提供登录鉴权 + 权限拦截）         
+         ↓         
+wealth-user ─ wealth-product ─ wealth-account
+wealth-trade ─ wealth-message ─ wealth-search
+（无先后依赖，可并行启动）         
+         ↓         
+         ├──────────────────────┤         
+         ↓                      ↓         
+管理员后台 front/             用户前台 front-user/
   (port 3000)                   (port 3001)
   npm run dev                   npm run dev
 ```
 
-> **娉ㄦ剰**锛氭瘡娆′慨鏀?`wealth-common` 涓殑浠ｇ爜鍚庯紝蹇呴』閲嶆柊鎵ц `mvn clean install -pl wealth-common -DskipTests`锛屽啀閲嶆柊鎵撳寘渚濊禆瀹冪殑涓氬姟妯″潡銆?
+> **注意**：每次修改 `wealth-common` 中的代码后，必须重新执行 `mvn clean install -pl wealth-common -DskipTests`，再重新打包依赖它的业务模块。

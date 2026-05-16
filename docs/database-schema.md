@@ -4,7 +4,7 @@
 
 # 涓€銆佹暟鎹簱瑙勮寖锛堝繀椤讳弗鏍奸伒瀹堬級
 
-1. 鏁版嵁搴撳悕锛歠inance
+1. 鏁版嵁搴撳悕锛歵ealth
 2. 瀛楃闆嗭細utf8mb4
 3. 鎵€鏈夎〃蹇呴』鍖呭惈锛歩d銆乧reate_time銆乽pdate_time銆乨el_flag
 4. 閫昏緫鍒犻櫎锛歞el_flag 0=鏈垹闄?1=宸插垹闄?5. 涓婚敭缁熶竴浣跨敤 BIGINT 鑷
@@ -43,7 +43,7 @@ ums_role_resource_relation
 5. 瀛楁鏄犲皠缁熶竴浣跨敤 `@TableField("鍒楀悕")`
 6. 鑷姩濉厖瀛楁锛歝reate_time 浣跨敤 `@TableField(fill = FieldFill.INSERT)`锛寀pdate_time 浣跨敤 `@TableField(fill = FieldFill.INSERT_UPDATE)`
 
-### BaseEntity 瀹氫箟锛坒inance-common/entity/BaseEntity.java锛?
+### BaseEntity 瀹氫箟锛坽ealth-common/entity/BaseEntity.java锛?
 ```java
 @Data
 public class BaseEntity {
