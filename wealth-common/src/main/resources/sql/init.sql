@@ -100,7 +100,8 @@ CREATE TABLE fin_trade_order (
     update_time    DATETIME     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (id),
     UNIQUE KEY idx_order_no (order_no),
-    KEY idx_user_id (user_id)
+    KEY idx_user_id (user_id),
+    KEY idx_status_type (order_status, trade_type)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='模拟委托交易单';
 
 -- ============================================================
@@ -135,7 +136,7 @@ CREATE TABLE fin_message (
     del_flag    TINYINT      DEFAULT '0'             COMMENT '逻辑删除 0未删除 1已删除',
     create_time DATETIME     DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     PRIMARY KEY (id),
-    KEY idx_user_read (user_id, read_flag)
+    KEY idx_user_read (user_id, read_flag, msg_type)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='站内消息推送表';
 
 -- ============================================================
