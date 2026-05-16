@@ -11,7 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/search/product")
+@RequestMapping("/product")
 @Tag(name = "产品搜索接口")
 @RequiredArgsConstructor
 public class ProductSearchController {

@@ -61,3 +61,37 @@ spring:
         transport:
           dashboard: localhost:8858
         eager: true
+
+# Knife4j 网关文档聚合
+knife4j:
+  gateway:
+    enabled: true
+    routes:
+      - name: 系统权限
+        service-name: wealth-system
+        url: /system/v3/api-docs
+        order: 1
+      - name: 用户服务
+        service-name: wealth-user
+        url: /user/v3/api-docs
+        order: 2
+      - name: 产品行情
+        service-name: wealth-product
+        url: /product/v3/api-docs
+        order: 3
+      - name: 账户自选
+        service-name: wealth-account
+        url: /account/v3/api-docs
+        order: 4
+      - name: 交易委托
+        service-name: wealth-trade
+        url: /trade/v3/api-docs
+        order: 5
+      - name: 消息推送
+        service-name: wealth-message
+        url: /message/v3/api-docs
+        order: 6
+      - name: 搜索服务
+        service-name: wealth-search
+        url: /search/v3/api-docs
+        order: 7
