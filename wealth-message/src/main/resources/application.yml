@@ -10,6 +10,24 @@ spring:
     username: root
     password: ${DB_PASSWORD}
 
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+    publisher-confirm-type: correlated
+    publisher-returns: true
+    template:
+      mandatory: true
+    listener:
+      simple:
+        retry:
+          enabled: true
+          max-attempts: 3
+          initial-interval: 2000
+          multiplier: 2
+        default-requeue-rejected: false
+
 mybatis-plus:
   configuration:
     map-underscore-to-camel-case: true
@@ -37,5 +55,3 @@ spring:
       transport:
         dashboard: localhost:8858
       eager: true
-
-# 业务配置统一在 Nacos 配置中心管理
