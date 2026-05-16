@@ -6,15 +6,15 @@ export function getTradeOrderPage(params: {
   userId?: number
   orderStatus?: number
 }) {
-  return request.get('/trade/finTradeOrder/page', { params })
+  return request.get('/trade/weaTradeOrder/page', { params })
 }
 
 export function getTradeOrderList() {
-  return request.get('/trade/finTradeOrder')
+  return request.get('/trade/weaTradeOrder')
 }
 
 export function getTradeOrderById(id: number) {
-  return request.get(`/trade/finTradeOrder/${id}`)
+  return request.get(`/trade/weaTradeOrder/${id}`)
 }
 
 export function createTradeOrder(data: {
@@ -24,9 +24,9 @@ export function createTradeOrder(data: {
   entrustPrice: number
   entrustNum: number
 }) {
-  return request.post('/trade/finTradeOrder', data)
+  return request.post('/trade/weaTradeOrder', data)
 }
 
 export function cancelTradeOrder(id: number) {
-  return request.put(`/trade/finTradeOrder/${id}`, { orderStatus: 2 })
+  return request.put(`/trade/weaTradeOrder/${id}`, { orderStatus: 2 })
 }

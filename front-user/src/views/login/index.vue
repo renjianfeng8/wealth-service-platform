@@ -17,7 +17,7 @@
             <path d="M12 34 L24 18 L36 34" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.4" />
           </svg>
         </div>
-        <h1 class="brand-title">金融投资平台</h1>
+        <h1 class="brand-title">理财服务平台</h1>
         <p class="brand-desc">智慧投资 · 稳健增值</p>
       </div>
 

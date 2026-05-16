@@ -1,7 +1,7 @@
 <template>
   <div class="sidebar">
     <div class="sidebar-logo">
-      <span class="sidebar-logo-text">金融中台管理</span>
+      <span class="sidebar-logo-text">理财服务管理</span>
     </div>
     <el-menu
         :default-active="activeMenu"

@@ -89,11 +89,11 @@ import {
   Top, Bottom,
 } from '@element-plus/icons-vue'
 import { formatPrice, formatRate, productTypeText } from '@/utils/format'
-import type { FinProduct } from '@/types'
+import type { WeaProduct } from '@/types'
 
 const router = useRouter()
 const loading = ref(false)
-const products = ref<FinProduct[]>([])
+const products = ref<WeaProduct[]>([])
 
 const hotProducts = computed(() => products.value.slice(0, 8))
 
@@ -117,7 +117,7 @@ async function fetchProducts() {
   loading.value = true
   try {
     const res = await getProductList()
-    products.value = (res.data || []) as FinProduct[]
+    products.value = (res.data || []) as WeaProduct[]
   } catch {
     products.value = []
   } finally {

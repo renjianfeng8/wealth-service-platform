@@ -1,5 +1,5 @@
 <template>
-  <div class="layout-container" :class="{ 'finance-light': true }">
+  <div class="layout-container" :class="{ 'wealth-light': true }">
     <div class="layout-sidebar">
       <Sidebar />
     </div>

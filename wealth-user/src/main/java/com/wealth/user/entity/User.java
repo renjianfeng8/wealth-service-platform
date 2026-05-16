@@ -1,0 +1,29 @@
+package com.wealth.user.entity;
+
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableName;
+import com.wealth.common.entity.BaseEntity;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
+
+/**
+ * 绯荤粺鐢ㄦ埛琛ㄥ疄浣撱€? */
+@Getter
+@Setter
+@EqualsAndHashCode(callSuper = true)
+@TableName("sys_user")
+public class User extends BaseEntity {
+
+    private String username;
+
+    private String password;
+
+    private String nickname;
+
+    private String phone;
+
+    private String avatar;
+
+    private Integer status;
+}

@@ -1,5 +1,5 @@
 <template>
-  <div class="finance-light">
+  <div class="wealth-light">
     <div v-if="loading" class="fl-loading">
       <div class="fl-loading-spinner" />
       <span>加载中...</span>
@@ -197,7 +197,7 @@ import {
   User, Goods, DataLine, List, Message,
   Star, Reading, Search, Setting,
 } from '@element-plus/icons-vue'
-import type { FinProduct } from '@/types'
+import type { WeaProduct } from '@/types'
 import '@/styles/light-theme.css'
 
 /* ============================================
@@ -209,7 +209,7 @@ interface CandleData { time: string; open: number; close: number; high: number; 
    State
    ============================================ */
 const loading = ref(true)
-const products = ref<FinProduct[]>([])
+const products = ref<WeaProduct[]>([])
 const assetChartRef = ref<HTMLDivElement>()
 const balanceChartRef = ref<HTMLDivElement>()
 const klineChartRef = ref<HTMLDivElement>()
@@ -588,7 +588,7 @@ async function fetchAll() {
   loading.value = true
   try {
     const res = await getProductList()
-    products.value = (res.data || []) as FinProduct[]
+    products.value = (res.data || []) as WeaProduct[]
     if (products.value.length && !symbolSel.value) symbolSel.value = products.value[0].productCode
   } catch { /* ignore */ }
   finally {
@@ -604,7 +604,7 @@ onUnmounted(disposeAllCharts)
 
 <style scoped>
 /* ============================================
-   浅色金融仪表盘 — 样式模块化
+   浅色理财服务仪表盘 — 样式模块化
    ============================================ */
 
 .fl-dashboard {

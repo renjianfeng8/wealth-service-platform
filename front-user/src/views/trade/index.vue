@@ -134,7 +134,7 @@ import { formatPrice, formatDateTime, tradeTypeText, orderStatusText, orderStatu
 import { Refresh } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
-import type { FinTradeOrder } from '@/types'
+import type { WeaTradeOrder } from '@/types'
 
 const route = useRoute()
 const userStore = useUserStore()
@@ -157,7 +157,7 @@ const orderRules: FormRules = {
 }
 
 // 订单列表
-const orders = ref<FinTradeOrder[]>([])
+const orders = ref<WeaTradeOrder[]>([])
 const loading = ref(false)
 const refreshing = ref(false)
 const orderTotal = ref(0)
@@ -204,7 +204,7 @@ async function fetchOrders() {
     }
     if (statusFilter.value !== undefined) params.orderStatus = statusFilter.value
     const res = await getTradeOrderPage(params)
-    orders.value = (res.data?.records || []) as FinTradeOrder[]
+    orders.value = (res.data?.records || []) as WeaTradeOrder[]
     orderTotal.value = res.data?.total || 0
   } catch {
     orders.value = []
@@ -213,7 +213,7 @@ async function fetchOrders() {
   }
 }
 
-async function handleCancel(order: FinTradeOrder) {
+async function handleCancel(order: WeaTradeOrder) {
   try {
     await ElMessageBox.confirm('确定要撤销该委托单吗？', '确认', { type: 'warning' })
     await cancelTradeOrder(order.id!)

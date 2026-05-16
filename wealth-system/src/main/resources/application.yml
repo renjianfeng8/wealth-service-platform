@@ -1,0 +1,25 @@
+spring:
+  sql:
+    init:
+      mode: never
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/wealth?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false
+    username: root
+    password: ${DB_PASSWORD}
+
+server:
+  port: 8082
+  servlet:
+    context-path: /system
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+
+springdoc:
+  api-docs:
+    enabled: true
+
+# 业务配置统一在 Nacos 配置中心管理
+# JWT、缓存、MQ 等配置在 Nacos shared-configs 中设置

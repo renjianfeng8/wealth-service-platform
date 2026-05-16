@@ -85,9 +85,9 @@ import { ref, onMounted } from 'vue'
 import { getMarketDataPage } from '@/api/product'
 import { formatPrice, formatRate, formatDateTime } from '@/utils/format'
 import { Refresh } from '@element-plus/icons-vue'
-import type { FinMarketData } from '@/types'
+import type { WeaMarketData } from '@/types'
 
-const marketList = ref<FinMarketData[]>([])
+const marketList = ref<WeaMarketData[]>([])
 const loading = ref(false)
 const refreshing = ref(false)
 const total = ref(0)
@@ -98,7 +98,7 @@ async function fetchData() {
   loading.value = true
   try {
     const res = await getMarketDataPage({ pageNum: pageNum.value, pageSize: pageSize.value })
-    marketList.value = (res.data?.records || []) as FinMarketData[]
+    marketList.value = (res.data?.records || []) as WeaMarketData[]
     total.value = res.data?.total || 0
   } catch {
     marketList.value = []

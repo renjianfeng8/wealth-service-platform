@@ -1,5 +1,5 @@
-const TOKEN_KEY = 'finance_admin_token'
-const USER_KEY = 'finance_admin_user'
+const TOKEN_KEY = 'wealth_admin_token'
+const USER_KEY = 'wealth_admin_user'
 
 export function getToken(): string | null {
   return localStorage.getItem(TOKEN_KEY)

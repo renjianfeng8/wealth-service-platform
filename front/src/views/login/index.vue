@@ -38,8 +38,8 @@
       </div>
 
       <!-- Title -->
-      <h2 class="login-title">金融中台管理后台</h2>
-      <p class="login-subtitle">Finance Mid Platform</p>
+      <h2 class="login-title">理财服务管理后台</h2>
+      <p class="login-subtitle">Wealth Service Platform</p>
 
       <!-- Login Form -->
       <el-form ref="formRef" :model="form" :rules="rules" size="large" @keyup.enter="handleLogin">

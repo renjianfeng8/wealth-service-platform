@@ -7,13 +7,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - [数据库表结构与字段](docs/database-schema.md) — 写实体类时引用
 - [Bug 记录](Bug.md) — 排查已知问题
 
-# 金融项目开发规范（自动遵守）
+# 理财服务平台开发规范（自动遵守）
 
 技术栈：SpringBoot 3.3.5 + SpringCloud 2023.0.3 + Spring Cloud Alibaba 2023.0.1.2 + MyBatis-Plus 3.5.7 + MySQL 8 + Redis 5 + RabbitMQ 3.10 + ES 8.8.2 + JWT (jjwt 0.11.5) + Knife4j 4.4.0 + Swagger + Nginx
 
 前端：Vue 3.5.13 + Vite 6.3.1 + Element Plus 2.9.7 + Pinia 2.3.1 + TypeScript 5.7
 
-数据库：finance（utf8mb4）
+数据库：wealth（utf8mb4）
 
 # 一、环境版本（严格锁定）
 
@@ -30,7 +30,7 @@ SpringBoot: 3.3.5
 SpringCloud: 2023.0.3
 Spring Cloud Alibaba: 2023.0.1.2
 MyBatis-Plus: 3.5.7    # 最后一个包含 PaginationInnerInterceptor 的稳定版本（3.5.9+ 已移除）
-mybatis-spring: 3.0.4  # finance-system 模块覆盖为 3.0.5
+mybatis-spring: 3.0.4  # wealth-system 模块覆盖为 3.0.5
 jjwt: 0.11.5
 Knife4j: 4.4.0
 
@@ -47,7 +47,7 @@ Knife4j: 4.4.0
 # 二、代码结构规范（强制）
 
 包结构必须如下：
-com.finance.platform.模块名
+com.wealth.platform.模块名
 
 controller    # 接口层
 service       # 业务层
@@ -71,7 +71,7 @@ common        # 公共
 
 ## 分页插件配置
 
-`finance-common` 模块的 `com.finance.common.config.MyBatisPlusConfig` 已全局配置分页插件（标注 `@ConditionalOnClass`，未引入 MyBatis-Plus 的模块如 finance-search 不会因此启动失败）：
+`wealth-common` 模块的 `com.wealth.common.config.MyBatisPlusConfig` 已全局配置分页插件（标注 `@ConditionalOnClass`，未引入 MyBatis-Plus 的模块如 wealth-search 不会因此启动失败）：
 
 ```java
 @Configuration
@@ -86,7 +86,7 @@ public class MyBatisPlusConfig {
 }
 ```
 
-各业务模块无需重复配置，引入 finance-common 依赖后自动生效。
+各业务模块无需重复配置，引入 wealth-common 依赖后自动生效。
 
 > **实体类规范（BaseEntity 继承、字段映射规则）见 [数据库表结构与字段](docs/database-schema.md#三baseentity-继承规范)**
 
@@ -120,12 +120,12 @@ public class MyBatisPlusConfig {
 # 六、业务模块对应关系（必须遵守）
 
 sys_user          → 用户管理
-fin_product       → 产品管理
-fin_market_data   → 行情实时数据
-fin_user_favorite → 用户自选
-fin_trade_order   → 交易委托
-fin_news          → 资讯
-fin_message       → 消息推送
+wea_product       → 产品管理
+wea_market_data   → 行情实时数据
+wea_user_favorite → 用户自选
+wea_trade_order   → 交易委托
+wea_news          → 资讯
+wea_message       → 消息推送
 ums_*             → 后台权限
 
 # 七、AI 生成规则
@@ -154,7 +154,7 @@ ums_*             → 后台权限
 
 ```bash
 # 1. 编译公共模块（必须先执行，修改 common 后要重新 install）
-mvn clean install -pl finance-common -DskipTests
+mvn clean install -pl wealth-common -DskipTests
 
 # 2. 编译所有模块
 mvn clean compile
@@ -163,36 +163,36 @@ mvn clean compile
 mvn clean install -DskipTests
 
 # 4. 运行单个模块（示例：系统服务）
-mvn spring-boot:run -pl finance-system
+mvn spring-boot:run -pl wealth-system
 
 # 5. 打包
 mvn clean package -DskipTests
 
 # 6. 运行打包后的 jar（示例）
-java -jar finance-system/target/finance-system-1.0.0.jar
+java -jar wealth-system/target/wealth-system-1.0.0.jar
 
 # 7. 运行测试（根 pom.xml 默认跳过测试，需显式开启）
-mvn test -pl finance-common -DskipTests=false
+mvn test -pl wealth-common -DskipTests=false
 ```
 
 # 十、核心基础设施类说明
 
 | 类 | 路径 | 用途 |
 |----|------|------|
-| BaseEntity | finance-common/entity/BaseEntity.java | 所有实体的基类（id, createTime, updateTime, delFlag + @TableLogic） |
-| Result\<T\> | finance-common/result/Result.java | 统一 API 返回封装（code + message + data） |
-| ResultCode | finance-common/result/ResultCode.java | 状态码枚举 |
-| BeanConvertUtil | finance-common/utils/BeanConvertUtil.java | Entity→VO 转换 + 新增 `copyNonNullProperties` 用于 null 安全更新 |
-| JwtUtil | finance-common/utils/JwtUtil.java | JWT Token 生成与验证，含 @PostConstruct 密钥长度校验（≥32字节） |
-| ServiceException | finance-common/exception/ServiceException.java | 业务异常，携带 int code 字段（全局异常处理器据此返回对应状态码） |
-| GlobalExceptionHandler | finance-common/exception/GlobalExceptionHandler.java | 全局异常处理（ServiceException / @Valid 校验失败 / 通用异常） |
-| MyBatisPlusConfig | finance-common/config/MyBatisPlusConfig.java | MyBatis-Plus 分页插件配置（@ConditionalOnClass 安全加载） |
-| MyBatisPlusMetaObjectHandler | finance-common/config/MyBatisPlusMetaObjectHandler.java | 自动填充 createTime/updateTime |
-| LoginInterceptor | finance-common/interceptor/LoginInterceptor.java | 用户模块登录拦截器（AntPathMatcher 匹配放行路径） |
-| PermissionInterceptor | finance-system/interceptor/PermissionInterceptor.java | 后台 RBAC 权限拦截器（数据库驱动：admin→角色→资源→URL） |
-| SystemWebConfig | finance-system/config/SystemWebConfig.java | 注册 PermissionInterceptor（排除 /umsAdmin/login、/doc.html、/webjars/**、/swagger-resources/**、/v3/api-docs/**） |
-| RedisUtil | finance-common/utils/RedisUtil.java | Redis 操作工具类 |
-| AuthConstant | finance-common/constants/AuthConstant.java | 权限相关常量 |
+| BaseEntity | wealth-common/entity/BaseEntity.java | 所有实体的基类（id, createTime, updateTime, delFlag + @TableLogic） |
+| Result\<T\> | wealth-common/result/Result.java | 统一 API 返回封装（code + message + data） |
+| ResultCode | wealth-common/result/ResultCode.java | 状态码枚举 |
+| BeanConvertUtil | wealth-common/utils/BeanConvertUtil.java | Entity→VO 转换 + 新增 `copyNonNullProperties` 用于 null 安全更新 |
+| JwtUtil | wealth-common/utils/JwtUtil.java | JWT Token 生成与验证，含 @PostConstruct 密钥长度校验（≥32字节） |
+| ServiceException | wealth-common/exception/ServiceException.java | 业务异常，携带 int code 字段（全局异常处理器据此返回对应状态码） |
+| GlobalExceptionHandler | wealth-common/exception/GlobalExceptionHandler.java | 全局异常处理（ServiceException / @Valid 校验失败 / 通用异常） |
+| MyBatisPlusConfig | wealth-common/config/MyBatisPlusConfig.java | MyBatis-Plus 分页插件配置（@ConditionalOnClass 安全加载） |
+| MyBatisPlusMetaObjectHandler | wealth-common/config/MyBatisPlusMetaObjectHandler.java | 自动填充 createTime/updateTime |
+| LoginInterceptor | wealth-common/interceptor/LoginInterceptor.java | 用户模块登录拦截器（AntPathMatcher 匹配放行路径） |
+| PermissionInterceptor | wealth-system/interceptor/PermissionInterceptor.java | 后台 RBAC 权限拦截器（数据库驱动：admin→角色→资源→URL） |
+| SystemWebConfig | wealth-system/config/SystemWebConfig.java | 注册 PermissionInterceptor（排除 /umsAdmin/login、/doc.html、/webjars/**、/swagger-resources/**、/v3/api-docs/**） |
+| RedisUtil | wealth-common/utils/RedisUtil.java | Redis 操作工具类 |
+| AuthConstant | wealth-common/constants/AuthConstant.java | 权限相关常量 |
 
 # 十一、常见代码模式
 
@@ -253,14 +253,14 @@ throw new ServiceException(400, "参数不合法");
 
 ## Feign 跨服务调用
 
-FeignClient 定义在 finance-common 中，各模块引入依赖后即可调用：
+FeignClient 定义在 wealth-common 中，各模块引入依赖后即可调用：
 
 ```java
-@FeignClient("finance-account")
+@FeignClient("wealth-account")
 public interface AccountFeignClient {
     // 注意：路径必须包含服务端 context-path 前缀 /account
-    @GetMapping("/account/finUserFavorite/{id}")
-    Result<FinUserFavoriteDTO> getById(@PathVariable("id") Long id);
+    @GetMapping("/account/weaUserFavorite/{id}")
+    Result<WeaUserFavoriteDTO> getById(@PathVariable("id") Long id);
 }
 ```
 
@@ -287,8 +287,8 @@ public class XxxController {
 
 ```java
 long count = lambdaQuery()
-        .eq(FinUserFavorite::getUserId, dto.getUserId())
-        .eq(FinUserFavorite::getProductCode, dto.getProductCode())
+        .eq(WeaUserFavorite::getUserId, dto.getUserId())
+        .eq(WeaUserFavorite::getProductCode, dto.getProductCode())
         .count();
 if (count > 0) {
     return false;  // 或 throw new ServiceException(400, "记录已存在")
@@ -316,23 +316,23 @@ JwtUtil 在 @PostConstruct 中校验密钥字节≥32，启动时即失败而非
 
 ## 已知高频问题（启动排查速查）
 
-1. **JWT 配置缺失** → 检查 Nacos `finance-shared.yaml` 配置是否已发布，而非本地配置缺失。Nacos 地址 `localhost:8848`。密钥至少 32 字节。
+1. **JWT 配置缺失** → 检查 Nacos `wealth-shared.yaml` 配置是否已发布，而非本地配置缺失。Nacos 地址 `localhost:8848`。密钥至少 32 字节。
 2. **SystemWebConfig 拦截器不生效** → addPathPatterns 保持了 context-path 剥离后的 `/**`。excludePathPatterns 也是剥离 context-path 后的路径。
 3. **LoginInterceptor 放行路径缺失** → `AuthConstant.PERMIT_ALL_URLS` 仅含 `/system/umsAdmin/login`，缺少 user 模块等路径。如需新增模块登录放行，须更新 `AuthConstant.java` 而非配置文件。`AntPathMatcher` 已用于路径匹配。
-4. **finance-user 全部接口 401** → user 模块无 `LoginInterceptor` 注册（无 `WebMvcConfigurer`），但 `AuthConstant.PERMIT_ALL_URLS` 中也未包含 user 登录路径。v1.4.0 已知问题，需通过 `AuthConstant.java` 添加 `/user/user/login` 修复。
+4. **wealth-user 全部接口 401** → user 模块无 `LoginInterceptor` 注册（无 `WebMvcConfigurer`），但 `AuthConstant.PERMIT_ALL_URLS` 中也未包含 user 登录路径。v1.4.0 已知问题，需通过 `AuthConstant.java` 添加 `/user/user/login` 修复。
 5. **UmsResource.delFlag 查询条件被忽略** → 早期版本 delFlag 标注了 @TableField(exist = false)，现已统一继承 BaseEntity。
 6. **网关启动异常（端口冲突）** → 确认 8080 端口未被占用。父 pom 的 spring-boot-starter-web 与 Gateway WebFlux 冲突的已在依赖层面解决。
 7. **PermissionInterceptor 每次请求 4 次 DB 查询** → 当前无缓存，生产环境建议添加 Redis 缓存优化。
-8. **finance-search 启动失败（NoClassDefFoundError: RedisSerializer）** → v1.4.0 `RedisConfig.java` / `RedisUtil.java` 缺少 `@ConditionalOnClass` 条件注解。search 模块无 Redis 依赖，需在 `RedisConfig` 和 `RedisUtil` 类级别添加 `@ConditionalOnClass(name = "org.springframework.data.redis.core.RedisTemplate")`。这是 Java 源码问题，非配置问题。
+8. **wealth-search 启动失败（NoClassDefFoundError: RedisSerializer）** → v1.4.0 `RedisConfig.java` / `RedisUtil.java` 缺少 `@ConditionalOnClass` 条件注解。search 模块无 Redis 依赖，需在 `RedisConfig` 和 `RedisUtil` 类级别添加 `@ConditionalOnClass(name = "org.springframework.data.redis.core.RedisTemplate")`。这是 Java 源码问题，非配置问题。
 
 ## 启动验证清单
 
 每次启动逐项确认：
 
 - [ ] Docker 容器全部运行：`docker ps`（nacos、redis、rabbitmq、es、nginx）
-- [ ] MySQL 运行且 finance 库存在
-- [ ] Nacos 配置 `finance-shared.yaml` 已发布且内容完整（JWT + 数据源）
-- [ ] 全量编译：`mvn clean install -DskipTests`（如 common 有变更，先单独 `-pl finance-common`）
+- [ ] MySQL 运行且 wealth 库存在
+- [ ] Nacos 配置 `wealth-shared.yaml` 已发布且内容完整（JWT + 数据源）
+- [ ] 全量编译：`mvn clean install -DskipTests`（如 common 有变更，先单独 `-pl wealth-common`）
 - [ ] 按顺序启动：gateway → system → user → product → account → trade → message → search
 - [ ] 各服务 HikariPool 启动成功（日志中搜索 "HikariPool-1 - Start completed"）
 - [ ] 前端 `npm install && npx vite` 可正常访问

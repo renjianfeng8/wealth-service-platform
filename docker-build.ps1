@@ -1,5 +1,5 @@
 # ==============================================
-# finance-mid-platform Docker Image Build Script
+# wealth-service-platform Docker Image Build Script
 # Usage: ./docker-build.ps1
 # ==============================================
 
@@ -19,7 +19,7 @@ $results = @()
 $allSuccess = $true
 
 Write-Host "==============================================" -ForegroundColor Cyan
-Write-Host "  Finance Microservice Platform - Docker Build" -ForegroundColor Cyan
+Write-Host "  Wealth Service Platform - Docker Build" -ForegroundColor Cyan
 Write-Host "==============================================" -ForegroundColor Cyan
 
 # Check Docker
@@ -51,24 +51,24 @@ Write-Host "[Step 2/2] Building Docker images ..." -ForegroundColor Yellow
 foreach ($mod in $modules) {
     $name = $mod.Name
     $port = $mod.Port
-    $imageName = "finance-$name`:1.0.0"
-    $buildDir = (Join-Path $rootDir "finance-$name")
+    $imageName = "wealth-$name`:1.0.0"
+    $buildDir = (Join-Path $rootDir "wealth-$name")
     $dockerfile = (Join-Path $buildDir "Dockerfile")
 
     Write-Host ""
-    Write-Host "  Building finance-$name (port $port) ..." -ForegroundColor Yellow
+    Write-Host "  Building wealth-$name (port $port) ..." -ForegroundColor Yellow
 
     $output = & docker build -t $imageName -f $dockerfile $buildDir 2>&1
     $exitCode = $LASTEXITCODE
 
     if ($exitCode -eq 0) {
-        Write-Host "  >> finance-$name built OK" -ForegroundColor Green
-        $results += @{Module="finance-$name"; Port=$port; Status="OK"}
+        Write-Host "  >> wealth-$name built OK" -ForegroundColor Green
+        $results += @{Module="wealth-$name"; Port=$port; Status="OK"}
     } else {
-        Write-Host "  >> finance-$name BUILD FAILED" -ForegroundColor Red
+        Write-Host "  >> wealth-$name BUILD FAILED" -ForegroundColor Red
         Write-Host "  Error output:" -ForegroundColor Red
         $output | ForEach-Object { Write-Host "    $_" }
-        $results += @{Module="finance-$name"; Port=$port; Status="FAILED"}
+        $results += @{Module="wealth-$name"; Port=$port; Status="FAILED"}
         $allSuccess = $false
     }
 }
@@ -90,4 +90,4 @@ if ($allSuccess) {
 
 Write-Host ""
 Write-Host "List built images:" -ForegroundColor Cyan
-Write-Host "  docker images --filter reference='finance-*'" -ForegroundColor Gray
+Write-Host "  docker images --filter reference='wealth-*'" -ForegroundColor Gray

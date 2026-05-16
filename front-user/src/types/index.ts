@@ -38,7 +38,7 @@ export interface UserInfo {
 }
 
 /* 产品 */
-export interface FinProduct {
+export interface WeaProduct {
   id?: number
   productName: string
   productCode: string
@@ -52,7 +52,7 @@ export interface FinProduct {
 }
 
 /* 行情 */
-export interface FinMarketData {
+export interface WeaMarketData {
   id?: number
   productCode: string
   currentPrice: number
@@ -66,7 +66,7 @@ export interface FinMarketData {
 }
 
 /* 交易委托 */
-export interface FinTradeOrder {
+export interface WeaTradeOrder {
   id?: number
   orderNo?: string
   userId: number
@@ -79,7 +79,7 @@ export interface FinTradeOrder {
 }
 
 /* 自选 */
-export interface FinUserFavorite {
+export interface WeaUserFavorite {
   id?: number
   userId: number
   productCode: string
@@ -87,7 +87,7 @@ export interface FinUserFavorite {
 }
 
 /* 资讯 */
-export interface FinNews {
+export interface WeaNews {
   id?: number
   title: string
   content?: string
@@ -99,7 +99,7 @@ export interface FinNews {
 }
 
 /* 消息 */
-export interface FinMessage {
+export interface WeaMessage {
   id?: number
   userId: number
   msgType?: number

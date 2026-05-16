@@ -78,16 +78,16 @@ import { ref, onMounted } from 'vue'
 import { getNewsPage } from '@/api/message'
 import { NEWS_TYPE_OPTIONS } from '@/types'
 import { formatDateTime, newsTypeText } from '@/utils/format'
-import type { FinNews } from '@/types'
+import type { WeaNews } from '@/types'
 
-const newsList = ref<FinNews[]>([])
+const newsList = ref<WeaNews[]>([])
 const loading = ref(false)
 const total = ref(0)
 const pageNum = ref(1)
 const pageSize = ref(10)
 const filterType = ref(0)
 const detailVisible = ref(false)
-const detailItem = ref<FinNews | null>(null)
+const detailItem = ref<WeaNews | null>(null)
 
 function truncate(text: string | undefined, len: number): string {
   if (!text) return ''
@@ -100,7 +100,7 @@ async function fetchNews() {
     const params: any = { pageNum: pageNum.value, pageSize: pageSize.value }
     if (filterType.value) params.newsType = filterType.value
     const res = await getNewsPage(params)
-    newsList.value = (res.data?.records || []) as FinNews[]
+    newsList.value = (res.data?.records || []) as WeaNews[]
     total.value = res.data?.total || 0
   } catch {
     newsList.value = []
@@ -114,7 +114,7 @@ function handleFilter() {
   fetchNews()
 }
 
-function showDetail(item: FinNews) {
+function showDetail(item: WeaNews) {
   detailItem.value = item
   detailVisible.value = true
 }

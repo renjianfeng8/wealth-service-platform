@@ -25,7 +25,7 @@ test.describe('登录模块', () => {
     await page.goto('/#/login')
     await expect(page.locator('.login-title')).toHaveText('用户登录')
     await expect(page.locator('.login-card')).toBeVisible()
-    await expect(page.locator('.brand-title')).toContainText('金融投资平台')
+    await expect(page.locator('.brand-title')).toContainText('理财服务平台')
   })
 
   test('使用有效账号登录成功', async ({ page }) => {

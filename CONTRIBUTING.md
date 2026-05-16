@@ -1,36 +1,28 @@
-# Contributing to finance-mid-platform
+﻿# Contributing to wealth-service-platform
 
-感谢你参与 finance-mid-platform 项目的贡献。本文档为项目贡献者提供统一的开发规范与协作流程。
+鎰熻阿浣犲弬涓?wealth-service-platform 椤圭洰鐨勮础鐚€傛湰鏂囨。涓洪」鐩础鐚€呮彁渚涚粺涓€鐨勫紑鍙戣鑼冧笌鍗忎綔娴佺▼銆?
+## 椤圭洰绠€浠?
+wealth-service-platform 鏄竴涓熀浜?Spring Cloud Alibaba 寰湇鍔℃灦鏋勭殑閲戣瀺涓彴椤圭洰锛屾彁渚涗骇鍝佺鐞嗐€佽鎯呮暟鎹€佷氦鏄撳鎵樸€佺敤鎴疯嚜閫夈€佽储缁忚祫璁瓑鏍稿績閲戣瀺鏈嶅姟鑳藉姏銆?
+### 鎶€鏈爤
 
-## 项目简介
-
-finance-mid-platform 是一个基于 Spring Cloud Alibaba 微服务架构的金融中台项目，提供产品管理、行情数据、交易委托、用户自选、财经资讯等核心金融服务能力。
-
-### 技术栈
-
-- **后端**: SpringBoot 3.3.5 + SpringCloud 2023.0.3 + Spring Cloud Alibaba 2023.0.1.2 + MyBatis-Plus 3.5.7
-- **前端**: Vue 3.5.13 + Vite 6.3.1 + Element Plus 2.9.7 + TypeScript 5.7
-- **中间件**: MySQL 8 + Redis 5 + RabbitMQ 3.10 + ElasticSearch 8.8.2 + Nacos 2.3.2
-- **网关**: Spring Cloud Gateway（端口 8080）
-
-完整模块架构参见 [docs/architecture.md](docs/architecture.md)。
-
-## 开发环境准备
-
-| 工具 | 版本要求 | 说明 |
+- **鍚庣**: SpringBoot 3.3.5 + SpringCloud 2023.0.3 + Spring Cloud Alibaba 2023.0.1.2 + MyBatis-Plus 3.5.7
+- **鍓嶇**: Vue 3.5.13 + Vite 6.3.1 + Element Plus 2.9.7 + TypeScript 5.7
+- **涓棿浠?*: MySQL 8 + Redis 5 + RabbitMQ 3.10 + ElasticSearch 8.8.2 + Nacos 2.3.2
+- **缃戝叧**: Spring Cloud Gateway锛堢鍙?8080锛?
+瀹屾暣妯″潡鏋舵瀯鍙傝 [docs/architecture.md](docs/architecture.md)銆?
+## 寮€鍙戠幆澧冨噯澶?
+| 宸ュ叿 | 鐗堟湰瑕佹眰 | 璇存槑 |
 |------|---------|------|
-| JDK | 21.0.3 | 必须使用 JDK 21 |
-| Maven | 3.9.9 | 项目构建工具 |
-| Node.js | 18+（推荐 20 LTS） | 前端开发环境 |
-| Docker | latest | 运行中间件容器 |
-| MySQL | 8.0.37 | 本地安装，数据库 `finance`（utf8mb4） |
-| Git | latest | 版本管理 |
+| JDK | 21.0.3 | 蹇呴』浣跨敤 JDK 21 |
+| Maven | 3.9.9 | 椤圭洰鏋勫缓宸ュ叿 |
+| Node.js | 18+锛堟帹鑽?20 LTS锛?| 鍓嶇寮€鍙戠幆澧?|
+| Docker | latest | 杩愯涓棿浠跺鍣?|
+| MySQL | 8.0.37 | 鏈湴瀹夎锛屾暟鎹簱 `Wealth`锛坲tf8mb4锛?|
+| Git | latest | 鐗堟湰绠＄悊 |
 
-### Docker 中间件
-
-以下服务通过 Docker 运行，请确保本地 Docker 环境正常：
-
-| 服务 | 镜像 | 端口 |
+### Docker 涓棿浠?
+浠ヤ笅鏈嶅姟閫氳繃 Docker 杩愯锛岃纭繚鏈湴 Docker 鐜姝ｅ父锛?
+| 鏈嶅姟 | 闀滃儚 | 绔彛 |
 |------|------|------|
 | Nacos | nacos/nacos-server:v2.3.2 | 8848 |
 | Redis | redis:latest | 6379 |
@@ -38,65 +30,59 @@ finance-mid-platform 是一个基于 Spring Cloud Alibaba 微服务架构的金�
 | ElasticSearch | elasticsearch:8.8.2 | 9200 |
 | Nginx | nginx:latest | 80 |
 
-> 完整容器列表详见 [docs/architecture.md](docs/architecture.md#基础设施-docker-容器)。
-
-## 本地开发流程
-
-### 1. 拉取代码
+> 瀹屾暣瀹瑰櫒鍒楄〃璇﹁ [docs/architecture.md](docs/architecture.md#鍩虹璁炬柦-docker-瀹瑰櫒)銆?
+## 鏈湴寮€鍙戞祦绋?
+### 1. 鎷夊彇浠ｇ爜
 
 ```bash
-git clone https://github.com/renjianfeng8/finance-mid-platform.git
-cd finance-mid-platform
+git clone https://github.com/renjianfeng8/wealth-service-platform.git
+cd wealth-service-platform
 ```
 
-### 2. 启动基础设施
+### 2. 鍚姩鍩虹璁炬柦
 
 ```bash
 docker start nacos redis rabbitmq es nginx
 ```
 
-### 3. 初始化数据库
+### 3. 鍒濆鍖栨暟鎹簱
 
-在 MySQL 中创建 `finance` 库（字符集 `utf8mb4`），然后执行建表脚本：
-
+鍦?MySQL 涓垱寤?`Wealth` 搴擄紙瀛楃闆?`utf8mb4`锛夛紝鐒跺悗鎵ц寤鸿〃鑴氭湰锛?
 ```bash
-mysql -u root -p finance < finance-common/src/main/resources/sql/init.sql
+mysql -u root -p Wealth < wealth-common/src/main/resources/sql/init.sql
 ```
 
-### 4. 配置 Nacos
+### 4. 閰嶇疆 Nacos
 
-访问 Nacos 控制台 `http://localhost:8848`，在 DEFAULT_GROUP 下创建共享配置 `finance-shared.yaml`，内容包含 JWT 密钥和数据源配置。详细配置内容参见 [docs/architecture.md](docs/architecture.md#nacos-配置中心docker-nacosnacos-serverv232)。
+璁块棶 Nacos 鎺у埗鍙?`http://localhost:8848`锛屽湪 DEFAULT_GROUP 涓嬪垱寤哄叡浜厤缃?`wealth-shared.yaml`锛屽唴瀹瑰寘鍚?JWT 瀵嗛挜鍜屾暟鎹簮閰嶇疆銆傝缁嗛厤缃唴瀹瑰弬瑙?[docs/architecture.md](docs/architecture.md#nacos-閰嶇疆涓績docker-nacosnacos-serverv232)銆?
+### 5. 缂栬瘧椤圭洰
 
-### 5. 编译项目
-
-首次编译（或修改了 finance-common 后）需要先安装公共模块：
-
+棣栨缂栬瘧锛堟垨淇敼浜?wealth-common 鍚庯級闇€瑕佸厛瀹夎鍏叡妯″潡锛?
 ```bash
-# 编译公共模块
-mvn clean install -pl finance-common -DskipTests
+# 缂栬瘧鍏叡妯″潡
+mvn clean install -pl wealth-common -DskipTests
 
-# 全量编译
+# 鍏ㄩ噺缂栬瘧
 mvn clean install -DskipTests
 ```
 
-### 6. 按顺序启动微服务
+### 6. 鎸夐『搴忓惎鍔ㄥ井鏈嶅姟
 
-服务间存在依赖关系，请严格按照以下顺序启动：
+鏈嶅姟闂村瓨鍦ㄤ緷璧栧叧绯伙紝璇蜂弗鏍兼寜鐓т互涓嬮『搴忓惎鍔細
 
 ```
-gateway(8080) → system(8082) → user(8083) → product(8084)
-→ account(8086) → trade(8085) → message(8087) → search(8089)
+gateway(8080) 鈫?system(8082) 鈫?user(8083) 鈫?product(8084)
+鈫?account(8086) 鈫?trade(8085) 鈫?message(8087) 鈫?search(8089)
 ```
 
 ```bash
-# 启动单个模块
-mvn spring-boot:run -pl finance-{模块名}
+# 鍚姩鍗曚釜妯″潡
+mvn spring-boot:run -pl wealth-{妯″潡鍚峿
 
-# 示例：启动网关
-mvn spring-boot:run -pl finance-gateway
+# 绀轰緥锛氬惎鍔ㄧ綉鍏?mvn spring-boot:run -pl wealth-gateway
 ```
 
-### 7. 启动前端
+### 7. 鍚姩鍓嶇
 
 ```bash
 cd front-user
@@ -104,131 +90,114 @@ npm install
 npx vite
 ```
 
-前端默认运行在 `http://localhost:3000`，通过网关 `http://localhost:8080` 调用后端接口。
+鍓嶇榛樿杩愯鍦?`http://localhost:3000`锛岄€氳繃缃戝叧 `http://localhost:8080` 璋冪敤鍚庣鎺ュ彛銆?
+## 浠ｇ爜瑙勮寖
 
-## 代码规范
+### Java 鍚庣
 
-### Java 后端
+- 鍖呯粨鏋勶細`com.wealth.platform.{妯″潡鍚峿`锛屾寜 controller/service/mapper/entity/vo/dto 鍒嗗眰
+- 鎵€鏈?Entity 蹇呴』缁ф壙 `BaseEntity`锛岃嚜鍔ㄥ～鍏?`create_time`/`update_time`
+- 鎺ュ彛缁熶竴杩斿洖 `Result<T>` 鏍煎紡锛坈ode + message + data锛?- 浣跨敤 `BeanConvertUtil` 杩涜 Entity 鈫?VO 杞崲
+- 鏇存柊鎿嶄綔浣跨敤 `copyNonNullProperties` 閬垮厤 null 瑕嗙洊
+- 涓氬姟寮傚父浣跨敤 `ServiceException(code, message)` 鑰岄潪 RuntimeException
+- 鍐欐搷浣滃繀椤诲姞 `@Transactional(rollbackFor = Exception.class)`
+- 鎵€鏈?`@RequestBody` DTO 蹇呴』鍔?`@Valid`
+- 鍒嗛〉鏌ヨ浣跨敤 MyBatis-Plus `Page` + `PaginationInnerInterceptor`
 
-- 包结构：`com.finance.platform.{模块名}`，按 controller/service/mapper/entity/vo/dto 分层
-- 所有 Entity 必须继承 `BaseEntity`，自动填充 `create_time`/`update_time`
-- 接口统一返回 `Result<T>` 格式（code + message + data）
-- 使用 `BeanConvertUtil` 进行 Entity → VO 转换
-- 更新操作使用 `copyNonNullProperties` 避免 null 覆盖
-- 业务异常使用 `ServiceException(code, message)` 而非 RuntimeException
-- 写操作必须加 `@Transactional(rollbackFor = Exception.class)`
-- 所有 `@RequestBody` DTO 必须加 `@Valid`
-- 分页查询使用 MyBatis-Plus `Page` + `PaginationInnerInterceptor`
+璇︾粏瑙勮寖鍙傝 [CLAUDE.md](CLAUDE.md)銆?
+### 鍓嶇
 
-详细规范参见 [CLAUDE.md](CLAUDE.md)。
+- Vue 3 缁勫悎寮?API + TypeScript
+- 缁勪欢搴撲娇鐢?Element Plus
+- 鐘舵€佺鐞嗕娇鐢?Pinia
+- 璺敱浣跨敤 Vue Router 4
 
-### 前端
+### 鏁版嵁搴?
+- 鎵€鏈夎〃蹇呴』鍖呭惈 `id`銆乣create_time`銆乣update_time`銆乣del_flag`
+- 閫昏緫鍒犻櫎锛歚del_flag` 0=鏈垹闄?1=宸插垹闄?- 涓婚敭缁熶竴浣跨敤 BIGINT 鑷
+- 绂佹浣跨敤澶栭敭
 
-- Vue 3 组合式 API + TypeScript
-- 组件库使用 Element Plus
-- 状态管理使用 Pinia
-- 路由使用 Vue Router 4
+琛ㄧ粨鏋勭粏鑺傚弬瑙?[docs/database-schema.md](docs/database-schema.md)銆?
+## 鎻愪氦瑙勮寖
 
-### 数据库
-
-- 所有表必须包含 `id`、`create_time`、`update_time`、`del_flag`
-- 逻辑删除：`del_flag` 0=未删除 1=已删除
-- 主键统一使用 BIGINT 自增
-- 禁止使用外键
-
-表结构细节参见 [docs/database-schema.md](docs/database-schema.md)。
-
-## 提交规范
-
-所有 git 提交必须遵循 [Conventional Commits](https://www.conventionalcommits.org/) 规范：
-
+鎵€鏈?git 鎻愪氦蹇呴』閬靛惊 [Conventional Commits](https://www.conventionalcommits.org/) 瑙勮寖锛?
 ```
 <type>(<scope>): <description>
 ```
 
-### type 类型
+### type 绫诲瀷
 
-| type | 说明 |
+| type | 璇存槑 |
 |------|------|
-| feat | 新功能 |
-| fix | 修复 bug |
-| docs | 文档变更 |
-| style | 代码格式调整 |
-| refactor | 代码重构 |
-| perf | 性能优化 |
-| test | 添加或修改测试 |
-| chore | 构建/工具变动 |
-| ci | CI 配置变更 |
-| build | 依赖/构建系统变更 |
+| feat | 鏂板姛鑳?|
+| fix | 淇 bug |
+| docs | 鏂囨。鍙樻洿 |
+| style | 浠ｇ爜鏍煎紡璋冩暣 |
+| refactor | 浠ｇ爜閲嶆瀯 |
+| perf | 鎬ц兘浼樺寲 |
+| test | 娣诲姞鎴栦慨鏀规祴璇?|
+| chore | 鏋勫缓/宸ュ叿鍙樺姩 |
+| ci | CI 閰嶇疆鍙樻洿 |
+| build | 渚濊禆/鏋勫缓绯荤粺鍙樻洿 |
 
-- **scope**（可选）: common / gateway / system / user / product / account / trade / message / search
-- **description**: 命令式语气，首字母小写，末尾不加句号
+- **scope**锛堝彲閫夛級: common / gateway / system / user / product / account / trade / message / search
+- **description**: 鍛戒护寮忚姘旓紝棣栧瓧姣嶅皬鍐欙紝鏈熬涓嶅姞鍙ュ彿
 
-示例：
-
+绀轰緥锛?
 ```
-feat(product): 添加产品分页查询接口
-fix(trade): 修复交易委托金额计算精度问题
-docs: 更新 API 文档
-refactor(gateway): 提取 CORS 配置为独立类
+feat(product): 娣诲姞浜у搧鍒嗛〉鏌ヨ鎺ュ彛
+fix(trade): 淇浜ゆ槗濮旀墭閲戦璁＄畻绮惧害闂
+docs: 鏇存柊 API 鏂囨。
+refactor(gateway): 鎻愬彇 CORS 閰嶇疆涓虹嫭绔嬬被
 ```
 
-## 分支管理策略
+## 鍒嗘敮绠＄悊绛栫暐
 
-| 分支 | 用途 | 说明 |
+| 鍒嗘敮 | 鐢ㄩ€?| 璇存槑 |
 |------|------|------|
-| `main` | 稳定版本 | 保护分支，禁止直接推送 |
-| `feature/*` | 新功能开发 | 从 `main` 切出，完成后通过 PR 合入 `main` |
-| `fix/*` | Bug 修复 | 从 `main` 切出，修复后通过 PR 合入 `main` |
+| `main` | 绋冲畾鐗堟湰 | 淇濇姢鍒嗘敮锛岀姝㈢洿鎺ユ帹閫?|
+| `feature/*` | 鏂板姛鑳藉紑鍙?| 浠?`main` 鍒囧嚭锛屽畬鎴愬悗閫氳繃 PR 鍚堝叆 `main` |
+| `fix/*` | Bug 淇 | 浠?`main` 鍒囧嚭锛屼慨澶嶅悗閫氳繃 PR 鍚堝叆 `main` |
 
-### 分支命名规范
+### 鍒嗘敮鍛藉悕瑙勮寖
 
-- `feature/description` — 如 `feature/product-search`
-- `fix/description` — 如 `fix/trade-amount-precision`
+- `feature/description` 鈥?濡?`feature/product-search`
+- `fix/description` 鈥?濡?`fix/trade-amount-precision`
 
-保持每个分支聚焦于单一改动，一个分支只解决一个问题。
+淇濇寔姣忎釜鍒嗘敮鑱氱劍浜庡崟涓€鏀瑰姩锛屼竴涓垎鏀彧瑙ｅ喅涓€涓棶棰樸€?
+## PR 鎻愪氦涓庡鏍告祦绋?
+### 鎻愪氦鍓嶆鏌?
+- [ ] 浠ｇ爜缂栬瘧閫氳繃锛歚mvn clean compile`
+- [ ] 閬靛惊浠ｇ爜瑙勮寖鍜屾彁浜よ鑼?- [ ] 鑷祴閫氳繃锛屽叧閿矾寰勫凡楠岃瘉
+- [ ] 鏃犲浣欒皟璇曚唬鐮併€佹敞閲婁唬鐮?- [ ] 鍒嗘敮宸?rebase 鍒版渶鏂扮殑 `main`
 
-## PR 提交与审核流程
+### PR 瑕佹眰
 
-### 提交前检查
+1. **鍏宠仈 Issue** 鈥?鍦?PR 鎻忚堪涓叧鑱斿搴?Issue锛坄Closes #123`锛?2. **鎻忚堪鍙樻洿** 鈥?绠€瑕佽鏄庡彉鏇村唴瀹广€佸師鍥犲強褰卞搷鑼冨洿
+3. **閫氳繃 CI** 鈥?纭繚缂栬瘧鍜屾祴璇曢€氳繃
+4. **浠ｇ爜瀹℃煡** 鈥?鑷冲皯 1 浜?Review 閫氳繃鍚庢柟鍙悎骞?5. **淇濇寔绠€娲?* 鈥?涓€涓?PR 鍙В鍐充竴涓棶棰橈紝閬垮厤鏃犲叧鏀瑰姩
 
-- [ ] 代码编译通过：`mvn clean compile`
-- [ ] 遵循代码规范和提交规范
-- [ ] 自测通过，关键路径已验证
-- [ ] 无多余调试代码、注释代码
-- [ ] 分支已 rebase 到最新的 `main`
-
-### PR 要求
-
-1. **关联 Issue** — 在 PR 描述中关联对应 Issue（`Closes #123`）
-2. **描述变更** — 简要说明变更内容、原因及影响范围
-3. **通过 CI** — 确保编译和测试通过
-4. **代码审查** — 至少 1 人 Review 通过后方可合并
-5. **保持简洁** — 一个 PR 只解决一个问题，避免无关改动
-
-### PR 描述模板
+### PR 鎻忚堪妯℃澘
 
 ```markdown
-## 变更内容
-[简要描述改了什么，为什么改]
+## 鍙樻洿鍐呭
+[绠€瑕佹弿杩版敼浜嗕粈涔堬紝涓轰粈涔堟敼]
 
-## 关联 Issue
+## 鍏宠仈 Issue
 Closes #123
 
-## 测试说明
-[如何验证改动的正确性]
+## 娴嬭瘯璇存槑
+[濡備綍楠岃瘉鏀瑰姩鐨勬纭€
 
-## 涉及模块
+## 娑夊強妯″潡
 [gateway / system / user / product / ...]
 ```
 
-## 问题反馈
+## 闂鍙嶉
 
-发现 Bug 或有改进建议时：
+鍙戠幇 Bug 鎴栨湁鏀硅繘寤鸿鏃讹細
 
-1. **优先查阅** [Bug.md](Bug.md) — 确认是否为已知问题，查看已有的修复方案和排查要点
-2. **提交 Issue** — 若为新问题，请附上：
-   - 复现步骤
-   - 期望行为与实际行为
-   - 环境信息（模块、版本等）
-   - 相关日志或截图
+1. **浼樺厛鏌ラ槄** [Bug.md](Bug.md) 鈥?纭鏄惁涓哄凡鐭ラ棶棰橈紝鏌ョ湅宸叉湁鐨勪慨澶嶆柟妗堝拰鎺掓煡瑕佺偣
+2. **鎻愪氦 Issue** 鈥?鑻ヤ负鏂伴棶棰橈紝璇烽檮涓婏細
+   - 澶嶇幇姝ラ
+   - 鏈熸湜琛屼负涓庡疄闄呰涓?   - 鐜淇℃伅锛堟ā鍧椼€佺増鏈瓑锛?   - 鐩稿叧鏃ュ織鎴栨埅鍥?

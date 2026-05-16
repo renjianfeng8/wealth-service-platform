@@ -1,0 +1,33 @@
+package com.wealth.user.dto;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
+import lombok.Data;
+
+@Data
+@Schema(description = "用户新增/修改DTO")
+public class UserDTO {
+
+    @Schema(description = "ID")
+    private Long id;
+
+    @NotBlank(message = "用户名不能为空")
+    @Schema(description = "账号")
+    private String username;
+
+    @NotBlank(message = "密码不能为空")
+    @Schema(description = "密码")
+    private String password;
+
+    @Schema(description = "昵称")
+    private String nickname;
+
+    @Schema(description = "手机号")
+    private String phone;
+
+    @Schema(description = "头像")
+    private String avatar;
+
+    @Schema(description = "状态 0禁用 1正常")
+    private Integer status;
+}

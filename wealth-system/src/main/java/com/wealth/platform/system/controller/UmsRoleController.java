@@ -1,0 +1,86 @@
+package com.wealth.platform.system.controller;
+
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.wealth.common.result.Result;
+import com.wealth.common.result.ResultCode;
+import com.wealth.common.utils.BeanConvertUtil;
+import com.wealth.platform.system.dto.UmsRoleDTO;
+import com.wealth.platform.system.entity.UmsRole;
+import com.wealth.platform.system.service.UmsRoleService;
+import com.wealth.platform.system.vo.UmsRoleVO;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@Tag(name = "瑙掕壊绠＄悊", description = "ums_role 鍚庡彴瑙掕壊鐩稿叧鎺ュ彛")
+@RequestMapping("/umsRole")
+public class UmsRoleController {
+
+    private final UmsRoleService umsRoleService;
+
+    public UmsRoleController(UmsRoleService umsRoleService) {
+        this.umsRoleService = umsRoleService;
+    }
+
+    @Operation(summary = "鏍规嵁ID鏌ヨ瑙掕壊淇℃伅")
+    @GetMapping("/{id}")
+    public Result<UmsRoleVO> getById(@PathVariable Long id) {
+        UmsRole role = umsRoleService.getById(id);
+        if (role == null) {
+            return Result.error(ResultCode.NOT_FOUND);
+        }
+        return Result.success(BeanConvertUtil.convert(role, UmsRoleVO.class));
+    }
+
+    @Operation(summary = "鏌ヨ瑙掕壊鍒楄〃")
+    @GetMapping
+    public Result<List<UmsRoleVO>> list() {
+        List<UmsRole> list = umsRoleService.list();
+        return Result.success(BeanConvertUtil.convertList(list, UmsRoleVO.class));
+    }
+
+    @Operation(summary = "鍒嗛〉鏌ヨ瑙掕壊鍒楄〃")
+    @GetMapping("/page")
+    public Result<IPage<UmsRoleVO>> page(
+            @RequestParam(defaultValue = "1") Integer pageNum,
+            @RequestParam(defaultValue = "10") Integer pageSize) {
+
+        Page<UmsRole> page = new Page<>(pageNum, pageSize);
+        IPage<UmsRole> rolePage = umsRoleService.page(page);
+
+        Page<UmsRoleVO> voPage = new Page<>();
+        voPage.setCurrent(rolePage.getCurrent());
+        voPage.setSize(rolePage.getSize());
+        voPage.setTotal(rolePage.getTotal());
+        voPage.setPages(rolePage.getPages());
+        voPage.setRecords(BeanConvertUtil.convertList(rolePage.getRecords(), UmsRoleVO.class));
+
+        return Result.success(voPage);
+    }
+
+    @Operation(summary = "鍒涘缓瑙掕壊")
+    @PostMapping
+    public Result<Boolean> create(@Valid @RequestBody UmsRoleDTO dto) {
+        UmsRole role = BeanConvertUtil.convert(dto, UmsRole.class);
+        return Result.success(umsRoleService.save(role));
+    }
+
+    @Operation(summary = "鏇存柊瑙掕壊淇℃伅")
+    @PutMapping("/{id}")
+    public Result<Boolean> update(@PathVariable Long id, @Valid @RequestBody UmsRoleDTO dto) {
+        UmsRole role = BeanConvertUtil.convert(dto, UmsRole.class);
+        role.setId(id);
+        return Result.success(umsRoleService.updateById(role));
+    }
+
+    @Operation(summary = "鍒犻櫎瑙掕壊")
+    @DeleteMapping("/{id}")
+    public Result<Boolean> delete(@PathVariable Long id) {
+        return Result.success(umsRoleService.removeById(id));
+    }
+}

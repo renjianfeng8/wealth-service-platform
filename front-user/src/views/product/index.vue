@@ -127,18 +127,18 @@ import { getProductPage } from '@/api/product'
 import { PRODUCT_TYPE_OPTIONS } from '@/types'
 import { formatPrice, formatRate, productTypeText } from '@/utils/format'
 import { CaretTop, CaretBottom } from '@element-plus/icons-vue'
-import type { FinProduct } from '@/types'
+import type { WeaProduct } from '@/types'
 
 const router = useRouter()
 
-const products = ref<FinProduct[]>([])
+const products = ref<WeaProduct[]>([])
 const loading = ref(false)
 const total = ref(0)
 const pageNum = ref(1)
 const pageSize = ref(12)
 const filterType = ref(0)
 const detailVisible = ref(false)
-const detailItem = ref<FinProduct | null>(null)
+const detailItem = ref<WeaProduct | null>(null)
 
 async function fetchProducts() {
   loading.value = true
@@ -146,7 +146,7 @@ async function fetchProducts() {
     const params: any = { pageNum: pageNum.value, pageSize: pageSize.value }
     if (filterType.value) params.productType = filterType.value
     const res = await getProductPage(params)
-    products.value = (res.data?.records || []) as FinProduct[]
+    products.value = (res.data?.records || []) as WeaProduct[]
     total.value = res.data?.total || 0
   } catch {
     products.value = []
@@ -160,12 +160,12 @@ function handleFilter() {
   fetchProducts()
 }
 
-function showDetail(item: FinProduct) {
+function showDetail(item: WeaProduct) {
   detailItem.value = item
   detailVisible.value = true
 }
 
-function goTrade(item: FinProduct | null) {
+function goTrade(item: WeaProduct | null) {
   if (!item) return
   detailVisible.value = false
   router.push({ path: '/trade', query: { productCode: item.productCode } })

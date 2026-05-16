@@ -10,7 +10,7 @@
                 <path d="M10 20 L16 10 L22 20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
               </svg>
             </div>
-            <span class="logo-text">金融投资平台</span>
+            <span class="logo-text">理财服务平台</span>
           </div>
         </div>
 
@@ -89,7 +89,7 @@
 
     <footer class="layout-footer">
       <div class="footer-inner">
-        <span>&copy; {{ new Date().getFullYear() }} 金融投资平台. All rights reserved.</span>
+        <span>&copy; {{ new Date().getFullYear() }} 理财服务平台. All rights reserved.</span>
       </div>
     </footer>
   </div>

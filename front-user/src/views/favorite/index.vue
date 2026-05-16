@@ -96,9 +96,9 @@ import { getMarketDataList } from '@/api/product'
 import { formatPrice, formatRate, formatDate } from '@/utils/format'
 import { Delete } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import type { FinUserFavorite, FinProduct, FinMarketData } from '@/types'
+import type { WeaUserFavorite, WeaProduct, WeaMarketData } from '@/types'
 
-interface FavoriteItem extends FinUserFavorite {
+interface FavoriteItem extends WeaUserFavorite {
   productName?: string
   currentPrice?: number
   riseFallRate?: number
@@ -115,16 +115,16 @@ const pageNum = ref(1)
 const pageSize = ref(12)
 const newProductCode = ref('')
 
-async function enrichFavorites(records: FinUserFavorite[]): Promise<FavoriteItem[]> {
-  let allProducts: FinProduct[] = []
-  let allMarket: FinMarketData[] = []
+async function enrichFavorites(records: WeaUserFavorite[]): Promise<FavoriteItem[]> {
+  let allProducts: WeaProduct[] = []
+  let allMarket: WeaMarketData[] = []
   try {
     const pr = await getProductList()
-    allProducts = (pr.data || []) as FinProduct[]
+    allProducts = (pr.data || []) as WeaProduct[]
   } catch { /* ignore */ }
   try {
     const mr = await getMarketDataList()
-    allMarket = (mr.data || []) as FinMarketData[]
+    allMarket = (mr.data || []) as WeaMarketData[]
   } catch { /* ignore */ }
 
   return records.map((fav) => {
@@ -147,7 +147,7 @@ async function fetchFavorites() {
       pageSize: pageSize.value,
       userId: userStore.userId || undefined,
     })
-    const records = (res.data?.records || []) as FinUserFavorite[]
+    const records = (res.data?.records || []) as WeaUserFavorite[]
     total.value = res.data?.total || 0
     favorites.value = await enrichFavorites(records)
   } catch {

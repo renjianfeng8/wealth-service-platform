@@ -38,8 +38,8 @@ page.on('console', msg => { if (msg.type() === 'error') errors.push(`console.err
 try {
   // Inject auth token + mock API
   await context.addInitScript(() => {
-    localStorage.setItem('finance_admin_token', 'test-jwt-token');
-    localStorage.setItem('finance_admin_user', JSON.stringify({ id: 1, username: 'admin' }));
+    localStorage.setItem('wealth_admin_token', 'test-jwt-token');
+    localStorage.setItem('wealth_admin_user', JSON.stringify({ id: 1, username: 'admin' }));
   });
 
   const mockProducts = [

@@ -62,7 +62,7 @@ export interface UmsResource {
   categoryId?: number
 }
 
-export interface FinProduct {
+export interface WeaProduct {
   id?: number
   productName: string
   productCode: string
@@ -75,7 +75,7 @@ export interface FinProduct {
   createTime?: string
 }
 
-export interface FinMarketData {
+export interface WeaMarketData {
   id?: number
   productCode: string
   currentPrice: number
@@ -88,7 +88,7 @@ export interface FinMarketData {
   marketTime?: string
 }
 
-export interface FinTradeOrder {
+export interface WeaTradeOrder {
   id?: number
   orderNo?: string
   userId: number
@@ -100,14 +100,14 @@ export interface FinTradeOrder {
   createTime?: string
 }
 
-export interface FinUserFavorite {
+export interface WeaUserFavorite {
   id?: number
   userId: number
   productCode: string
   createTime?: string
 }
 
-export interface FinNews {
+export interface WeaNews {
   id?: number
   title: string
   content?: string
@@ -117,7 +117,7 @@ export interface FinNews {
   publishTime?: string
 }
 
-export interface FinMessage {
+export interface WeaMessage {
   id?: number
   userId: number
   msgType?: number

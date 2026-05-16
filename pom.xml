@@ -4,11 +4,11 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.finance</groupId>
-    <artifactId>finance-mid-platform</artifactId>
+    <groupId>com.wealth</groupId>
+    <artifactId>wealth-service-platform</artifactId>
     <version>1.0.0</version>
     <packaging>pom</packaging>
-    <name>金融微服务中台</name>
+    <name>理财服务平台</name>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
@@ -130,15 +130,15 @@
     </dependencies>
 
     <modules>
-        <module>finance-common</module>
-        <module>finance-gateway</module>
-        <module>finance-system</module>
-        <module>finance-user</module>
-        <module>finance-account</module>
-        <module>finance-product</module>
-        <module>finance-trade</module>
-        <module>finance-message</module>
-        <module>finance-search</module>
+        <module>wealth-common</module>
+        <module>wealth-gateway</module>
+        <module>wealth-system</module>
+        <module>wealth-user</module>
+        <module>wealth-account</module>
+        <module>wealth-product</module>
+        <module>wealth-trade</module>
+        <module>wealth-message</module>
+        <module>wealth-search</module>
     </modules>
 
     <build>

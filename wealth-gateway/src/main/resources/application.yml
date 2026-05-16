@@ -1,0 +1,58 @@
+server:
+  port: 8080
+
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: wealth-system
+          uri: lb://wealth-system
+          predicates:
+            - Path=/system/**
+
+        - id: wealth-user
+          uri: lb://wealth-user
+          predicates:
+            - Path=/user/**
+
+        - id: wealth-product
+          uri: lb://wealth-product
+          predicates:
+            - Path=/product/**
+
+        - id: wealth-account
+          uri: lb://wealth-account
+          predicates:
+            - Path=/account/**
+
+        - id: wealth-trade
+          uri: lb://wealth-trade
+          predicates:
+            - Path=/trade/**
+
+        - id: wealth-message
+          uri: lb://wealth-message
+          predicates:
+            - Path=/message/**
+
+        - id: wealth-search
+          uri: lb://wealth-search
+          predicates:
+            - Path=/search/**
+
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowed-origin-patterns:
+              - "http://localhost:3000"
+              - "http://localhost:8080"
+              - "http://127.0.0.1:3000"
+            allowed-headers:
+              - "*"
+            allowed-methods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            allow-credentials: true

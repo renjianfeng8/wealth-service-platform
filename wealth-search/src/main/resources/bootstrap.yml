@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: wealth-search
+  cloud:
+    nacos:
+      discovery:
+        server-addr: localhost:8848
+      config:
+        server-addr: localhost:8848
+        file-extension: yaml
+        shared-configs:
+          - data-id: wealth-shared.yaml
+            refresh: true

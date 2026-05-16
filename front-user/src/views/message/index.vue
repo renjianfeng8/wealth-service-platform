@@ -74,17 +74,17 @@ import { ref, computed, onMounted } from 'vue'
 import { useUserStore } from '@/store/index'
 import { getMessagePage, readMessage } from '@/api/message'
 import { formatDateTime, formatRelativeTime, msgTypeText } from '@/utils/format'
-import type { FinMessage } from '@/types'
+import type { WeaMessage } from '@/types'
 
 const userStore = useUserStore()
 
-const messages = ref<FinMessage[]>([])
+const messages = ref<WeaMessage[]>([])
 const loading = ref(false)
 const total = ref(0)
 const pageNum = ref(1)
 const pageSize = ref(15)
 const detailVisible = ref(false)
-const detailItem = ref<FinMessage | null>(null)
+const detailItem = ref<WeaMessage | null>(null)
 
 const unreadCount = computed(() => messages.value.filter((m) => m.readFlag !== 1).length)
 
@@ -104,7 +104,7 @@ async function fetchMessages() {
     const params: any = { pageNum: pageNum.value, pageSize: pageSize.value }
     if (userStore.userId) params.userId = userStore.userId
     const res = await getMessagePage(params)
-    messages.value = (res.data?.records || []) as FinMessage[]
+    messages.value = (res.data?.records || []) as WeaMessage[]
     total.value = res.data?.total || 0
   } catch {
     messages.value = []
@@ -113,7 +113,7 @@ async function fetchMessages() {
   }
 }
 
-async function handleRead(item: FinMessage) {
+async function handleRead(item: WeaMessage) {
   detailItem.value = item
   detailVisible.value = true
   if (item.readFlag !== 1 && item.id) {
