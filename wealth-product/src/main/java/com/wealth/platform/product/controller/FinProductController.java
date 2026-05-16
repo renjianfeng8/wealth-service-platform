@@ -2,12 +2,14 @@ package com.wealth.platform.product.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.wealth.common.dto.ProductSyncDTO;
 import com.wealth.common.result.Result;
 import com.wealth.common.result.ResultCode;
 import com.wealth.common.utils.BeanConvertUtil;
 import com.wealth.platform.product.dto.FinProductDTO;
 import com.wealth.platform.product.entity.WeaProduct;
 import com.wealth.platform.product.service.FinProductService;
+import com.wealth.platform.product.service.ProductSyncService;
 import com.wealth.platform.product.vo.FinProductVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -24,6 +26,7 @@ import java.util.List;
 public class FinProductController {
 
     private final FinProductService finProductService;
+    private final ProductSyncService productSyncService;
 
     @Operation(summary = "鏍规嵁ID鏌ヨ浜у搧")
     @GetMapping("/{id}")
@@ -67,5 +70,11 @@ public class FinProductController {
     @DeleteMapping("/{id}")
     public Result<Boolean> delete(@PathVariable Long id) {
         return Result.success(finProductService.deleteProduct(id));
+    }
+
+    @Operation(summary = "手动同步产品数据到 ES")
+    @PostMapping("/syncES")
+    public Result<List<ProductSyncDTO>> syncToES() {
+        return Result.success(productSyncService.syncAllToES());
     }
 }
