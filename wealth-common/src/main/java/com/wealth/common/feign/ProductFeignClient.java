@@ -6,7 +6,7 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
-// 娉ㄦ剰锛欶eignClient 璺緞闇€鍖呭惈鏈嶅姟绔?context-path锛?product锛?
+// 注意：FeignClient 路径需包含服务端 context-path (/product)
 @FeignClient(name = "wealth-product", configuration = FeignConfig.class)
 public interface ProductFeignClient {
 

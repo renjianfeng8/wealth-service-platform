@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
-// 鏈嶅姟鍚嶅繀椤诲拰 Nacos 娉ㄥ唽鐨勪竴鑷?
-// 娉ㄦ剰锛欶eignClient 璺緞闇€鍖呭惈鏈嶅姟绔?context-path锛?account锛?
+// 服务名必须和 Nacos 注册的一致
+// 注意：FeignClient 路径需包含服务端 context-path (/account)
 @FeignClient(name = "wealth-account", configuration = FeignConfig.class)
 public interface AccountFeignClient {
 
