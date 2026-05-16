@@ -4,12 +4,15 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.wealth.common.dto.MessageFeignDTO;
+import com.wealth.common.feign.MessageFeignClient;
 import com.wealth.common.utils.BeanConvertUtil;
 import com.wealth.platform.trade.dto.FinTradeOrderDTO;
 import com.wealth.platform.trade.entity.WeaTradeOrder;
 import com.wealth.platform.trade.mapper.FinTradeOrderMapper;
 import com.wealth.platform.trade.service.FinTradeOrderService;
 import com.wealth.platform.trade.vo.FinTradeOrderVO;
+import io.seata.spring.annotation.GlobalTransactional;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +24,12 @@ import java.util.stream.Collectors;
 @Service
 public class FinTradeOrderServiceImpl extends ServiceImpl<FinTradeOrderMapper, WeaTradeOrder>
         implements FinTradeOrderService {
+
+    private final MessageFeignClient messageFeignClient;
+
+    public FinTradeOrderServiceImpl(MessageFeignClient messageFeignClient) {
+        this.messageFeignClient = messageFeignClient;
+    }
 
     @Override
     public FinTradeOrderVO getOrderById(Long id) {
@@ -44,19 +53,30 @@ public class FinTradeOrderServiceImpl extends ServiceImpl<FinTradeOrderMapper, W
     }
 
     @Override
+    @GlobalTransactional(name = "trade-create-order", rollbackFor = Exception.class)
     @Transactional(rollbackFor = Exception.class)
     public boolean createOrder(FinTradeOrderDTO dto) {
         WeaTradeOrder order = new WeaTradeOrder();
         BeanUtils.copyProperties(dto, order);
 
-        // 鑷姩鐢熸垚璁㈠崟鍙?
         String orderNo = "ORDER_" + UUID.randomUUID().toString().replace("-", "").substring(0, 12);
         order.setOrderNo(orderNo);
 
-        // 榛樿寰呭鎵樼姸鎬?
         order.setOrderStatus(1);
 
-        return save(order);
+        boolean saved = save(order);
+        if (!saved) {
+            throw new RuntimeException("order save failed");
+        }
+
+        MessageFeignDTO msg = new MessageFeignDTO();
+        msg.setUserId(dto.getUserId());
+        msg.setMsgType(2);
+        msg.setMsgTitle("trade order submitted");
+        msg.setMsgContent("order " + orderNo + " submitted, product: " + dto.getProductCode());
+        messageFeignClient.createMessage(msg);
+
+        return true;
     }
 
     @Override

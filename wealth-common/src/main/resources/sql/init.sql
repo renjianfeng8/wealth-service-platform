@@ -210,3 +210,21 @@ CREATE TABLE ums_role_resource_relation (
     del_flag    INT    DEFAULT '0'              COMMENT '逻辑删除 0未删除 1已删除',
     PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='后台角色资源关系表';
+
+-- ============================================================
+-- 13. Seata AT 模式 — undo_log 表（参与分布式事务的模块均需此表）
+-- ============================================================
+DROP TABLE IF EXISTS undo_log;
+CREATE TABLE undo_log (
+    id            BIGINT       NOT NULL AUTO_INCREMENT COMMENT '主键',
+    branch_id     BIGINT       NOT NULL                COMMENT '分支事务ID',
+    xid           VARCHAR(128) NOT NULL                COMMENT '全局事务ID',
+    context       VARCHAR(128) NOT NULL                COMMENT '上下文',
+    rollback_info LONGBLOB     NOT NULL                COMMENT '回滚日志',
+    log_status    INT          NOT NULL                COMMENT '状态 0正常 1已回滚',
+    log_created   DATETIME     NOT NULL                COMMENT '创建时间',
+    log_modified  DATETIME     NOT NULL                COMMENT '修改时间',
+    ext           VARCHAR(100) DEFAULT NULL            COMMENT '扩展',
+    PRIMARY KEY (id),
+    UNIQUE KEY ux_undo_log (xid, branch_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Seata AT 模式回滚日志表';

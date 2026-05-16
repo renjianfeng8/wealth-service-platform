@@ -18,4 +18,24 @@ springdoc:
   api-docs:
     enabled: true
 
+# Seata 分布式事务配置
+seata:
+  tx-service-group: wealth-message-group
+  service:
+    vgroup-mapping:
+      wealth-message-group: default
+  registry:
+    type: nacos
+    nacos:
+      server-addr: localhost:8848
+      application: seata-server
+      group: SEATA_GROUP
+
+spring:
+  cloud:
+    sentinel:
+      transport:
+        dashboard: localhost:8858
+      eager: true
+
 # 业务配置统一在 Nacos 配置中心管理
