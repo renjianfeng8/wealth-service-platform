@@ -1,12 +1,12 @@
 -- ============================================================
 -- 金融中台系统 数据库初始化脚本
--- 数据库: finance (utf8mb4)
+-- 数据库: wealth (utf8mb4)
 -- 说明: 执行本脚本会删除现有表并重新创建
 -- ============================================================
 
 -- 创建数据库
-CREATE DATABASE IF NOT EXISTS finance DEFAULT CHARSET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE finance;
+CREATE DATABASE IF NOT EXISTS wealth DEFAULT CHARSET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE wealth;
 
 -- ============================================================
 -- 1. 用户模块 (finance-user) — 系统用户表
