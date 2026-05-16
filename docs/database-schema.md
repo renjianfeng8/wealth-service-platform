@@ -1,49 +1,56 @@
-﻿# 鏁版嵁搴撹〃缁撴瀯涓庡瓧娈?
-> 鍐欏疄浣撶被鏃跺紩鐢?鈥?琛ㄧ粨鏋勩€佸瓧娈点€丅aseEntity 缁ф壙瑙勫垯銆?
+# 数据库表结构与字段
+> 写实体类时引用 — 表结构、字段、BaseEntity 继承规则。
+
 ---
 
-# 涓€銆佹暟鎹簱瑙勮寖锛堝繀椤讳弗鏍奸伒瀹堬級
+# 一、数据库规范（必须严格遵守）
 
-1. 鏁版嵁搴撳悕锛歵ealth
-2. 瀛楃闆嗭細utf8mb4
-3. 鎵€鏈夎〃蹇呴』鍖呭惈锛歩d銆乧reate_time銆乽pdate_time銆乨el_flag
-4. 閫昏緫鍒犻櫎锛歞el_flag 0=鏈垹闄?1=宸插垹闄?5. 涓婚敭缁熶竴浣跨敤 BIGINT 鑷
-6. 鏃堕棿瀛楁锛欴ATETIME
-7. 绂佹浣跨敤澶栭敭锛屼笟鍔″眰鍏宠仈
-8. 绱㈠紩蹇呴』鎸夊缓琛ㄨ鍙ュ垱寤?
-瀹屾暣寤鸿〃 SQL锛歚wealth-common/src/main/resources/sql/init.sql`
+1. 数据库名：wealth
+2. 字符集：utf8mb4
+3. 所有表必须包含：id、create_time、update_time、del_flag
+4. 逻辑删除：del_flag 0=未删除 1=已删除
+5. 主键统一使用 BIGINT 自增
+6. 时间字段：DATETIME
+7. 禁止使用外键，业务层关联
+8. 索引必须按建表语句创建
+完整建表 SQL：`wealth-common/src/main/resources/sql/init.sql`
 
-鏁版嵁搴撶壒娈婁緥澶栵細
-- `wea_user_favorite` 鏃?del_flag 鍜?update_time 鍒楋紙鍞竴鏃犻€昏緫鍒犻櫎鐨勮〃锛?- `ums_admin` 鏃?update_time 鍒?
-# 浜屻€佸綋鍓嶉」鐩墍鏈夎〃锛堝繀椤讳弗鏍煎搴旓級
+数据库特殊例外：
+- `wea_user_favorite` 无 del_flag 和 update_time 列（唯一无逻辑删除的表）
+- `ums_admin` 无 update_time 列
+# 二、当前项目所有表（必须严格对应）
 
-## 1. 鐢ㄦ埛妯″潡
-sys_user              # 绯荤粺鐢ㄦ埛琛?
-## 2. 浜у搧&琛屾儏妯″潡
-wea_product           # 浜у搧琛?wea_market_data       # 琛屾儏鏁版嵁琛?
-## 3. 鑷€夋ā鍧?wea_user_favorite     # 鐢ㄦ埛鑷€夎〃锛堟棤 del_flag 鍒楋紝鐗╃悊鍒犻櫎锛?
-## 4. 浜ゆ槗妯″潡
-wea_trade_order       # 浜ゆ槗濮旀墭鍗?
-## 5. 璧勮&娑堟伅
-wea_news              # 璐㈢粡璧勮
-wea_message           # 绔欏唴娑堟伅
+## 1. 用户模块
+sys_user              # 系统用户表
+## 2. 产品&行情模块
+wea_product           # 产品表
+wea_market_data       # 行情数据表
+## 3. 自选模块
+wea_user_favorite     # 用户自选表（无 del_flag 列，物理删除）
+## 4. 交易模块
+wea_trade_order       # 交易委托单
+## 5. 资讯&消息
+wea_news              # 财经资讯
+wea_message           # 站内消息
 
-## 6. 鍚庡彴鏉冮檺妯″潡
-ums_admin             # 绠＄悊鍛?ums_role              # 瑙掕壊
-ums_resource          # 璧勬簮
+## 6. 后台权限模块
+ums_admin             # 管理员
+ums_role              # 角色
+ums_resource          # 资源
 ums_admin_role_relation
 ums_role_resource_relation
 
-# 涓夈€丅aseEntity 缁ф壙瑙勮寖
+# 三、BaseEntity 继承规范
 
-## 瀹炰綋绫昏鑼?
-1. 鎵€鏈?Entity 蹇呴』缁ф壙 `com.wealth.common.entity.BaseEntity`锛堣嚜鍔ㄥ寘鍚?id/create_time/update_time/del_flag 鍥涗釜鍩虹瀛楁锛?2. `@TableName("琛ㄥ悕")` 鈥?蹇呴』鏄庣‘鎸囧畾琛ㄥ悕
-3. `@TableLogic` 宸插湪 BaseEntity.delFlag 涓婂畾涔夛紝瀛愮被鏃犻渶閲嶅澹版槑
-4. 鑻ヨ〃鏃?del_flag 鍒楋紝瀛愮被涓噸鍐?`@TableField(exist = false) private Integer delFlag;`
-5. 瀛楁鏄犲皠缁熶竴浣跨敤 `@TableField("鍒楀悕")`
-6. 鑷姩濉厖瀛楁锛歝reate_time 浣跨敤 `@TableField(fill = FieldFill.INSERT)`锛寀pdate_time 浣跨敤 `@TableField(fill = FieldFill.INSERT_UPDATE)`
+## 实体类规范
+1. 所有 Entity 必须继承 `com.wealth.common.entity.BaseEntity`（自动包含 id/create_time/update_time/del_flag 四个基础字段）
+2. `@TableName("表名")` — 必须明确指定表名
+3. `@TableLogic` 已在 BaseEntity.delFlag 上定义，子类无需重复声明
+4. 若表无 del_flag 列，子类中重写 `@TableField(exist = false) private Integer delFlag;`
+5. 字段映射统一使用 `@TableField("列名")`
+6. 自动填充字段：create_time 使用 `@TableField(fill = FieldFill.INSERT)`，update_time 使用 `@TableField(fill = FieldFill.INSERT_UPDATE)`
 
-### BaseEntity 瀹氫箟锛坽ealth-common/entity/BaseEntity.java锛?
+### BaseEntity 定义（wealth-common/entity/BaseEntity.java）
 ```java
 @Data
 public class BaseEntity {
@@ -62,18 +69,18 @@ public class BaseEntity {
 }
 ```
 
-### BaseEntity 缁ф壙瑙勫垯
+### BaseEntity 继承规则
 
-鎵€鏈?Entity 蹇呴』缁ф壙 BaseEntity锛屾瘡涓熀纭€瀛楁鎸変互涓嬭鍒欏鐞嗭細
+所有 Entity 必须继承 BaseEntity，每个基础字段按以下规则处理：
 
-| 瀛楁 | BaseEntity 瀹氫箟 | 鏃犲搴斿垪鐨勫瓙绫诲鐞嗘柟寮?|
+| 字段 | BaseEntity 定义 | 无对应列的子类处理方式 |
 |------|----------------|----------------------|
-| id | `@TableId(type = IdType.AUTO)` | 鏃犻渶澶勭悊锛岃嚜鍔ㄧ户鎵?|
-| create_time | `@TableField(fill = FieldFill.INSERT)` | 鑻ヨ〃涓棤璇ュ垪锛屽瓙绫讳腑閲嶅啓锛歚@TableField(exist = false) private LocalDateTime createTime;` |
-| update_time | `@TableField(fill = FieldFill.INSERT_UPDATE)` | 鑻ヨ〃涓棤璇ュ垪锛屽瓙绫讳腑閲嶅啓锛歚@TableField(exist = false) private LocalDateTime updateTime;` |
-| del_flag | `@TableLogic @TableField("del_flag")` | 鑻ヨ〃涓棤璇ュ垪锛屽瓙绫讳腑閲嶅啓锛歚@TableField(exist = false) private Integer delFlag;` |
+| id | `@TableId(type = IdType.AUTO)` | 无需处理，自动继承 |
+| create_time | `@TableField(fill = FieldFill.INSERT)` | 若表中无该列，子类中重写：`@TableField(exist = false) private LocalDateTime createTime;` |
+| update_time | `@TableField(fill = FieldFill.INSERT_UPDATE)` | 若表中无该列，子类中重写：`@TableField(exist = false) private LocalDateTime updateTime;` |
+| del_flag | `@TableLogic @TableField("del_flag")` | 若表中无该列，子类中重写：`@TableField(exist = false) private Integer delFlag;` |
 
-褰撳墠椤圭洰涓細
-- **WeaUserFavorite** 鈥?鍞竴瑕嗙洊 delFlag锛坄exist=false`锛夊拰 updateTime锛坄exist=false`锛夌殑瀹炰綋
-- **UmsAdmin** 鈥?瑕嗙洊 updateTime锛坄exist=false`锛宍ums_admin` 琛ㄦ棤璇ュ垪锛?
-> 娉ㄦ剰锛氬瓙绫婚噸鍐欏瓧娈垫椂椤诲悓鏃朵娇鐢?`@EqualsAndHashCode(callSuper = true)`锛堟垨鍦ㄧ被涓婂姞 `@Getter @Setter @EqualsAndHashCode(callSuper = true)` 鏇夸唬 `@Data`锛夛紝浠ョ‘淇?Lombok 姝ｇ‘澶勭悊鐖剁被瀛楁銆?
+当前项目中：
+- **WeaUserFavorite** — 唯一覆盖 delFlag（`exist=false`）和 updateTime（`exist=false`）的实体
+- **UmsAdmin** — 覆盖 updateTime（`exist=false`），`ums_admin` 表无该列
+> 注意：子类重写字段时须同时使用 `@EqualsAndHashCode(callSuper = true)`（或在类上加 `@Getter @Setter @EqualsAndHashCode(callSuper = true)` 替代 `@Data`），以确保 Lombok 正确处理父类字段。
