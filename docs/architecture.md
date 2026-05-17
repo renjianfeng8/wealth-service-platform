@@ -70,7 +70,7 @@ gateway（端口 8080）负责统一路由转发，所有前端请求统一经�
 ## Nacos 配置中心（Docker: nacos/nacos-server:v2.3.2）
 地址：`localhost:8848`（无需认证）
 ### wealth-shared.yaml（DEFAULT_GROUP，YAML 格式）
-所有模块共享的唯一 Nacos 配置。内容如下：
+所有模块共享的唯一 Nacos 配置。**完整内容及变更历史见 [Nacos 配置参考](nacos-config-reference.md)**。
 
 ```yaml
 jwt:
@@ -80,19 +80,25 @@ jwt:
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/wealth?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false
-    username: root
-    password: 123456
+    url: jdbc:mysql://localhost:3306/wealth?useUnicode=true
+
+management:
+  tracing:
+    sampling:
+      probability: 1.0
+  zipkin:
+    tracing:
+      endpoint: http://localhost:9411/api/v2/spans
 ```
 
 > **作用范围**：`wealth-shared.yaml` 通过各模块 bootstrap.yml 的 `shared-configs` 引用，被所有模块加载。
 > **覆盖优先级**：Nacos shared-configs 的优先级低于各模块本地 application.yml，但高于 bootstrap.yml 中的默认值。
-> 本配置提供 JWT 密钥/过期时间和 MySQL 数据源，各模块凭此连接数据库。
+> 本配置提供 JWT 密钥/过期时间、MySQL 数据源、链路追踪（Micrometer Tracing + Zipkin）配置，各模块凭此连接数据库并上报链路数据。
 ### 配置加载链路
 
 ```
 bootstrap.yml                     # 1. 启动时加载 —— 配置 Nacos 地址、应用名
-   └─→ Nacos (wealth-shared.yaml)  # 2. Nacos 远程配置 —— JWT + 数据源
+   └─→ Nacos (wealth-shared.yaml)  # 2. Nacos 远程配置 —— JWT + 数据源 + 链路追踪
        └─→ application.yml          # 3. 本地配置 —— 端口、context-path、mybatis-plus
 ```
 
@@ -265,6 +271,8 @@ spring:
 | springdoc.* | application.yml | 无 | 本地值 |
 | **jwt.secret** | 无 | **wealth-shared.yaml** | **从 Nacos** |
 | **jwt.expire** | 无 | **wealth-shared.yaml** | **从 Nacos** |
+| **management.tracing.sampling.probability** | 无 | **wealth-shared.yaml** | **从 Nacos** |
+| **management.zipkin.tracing.endpoint** | 无 | **wealth-shared.yaml** | **从 Nacos** |
 
 > 关键：`password: ${DB_PASSWORD}` 本身是无意义的环境变量引用（系统中未设置 `DB_PASSWORD`），数据库密码由 Nacos `wealth-shared.yaml` 中的 `spring.datasource.password: 123456` 提供。Nacos 配置优先级高于本地配置中的环境变量引用。
 
@@ -280,13 +288,15 @@ spring:
 | RabbitMQ | rabbitmq:3.10-management | 5672, 15672 |
 | ElasticSearch | elasticsearch:8.8.2 | 9200, 9300 |
 | Nginx | nginx:latest | 80 |
+| Zipkin | openzipkin/zipkin:latest | 9411 |
 
 ---
 
-## 已知 v1.4.0 配置限制（待修复，但不可直接改配置）
+## 已知 v1.4.0 配置限制（部分已修复，不可直接改配置文件）
 
 | 问题 | 影响 | 说明 |
 |------|------|------|
-| **RedisConfig 缺少 @ConditionalOnClass** | wealth-search 启动失败 | `RedisConfig.java` 和 `RedisUtil.java` 缺少 `@ConditionalOnClass` 条件注解，导致无 Redis 依赖的模块（wealth-search）启动时 `NoClassDefFoundError`。修复需改 Java 源码，不改配置。|
-| **AuthConstant.PERMIT_ALL_URLS 缺少 user 模块路径** | wealth-user 全部接口返回 401 | 当前只有 `/system/umsAdmin/login` 在放行列表中，`/user/user/login` 等路径被 LoginInterceptor 拦截。新增模块时须同时更新 `AuthConstant.java`。|
-| **PERMIT_ALL_URLS 未在 LoginInterceptor 注册模块中使用** | 该常量目前未被 LoginInterceptor 所在模块引用 | LoginInterceptor 位于 wealth-common，但 user 模块未注册此拦截器。当前 user 模块没有 WebMvcConfigurer。|
+| ~~**RedisConfig 缺少 @ConditionalOnClass**~~ | ✅ 已修复 | `RedisConfig.java` 和 `RedisUtil.java` 已添加 `@ConditionalOnClass` 注解，wealth-search 启动正常。|
+| ~~**AuthConstant.PERMIT_ALL_URLS 缺少 user 模块路径**~~ | ✅ 已修复 | 已包含 `/user/login`、`/user/register` 等路径。|
+| ~~**PERMIT_ALL_URLS 未在 LoginInterceptor 注册模块中使用**~~ | ✅ 已修复 | Gateway JwtAuthGlobalFilter 和 LoginInterceptor 均正确引用。|
+| ~~**Nacos zipkin.base-url 属性错误**~~ | ✅ 已修复 | 原使用 Spring Cloud Sleuth 旧属性 `zipkin.base-url`，已更正为 `management.zipkin.tracing.endpoint`。见 [Nacos 配置参考](nacos-config-reference.md)。|
