@@ -113,6 +113,15 @@ services:
     networks:
       - wealth-net
 
+  zipkin:
+    image: openzipkin/zipkin:latest
+    container_name: wealth-zipkin
+    ports:
+      - "9411:9411"
+    networks:
+      - wealth-net
+    restart: unless-stopped
+
   # ====================== Backend Services ======================
   gateway:
     image: *image-prefix/wealth-gateway:latest
