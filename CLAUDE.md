@@ -324,18 +324,6 @@ jwt:
 
 JwtUtil 在 @PostConstruct 中校验密钥字节≥32，启动时即失败而非运行时。
 
-## 已知高频问题（启动排查速查）
-
-1. **JWT 配置缺失** → 检查 Nacos `wealth-shared.yaml` 配置是否已发布，而非本地配置缺失。Nacos 地址 `localhost:8848`。密钥至少 32 字节。
-2. **SystemWebConfig 拦截器不生效** → addPathPatterns 保持了 context-path 剥离后的 `/**`。excludePathPatterns 也是剥离 context-path 后的路径。
-3. **LoginInterceptor 放行路径缺失** → `AuthConstant.PERMIT_ALL_URLS` 仅含 `/system/umsAdmin/login`，缺少 user 模块等路径。如需新增模块登录放行，须更新 `AuthConstant.java` 而非配置文件。`AntPathMatcher` 已用于路径匹配。
-4. **wealth-user 全部接口 401** → user 模块无 `LoginInterceptor` 注册（无 `WebMvcConfigurer`），但 `AuthConstant.PERMIT_ALL_URLS` 中也未包含 user 登录路径。v1.4.0 已知问题，需通过 `AuthConstant.java` 添加 `/user/user/login` 修复。
-5. **UmsResource.delFlag 查询条件被忽略** → 早期版本 delFlag 标注了 @TableField(exist = false)，现已统一继承 BaseEntity。
-6. **网关启动异常（端口冲突）** → 确认 8080 端口未被占用。父 pom 的 spring-boot-starter-web 与 Gateway WebFlux 冲突的已在依赖层面解决。
-7. **PermissionInterceptor 每次请求 4 次 DB 查询** → 当前无缓存，生产环境建议添加 Redis 缓存优化。
-8. **wealth-search 启动失败（NoClassDefFoundError: RedisSerializer）** → v1.4.0 `RedisConfig.java` / `RedisUtil.java` 缺少 `@ConditionalOnClass` 条件注解。search 模块无 Redis 依赖，需在 `RedisConfig` 和 `RedisUtil` 类级别添加 `@ConditionalOnClass(name = "org.springframework.data.redis.core.RedisTemplate")`。这是 Java 源码问题，非配置问题。
-9. **Zipkin 无 Span 数据** → 检查 Nacos `wealth-shared.yaml` 中配置的是 `management.zipkin.tracing.endpoint` 而非旧版 `zipkin.base-url`。Spring Boot 3.x + Micrometer Tracing 须使用新属性。见 [Bug-009](Bug.md#bug-001-es-搜索报-conversionexception日期格式不匹配)。
-
 ## 启动验证清单
 
 每次启动逐项确认：
