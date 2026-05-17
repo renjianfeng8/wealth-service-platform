@@ -274,3 +274,48 @@ public Result<IPage<WeaTradeOrderVO>> page(
 ### 涉及文件
 
 - `front-user/src/views/product/index.vue`
+
+---
+
+## Bug-009: Nacos Zipkin 配置属性不生效（zipkin.base-url 在 Spring Boot 3.x 中无效）
+**日期**: 2026-05-17
+**模块**: Nacos 配置中心 / wealth-common
+**影响**: 链路追踪 Span 无法上报到 Zipkin 服务端
+
+### 现象
+
+尽管 Micrometer Tracing + Brave + Zipkin 依赖已正确引入，Zipkin 容器运行正常（`http://localhost:9411` 可访问），但 `/api/v2/traces` 始终返回空数组 `[]`，表明各服务的 Span 未成功上报。
+
+### 原因
+
+`wealth-shared.yaml` 中错误地使用了 `zipkin.base-url` 配置：
+
+```yaml
+# ❌ 错误：该属性来自 Spring Cloud Sleuth（Spring Boot 2.x），
+#    在 Spring Boot 3.x + Micrometer Tracing 中不被识别
+zipkin:
+  base-url: http://localhost:9411/
+```
+
+Spring Boot 3.x 中 Brave Zipkin 的正确配置属性为 `management.zipkin.tracing.endpoint`：
+
+```yaml
+# ✅ 正确：Standard Spring Boot 3.x Micrometer Tracing 属性
+management:
+  zipkin:
+    tracing:
+      endpoint: http://localhost:9411/api/v2/spans
+```
+
+### 排查要点（添加到已有清单）
+- [ ] Zipkin 页面可打开但没有 Span 数据 → 确认 Nacos `wealth-shared.yaml` 中配置的是 `management.zipkin.tracing.endpoint` 而非 `zipkin.base-url`
+- [ ] 各服务启动日志中搜索 `BraveZipkinAutoConfiguration` 确认 Zipkin 发送器已自动装配
+- [ ] 检查各服务是否引入 `micrometer-tracing-bridge-brave` + `zipkin-sender-okhttp3` 依赖
+
+### 涉及文件
+
+- Nacos 配置中心 `wealth-shared.yaml`
+
+### 修复
+
+通过 Nacos HTTP API 将 `zipkin.base-url` 更正为 `management.zipkin.tracing.endpoint`。详见 [Nacos 配置参考](docs/nacos-config-reference.md)。

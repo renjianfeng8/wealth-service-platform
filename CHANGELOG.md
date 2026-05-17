@@ -5,6 +5,39 @@
 
 ---
 
+## v1.5.0 (2026-05-17)
+
+### 可观测性体系全面落地
+
+完成日志（logback）+ 链路追踪（Zipkin）+ 监控指标（Prometheus+Grafana）三大可观测性支柱：
+
+#### 新增：链路追踪（Micrometer Tracing + Brave + Zipkin）
+
+- 集成 `micrometer-tracing-bridge-brave` + `zipkin-sender-okhttp3`，所有 8 个微服务自动拦截跨服务调用
+- Gateway 及通过 wealth-common 引入的业务模块均携带追踪依赖
+- Zipkin 容器 `openzipkin/zipkin:latest`（端口 9411）接收全链路 Span 数据
+- **配置注意**：Spring Boot 3.x 须使用 `management.zipkin.tracing.endpoint` 而非旧版 `zipkin.base-url`
+
+#### 新增：监控告警（Prometheus + Grafana）
+
+- 添加 `micrometer-registry-prometheus` 依赖，所有服务暴露 `/actuator/prometheus` 端点
+- Nacos `wealth-shared.yaml` 配置 `management.endpoints.web.exposure.include=health,info,prometheus`
+- `prometheus.yml` 配置 8 个服务的抓取规则（含各模块 context-path）
+- docker-compose 新增 Prometheus（端口 9090）和 Grafana（端口 3001，admin/admin）
+
+#### 审计修复（Nacos 配置属性更正）
+
+- 更正 `wealth-shared.yaml` 中无效的 `zipkin.base-url` 为 `management.zipkin.tracing.endpoint`
+
+#### 文档更新
+
+- **Startup.md**：中间件新增 Zipkin/Prometheus/Grafana/Sentinel/Seata/Nginx，Nacos 配置示例同步，端口表扩充，FAQ 补充链路追踪与监控排查项，依赖图增加可观测性层
+- **docs/nacos-config-reference.md**：新增 Nacos 配置中心参考文档
+- **docs/go-live-audit-report.md**：修复率更新为 24/30，监控告警标记已修复
+- **CHANGELOG.md**：本次更新日志
+
+---
+
 ## v1.4.1 (2026-05-12)
 
 ### 搜索服务增强

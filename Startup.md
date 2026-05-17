@@ -39,44 +39,70 @@
 ---
 
 ## 三、中间件启动（Docker）
-### 3.1 启动容器
+
+推荐使用 Docker Compose 一键启动所有中间件（项目根目录下已提供 `docker-compose.yml`）：
 
 ```bash
-# Nacos（注册中心 + 配置中心）
-docker run -d --name nacos -p 8848:8848 -p 9848:9848 -e MODE=standalone nacos/nacos-server:v2.3.2
+# 一键启动全部 11 个中间件容器
+docker compose up -d nacos mysql redis rabbitmq es nginx zipkin prometheus grafana sentinel-dashboard seata-server
 
-# MySQL
-docker run -d --name mysql -p 3306:3306 -e MYSQL_ROOT_PASSWORD=123456 mysql:8.0.37
-
-# Redis
-docker run -d --name redis -p 6379:6379 redis:5.0.14.1
-
-# RabbitMQ（含管理控制台）
-docker run -d --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:3.10.20-management
-
-# Elasticsearch
-docker run -d --name es -p 9200:9200 -p 9300:9300 -e "discovery.type=single-node" elasticsearch:8.8.2
-```
-
-验证运行状态：
-
-```bash
+# 验证运行状态
 docker ps --format "table {{.Names}}\t{{.Status}}"
 ```
 
+### 3.1 各中间件容器详情
+
+当前项目依赖以下 11 个基础设施中间件：
+
+| 服务 | 镜像 | 端口 | 说明 |
+|------|------|:----:|------|
+| Nacos | nacos/nacos-server:v2.3.2 | 8848 | 注册中心 + 配置中心 |
+| MySQL | mysql:8.0.37 | 3306 | 数据库 |
+| Redis | redis:5.0.14.1 | 6379 | 缓存 |
+| RabbitMQ | rabbitmq:3.10-management | 5672 / 15672 | 消息队列 / 管理控制台 |
+| Elasticsearch | elasticsearch:8.8.2 | 9200 / 9300 | 搜索引擎 |
+| Sentinel | bladex/sentinel-dashboard:latest | 8858 | 熔断限流控制台 |
+| Seata | seataio/seata-server:2.0.0 | 7091 / 8091 | 分布式事务 |
+| Nginx | nginx:latest | 80 | 反向代理 |
+| Zipkin | openzipkin/zipkin:latest | 9411 | 链路追踪 |
+| Prometheus | prom/prometheus:latest | 9090 | 监控指标采集 |
+| Grafana | grafana/grafana:latest | 3001 | 监控可视化仪表盘 |
+
+> 若需单独启动某个容器，Docker run 命令示例可参考项目 `docker-compose.yml` 中的配置。
+
 ### 3.2 Nacos 配置中心设置
 
-访问 Nacos 控制台 [http://localhost:8848/nacos](http://localhost:8848/nacos)（默认账号：nacos / nacos），创建共享配置：
+访问 Nacos 控制台 [http://localhost:8848/nacos](http://localhost:8848/nacos)（无需认证），创建共享配置：
 - **Data ID**：`wealth-shared.yaml`
 - **配置格式**：YAML
 - **内容**：
+
 ```yaml
 jwt:
   secret: wealth-micro-service-20260501-very-safe-secret-key-123456789
   expire: 604800000
+
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/wealth?useUnicode=true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  tracing:
+    sampling:
+      probability: 1.0
+  zipkin:
+    tracing:
+      endpoint: http://localhost:9411/api/v2/spans
 ```
 
-> JWT 密钥必须 ≥ 32 字节（当前密钥 58 字节），否则服务启动时会直接报错。
+> **配置说明**：`jwt.secret` 密钥必须 ≥ 32 字节（当前密钥 56 字节），否则服务启动时 JwtUtil 会直接报错。
+> **链路追踪**：`management.zipkin.tracing.endpoint` 须指向 Zipkin 容器地址（Docker 内网用 `http://zipkin:9411`，宿主机用 `http://localhost:9411`）。
+> **监控**：`management.endpoints.web.exposure.include` 暴露了 health、info、prometheus 端点，供 Prometheus 抓取指标。
 
 ---
 
@@ -334,11 +360,17 @@ node e2e-test.mjs
 | 模块 | 端口 | context-path | Nacos 服务名 | 说明 |
 |------|:----:|:-----------:|-------------|------|
 | **中间件** | | | | |
-| Nacos | 8848 | - | - | 注册中心/配置中心 |
+| Nacos | 8848 / 9848 | - | - | 注册中心/配置中心 |
 | MySQL | 3306 | - | - | 数据库 |
 | Redis | 6379 | - | - | 缓存 |
 | RabbitMQ | 5672 / 15672 | - | - | 消息队列 / 管理控制台 |
 | Elasticsearch | 9200 / 9300 | - | - | 搜索引擎 |
+| Sentinel | 8858 | - | - | 熔断限流控制台 |
+| Seata | 7091 / 8091 | - | - | 分布式事务协调器 |
+| Nginx | 80 | - | - | 反向代理 |
+| Zipkin | 9411 | - | - | 链路追踪 UI |
+| Prometheus | 9090 | - | - | 监控指标存储 |
+| Grafana | 3001 | - | - | 监控仪表盘 |
 | **后端服务** | | | | |
 | wealth-gateway | **8080** | - | wealth-gateway | 网关（统一入口） |
 | wealth-system | **8082** | /system | wealth-system | 后台权限管理 |
@@ -379,6 +411,8 @@ taskkill /PID <PID> /F
 2. **JWT 配置缺失** → 确认 `wealth-shared.yaml` 已发布到 Nacos
 3. **数据库连接失败** → 确认 `DB_PASSWORD` 环境变量已设置且密码正确
 4. **数据库表不存在** → 确认已执行 `init.sql`
+5. **链路追踪不生效** → 检查 Zipkin 容器 `docker ps | findstr zipkin`，确认 Nacos 配置中 `management.zipkin.tracing.endpoint` 指向正确的 Zipkin 地址
+6. **监控指标抓取不到** → 访问 `http://localhost:{port}/actuator/prometheus` 验证端点是否返回数据，检查 Prometheus 容器 `docker ps | findstr prometheus`
 
 ### 前端启动失败
 
@@ -403,23 +437,30 @@ taskkill /PID <PID> /F
 ## 十四、启动顺序依赖图
 
 ```
-Docker 容器（Nacos / MySQL / Redis / RabbitMQ / ES）         
-         ↓         
-wealth-common（Maven 依赖，必须先 mvn install）         
-         ↓         
-wealth-gateway（最先启动，依赖 Nacos）         
-         ↓         
-wealth-system（第二启动，提供登录鉴权 + 权限拦截）         
-         ↓         
+基础设施中间件容器（Docker Compose 一键启动）
+  nacos / mysql / redis / rabbitmq / es / nginx
+  zipkin / prometheus / grafana / sentinel / seata
+         ↓
+wealth-common（Maven 依赖，必须先 mvn install）
+         ↓
+wealth-gateway（最先启动，依赖 Nacos）
+         ↓
+wealth-system（第二启动，提供登录鉴权 + 权限拦截）
+         ↓
 wealth-user ─ wealth-product ─ wealth-account
 wealth-trade ─ wealth-message ─ wealth-search
-（无先后依赖，可并行启动）         
-         ↓         
-         ├──────────────────────┤         
-         ↓                      ↓         
+（无先后依赖，可并行启动）
+         ↓
+         ├──────────────────────┤
+         ↓                      ↓
 管理员后台 front/             用户前台 front-user/
   (port 3000)                   (port 3001)
   npm run dev                   npm run dev
+
+可观测性：
+  Zipkin(9411)  ← 各服务上报链路 Span
+  Prometheus(9090)  ← 各服务 /actuator/prometheus 抓取指标
+  Grafana(3001)  ← Prometheus 数据源可视化
 ```
 
 > **注意**：每次修改 `wealth-common` 中的代码后，必须重新执行 `mvn clean install -pl wealth-common -DskipTests`，再重新打包依赖它的业务模块。
