@@ -4,7 +4,9 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.wealth.common.dto.MessageFeignDTO;
+import com.wealth.common.exception.ServiceException;
 import com.wealth.common.feign.MessageFeignClient;
+import com.wealth.common.utils.RedisUtil;
 import com.wealth.platform.trade.dto.FinTradeOrderDTO;
 import com.wealth.platform.trade.entity.WeaTradeOrder;
 import com.wealth.platform.trade.mapper.FinTradeOrderMapper;
@@ -35,6 +37,9 @@ class FinTradeOrderServiceImplTest {
     @Mock
     private MessageFeignClient messageFeignClient;
 
+    @Mock
+    private RedisUtil redisUtil;
+
     @Captor
     private ArgumentCaptor<WeaTradeOrder> orderCaptor;
 
@@ -44,7 +49,7 @@ class FinTradeOrderServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        tradeOrderService = new FinTradeOrderServiceImpl(messageFeignClient);
+        tradeOrderService = new FinTradeOrderServiceImpl(messageFeignClient, redisUtil);
         ReflectionTestUtils.setField(tradeOrderService, "baseMapper", tradeOrderMapper);
 
         mockOrder = new WeaTradeOrder();
@@ -101,6 +106,7 @@ class FinTradeOrderServiceImplTest {
         dto.setTradeType(1);
         dto.setEntrustPrice(new BigDecimal("100.00"));
         dto.setEntrustNum(10);
+        dto.setTradeType(1);
 
         doReturn(0).when(tradeOrderMapper).insert(any(WeaTradeOrder.class));
 
@@ -200,13 +206,11 @@ class FinTradeOrderServiceImplTest {
     }
 
     @Test
-    @DisplayName("更新订单-不存在返回false")
+    @DisplayName("更新订单-不存在抛异常")
     void updateOrder_NotFound() {
         when(tradeOrderMapper.selectById(99L)).thenReturn(null);
 
-        boolean result = tradeOrderService.updateOrder(99L, new FinTradeOrderDTO());
-
-        assertFalse(result);
+        assertThrows(ServiceException.class, () -> tradeOrderService.updateOrder(99L, new FinTradeOrderDTO()));
         verify(tradeOrderMapper, never()).updateById(isA(WeaTradeOrder.class));
     }
 

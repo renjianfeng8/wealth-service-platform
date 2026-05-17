@@ -29,11 +29,42 @@
 
 - 更正 `wealth-shared.yaml` 中无效的 `zipkin.base-url` 为 `management.zipkin.tracing.endpoint`
 
+#### 新增：HTTPS 证书配置（Nginx SSL）
+
+- 生成自签名证书（RSA 2048，CN=localhost，有效期 1 年），覆盖开发/演示环境
+- `nginx.conf` 新增 `listen 443 ssl` 服务块，配置 TLSv1.2/1.3、安全加密套件、SSL 会话缓存
+- HTTP 80 端口全部 301 重定向至 HTTPS，杜绝明文传输
+- 添加 `resolver 127.0.0.11` + 变量化 `proxy_pass`，解决上游服务未就绪时 nginx 启动失败问题
+- 新增 `ssl/gen-cert.ps1` 证书重新生成脚本
+- 同步更新 `.gitignore` 排除证书目录
+
+#### 基础设施修复
+
+- **docker-compose YAML 语法修复**：`*image-prefix` 锚点无法在字符串中拼接，改为内联完整镜像名（`ghcr.io/renjianfeng8/wealth-service-platform/wealth-{module}:latest`）
+- **nginx 上游 DNS 启动时解析修复**：因 `frontend` 镜像需 ghcr.io 认证无法拉取，nginx 启动时因 `host not found in upstream "frontend"` 崩溃。通过 `resolver` + 变量 `proxy_pass` 改为运行时动态解析，服务未就绪时返回 502 而非 crash
+
+#### 新增：MySQL 数据库备份策略
+
+- `mysql/conf.d/binlog.cnf`：启用 binlog（ROW 格式，保留 7 天），支持 PITR 时间点恢复
+- `scripts/backup-mysql.sh`：手动备份脚本（`docker exec` 方式，Linux/macOS）
+- `scripts/backup-mysql.ps1`：手动备份脚本（Windows PowerShell）
+- `scripts/restore-mysql.sh`：恢复脚本（带确认提示，支持 .gz 自动解压）
+- docker-compose 新增 `mysql-backup` 服务：基于 alpine + mysql-client，每日 02:00 自动全量备份，保留 7 天
+- `.gitignore` 添加 `backups/*.sql.gz` 排除备份文件
+
+#### 新增：交易委托幂等性
+
+- `constant/OrderStatusEnum.java`：订单状态枚举（已提交/已成交/已撤销）+ 合法转换表（已提交→已成交，已提交→已撤销）
+- `FinTradeOrderDTO` 新增 `idempotentKey` 字段：客户端生成 UUID 传入，后端 Redis 校验（TTL 24h），重复提交返回 400
+- `FinTradeOrderServiceImpl` 注入 `RedisUtil`，createOrder 前执行幂等性校验
+- `FinTradeOrderStatusDTO` + `PUT /{id}/status` 端点：订单状态变更走状态机校验，非法转换返回 400
+- 不传幂等键时向下兼容旧客户端，仅跳过校验
+
 #### 文档更新
 
 - **Startup.md**：中间件新增 Zipkin/Prometheus/Grafana/Sentinel/Seata/Nginx，Nacos 配置示例同步，端口表扩充，FAQ 补充链路追踪与监控排查项，依赖图增加可观测性层
 - **docs/nacos-config-reference.md**：新增 Nacos 配置中心参考文档
-- **docs/go-live-audit-report.md**：修复率更新为 24/30，监控告警标记已修复
+- **docs/go-live-audit-report.md**：修复率更新为 25/30，HTTPS 标记已修复
 - **CHANGELOG.md**：本次更新日志
 
 ---

@@ -1,0 +1,8 @@
+# MySQL binlog 配置
+# 启用二进制日志，用于 PITR（时间点恢复）和主从复制
+[mysqld]
+server-id = 1
+log-bin = /var/lib/mysql/mysql-bin
+binlog-format = ROW
+binlog_expire_logs_seconds = 604800
+max-binlog-size = 104857600

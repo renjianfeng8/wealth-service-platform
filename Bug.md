@@ -319,3 +319,122 @@ management:
 ### 修复
 
 通过 Nacos HTTP API 将 `zipkin.base-url` 更正为 `management.zipkin.tracing.endpoint`。详见 [Nacos 配置参考](docs/nacos-config-reference.md)。
+
+---
+
+## Bug-010: docker-compose YAML 锚点语法错误导致服务无法启动
+**日期**: 2026-05-17
+**模块**: 基础设施 / docker-compose.yml
+**影响**: `docker-compose up -d` 执行失败，所有容器无法编排
+
+### 现象
+
+执行 `docker-compose up -d nginx` 报错：
+```
+yaml: line 168, column 13: unknown anchor 'image-prefix/wealth-gateway' referenced
+```
+
+### 原因
+
+`docker-compose.yml` 使用了 YAML 锚点语法：
+```yaml
+x-image-prefix: &image-prefix ghcr.io/renjianfeng8/wealth-service-platform
+
+gateway:
+  image: *image-prefix/wealth-gateway:latest   # ❌ 语法错误
+```
+
+YAML 锚点 `*image-prefix` 只能作为完整的标量值引用，不能嵌入字符串中进行拼接。`*image-prefix/wealth-gateway:latest` 会被解析为锚点名 `image-prefix/wealth-gateway`（包含路径），而非预期的锚点 `image-prefix` 后拼接 `/wealth-gateway:latest`。
+
+### 修复
+
+移除锚点定义，改为内联完整镜像名：
+```yaml
+gateway:
+  image: ghcr.io/renjianfeng8/wealth-service-platform/wealth-gateway:latest
+```
+
+### 涉及文件
+
+- `docker-compose.yml`（共 10 处 `*image-prefix/wealth-*` 替换）
+
+---
+
+## Bug-011: Nginx 启动时上游 DNS 解析失败导致 crash
+**日期**: 2026-05-17
+**模块**: 基础设施 / nginx.conf
+**影响**: nginx 容器反复 crash，无法提供反向代理服务
+
+### 现象
+
+启动 nginx 容器后立即退出，日志持续报错：
+```
+[emerg] host not found in upstream "frontend" in /etc/nginx/conf.d/default.conf:23
+nginx: [emerg] host not found in upstream "frontend"
+```
+
+### 原因
+
+Nginx 在启动时会解析 `proxy_pass` 指向的上游域名。当上游服务（如 `frontend`）因镜像拉取鉴权或其他原因无法启动时，对应容器不存在于 Docker 网络中，域名无法解析，nginx 直接退出（emerg 级别错误），而非降级为运行时 502。
+
+此外，原 `docker-compose.yml` 中 nginx 通过 `depends_on: frontend` 声明依赖，但 `frontend` 依赖 ghcr.io 镜像需要认证，导致 `frontend` 容器无法运行，nginx 也因此受阻。
+
+### 修复
+
+1. 在 nginx server 块中添加 Docker DNS 解析器：
+   ```nginx
+   resolver 127.0.0.11 valid=10s ipv6=off;
+   ```
+2. 将静态 `proxy_pass` 改为变量化动态解析：
+   ```nginx
+   set $frontend_upstream http://frontend:80;
+   set $gateway_upstream http://gateway:8080;
+   proxy_pass $frontend_upstream;  # 运行时而非启动时解析
+   ```
+3. 移除 nginx 对 frontend 的 `depends_on` 依赖，允许 nginx 独立启动
+
+这样当上游服务未就绪时，nginx 正常启动并返回 502，而非直接崩溃。
+
+### 涉及文件
+
+- `nginx.conf`（resolver + set + 变量 proxy_pass）
+- `docker-compose.yml`（移除 depends_on: frontend）
+
+---
+
+## Bug-012: Alpine MariaDB 客户端连接 MySQL 8 失败（SSL + 认证插件兼容性）
+**日期**: 2026-05-17
+**模块**: 基础设施 / docker-compose
+**影响**: `mysql-backup` 备份容器 mysqldump 命令连接 MySQL 失败，备份为空文件
+
+### 现象
+
+备份容器运行 `mysqldump` 连接 MySQL 8.0 时报错：
+```
+# 第一阶段：SSL 自签名证书错误
+mysqldump: Got error: 2026: "TLS/SSL error: self-signed certificate in certificate chain"
+
+# 第二阶段（修复 SSL 后）：caching_sha2_password 认证插件缺失
+mysqldump: Got error: 1045: "Plugin caching_sha2_password could not be loaded:
+  Error loading shared library /usr/lib/mariadb/plugin/caching_sha2_password.so"
+```
+
+备份文件仅 20 字节（gzip 空流），无明显报错（管道中 `$?` 只捕获了 `gzip` 的退出码）。
+
+### 原因
+
+1. **客户端差异**：Alpine `mysql-client` 包实际上是 MariaDB 客户端，与 Oracle MySQL 8 协议存在差异
+2. **SSL 默认启用**：MariaDB 客户端默认使用 SSL 连接，MySQL 8 容器使用自签名证书会导致握手失败
+3. **认证插件不兼容**：MySQL 8 默认使用 `caching_sha2_password`，而 Alpine MariaDB 客户端缺少该插件动态库
+4. **管道错误码丢失**：`mysqldump ... | gzip > file` 中 `$?` 获取的是 `gzip` 而非 `mysqldump` 的退出码，失败被静默吞掉
+
+### 修复
+
+1. `mysqldump` 添加 `--ssl=0` 参数（MariaDB 语法），禁用 SSL 连接（Docker 内网安全）→ 解决 TLS 错误
+2. 备份脚本改用临时文件 + 显式退出码检查取代管道：`mysqldump > file && gzip file` → 解决错误码被吞
+3. 采用 Alpine 镜像 + `mysql-client` + 上述参数的方案最为简洁可靠。MySQL 官方镜像 `mysql:8.0.37` 不自带 `crond`，不适合用作调度容器基础镜像
+
+### 涉及文件
+
+- `scripts/backup-scheduler.sh`（`--ssl=0` + 分步写入替代管道）
+- `docker-compose.yml`（mysql-backup 服务使用 alpine 镜像）

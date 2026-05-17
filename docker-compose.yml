@@ -1,7 +1,5 @@
 name: wealth-platform
 
-x-image-prefix: &image-prefix ghcr.io/renjianfeng8/wealth-service-platform
-
 services:
   # ====================== Infrastructure ======================
   nacos:
@@ -29,15 +27,21 @@ services:
     image: mysql:8.0.37
     container_name: wealth-mysql
     ports:
-      - "3306:3306"
+      - "3307:3306"
+    command:
+      - "--binlog-expire-logs-seconds=604800"
+      - "--max-binlog-size=104857600"
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: wealth
       MYSQL_CHARACTER_SET_SERVER: utf8mb4
       MYSQL_COLLATION_SERVER: utf8mb4_unicode_ci
+      MYSQL_ROOT_HOST: "%"
+      LANG: C.UTF-8
     volumes:
       - mysql-data:/var/lib/mysql
       - ./wealth-common/src/main/resources/sql/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./mysql/conf.d/binlog.cnf:/etc/mysql/conf.d/binlog.cnf:ro
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
       interval: 10s
@@ -105,10 +109,10 @@ services:
     container_name: wealth-nginx
     ports:
       - "80:80"
+      - "443:443"
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
-    depends_on:
-      - frontend
+      - ./ssl:/etc/nginx/ssl:ro
     restart: unless-stopped
     networks:
       - wealth-net
@@ -163,7 +167,7 @@ services:
 
   # ====================== Backend Services ======================
   gateway:
-    image: *image-prefix/wealth-gateway:latest
+    image: ghcr.io/renjianfeng8/wealth-service-platform/wealth-gateway:latest
     container_name: wealth-gateway
     ports:
       - "8080:8080"
@@ -181,7 +185,7 @@ services:
       - wealth-net
 
   system:
-    image: *image-prefix/wealth-system:latest
+    image: ghcr.io/renjianfeng8/wealth-service-platform/wealth-system:latest
     container_name: wealth-system
     ports:
       - "8082:8082"
@@ -200,7 +204,7 @@ services:
       - wealth-net
 
   user:
-    image: *image-prefix/wealth-user:latest
+    image: ghcr.io/renjianfeng8/wealth-service-platform/wealth-user:latest
     container_name: wealth-user
     ports:
       - "8083:8083"
@@ -219,7 +223,7 @@ services:
       - wealth-net
 
   product:
-    image: *image-prefix/wealth-product:latest
+    image: ghcr.io/renjianfeng8/wealth-service-platform/wealth-product:latest
     container_name: wealth-product
     ports:
       - "8084:8084"
@@ -238,7 +242,7 @@ services:
       - wealth-net
 
   account:
-    image: *image-prefix/wealth-account:latest
+    image: ghcr.io/renjianfeng8/wealth-service-platform/wealth-account:latest
     container_name: wealth-account
     ports:
       - "8086:8086"
@@ -257,7 +261,7 @@ services:
       - wealth-net
 
   trade:
-    image: *image-prefix/wealth-trade:latest
+    image: ghcr.io/renjianfeng8/wealth-service-platform/wealth-trade:latest
     container_name: wealth-trade
     ports:
       - "8085:8085"
@@ -276,7 +280,7 @@ services:
       - wealth-net
 
   message:
-    image: *image-prefix/wealth-message:latest
+    image: ghcr.io/renjianfeng8/wealth-service-platform/wealth-message:latest
     container_name: wealth-message
     ports:
       - "8087:8087"
@@ -295,7 +299,7 @@ services:
       - wealth-net
 
   search:
-    image: *image-prefix/wealth-search:latest
+    image: ghcr.io/renjianfeng8/wealth-service-platform/wealth-search:latest
     container_name: wealth-search
     ports:
       - "8089:8089"
@@ -313,10 +317,31 @@ services:
       - wealth-net
 
   frontend:
-    image: *image-prefix/wealth-front:latest
+    image: ghcr.io/renjianfeng8/wealth-service-platform/wealth-front:latest
     container_name: wealth-front
     ports:
       - "3000:80"
+    restart: unless-stopped
+    networks:
+      - wealth-net
+
+  # MySQL 定时备份服务
+  mysql-backup:
+    image: alpine:latest
+    container_name: wealth-mysql-backup
+    entrypoint: |
+      sh -c '
+        apk add --no-cache mysql-client mariadb-connector-c >/dev/null 2>&1 &&
+        exec /scripts/backup-scheduler.sh
+      '
+    volumes:
+      - ./scripts:/scripts:ro
+      - ./backups:/backups
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+    depends_on:
+      mysql:
+        condition: service_healthy
     restart: unless-stopped
     networks:
       - wealth-net
