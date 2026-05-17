@@ -9,7 +9,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 # 理财服务平台开发规范（自动遵守）
 
-技术栈：SpringBoot 3.3.5 + SpringCloud 2023.0.3 + Spring Cloud Alibaba 2023.0.1.2 + MyBatis-Plus 3.5.7 + MySQL 8 + Redis 5 + RabbitMQ 3.10 + ES 8.8.2 + JWT (jjwt 0.11.5) + Knife4j 4.4.0 + Swagger + Nginx
+技术栈：SpringBoot 3.3.5 + SpringCloud 2023.0.3 + Spring Cloud Alibaba 2023.0.1.2 + MyBatis-Plus 3.5.7 + MySQL 8 + Redis 5 + RabbitMQ 3.10 + ES 8.8.2 + JWT (jjwt 0.11.5) + Knife4j 4.4.0 + Swagger + Nginx + Micrometer Tracing + Zipkin + Prometheus + Grafana + Sentinel + Seata
 
 前端：Vue 3.5.13 + Vite 6.3.1 + Element Plus 2.9.7 + Pinia 2.3.1 + TypeScript 5.7
 
@@ -23,6 +23,11 @@ MySQL: 8.0.37
 Redis: 5.0.14.1
 RabbitMQ: 3.10.20
 ElasticSearch: 8.8.2
+Sentinel Dashboard: 1.8.6 (bladex/sentinel-dashboard:latest)
+Seata: 2.0.0 (seataio/seata-server:2.0.0)
+Zipkin: openzipkin/zipkin:latest
+Prometheus: prom/prometheus:latest
+Grafana: grafana/grafana:latest
 Docker: 29.4.0
 docker-compose: v5.11.0
 
@@ -193,6 +198,11 @@ mvn test -pl wealth-common -DskipTests=false
 | SystemWebConfig | wealth-system/config/SystemWebConfig.java | 注册 PermissionInterceptor（排除 /umsAdmin/login、/doc.html、/webjars/**、/swagger-resources/**、/v3/api-docs/**） |
 | RedisUtil | wealth-common/utils/RedisUtil.java | Redis 操作工具类 |
 | AuthConstant | wealth-common/constants/AuthConstant.java | 权限相关常量 |
+| JwtAuthGlobalFilter | wealth-gateway/filter/JwtAuthGlobalFilter.java | Gateway 全局 JWT 鉴权过滤器（HMAC-SHA256，白名单放行） |
+| SentinelConfig | wealth-trade/config/SentinelConfig.java | 交易模块 Sentinel 限流规则（POST 下单接口 QPS=100） |
+| SentinelGatewayConfig | wealth-gateway/config/SentinelGatewayConfig.java | 网关 Sentinel 路由限流（7 条路由规则，50-100 QPS） |
+| RabbitMqConfig | wealth-common/config/RabbitMqConfig.java | 双 DLX/DLQ 队列、Publisher Confirm、3 次重试 |
+| FeignConfig | wealth-common/config/FeignConfig.java | Feign 全局超时（connect=5s, read=10s）+ 3 次重试 |
 
 # 十一、常见代码模式
 
@@ -324,17 +334,19 @@ JwtUtil 在 @PostConstruct 中校验密钥字节≥32，启动时即失败而非
 6. **网关启动异常（端口冲突）** → 确认 8080 端口未被占用。父 pom 的 spring-boot-starter-web 与 Gateway WebFlux 冲突的已在依赖层面解决。
 7. **PermissionInterceptor 每次请求 4 次 DB 查询** → 当前无缓存，生产环境建议添加 Redis 缓存优化。
 8. **wealth-search 启动失败（NoClassDefFoundError: RedisSerializer）** → v1.4.0 `RedisConfig.java` / `RedisUtil.java` 缺少 `@ConditionalOnClass` 条件注解。search 模块无 Redis 依赖，需在 `RedisConfig` 和 `RedisUtil` 类级别添加 `@ConditionalOnClass(name = "org.springframework.data.redis.core.RedisTemplate")`。这是 Java 源码问题，非配置问题。
+9. **Zipkin 无 Span 数据** → 检查 Nacos `wealth-shared.yaml` 中配置的是 `management.zipkin.tracing.endpoint` 而非旧版 `zipkin.base-url`。Spring Boot 3.x + Micrometer Tracing 须使用新属性。见 [Bug-009](Bug.md#bug-001-es-搜索报-conversionexception日期格式不匹配)。
 
 ## 启动验证清单
 
 每次启动逐项确认：
 
-- [ ] Docker 容器全部运行：`docker ps`（nacos、redis、rabbitmq、es、nginx）
+- [ ] Docker 容器全部运行：`docker ps`（nacos、mysql、redis、rabbitmq、es、nginx、zipkin、prometheus、grafana、sentinel、seata）
 - [ ] MySQL 运行且 wealth 库存在
-- [ ] Nacos 配置 `wealth-shared.yaml` 已发布且内容完整（JWT + 数据源）
+- [ ] Nacos 配置 `wealth-shared.yaml` 已发布且内容完整（JWT + 数据源 + management.tracing + management.endpoints.prometheus）
 - [ ] 全量编译：`mvn clean install -DskipTests`（如 common 有变更，先单独 `-pl wealth-common`）
 - [ ] 按顺序启动：gateway → system → user → product → account → trade → message → search
 - [ ] 各服务 HikariPool 启动成功（日志中搜索 "HikariPool-1 - Start completed"）
+- [ ] 各服务 /actuator/prometheus 端点可访问（验证监控指标暴露）
 - [ ] 前端 `npm install && npx vite` 可正常访问
 
 ## 扫描检查清单（每次排查逐项过）
@@ -350,6 +362,9 @@ JwtUtil 在 @PostConstruct 中校验密钥字节≥32，启动时即失败而非
 - [ ] 拦截器 pathPatterns 与 context-path 一致（不能加前缀）
 - [ ] update 方法使用 BeanConvertUtil.copyNonNullProperties 而非 BeanUtils.copyProperties
 - [ ] 业务异常使用 ServiceException(code, message) 而非 RuntimeException
+- [ ] 链路追踪配置使用 `management.zipkin.tracing.endpoint` 而非 `zipkin.base-url`
+- [ ] 新增模块须引入 `micrometer-tracing-bridge-brave` + `zipkin-sender-okhttp3` 依赖
+- [ ] 新增模块须引入 `micrometer-registry-prometheus` 依赖（暴露 /actuator/prometheus）
 
 # 十三、Git 提交规范（强制遵守）
 
