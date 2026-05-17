@@ -83,6 +83,10 @@ spring:
     url: jdbc:mysql://localhost:3306/wealth?useUnicode=true
 
 management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
   tracing:
     sampling:
       probability: 1.0
@@ -273,6 +277,7 @@ spring:
 | **jwt.expire** | 无 | **wealth-shared.yaml** | **从 Nacos** |
 | **management.tracing.sampling.probability** | 无 | **wealth-shared.yaml** | **从 Nacos** |
 | **management.zipkin.tracing.endpoint** | 无 | **wealth-shared.yaml** | **从 Nacos** |
+| **management.endpoints.web.exposure.include** | 无 | **wealth-shared.yaml** | **从 Nacos** |
 
 > 关键：`password: ${DB_PASSWORD}` 本身是无意义的环境变量引用（系统中未设置 `DB_PASSWORD`），数据库密码由 Nacos `wealth-shared.yaml` 中的 `spring.datasource.password: 123456` 提供。Nacos 配置优先级高于本地配置中的环境变量引用。
 
@@ -289,6 +294,8 @@ spring:
 | ElasticSearch | elasticsearch:8.8.2 | 9200, 9300 |
 | Nginx | nginx:latest | 80 |
 | Zipkin | openzipkin/zipkin:latest | 9411 |
+| Prometheus | prom/prometheus:latest | 9090 |
+| Grafana | grafana/grafana:latest | 3001 |
 
 ---
 

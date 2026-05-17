@@ -19,6 +19,10 @@ spring:
     url: jdbc:mysql://localhost:3306/wealth?useUnicode=true
 
 management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
   tracing:
     sampling:
       probability: 1.0
@@ -39,6 +43,7 @@ management:
 | `spring.datasource.url` | jdbc:mysql://localhost:3306/wealth?useUnicode=true | 数据源连接串（含编码与时区） |
 | `management.tracing.sampling.probability` | 1.0 | 链路追踪采样率（1.0 = 100%，开发环境全采样） |
 | `management.zipkin.tracing.endpoint` | http://localhost:9411/api/v2/spans | Zipkin 服务端 Span 上报地址 |
+| `management.endpoints.web.exposure.include` | health,info,prometheus | Actuator 暴露的端点列表（新增 prometheus 供 Prometheus 抓取） |
 
 ---
 
@@ -48,6 +53,7 @@ management:
 |------|--------|------|
 | 2026-05-16 | 系统初始化 | 初始版本：JWT + 数据源 |
 | 2026-05-17 | 审计修复 | 新增链路追踪配置。**注意**：`zipkin.base-url` 是 Spring Cloud Sleuth（Spring Boot 2.x）的旧属性，在 Spring Boot 3.x + Micrometer Tracing 中须使用 `management.zipkin.tracing.endpoint` |
+| 2026-05-17 | 监控集成 | 新增 `management.endpoints.web.exposure.include: health,info,prometheus` 暴露 Prometheus 指标端点 |
 
 ---
 

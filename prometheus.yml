@@ -1,0 +1,62 @@
+# Prometheus 监控配置
+# 从所有微服务抓取 /actuator/prometheus 指标
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'wealth-gateway'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['gateway:8080']
+        labels:
+          service: wealth-gateway
+
+  - job_name: 'wealth-system'
+    metrics_path: '/system/actuator/prometheus'
+    static_configs:
+      - targets: ['system:8082']
+        labels:
+          service: wealth-system
+
+  - job_name: 'wealth-user'
+    metrics_path: '/user/actuator/prometheus'
+    static_configs:
+      - targets: ['user:8083']
+        labels:
+          service: wealth-user
+
+  - job_name: 'wealth-product'
+    metrics_path: '/product/actuator/prometheus'
+    static_configs:
+      - targets: ['product:8084']
+        labels:
+          service: wealth-product
+
+  - job_name: 'wealth-trade'
+    metrics_path: '/trade/actuator/prometheus'
+    static_configs:
+      - targets: ['trade:8085']
+        labels:
+          service: wealth-trade
+
+  - job_name: 'wealth-account'
+    metrics_path: '/account/actuator/prometheus'
+    static_configs:
+      - targets: ['account:8086']
+        labels:
+          service: wealth-account
+
+  - job_name: 'wealth-message'
+    metrics_path: '/message/actuator/prometheus'
+    static_configs:
+      - targets: ['message:8087']
+        labels:
+          service: wealth-message
+
+  - job_name: 'wealth-search'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['search:8089']
+        labels:
+          service: wealth-search

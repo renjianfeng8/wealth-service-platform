@@ -88,6 +88,12 @@
             <artifactId>zipkin-sender-okhttp3</artifactId>
         </dependency>
 
+        <!-- Prometheus 监控指标暴露 -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+        </dependency>
+
     </dependencies>
 
     <build>

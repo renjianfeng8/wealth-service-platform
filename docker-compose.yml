@@ -122,6 +122,45 @@ services:
       - wealth-net
     restart: unless-stopped
 
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: wealth-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    networks:
+      - wealth-net
+    restart: unless-stopped
+    depends_on:
+      - gateway
+      - system
+      - user
+      - product
+      - trade
+      - account
+      - message
+      - search
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: wealth-grafana
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_INSTALL_PLUGINS=
+    volumes:
+      - grafana-data:/var/lib/grafana
+    networks:
+      - wealth-net
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+
   # ====================== Backend Services ======================
   gateway:
     image: *image-prefix/wealth-gateway:latest
@@ -285,6 +324,7 @@ services:
 volumes:
   mysql-data:
   es-data:
+  grafana-data:
 
 networks:
   wealth-net:

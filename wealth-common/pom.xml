@@ -117,5 +117,12 @@
             <groupId>io.zipkin.reporter2</groupId>
             <artifactId>zipkin-sender-okhttp3</artifactId>
         </dependency>
+
+        <!-- Prometheus 监控指标暴露 -->
+        <!-- 所有引入 wealth-common 的模块自动获得 /actuator/prometheus 端点 -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+        </dependency>
     </dependencies>
 </project>
