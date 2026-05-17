@@ -63,6 +63,8 @@
 | Redis | 5.0.14.1 | 缓存 |
 | RabbitMQ | 3.10.20 | 消息队列 |
 | Elasticsearch | 8.8.2 | 搜索引擎 |
+| Sentinel | 1.8.6 | 熔断限流 |
+| Seata | 2.0.0 | 分布式事务 |
 
 ### 前端
 
@@ -87,15 +89,26 @@
 | Knife4j (4.4.0) | API 文档 |
 | BCrypt (spring-security-crypto) | 密码加密 |
 | Lombok | 代码简化 |
+| Micrometer Tracing + Brave + Zipkin | 全链路追踪 |
+| Micrometer Prometheus Registry | 监控指标暴露 |
+| Prometheus + Grafana | 指标存储与可视化 |
+| Sentinel | 熔断限流 |
+| Seata | 分布式事务 |
 
 ### 中间件版本对应
-| 中间件 | 端口 | 部署方式 |
-|--------|------|----------|
-| Nacos Server | 8848 | Docker / 独立部署 |
-| MySQL | 3306 | Docker / 本地安装 |
-| Redis | 6379 | Docker |
-| RabbitMQ | 5672 / 15672 | Docker |
-| Elasticsearch | 9200 / 9300 | Docker |
+| 中间件 | 端口 | 部署方式 | 用途 |
+|--------|:----:|----------|------|
+| Nacos Server | 8848 / 9848 | Docker | 注册中心 + 配置中心 |
+| MySQL | 3306 | Docker / 本地 | 数据库 |
+| Redis | 6379 | Docker | 缓存 |
+| RabbitMQ | 5672 / 15672 | Docker | 消息队列 |
+| Elasticsearch | 9200 / 9300 | Docker | 搜索引擎 |
+| Sentinel Dashboard | 8858 | Docker | 熔断限流控制台 |
+| Seata Server | 7091 / 8091 | Docker | 分布式事务协调器 |
+| Nginx | 80 | Docker | 反向代理 |
+| Zipkin | 9411 | Docker | 链路追踪 |
+| Prometheus | 9090 | Docker | 监控指标存储 |
+| Grafana | 3001 | Docker | 监控仪表盘 |
 
 ---
 
@@ -231,44 +244,32 @@ source docs/sql/init.sql;
 
 > 数据库初始化脚本包含全部业务表和权限数据，默认管理员账号：`admin` / `admin`（BCrypt 加密）。
 ### 中间件部署（Docker Compose）
-```yaml
-# docker-compose.yml 参考配置
-version: '3.8'
-services:
-  nacos:
-    image: nacos/nacos-server:2.3.2
-    ports:
-      - "8848:8848"
-    environment:
-      MODE: standalone
 
-  mysql:
-    image: mysql:8.0.37
-    ports:
-      - "3306:3306"
-    environment:
-      MYSQL_ROOT_PASSWORD: 123456
-      MYSQL_DATABASE: Wealth
+项目根目录提供完整的 `docker-compose.yml`，一键启动所有中间件：
 
-  redis:
-    image: redis:5.0.14.1
-    ports:
-      - "6379:6379"
+```bash
+# 一键启动全部 11 个中间件
+docker compose up -d nacos mysql redis rabbitmq es nginx zipkin prometheus grafana sentinel-dashboard seata-server
 
-  rabbitmq:
-    image: rabbitmq:3.10.20-management
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-
-  elasticsearch:
-    image: elasticsearch:8.8.2
-    ports:
-      - "9200:9200"
-      - "9300:9300"
-    environment:
-      discovery.type: single-node
+# 验证所有容器运行状态
+docker ps --format "table {{.Names}}\t{{.Status}}"
 ```
+
+支持的中间件列表：
+
+| 容器名 | 镜像 | 端口 | 用途 |
+|--------|------|:----:|------|
+| wealth-nacos | nacos/nacos-server:v2.3.2 | 8848 | 注册中心 & 配置中心 |
+| wealth-mysql | mysql:8.0.37 | 3306 | 数据库 |
+| wealth-redis | redis:latest | 6379 | 缓存 |
+| wealth-rabbitmq | rabbitmq:3.10.20-management | 5672 / 15672 | 消息队列 |
+| wealth-es | elasticsearch:8.8.2 | 9200 / 9300 | 搜索引擎 |
+| wealth-sentinel | bladex/sentinel-dashboard:latest | 8858 | 限流控制台 |
+| wealth-seata | seataio/seata-server:2.0.0 | 7091 / 8091 | 分布式事务 |
+| wealth-nginx | nginx:latest | 80 | 反向代理 |
+| wealth-zipkin | openzipkin/zipkin:latest | 9411 | 链路追踪 |
+| wealth-prometheus | prom/prometheus:latest | 9090 | 监控指标 |
+| wealth-grafana | grafana/grafana:latest | 3001 | 监控仪表盘 |
 
 ### Nacos 配置
 
