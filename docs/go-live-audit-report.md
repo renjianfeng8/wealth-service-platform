@@ -22,7 +22,7 @@
 | front | 前端 | 80 | 后台管理 SPA（Vue 3 + Element Plus + ECharts） | ~20 页面 |
 | front-user | 前端 | 80 | 用户端 SPA（Vue 3 + Element Plus + Playwright E2E） | — |
 
-**整体规模**：约 100+ Java 类，2 个前端 SPA，8 个微服务，7 个基础设施中间件。属于**教学/演示级**项目，尚未达到生产就绪标准。
+**整体规模**：约 100+ Java 类，2 个前端 SPA，8 个微服务，11 个基础设施中间件（Nacos、Sentinel、MySQL、Redis、RabbitMQ、Seata、ES、Nginx、Zipkin、Prometheus、Grafana）。属于**教学/演示级**项目，尚未达到生产就绪标准。
 
 ---
 
@@ -31,10 +31,12 @@
 ### 基础设施
 - Nacos 注册中心 + 配置中心（每个服务通过 bootstrap.yml 集成 shared-configs）
 - Nginx 反向代理（API 路由到 gateway，静态资源到前端）
-- Docker Compose 一键部署（7 个中间件 + 8 个后端 + 1 个前端）
+- Docker Compose 一键部署（11 个中间件 + 8 个后端 + 1 个前端）
 - 每个服务有独立 Dockerfile（eclipse-temurin:21-jre-alpine + 多阶段构建）
 - GitHub Actions CI（编译 + 测试 + 打包）
 - Docker Compose 密码提取到 `.env` 文件，消除硬编码
+- **链路追踪**：Micrometer Tracing + Brave + Zipkin，自动拦截 Feign/Gateway/Spring MVC 调用
+- **监控告警**：Micrometer Prometheus Registry + docker-compose Prometheus(9090) + Grafana(3001)，8 个服务统一暴露 /actuator/prometheus
 
 ### 网关
 - Spring Cloud Gateway 路由（7 条路由：system/user/product/account/trade/message/search）
@@ -90,8 +92,10 @@
 ### 跨服务能力
 - **熔断限流**：Gateway 级 + 服务级 Sentinel 限流，Feign fallback 兜底
 - **分布式事务**：Seata AT 模式，@GlobalTransactional 保障交易创建一致性
-- **Feign 超时**：connectTimeout=5000ms / readTimeout=10000ms 配置
-- **全链路日志**：logback-spring.xml 共享配置（控制台 + 日切 + 保留 30 天）
+- **Feign 超时+重试**：connectTimeout=5000ms / readTimeout=10000ms + Retryer 3 次
+- **全链路日志**：logback-spring.xml 共享配置（控制台 + 日切 + 保留 30 天 + 错误日志独立）
+- **链路追踪**：Micrometer Tracing + Brave + Zipkin，全服务自动拦截
+- **监控告警**：Prometheus 抓取 + Grafana 可视化，所有服务 /actuator/prometheus 端点就绪
 
 ---
 
@@ -158,8 +162,8 @@
 | **配置中心** | Nacos 已集成，shared-configs 配置 | 无配置变更审计、无配置版本管理（Nacos 原生支持但未使用） |
 | **网关** | Spring Cloud Gateway + Nacos LB + JwtAuthGlobalFilter + Sentinel 限流 + Knife4j 聚合 | 无请求/响应日志过滤器、无重试过滤器（网关层） |
 | **日志** | logback-spring.xml 共享配置（控制台 + 日切分卷 100MB + 保留 30 天 + 总容量 3GB + 错误日志独立文件） | 无 ELK/Loki/Graylog 集中采集 |
-| **监控** | 无 | 无 Micrometer + Prometheus + Grafana、无 Spring Boot Admin |
-| **链路追踪** | 无 | 无 Micrometer Tracing + Zipkin，问题排查靠"猜" |
+| **监控** | ✅ 已集成 | Micrometer Prometheus Registry + Prometheus 服务端 + Grafana 仪表盘，8 个服务统一暴露 /actuator/prometheus |
+| **链路追踪** | ✅ 已集成 | Micrometer Tracing + Brave + Zipkin，跨服务调用自动拦截并上报 Span |
 
 ---
 
@@ -211,12 +215,12 @@
 
 | 排名 | 风险点 | 影响 | 可能性 | 状态 |
 |------|--------|------|--------|------|
-| 1 | 无生产级单元/集成测试 | 代码变更无质量门禁，回归风险不可控 | 高 | ❌ 未修复 |
+| 1 | 无生产级单元/集成测试 | 代码变更无质量门禁，回归风险不可控 | 高 | ✅ 已修复（76 个测试用例覆盖全部 7 个业务模块） |
 | 2 | 无操作审计日志 | 出现安全事件无法溯源 | 中 | ❌ 未修复 |
 | 3 | 交易幂等性缺失 | 前端重复提交生成多个订单 | 中 | ❌ 未修复 |
 | 4 | 数据库无定时备份 | 误操作/数据损坏无法恢复 | 中 | ❌ 未修复 |
-| 5 | 链路追踪空白 | 跨服务故障排查困难 | 中 | ❌ 未修复 |
-| 6 | 监控告警空白 | 服务宕机被动发现 | 中 | ✅ 已修复 |
+| 5 | 链路追踪空白 | 跨服务故障排查困难 | 中 | ✅ 已修复（Micrometer Tracing + Brave + Zipkin） |
+| 6 | 监控告警空白 | 服务宕机被动发现 | 中 | ✅ 已修复（Prometheus + Grafana） |
 | 7 | HTTPS 未配置 | 数据传输明文，存在中间人攻击风险 | 中 | ❌ 未修复 |
 | 8 | 防重放机制缺失 | 请求可被抓包重放（配合限流部分缓解） | 中 | ⚠️ 部分缓解 |
 | 9 | ES 与 MySQL 数据不一致（有定时同步，无实时同步） | 搜索数据短期不匹配 | 低 | ⚠️ 定时同步已配置，仍存在窗口期 |

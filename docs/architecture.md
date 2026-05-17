@@ -61,9 +61,9 @@ gateway（端口 8080）负责统一路由转发，所有前端请求统一经�
 
 ## 配置总则（铁律）
 
-> **⚠ 禁止修改任何配置文件** — 包括但不限于：所有模块的 application.yml、bootstrap.yml、pom.xml、Nacos 配置。
+> **⚠ 禁止修改现有配置** — 包括但不限于：所有模块的 application.yml、bootstrap.yml 中的现有参数、Nacos 配置中的现有键值。
 > 所有业务配置已在 Nacos 配置中心统一管理，本地配置文件为一次性写入的固定值。
-> 任何配置变更需求必须经过架构评估，不得私自修改。
+> 新增功能所需的依赖（如 pom.xml 添加新 dependency）和对应 Nacos 配置项不在禁止范围内，但须同步更新文档。
 
 ---
 
@@ -97,12 +97,12 @@ management:
 
 > **作用范围**：`wealth-shared.yaml` 通过各模块 bootstrap.yml 的 `shared-configs` 引用，被所有模块加载。
 > **覆盖优先级**：Nacos shared-configs 的优先级低于各模块本地 application.yml，但高于 bootstrap.yml 中的默认值。
-> 本配置提供 JWT 密钥/过期时间、MySQL 数据源、链路追踪（Micrometer Tracing + Zipkin）配置，各模块凭此连接数据库并上报链路数据。
+> 本配置提供 JWT 密钥/过期时间、MySQL 数据源、链路追踪（Micrometer Tracing + Zipkin）、Prometheus 指标暴露配置，各模块凭此连接数据库、上报链路数据、暴露监控指标。
 ### 配置加载链路
 
 ```
 bootstrap.yml                     # 1. 启动时加载 —— 配置 Nacos 地址、应用名
-   └─→ Nacos (wealth-shared.yaml)  # 2. Nacos 远程配置 —— JWT + 数据源 + 链路追踪
+   └─→ Nacos (wealth-shared.yaml)  # 2. Nacos 远程配置 —— JWT + 数据源 + 链路追踪 + 监控暴露
        └─→ application.yml          # 3. 本地配置 —— 端口、context-path、mybatis-plus
 ```
 

@@ -61,8 +61,8 @@ management:
 
 ```
 bootstrap.yml                     # 1. 启动时加载 —— 配置 Nacos 地址、应用名
-   └─→ Nacos (wealth-shared.yaml)  # 2. Nacos 远程配置 —— JWT + 数据源 + 链路追踪
+   └─→ Nacos (wealth-shared.yaml)  # 2. Nacos 远程配置 —— JWT + 数据源 + 链路追踪 + 监控暴露
        └─→ application.yml          # 3. 本地配置 —— 端口、context-path、mybatis-plus
 ```
 
-> 注意：Nacos shared-configs 优先级低于各模块本地 application.yml。例如 `spring.datasource.url` 在 Nacos 中被定义为简写，实际以各模块 application.yml 中的完整连接串为准。`jwt.*` 和 `management.*` 在本地配置中未定义，完全由 Nacos 提供。
+> 注意：Nacos shared-configs 优先级低于各模块本地 application.yml。例如 `spring.datasource.url` 在 Nacos 中被定义为简写，实际以各模块 application.yml 中的完整连接串为准。`jwt.*` 和 `management.*` 在本地配置中未定义，完全由 Nacos 统一提供。
