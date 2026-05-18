@@ -5,6 +5,7 @@ import com.wealth.common.interceptor.LoginInterceptor;
 import com.wealth.common.interceptor.PermissionCheckInterceptor;
 import com.wealth.common.utils.JwtUtil;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -16,7 +17,7 @@ public class WebConfig implements WebMvcConfigurer {
     private final JwtUtil jwtUtil;
     private final PermissionCheckFeignClient permissionCheckFeignClient;
 
-    public WebConfig(JwtUtil jwtUtil, PermissionCheckFeignClient permissionCheckFeignClient) {
+    public WebConfig(JwtUtil jwtUtil, @Lazy PermissionCheckFeignClient permissionCheckFeignClient) {
         this.jwtUtil = jwtUtil;
         this.permissionCheckFeignClient = permissionCheckFeignClient;
     }

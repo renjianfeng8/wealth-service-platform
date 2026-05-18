@@ -8,6 +8,7 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -28,10 +29,10 @@ public class AntiReplayAspect {
     private static final Logger log = LoggerFactory.getLogger(AntiReplayAspect.class);
     private static final String NONCE_KEY_PREFIX = "nonce:";
 
-    private final RedisUtil redisUtil;
+    private final ObjectProvider<RedisUtil> redisUtilProvider;
 
-    public AntiReplayAspect(RedisUtil redisUtil) {
-        this.redisUtil = redisUtil;
+    public AntiReplayAspect(ObjectProvider<RedisUtil> redisUtilProvider) {
+        this.redisUtilProvider = redisUtilProvider;
     }
 
     @Around("@annotation(antiReplay)")
@@ -46,6 +47,12 @@ public class AntiReplayAspect {
 
         // 兼容旧客户端：未传防重包头时直接放行
         if (timestampStr == null || nonce == null || nonce.isBlank()) {
+            return joinPoint.proceed();
+        }
+
+        RedisUtil redisUtil = redisUtilProvider.getIfAvailable();
+        // 无 Redis 时跳过防重放校验（降级）
+        if (redisUtil == null) {
             return joinPoint.proceed();
         }
 
