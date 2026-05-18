@@ -18,7 +18,7 @@ public class BeanConvertUtil {
             BeanUtils.copyProperties(source, target);
             return target;
         } catch (Exception e) {
-            throw new RuntimeException("杞崲澶辫触", e);
+            throw new com.wealth.common.exception.ServiceException(500, "杞崲澶辫触", e);
         }
     }
 
@@ -42,7 +42,7 @@ public class BeanConvertUtil {
             }
             return emptyNames.toArray(new String[0]);
         } catch (Exception e) {
-            throw new RuntimeException("鑾峰彇 null 灞炴€у悕澶辫触", e);
+            throw new com.wealth.common.exception.ServiceException(500, "鑾峰彇 null 灞炴€у悕澶辫触", e);
         }
     }
 }

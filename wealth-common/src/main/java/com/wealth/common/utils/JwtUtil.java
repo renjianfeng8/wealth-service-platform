@@ -2,7 +2,6 @@ package com.wealth.common.utils;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
@@ -12,6 +11,7 @@ import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.util.UUID;
 
 /**
  * JWT Token 生成与验证工具。
@@ -41,37 +41,37 @@ public class JwtUtil {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    /** 生成 Token */
+    /** 生成 Token（含 jti 声明，支持按 Token 吊销） */
     public String generateToken(String username) {
         return Jwts.builder()
-                .setSubject(username)
-                .setExpiration(new Date(System.currentTimeMillis() + expire))
-                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+                .id(UUID.randomUUID().toString())
+                .subject(username)
+                .expiration(new Date(System.currentTimeMillis() + expire))
+                .signWith(getSigningKey())
                 .compact();
     }
 
     /** 从 Token 获取用户名 */
     public String getUsernameFromToken(String token) {
-        Claims claims = Jwts.parserBuilder()
-                .setSigningKey(getSigningKey())
+        Claims claims = Jwts.parser()
+                .verifyWith(getSigningKey())
                 .build()
-                .parseClaimsJws(token)
-                .getBody();
+                .parseSignedClaims(token)
+                .getPayload();
         return claims.getSubject();
     }
 
     /** 验证 Token 是否有效 */
     public boolean validateToken(String token) {
         try {
-            Jwts.parserBuilder()
-                    .setSigningKey(getSigningKey())
+            Jwts.parser()
+                    .verifyWith(getSigningKey())
                     .build()
-                    .parseClaimsJws(token);
-            log.info("JWT验证成功");
+                    .parseSignedClaims(token);
             return true;
         } catch (io.jsonwebtoken.ExpiredJwtException e) {
             log.warn("JWT验证失败：Token 已过期");
-        } catch (io.jsonwebtoken.security.SignatureException e) {
+        } catch (io.jsonwebtoken.security.SecurityException e) {
             log.warn("JWT验证失败：签名错误（密钥不匹配）");
         } catch (io.jsonwebtoken.MalformedJwtException e) {
             log.warn("JWT验证失败：Token 格式错误/被篡改");

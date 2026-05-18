@@ -1,0 +1,20 @@
+# 生产环境配置覆盖
+# 激活方式：spring.profiles.active=prod
+
+server:
+  port: 8082
+  servlet:
+    context-path: /system
+
+spring:
+  datasource:
+    hikari:
+      maximum-pool-size: 30
+      minimum-idle: 10
+      connection-timeout: 5000
+      max-lifetime: 600000
+      idle-timeout: 300000
+
+springdoc:
+  api-docs:
+    enabled: false

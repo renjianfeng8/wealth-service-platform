@@ -28,7 +28,7 @@ public class MarketDataSimulationService {
     private final FinMarketDataMapper marketDataMapper;
     private final MarketDataPushService pushService;
 
-    private List<WeaMarketData> cachedMarketData;
+    private volatile List<WeaMarketData> cachedMarketData;
     private final Random random = new Random();
 
     @PostConstruct
@@ -43,12 +43,26 @@ public class MarketDataSimulationService {
 
     /**
      * 每 2 秒模拟一次行情变化：高斯随机游走，更新数据库并广播。
+     * fixedDelay 保证上次执行完成后再开始下一次，避免重叠执行引发并发问题。
      */
-    @Scheduled(fixedRate = 2000)
-    @Transactional(rollbackFor = Exception.class)
+    @Scheduled(fixedDelay = 2000)
     public void simulateMarketTick() {
         if (cachedMarketData.isEmpty()) return;
 
+        // 1. 事务内更新数据库（仅 DB 操作）
+        simulateTickDb();
+
+        // 2. 事务外广播 SSE（避免广播异常导致 DB 回滚）
+        List<FinMarketDataVO> voList = BeanConvertUtil.convertList(cachedMarketData, FinMarketDataVO.class);
+        try {
+            pushService.broadcastMarketUpdate(voList);
+        } catch (Exception e) {
+            log.error("行情广播失败", e);
+        }
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void simulateTickDb() {
         for (WeaMarketData data : cachedMarketData) {
             BigDecimal oldPrice = data.getCurrentPrice();
             // 高斯随机游走，波动幅度约 0.2%
@@ -72,10 +86,6 @@ public class MarketDataSimulationService {
 
             marketDataMapper.updateById(data);
         }
-
-        // 广播完整行情快照
-        List<FinMarketDataVO> voList = BeanConvertUtil.convertList(cachedMarketData, FinMarketDataVO.class);
-        pushService.broadcastMarketUpdate(voList);
     }
 
     /** 返回当前缓存的全部行情数据（全量快照） */

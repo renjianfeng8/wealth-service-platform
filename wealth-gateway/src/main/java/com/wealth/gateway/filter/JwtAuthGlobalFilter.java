@@ -83,10 +83,10 @@ public class JwtAuthGlobalFilter implements GlobalFilter, Ordered {
 
         // 校验 Token
         try {
-            Jwts.parserBuilder()
-                    .setSigningKey(getSigningKey())
+            Jwts.parser()
+                    .verifyWith(getSigningKey())
                     .build()
-                    .parseClaimsJws(token);
+                    .parseSignedClaims(token);
         } catch (io.jsonwebtoken.ExpiredJwtException e) {
             log.warn("Token已过期 | 路径：{}", path);
             return unauthorized(exchange, "Token已过期");

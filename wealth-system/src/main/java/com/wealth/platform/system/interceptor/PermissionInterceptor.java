@@ -24,6 +24,8 @@ import java.util.stream.Collectors;
 @Component
 public class PermissionInterceptor implements HandlerInterceptor {
 
+    private static final AntPathMatcher pathMatcher = new AntPathMatcher();
+
     private static final String CACHE_KEY_PREFIX = "permission:urls:";
     private static final long CACHE_TTL_MINUTES = 5;
 
@@ -151,7 +153,6 @@ public class PermissionInterceptor implements HandlerInterceptor {
         }
 
         // 6. 使用 AntPathMatcher 进行 Ant 风格路径匹配
-        AntPathMatcher pathMatcher = new AntPathMatcher();
         boolean hasPermission = allowedUrls.stream().anyMatch(pattern -> pathMatcher.match(pattern, uri));
         if (!hasPermission) {
             response.setCharacterEncoding("UTF-8");

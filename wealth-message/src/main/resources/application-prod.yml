@@ -1,0 +1,19 @@
+# 生产环境配置覆盖
+
+spring:
+  datasource:
+    hikari:
+      maximum-pool-size: 30
+      minimum-idle: 10
+      connection-timeout: 5000
+      max-lifetime: 600000
+      idle-timeout: 300000
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+
+springdoc:
+  api-docs:
+    enabled: false

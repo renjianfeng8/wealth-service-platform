@@ -18,11 +18,13 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 @Tag(name = "行情管理", description = "行情数据相关接口")
 @RequestMapping("/WeaMarketData")
@@ -66,7 +68,7 @@ public class FinMarketDataController {
                     .name("market-update")
                     .data(snapshot));
         } catch (Exception e) {
-            // 忽略首次推送异常
+            log.warn("SSE 首次推送快照异常, emitterId: {}", emitter, e);
         }
         return emitter;
     }

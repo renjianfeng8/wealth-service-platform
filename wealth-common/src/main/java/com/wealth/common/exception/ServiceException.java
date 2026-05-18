@@ -15,6 +15,11 @@ public class ServiceException extends RuntimeException {
         this.code = code;
     }
 
+    public ServiceException(int code, String message, Throwable cause) {
+        super(message, cause);
+        this.code = code;
+    }
+
     public ServiceException(String message) {
         this(500, message);
     }

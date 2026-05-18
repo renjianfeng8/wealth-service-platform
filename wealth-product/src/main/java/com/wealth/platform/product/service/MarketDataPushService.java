@@ -59,7 +59,8 @@ public class MarketDataPushService {
                 log.warn("SSE 推送失败，已移除连接: {}", e.getMessage());
                 try {
                     emitter.complete();
-                } catch (Exception ignored) {
+                } catch (Exception ex) {
+                    log.warn("SSE emitter.complete() 异常", ex);
                 }
             }
         }
@@ -75,7 +76,8 @@ public class MarketDataPushService {
         for (SseEmitter emitter : emitters) {
             try {
                 emitter.complete();
-            } catch (Exception ignored) {
+            } catch (Exception e) {
+                log.warn("SSE shutdown 关闭 emitter 异常", e);
             }
         }
         emitters.clear();

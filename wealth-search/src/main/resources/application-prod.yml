@@ -1,0 +1,11 @@
+# 生产环境配置覆盖
+
+spring:
+  elasticsearch:
+    uris: ${ES_URIS:http://localhost:9200}
+    username: ${ES_USERNAME:elastic}
+    password: ${ES_PASSWORD:}
+
+springdoc:
+  api-docs:
+    enabled: false

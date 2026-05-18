@@ -3,7 +3,6 @@ package com.wealth.platform.trade.constant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-import java.util.EnumSet;
 import java.util.Set;
 
 @Getter

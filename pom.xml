@@ -27,7 +27,7 @@
         <spring-cloud-alibaba.version>2023.0.1.2</spring-cloud-alibaba.version>
         <mybatis.plus.version>3.5.7</mybatis.plus.version>
         <mybatis-spring.version>3.0.4</mybatis-spring.version>
-        <jjwt.version>0.11.5</jjwt.version>
+        <jjwt.version>0.12.6</jjwt.version>
         <knife4j.version>4.4.0</knife4j.version>
     </properties>
 

@@ -6,6 +6,7 @@ import com.wealth.platform.search.entity.ProductDocument;
 import com.wealth.platform.search.service.ProductSearchService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
@@ -20,7 +21,7 @@ public class ProductSearchController {
 
     @PostMapping
     @Operation(summary = "新增/更新产品到ES")
-    public Result<ProductDocument> save(@RequestBody ProductDocument document) {
+    public Result<ProductDocument> save(@Valid @RequestBody ProductDocument document) {
         return Result.success(productSearchService.save(document));
     }
 
