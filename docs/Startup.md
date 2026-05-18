@@ -72,37 +72,11 @@ docker ps --format "table {{.Names}}\t{{.Status}}"
 
 ### 3.2 Nacos 配置中心设置
 
-访问 Nacos 控制台 [http://localhost:8848/nacos](http://localhost:8848/nacos)（无需认证），创建共享配置：
+访问 Nacos 控制台 [http://localhost:8848/nacos](http://localhost:8848/nacos)（无需认证），在 `DEFAULT_GROUP` 下创建共享配置：
 - **Data ID**：`wealth-shared.yaml`
 - **配置格式**：YAML
-- **内容**：
 
-```yaml
-jwt:
-  secret: wealth-micro-service-20260501-very-safe-secret-key-123456789
-  expire: 604800000
-
-spring:
-  datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/wealth?useUnicode=true
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info,prometheus
-  tracing:
-    sampling:
-      probability: 1.0
-  zipkin:
-    tracing:
-      endpoint: http://localhost:9411/api/v2/spans
-```
-
-> **配置说明**：`jwt.secret` 密钥必须 ≥ 32 字节（当前密钥 56 字节），否则服务启动时 JwtUtil 会直接报错。
-> **链路追踪**：`management.zipkin.tracing.endpoint` 须指向 Zipkin 容器地址（Docker 内网用 `http://zipkin:9411`，宿主机用 `http://localhost:9411`）。
-> **监控**：`management.endpoints.web.exposure.include` 暴露了 health、info、prometheus 端点，供 Prometheus 抓取指标。
+配置内容、配置项说明、变更历史及覆盖优先级详见 [Nacos 配置参考](nacos-config-reference.md)。
 
 ---
 
