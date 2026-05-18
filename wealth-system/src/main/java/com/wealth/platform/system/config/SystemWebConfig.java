@@ -23,6 +23,7 @@ public class SystemWebConfig implements WebMvcConfigurer {
                 // excludePathPatterns 也是 context-path 剥离后的路径
                 .excludePathPatterns(
                         "/umsAdmin/login",
+                        "/umsAdmin/checkPermission",
                         "/doc.html",
                         "/webjars/**",
                         "/swagger-resources/**",

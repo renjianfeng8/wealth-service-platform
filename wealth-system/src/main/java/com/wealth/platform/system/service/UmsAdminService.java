@@ -13,4 +13,7 @@ public interface UmsAdminService extends IService<UmsAdmin> {
 
     // 权限查询
     List<String> getResourceUrlsByIds(List<Long> resourceIds);
+
+    // 校验指定用户是否有权访问指定 URI
+    boolean hasPermission(Long adminId, String uri);
 }

@@ -25,9 +25,12 @@ import java.util.List;
 public class UmsAdminController {
 
     private final UmsAdminService umsAdminService;
+    private final com.wealth.common.utils.JwtUtil jwtUtil;
 
-    public UmsAdminController(UmsAdminService umsAdminService) {
+    public UmsAdminController(UmsAdminService umsAdminService,
+                              com.wealth.common.utils.JwtUtil jwtUtil) {
         this.umsAdminService = umsAdminService;
+        this.jwtUtil = jwtUtil;
     }
 
     @PostMapping("/login")
@@ -98,5 +101,28 @@ public class UmsAdminController {
     @AntiReplay
     public Result<Boolean> delete(@PathVariable Long id) {
         return Result.success(umsAdminService.removeById(id));
+    }
+
+    @GetMapping("/checkPermission")
+    @Operation(summary = "校验权限（Feign调用）", hidden = true)
+    public Result<Boolean> checkPermission(
+            @RequestParam String uri,
+            @RequestHeader("Authorization") String authHeader) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return Result.success(false);
+        }
+        String token = authHeader.replace("Bearer ", "");
+        if (!jwtUtil.validateToken(token)) {
+            return Result.success(false);
+        }
+        String username = jwtUtil.getUsernameFromToken(token);
+        UmsAdmin admin = umsAdminService.lambdaQuery()
+                .eq(UmsAdmin::getUsername, username)
+                .eq(UmsAdmin::getDelFlag, 0)
+                .one();
+        if (admin == null) {
+            return Result.success(false);
+        }
+        return Result.success(umsAdminService.hasPermission(admin.getId(), uri));
     }
 }

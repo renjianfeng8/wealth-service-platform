@@ -15,8 +15,8 @@ seata:
       server-addr: nacos:8848
       group: SEATA_GROUP
       namespace:
-      username:
-      password:
+      username: ${NACOS_USERNAME:}
+      password: ${NACOS_PASSWORD:}
   registry:
     type: nacos
     nacos:
@@ -25,8 +25,8 @@ seata:
       group: SEATA_GROUP
       namespace:
       cluster: default
-      username:
-      password:
+      username: ${NACOS_USERNAME:}
+      password: ${NACOS_PASSWORD:}
   store:
     mode: file
   security:
