@@ -8,6 +8,7 @@ import com.wealth.common.result.ResultCode;
 import com.wealth.common.audit.AntiReplay;
 import com.wealth.common.audit.AuditLog;
 import com.wealth.common.utils.BeanConvertUtil;
+import com.wealth.common.utils.JwtUtil.TokenPair;
 import com.wealth.platform.system.dto.UmsAdminDTO;
 import com.wealth.platform.system.entity.UmsAdmin;
 import com.wealth.platform.system.service.UmsAdminService;
@@ -34,10 +35,20 @@ public class UmsAdminController {
     }
 
     @PostMapping("/login")
-    @Operation(summary = "管理员登录")
+    @Operation(summary = "管理员登录（返回 access_token + refresh_token）")
     @AuditLog(module = "系统管理", operation = "管理员登录")
-    public Result<String> login(@Valid @RequestBody LoginDTO dto) {
+    public Result<TokenPair> login(@Valid @RequestBody LoginDTO dto) {
         return Result.success(umsAdminService.login(dto));
+    }
+
+    @PostMapping("/refresh")
+    @Operation(summary = "刷新 Token（用 refresh_token 换取新的 access_token + refresh_token）")
+    public Result<TokenPair> refresh(@RequestHeader("Authorization") String authHeader) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return Result.error(ResultCode.TOKEN_INVALID);
+        }
+        String refreshToken = authHeader.replace("Bearer ", "");
+        return Result.success(umsAdminService.refreshToken(refreshToken));
     }
 
     @GetMapping("/{id}")

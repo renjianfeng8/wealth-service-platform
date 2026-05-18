@@ -1,6 +1,7 @@
 package com.wealth.common.utils;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
@@ -15,7 +16,8 @@ import java.util.UUID;
 
 /**
  * JWT Token 生成与验证工具。
- * jwt.secret / jwt.expire 需在 Nacos 共享配置中定义，无默认值以确保生产环境强制配置。
+ * jwt.secret / jwt.expire 需在 Nacos 共享配置中定义。
+ * 支持双 Token 机制：access_token（短时效）+ refresh_token（长时效）。
  */
 @Slf4j
 @Component
@@ -24,8 +26,13 @@ public class JwtUtil {
     @Value("${jwt.secret}")
     private String secretKey;
 
-    @Value("${jwt.expire}")
-    private long expire;
+    /** access_token 有效期（默认 30 分钟） */
+    @Value("${jwt.access-expire:1800000}")
+    private long accessExpire;
+
+    /** refresh_token 有效期（默认 7 天） */
+    @Value("${jwt.refresh-expire:604800000}")
+    private long refreshExpire;
 
     @PostConstruct
     public void init() {
@@ -41,14 +48,26 @@ public class JwtUtil {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    /** 生成 Token（含 jti 声明，支持按 Token 吊销） */
+    /** 生成 Token（向后兼容），有效期由 jwt.access-expire 决定 */
     public String generateToken(String username) {
-        return Jwts.builder()
-                .id(UUID.randomUUID().toString())
-                .subject(username)
-                .expiration(new Date(System.currentTimeMillis() + expire))
-                .signWith(getSigningKey())
-                .compact();
+        return generateToken(username, accessExpire);
+    }
+
+    /** 生成 access_token（短时效） */
+    public String generateAccessToken(String username) {
+        return generateToken(username, accessExpire);
+    }
+
+    /** 生成 refresh_token（长时效） */
+    public String generateRefreshToken(String username) {
+        return generateToken(username, refreshExpire);
+    }
+
+    /** 生成 token 对 */
+    public TokenPair generateTokenPair(String username) {
+        String accessToken = generateAccessToken(username);
+        String refreshToken = generateRefreshToken(username);
+        return new TokenPair(accessToken, refreshToken, accessExpire);
     }
 
     /** 从 Token 获取用户名 */
@@ -61,6 +80,16 @@ public class JwtUtil {
         return claims.getSubject();
     }
 
+    /** 从 Token 获取 jti */
+    public String getTokenIdFromToken(String token) {
+        Claims claims = Jwts.parser()
+                .verifyWith(getSigningKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+        return claims.getId();
+    }
+
     /** 验证 Token 是否有效 */
     public boolean validateToken(String token) {
         try {
@@ -69,7 +98,7 @@ public class JwtUtil {
                     .build()
                     .parseSignedClaims(token);
             return true;
-        } catch (io.jsonwebtoken.ExpiredJwtException e) {
+        } catch (ExpiredJwtException e) {
             log.warn("JWT验证失败：Token 已过期");
         } catch (io.jsonwebtoken.security.SecurityException e) {
             log.warn("JWT验证失败：签名错误（密钥不匹配）");
@@ -82,4 +111,16 @@ public class JwtUtil {
         }
         return false;
     }
+
+    private String generateToken(String username, long expireMs) {
+        return Jwts.builder()
+                .id(UUID.randomUUID().toString())
+                .subject(username)
+                .expiration(new Date(System.currentTimeMillis() + expireMs))
+                .signWith(getSigningKey())
+                .compact();
+    }
+
+    /** Token 对响应体 */
+    public record TokenPair(String accessToken, String refreshToken, long expiresIn) {}
 }

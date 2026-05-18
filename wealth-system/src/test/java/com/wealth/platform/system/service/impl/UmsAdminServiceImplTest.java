@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapp
 import com.wealth.common.dto.LoginDTO;
 import com.wealth.common.exception.ServiceException;
 import com.wealth.common.utils.JwtUtil;
+import com.wealth.common.utils.JwtUtil.TokenPair;
+import com.wealth.common.utils.RedisUtil;
 import com.wealth.platform.system.entity.UmsAdmin;
 import com.wealth.platform.system.entity.UmsResource;
 import com.wealth.platform.system.mapper.UmsAdminMapper;
@@ -39,6 +41,9 @@ class UmsAdminServiceImplTest {
     @Mock
     private BCryptPasswordEncoder passwordEncoder;
 
+    @Mock
+    private RedisUtil redisUtil;
+
     private UmsAdminServiceImpl adminService;
 
     private UmsAdmin mockAdmin;
@@ -50,6 +55,7 @@ class UmsAdminServiceImplTest {
         ReflectionTestUtils.setField(adminService, "resourceService", resourceService);
         ReflectionTestUtils.setField(adminService, "passwordEncoder", passwordEncoder);
         ReflectionTestUtils.setField(adminService, "baseMapper", umsAdminMapper);
+        ReflectionTestUtils.setField(adminService, "redisUtil", redisUtil);
 
         mockAdmin = new UmsAdmin();
         mockAdmin.setId(1L);
@@ -68,7 +74,7 @@ class UmsAdminServiceImplTest {
     }
 
     @Test
-    @DisplayName("管理员登录成功")
+    @DisplayName("管理员登录成功-返回双Token")
     void login_Success() {
         LambdaQueryChainWrapper<UmsAdmin> qc = setupLoginMocks();
         when(qc.one()).thenReturn(mockAdmin);
@@ -77,12 +83,16 @@ class UmsAdminServiceImplTest {
         dto.setUsername("admin");
         dto.setPassword("rawPassword");
 
+        TokenPair mockPair = new TokenPair("access.token", "refresh.token", 1800000);
         when(passwordEncoder.matches("rawPassword", "encodedPassword")).thenReturn(true);
-        when(jwtUtil.generateToken("admin")).thenReturn("admin.jwt.token");
+        when(jwtUtil.generateTokenPair("admin")).thenReturn(mockPair);
+        when(jwtUtil.getTokenIdFromToken("refresh.token")).thenReturn("test-jti");
 
-        String token = adminService.login(dto);
+        TokenPair result = adminService.login(dto);
 
-        assertEquals("admin.jwt.token", token);
+        assertNotNull(result);
+        assertEquals("access.token", result.accessToken());
+        assertEquals("refresh.token", result.refreshToken());
     }
 
     @Test

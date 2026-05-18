@@ -8,14 +8,13 @@
 
 ## 问题总览
 
-> 最后更新：2026-05-18 — 已修复 30+ 项（commit `545acf6`、`8a236e2`）
+> 最后更新：2026-05-18 — 已修复 30+ 项（commit `545acf6`、`8a236e2`、`d8ac3e7`）
 
 | 严重级别 | 总数 | 已修复 | 剩余 | 说明 |
 |---------|------|--------|------|------|
 | 致命 | 7 | 7 | **0** | 全部修复 ✅ |
-| 严重 | 16 | 8 | 8 | 已修复：H1、H3~H7、H13/H14、H16 |
+| 严重 | 16 | 9 | 7 | 已修复：H1、H2、H3~H7、H13/H14、H16 |
 | 优化建议 | 14 | 4 | 10 | 已修复：M1/M3、M4、M7、M12 |
-| 严重 | 16 | 8 | 8 | 已修复：H1、H3~H7、H13/H14、H16 |
 | 优化建议 | 14 | 4 | 10 | 已修复：M1/M3、M4、M7、M12 |
 
 ---
@@ -174,11 +173,41 @@
 
 ### H2. 无 Token 刷新机制
 
+> ✅ **已修复** — 当前会话
+
 | 项目 | 内容 |
 |------|------|
-| **文件** | `JwtUtil.java:45-51` |
+| **文件** | `JwtUtil.java`、`UmsAdminServiceImpl.java`、`UmsAdminController.java` |
 | **问题** | Token 过期后用户必须重新登录，用户体验差 |
-| **修复** | 实现 Refresh Token 双 Token 机制：access_token（短时效 30min）+ refresh_token（长时效 7d） |
+| **修复** | 实现双 Token 机制（access_token + refresh_token）： |
+
+**新增/修改文件**：
+
+| 文件 | 说明 |
+|------|------|
+| `JwtUtil.java` | 新增 `generateAccessToken()`、`generateRefreshToken()`、`generateTokenPair()`、`getTokenIdFromToken()`、`TokenPair` record |
+| `UmsAdminServiceImpl.java` | `login()` 返回 `TokenPair`；新增 `refreshToken()` 方法 |
+| `UmsAdminController.java` | 新增 `POST /umsAdmin/refresh` 端点 |
+| `SystemWebConfig.java` | 放行 `/umsAdmin/refresh` |
+
+**Token 生命周期**：
+
+```
+登录成功 → 返回 { access_token(30min), refresh_token(7d) }
+                                           ↓
+access_token 过期 → 前端用 refresh_token 调 /refresh
+                                           ↓
+                                服务端验证签名 + Redis 中 jti 存在
+                                           ↓
+                                吊销旧 refresh_token + 发放新 token 对
+                                           ↓
+                                refresh_token 也过期 → 要求重新登录
+```
+
+**安全特性**：
+- refresh_token 一次性使用（防重放攻击）
+- jti 存入 Redis，支持手动吊销（删除 Redis key 即可）
+- access_token 短时效（30min），降低泄露风险
 
 ### H3. 无 Token 吊销能力
 
@@ -364,8 +393,8 @@ spring:
 - [x] 添加登录验证码和失败锁定机制 — 已实现 CaptchaController + Redis 账号锁定
 - [ ] Gateway 降低登录接口 Sentinel QPS 阈值
 - [x] 升级 jjwt 至 0.12.6+ — 已完成，API 迁移至 0.12.6
-- [ ] 实现 JWT refresh token 机制
-- [ ] 添加 `jti` 声明到 Token
+- [x] 实现 JWT refresh token 机制 — 已实现双 Token + /umsAdmin/refresh
+- [x] 添加 `jti` 声明到 Token
 - [ ] LoginVO 移除用户 ID 暴露
 
 ### 4.2 JVM & 容器

@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.wealth.common.exception.ServiceException;
 import com.wealth.common.dto.LoginDTO;
 import com.wealth.common.utils.JwtUtil;
+import com.wealth.common.utils.JwtUtil.TokenPair;
 import com.wealth.common.utils.RedisUtil;
 import com.wealth.platform.system.entity.UmsAdmin;
 import com.wealth.platform.system.entity.UmsAdminRoleRelation;
@@ -39,6 +40,7 @@ public class UmsAdminServiceImpl extends ServiceImpl<UmsAdminMapper, UmsAdmin> i
     private static final String KEY_LOGIN_FAIL_COUNT = "login:fail:count:";
     private static final String KEY_LOGIN_LOCKED = "login:locked:";
     private static final String KEY_CAPTCHA = "captcha:";
+    private static final String KEY_REFRESH_JTI = "refresh:jti:";
 
     private final JwtUtil jwtUtil;
     private final UmsResourceService resourceService;
@@ -61,7 +63,7 @@ public class UmsAdminServiceImpl extends ServiceImpl<UmsAdminMapper, UmsAdmin> i
     }
 
     @Override
-    public String login(LoginDTO dto) {
+    public TokenPair login(LoginDTO dto) {
         if (!StringUtils.hasText(dto.getUsername()) || !StringUtils.hasText(dto.getPassword())) {
             throw new ServiceException(401, "用户名密码不能为空");
         }
@@ -96,7 +98,43 @@ public class UmsAdminServiceImpl extends ServiceImpl<UmsAdminMapper, UmsAdmin> i
         // 5. 登录成功，清除失败记录
         clearFailedAttempts(dto.getUsername());
 
-        return jwtUtil.generateToken(admin.getUsername());
+        // 6. 生成双 Token（access_token + refresh_token）
+        TokenPair pair = jwtUtil.generateTokenPair(admin.getUsername());
+        // 将 refresh_token 的 jti 存入 Redis（TTL 7 天）
+        String jti = jwtUtil.getTokenIdFromToken(pair.refreshToken());
+        redisUtil.set(KEY_REFRESH_JTI + jti, admin.getUsername(), 7, TimeUnit.DAYS);
+        return pair;
+    }
+
+    @Override
+    public TokenPair refreshToken(String refreshToken) {
+        if (!StringUtils.hasText(refreshToken)) {
+            throw new ServiceException(400, "refreshToken 不能为空");
+        }
+
+        // 1. 校验 refresh_token 签名和有效期
+        String username;
+        String jti;
+        try {
+            username = jwtUtil.getUsernameFromToken(refreshToken);
+            jti = jwtUtil.getTokenIdFromToken(refreshToken);
+        } catch (Exception e) {
+            throw new ServiceException(401, "refreshToken 无效或已过期");
+        }
+
+        // 2. 检查是否已吊销（Redis 中是否存在）
+        if (Boolean.FALSE.equals(redisUtil.hasKey(KEY_REFRESH_JTI + jti))) {
+            throw new ServiceException(401, "refreshToken 已吊销，请重新登录");
+        }
+
+        // 3. 吊销旧 refresh_token（一次性使用，防重放）
+        redisUtil.delete(KEY_REFRESH_JTI + jti);
+
+        // 4. 生成新的 token 对
+        TokenPair pair = jwtUtil.generateTokenPair(username);
+        String newJti = jwtUtil.getTokenIdFromToken(pair.refreshToken());
+        redisUtil.set(KEY_REFRESH_JTI + newJti, username, 7, TimeUnit.DAYS);
+        return pair;
     }
 
     /**
@@ -107,7 +145,6 @@ public class UmsAdminServiceImpl extends ServiceImpl<UmsAdminMapper, UmsAdmin> i
         Long count = redisUtil.increment(countKey);
         if (count == null) return;
 
-        // 第一次设置 TTL（防止永久 key）
         if (count == 1) {
             redisUtil.expire(countKey, FAIL_COUNT_TTL_MINUTES, TimeUnit.MINUTES);
         }
@@ -115,22 +152,15 @@ public class UmsAdminServiceImpl extends ServiceImpl<UmsAdminMapper, UmsAdmin> i
         if (count >= MAX_LOGIN_ATTEMPTS) {
             String lockKey = KEY_LOGIN_LOCKED + username;
             redisUtil.set(lockKey, "1", LOCK_DURATION_MINUTES, TimeUnit.MINUTES);
-            // 清理计数（锁定期间不需要计数了）
             redisUtil.delete(countKey);
         }
     }
 
-    /**
-     * 登录成功时清除失败记录和锁定标记。
-     */
     private void clearFailedAttempts(String username) {
         redisUtil.delete(KEY_LOGIN_FAIL_COUNT + username);
         redisUtil.delete(KEY_LOGIN_LOCKED + username);
     }
 
-    /**
-     * 校验验证码。
-     */
     private void validateCaptcha(String captchaKey, String captchaCode) {
         if (!StringUtils.hasText(captchaKey) || !StringUtils.hasText(captchaCode)) {
             throw new ServiceException(400, "验证码不能为空");
@@ -140,7 +170,6 @@ public class UmsAdminServiceImpl extends ServiceImpl<UmsAdminMapper, UmsAdmin> i
         if (stored == null) {
             throw new ServiceException(400, "验证码已过期，请重新获取");
         }
-        // 一次性使用，立即删除
         redisUtil.delete(redisKey);
         if (!stored.equalsIgnoreCase(captchaCode.trim())) {
             throw new ServiceException(400, "验证码错误");
@@ -161,7 +190,6 @@ public class UmsAdminServiceImpl extends ServiceImpl<UmsAdminMapper, UmsAdmin> i
         return updateById(admin);
     }
 
-    // ================== 权限查询方法 ==================
     @Override
     public List<String> getResourceUrlsByIds(List<Long> resourceIds) {
         return resourceService.lambdaQuery()
@@ -172,7 +200,6 @@ public class UmsAdminServiceImpl extends ServiceImpl<UmsAdminMapper, UmsAdmin> i
                 .collect(Collectors.toList());
     }
 
-    /** 判断指定 admin 是否有权访问某 URI（Ant 风格匹配） */
     @Override
     public boolean hasPermission(Long adminId, String uri) {
         List<Long> roleIds = adminRoleRelationService.getRoleIdByAdminId(adminId);

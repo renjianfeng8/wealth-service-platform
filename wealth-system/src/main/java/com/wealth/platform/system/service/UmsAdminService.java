@@ -2,12 +2,14 @@ package com.wealth.platform.system.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.wealth.common.dto.LoginDTO;
+import com.wealth.common.utils.JwtUtil.TokenPair;
 import com.wealth.platform.system.entity.UmsAdmin;
 
 import java.util.List;
 
 public interface UmsAdminService extends IService<UmsAdmin> {
-    String login(LoginDTO dto);
+    TokenPair login(LoginDTO dto);
+    TokenPair refreshToken(String refreshToken);
     Boolean createAdmin(UmsAdmin admin);
     Boolean updateAdmin(UmsAdmin admin);
 
