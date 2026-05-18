@@ -1,7 +1,7 @@
 ﻿FROM eclipse-temurin:21-jre-alpine
 
 LABEL maintainer="renjianfeng8" \
-      description="wealth-user - 鍓嶇鐢ㄦ埛绠＄悊鏈嶅姟锛堟敞鍐屻€佺櫥褰曘€佷釜浜轰俊鎭級" \
+      description="wealth-user - 前端用户管理服务（注册、登录、个人信息）" \
       version="1.0.0"
 
 WORKDIR /app

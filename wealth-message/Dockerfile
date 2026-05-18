@@ -1,7 +1,7 @@
 ﻿FROM eclipse-temurin:21-jre-alpine
 
 LABEL maintainer="renjianfeng8" \
-      description="wealth-message - 娑堟伅鏈嶅姟锛堣储缁忚祫璁€佺珯鍐呮秷鎭帹閫侊級" \
+      description="wealth-message - 消息服务（财经资讯、站内消息推送）" \
       version="1.0.0"
 
 WORKDIR /app

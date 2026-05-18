@@ -325,6 +325,15 @@ services:
     networks:
       - wealth-net
 
+  front-user:
+    image: ghcr.io/renjianfeng8/wealth-service-platform/wealth-front-user:latest
+    container_name: wealth-front-user
+    ports:
+      - "3002:80"
+    restart: unless-stopped
+    networks:
+      - wealth-net
+
   # MySQL 定时备份服务
   mysql-backup:
     image: alpine:latest

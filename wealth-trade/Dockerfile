@@ -1,7 +1,7 @@
 ﻿FROM eclipse-temurin:21-jre-alpine
 
 LABEL maintainer="renjianfeng8" \
-      description="wealth-trade - 浜ゆ槗濮旀墭鏈嶅姟锛堝鎵樹笅鍗曘€佽鍗曠鐞嗭級" \
+      description="wealth-trade - 交易委托服务（委托下单、订单管理）" \
       version="1.0.0"
 
 WORKDIR /app

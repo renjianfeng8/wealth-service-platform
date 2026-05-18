@@ -1,7 +1,7 @@
 ﻿FROM eclipse-temurin:21-jre-alpine
 
 LABEL maintainer="renjianfeng8" \
-      description="wealth-system - 鍚庡彴鏉冮檺绠＄悊鏈嶅姟锛圧BAC銆丣WT鐧诲綍锛? \
+      description="wealth-system - 后台权限管理服务（RBAC、JWT登录）" \
       version="1.0.0"
 
 WORKDIR /app

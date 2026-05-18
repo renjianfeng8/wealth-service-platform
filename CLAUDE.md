@@ -5,7 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 **相关文档：**
 - [模块架构与配置体系](docs/architecture.md) — 跨模块开发时引用
 - [数据库表结构与字段](docs/database-schema.md) — 写实体类时引用
-- [Bug 记录](Bug.md) — 排查已知问题
+- [Bug 记录](docs/Bug.md) — 排查已知问题
 
 # 理财服务平台开发规范（自动遵守）
 
@@ -15,41 +15,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 数据库：wealth（utf8mb4）
 
-# 一、环境版本（严格锁定）
+环境版本、基础设施类说明等引用式内容见 [docs/architecture.md](docs/architecture.md)。
 
-JDK: 21.0.3
-Maven: 3.9.9
-MySQL: 8.0.37
-Redis: 5.0.14.1
-RabbitMQ: 3.10.20
-ElasticSearch: 8.8.2
-Sentinel Dashboard: 1.8.6 (bladex/sentinel-dashboard:latest)
-Seata: 2.0.0 (seataio/seata-server:2.0.0)
-Zipkin: openzipkin/zipkin:latest
-Prometheus: prom/prometheus:latest
-Grafana: grafana/grafana:latest
-Docker: 29.4.0
-docker-compose: v5.11.0
-
-SpringBoot: 3.3.5
-SpringCloud: 2023.0.3
-Spring Cloud Alibaba: 2023.0.1.2
-MyBatis-Plus: 3.5.7    # 最后一个包含 PaginationInnerInterceptor 的稳定版本（3.5.9+ 已移除）
-mybatis-spring: 3.0.4  # wealth-system 模块覆盖为 3.0.5
-jjwt: 0.11.5
-Knife4j: 4.4.0
-
-前端:
-  Vue: 3.5.13
-  Vite: 6.3.1
-  Element Plus: 2.9.7
-  Pinia: 2.3.1
-  Vue Router: 4.5.0
-  Axios: 1.7.9
-  TypeScript: 5.7
-  vue-tsc: 2.2.8
-
-# 二、代码结构规范（强制）
+# 一、代码结构规范（强制）
 
 包结构必须如下：
 com.wealth.platform.模块名
@@ -66,7 +34,7 @@ constant      # 常量
 exception     # 异常
 common        # 公共
 
-# 三、MyBatis-Plus 规范
+# 二、MyBatis-Plus 规范
 
 ## Mapper / Service 规范
 
@@ -95,7 +63,7 @@ public class MyBatisPlusConfig {
 
 > **实体类规范（BaseEntity 继承、字段映射规则）见 [数据库表结构与字段](docs/database-schema.md#三baseentity-继承规范)**
 
-# 四、接口统一返回格式
+# 三、接口统一返回格式
 
 ```json
 {
@@ -113,7 +81,7 @@ public class MyBatisPlusConfig {
 404 资源不存在
 500 服务器异常
 
-# 五、命名规范（强制）
+# 四、命名规范（强制）
 
 类名：大驼峰
 方法名：小驼峰
@@ -122,7 +90,7 @@ public class MyBatisPlusConfig {
 表名：小写+下划线
 字段名：小写+下划线
 
-# 六、业务模块对应关系（必须遵守）
+# 五、业务模块对应关系（必须遵守）
 
 sys_user          → 用户管理
 wea_product       → 产品管理
@@ -133,7 +101,7 @@ wea_news          → 资讯
 wea_message       → 消息推送
 ums_*             → 后台权限
 
-# 七、AI 生成规则
+# 六、AI 生成规则
 
 1. 必须严格按照 [数据库表结构与字段](docs/database-schema.md) 中的表结构生成 Entity（继承 BaseEntity）、Mapper、Service、Controller、Vo、Dto
 2. 必须使用 MyBatis-Plus
@@ -146,7 +114,7 @@ ums_*             → 后台权限
 9. 不允许生成不存在的表或字段
 10. 生成代码必须能直接运行
 
-# 八、禁止行为
+# 七、禁止行为
 
 - 禁止修改表结构
 - 禁止使用不兼容的依赖版本
@@ -155,7 +123,7 @@ ums_*             → 后台权限
 - 禁止 hardcode 密码/IP
 - 禁止无注释
 
-# 九、开发常用命令
+# 八、开发常用命令
 
 ```bash
 # 1. 编译公共模块（必须先执行，修改 common 后要重新 install）
@@ -180,33 +148,7 @@ java -jar wealth-system/target/wealth-system-1.0.0.jar
 mvn test -pl wealth-common -DskipTests=false
 ```
 
-# 十、核心基础设施类说明
-
-| 类 | 路径 | 用途 |
-|----|------|------|
-| BaseEntity | wealth-common/entity/BaseEntity.java | 所有实体的基类（id, createTime, updateTime, delFlag + @TableLogic） |
-| Result\<T\> | wealth-common/result/Result.java | 统一 API 返回封装（code + message + data） |
-| ResultCode | wealth-common/result/ResultCode.java | 状态码枚举 |
-| BeanConvertUtil | wealth-common/utils/BeanConvertUtil.java | Entity→VO 转换 + 新增 `copyNonNullProperties` 用于 null 安全更新 |
-| JwtUtil | wealth-common/utils/JwtUtil.java | JWT Token 生成与验证，含 @PostConstruct 密钥长度校验（≥32字节） |
-| ServiceException | wealth-common/exception/ServiceException.java | 业务异常，携带 int code 字段（全局异常处理器据此返回对应状态码） |
-| GlobalExceptionHandler | wealth-common/exception/GlobalExceptionHandler.java | 全局异常处理（ServiceException / @Valid 校验失败 / 通用异常） |
-| MyBatisPlusConfig | wealth-common/config/MyBatisPlusConfig.java | MyBatis-Plus 分页插件配置（@ConditionalOnClass 安全加载） |
-| MyBatisPlusMetaObjectHandler | wealth-common/config/MyBatisPlusMetaObjectHandler.java | 自动填充 createTime/updateTime |
-| LoginInterceptor | wealth-common/interceptor/LoginInterceptor.java | 用户模块登录拦截器（AntPathMatcher 匹配放行路径） |
-| PermissionInterceptor | wealth-system/interceptor/PermissionInterceptor.java | 后台 RBAC 权限拦截器（数据库驱动：admin→角色→资源→URL） |
-| SystemWebConfig | wealth-system/config/SystemWebConfig.java | 注册 PermissionInterceptor（排除 /umsAdmin/login、/doc.html、/webjars/**、/swagger-resources/**、/v3/api-docs/**） |
-| RedisUtil | wealth-common/utils/RedisUtil.java | Redis 操作工具类 |
-| AuthConstant | wealth-common/constants/AuthConstant.java | 权限相关常量 |
-| JwtAuthGlobalFilter | wealth-gateway/filter/JwtAuthGlobalFilter.java | Gateway 全局 JWT 鉴权过滤器（HMAC-SHA256，白名单放行） |
-| SentinelConfig | wealth-trade/config/SentinelConfig.java | 交易模块 Sentinel 限流规则（POST 下单接口 QPS=100） |
-| SentinelGatewayConfig | wealth-gateway/config/SentinelGatewayConfig.java | 网关 Sentinel 路由限流（7 条路由规则，50-100 QPS） |
-| RabbitMqConfig | wealth-common/config/RabbitMqConfig.java | 双 DLX/DLQ 队列、Publisher Confirm、3 次重试 |
-| MarketDataPushService | wealth-product/service/MarketDataPushService.java | SSE 发射器管理（CopyOnWriteArrayList、createEmitter、broadcastMarketUpdate） |
-| MarketDataSimulationService | wealth-product/service/MarketDataSimulationService.java | `@Scheduled(fixedRate=2000)` 行情模拟推演，高斯随机游走，更新 DB + 广播 |
-| FeignConfig | wealth-common/config/FeignConfig.java | Feign 全局超时（connect=5s, read=10s）+ 3 次重试 |
-
-# 十一、常见代码模式
+# 九、常见代码模式
 
 ## Entity → VO 转换
 
@@ -307,9 +249,9 @@ if (count > 0) {
 }
 ```
 
-# 十二、项目健康检查规则（强制遵守）
+# 十、项目健康检查规则（强制遵守）
 
-**每次执行项目健康检查、错误扫描、启动异常排查时，必须优先查阅 [Bug.md](Bug.md) 中的已知问题记录。**
+**每次执行项目健康检查、错误扫描、启动异常排查时，必须优先查阅 [Bug.md](docs/Bug.md) 中的已知问题记录。**
 
 ## 配置不可修改原则
 
@@ -356,7 +298,7 @@ JwtUtil 在 @PostConstruct 中校验密钥字节≥32，启动时即失败而非
 - [ ] 新增模块须引入 `micrometer-tracing-bridge-brave` + `zipkin-sender-okhttp3` 依赖
 - [ ] 新增模块须引入 `micrometer-registry-prometheus` 依赖（暴露 /actuator/prometheus）
 
-# 十三、Git 提交规范（强制遵守）
+# 十一、Git 提交规范（强制遵守）
 
 所有 git 提交必须遵循 [约定式提交 (Conventional Commits)](https://www.conventionalcommits.org/) 规范，格式如下：
 

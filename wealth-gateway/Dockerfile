@@ -1,7 +1,7 @@
 ﻿FROM eclipse-temurin:21-jre-alpine
 
 LABEL maintainer="renjianfeng8" \
-      description="wealth-gateway - API缃戝叧锛岀粺涓€璺敱杞彂涓庡叏灞€CORS" \
+      description="wealth-gateway - API网关，统一路由转发与全局CORS" \
       version="1.0.0"
 
 WORKDIR /app

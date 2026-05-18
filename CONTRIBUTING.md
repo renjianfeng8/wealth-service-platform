@@ -94,65 +94,12 @@ npx vite
 前端默认运行在 `http://localhost:3000`，通过网关 `http://localhost:8080` 调用后端接口。
 ## 代码规范
 
-### Java 后端
-
-- 包结构：`com.wealth.platform.{模块名}`，按 controller/service/mapper/entity/vo/dto 分层
-- 所有 Entity 必须继承 `BaseEntity`，自动填充 `create_time`/`update_time`
-- 接口统一返回 `Result<T>` 格式（code + message + data）
-- 使用 `BeanConvertUtil` 进行 Entity → VO 转换
-- 更新操作使用 `copyNonNullProperties` 避免 null 覆盖
-- 业务异常使用 `ServiceException(code, message)` 而非 RuntimeException
-- 写操作必须加 `@Transactional(rollbackFor = Exception.class)`
-- 所有 `@RequestBody` DTO 必须加 `@Valid`
-- 分页查询使用 MyBatis-Plus `Page` + `PaginationInnerInterceptor`
-
-详细规范参见 [CLAUDE.md](CLAUDE.md)。
-### 前端
-
-- Vue 3 组合式 API + TypeScript
-- 组件库使用 Element Plus
-- 状态管理使用 Pinia
-- 路由使用 Vue Router 4
-
-### 数据库
-- 所有表必须包含 `id`、`create_time`、`update_time`、`del_flag`
-- 逻辑删除：`del_flag` 0=未删除 1=已删除
-- 主键统一使用 BIGINT 自增
-- 禁止使用外键
-
-表结构细节参见 [docs/database-schema.md](docs/database-schema.md)。
+完整开发规范（包结构、Entity 继承、接口格式、命名规范、异常处理、数据库规范等）详见 [CLAUDE.md](CLAUDE.md)。  
+数据库表结构详见 [docs/database-schema.md](docs/database-schema.md)。
 ## 提交规范
 
-所有 git 提交必须遵循 [Conventional Commits](https://www.conventionalcommits.org/) 规范：
-```
-<type>(<scope>): <description>
-```
-
-### type 类型
-
-| type | 说明 |
-|------|------|
-| feat | 新功能 |
-| fix | 修复 bug |
-| docs | 文档变更 |
-| style | 代码格式调整 |
-| refactor | 代码重构 |
-| perf | 性能优化 |
-| test | 添加或修改测试 |
-| chore | 构建/工具变动 |
-| ci | CI 配置变更 |
-| build | 依赖/构建系统变更 |
-
-- **scope**（可选）: common / gateway / system / user / product / account / trade / message / search
-- **description**: 命令式语气，首字母小写，末尾不加句号
-
-示例：
-```
-feat(product): 添加产品分页查询接口
-fix(trade): 修复交易委托金额计算精度问题
-docs: 更新 API 文档
-refactor(gateway): 提取 CORS 配置为独立类
-```
+Git 提交须遵循 [Conventional Commits](https://www.conventionalcommits.org/) 规范，格式为 `<type>(<scope>): <description>`。  
+type/scope 列表及详细要求见 [CLAUDE.md](CLAUDE.md#十三git-提交规范强制遵守)。
 
 ## 分支管理策略
 
@@ -204,7 +151,7 @@ Closes #123
 
 发现 Bug 或有改进建议时：
 
-1. **优先查阅** [Bug.md](Bug.md) — 确认是否为已知问题，查看已有的修复方案和排查要点
+1. **优先查阅** [Bug.md](docs/Bug.md) — 确认是否为已知问题，查看已有的修复方案和排查要点
 2. **提交 Issue** — 若为新问题，请附上：
    - 复现步骤
    - 期望行为与实际行为
