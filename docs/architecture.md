@@ -10,7 +10,7 @@ wealth-service-platform (pom)
 ├── wealth-system      # 系统服务（后台权限管理 ums_* 表、管理员JWT登录、RBAC权限拦截）
 ├── wealth-user        # 用户服务（前端用户管理 sys_user）
 ├── wealth-account     # 账户服务（自选管理 wea_user_favorite）
-├── wealth-product     # 产品服务（产品 wea_product + 行情 wea_market_data）
+├── wealth-product     # 产品服务（产品 wea_product + 行情 wea_market_data + SSE 实时推送）
 ├── wealth-trade       # 交易服务（委托交易 wea_trade_order）
 ├── wealth-message     # 消息服务（资讯 wea_news + 站内消息 wea_message）
 └── wealth-search      # 搜索服务（基于 ES 8 的产品搜索，无数据库依赖）

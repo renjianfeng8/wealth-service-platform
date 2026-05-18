@@ -5,6 +5,35 @@
 
 ---
 
+## v1.6.0 (2026-05-18)
+
+### SSE 实时行情推送体系
+
+前端行情页（market）和自选页（favorite）的数据获取方式从 HTTP 轮询升级为 SSE（Server-Sent Events）服务端主动推送，实现行情数据实时更新。
+
+#### 新增：SSE 推送服务端
+
+- **MarketDataPushService** — SSE 发射器管理，使用 `CopyOnWriteArrayList` 线程安全存储客户端连接，支持 `createEmitter`（86400s 超时）、`broadcastMarketUpdate`（全量广播）、`getEmitterCount`（监控连接数）
+- **MarketDataSimulationService** — `@Scheduled(fixedRate = 2000)` 定时模拟行情变化，高斯随机游走（约 0.2% 波动），先更新数据库再广播全量快照，`@PostConstruct` 启动时加载 8 条产品行情
+- SSE 端点 `GET /WeaMarketData/sse?token=xxx`，先推送全量快照再维持长连接，JWT Token 通过查询参数传递（EventSource 限制），Controller 内手动校验
+- 端点路径从 LoginInterceptor 排除，Gateway JWT 过滤器放行，Nacos AuthConstant 同步更新白名单
+
+#### 新增：Nginx SSE 反向代理配置
+
+新增独立 location `/api/v1/product/WeaMarketData/sse`：
+- `proxy_http_version 1.1` + `proxy_set_header Connection ''` 禁用 HTTP/1.1 连接复用
+- `proxy_buffering off` + `proxy_cache off` 禁用缓冲
+- `proxy_read_timeout 86400s` 支持长连接
+
+#### 新增：前端 SSE 集成
+
+- 两个 SPA 各新增 `utils/sse.ts`：`createMarketSSE()`（EventSource 工厂）、`onMarketUpdate()`（事件注册）
+- **用户行情页**（`front-user/views/market/index.vue`）：`onMounted` 建立 SSE 连接，`onUnmounted` 关闭，按 `productCode` 匹配更新表格行
+- **用户自选页**（`front-user/views/favorite/index.vue`）：SSE 实时行情替代 `getMarketDataList` 轮询丰富价格数据
+- **管理员行情页**（`front/views/market/index.vue`）：同上 SSE 实时更新
+
+---
+
 ## v1.5.0 (2026-05-17)
 
 ### 可观测性体系全面落地

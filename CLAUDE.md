@@ -202,6 +202,8 @@ mvn test -pl wealth-common -DskipTests=false
 | SentinelConfig | wealth-trade/config/SentinelConfig.java | 交易模块 Sentinel 限流规则（POST 下单接口 QPS=100） |
 | SentinelGatewayConfig | wealth-gateway/config/SentinelGatewayConfig.java | 网关 Sentinel 路由限流（7 条路由规则，50-100 QPS） |
 | RabbitMqConfig | wealth-common/config/RabbitMqConfig.java | 双 DLX/DLQ 队列、Publisher Confirm、3 次重试 |
+| MarketDataPushService | wealth-product/service/MarketDataPushService.java | SSE 发射器管理（CopyOnWriteArrayList、createEmitter、broadcastMarketUpdate） |
+| MarketDataSimulationService | wealth-product/service/MarketDataSimulationService.java | `@Scheduled(fixedRate=2000)` 行情模拟推演，高斯随机游走，更新 DB + 广播 |
 | FeignConfig | wealth-common/config/FeignConfig.java | Feign 全局超时（connect=5s, read=10s）+ 3 次重试 |
 
 # 十一、常见代码模式
