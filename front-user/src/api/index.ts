@@ -35,11 +35,14 @@ request.interceptors.response.use(
     return res
   },
   (error) => {
-    if (error.response?.status === 401) {
+    const status = error.response?.status
+    const data = error.response?.data
+    const msg = data?.message || error.message || '网络错误'
+    if (status === 401) {
       removeToken()
       window.location.hash = '#/login'
     }
-    ElMessage.error(error.message || '网络错误')
+    ElMessage.error(msg)
     return Promise.reject(error)
   },
 )
