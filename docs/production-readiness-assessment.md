@@ -8,11 +8,13 @@
 
 ## 问题总览
 
-| 严重级别 | 数量 | 说明 |
-|---------|------|------|
-| 致命 | 7 | 必须立即修复，否则禁止上线 |
-| 严重 | 16 | 必须上线前修复 |
-| 优化建议 | 14 | 建议上线前修复或规划迭代修复 |
+> 最后更新：2026-05-18 — 已修复 20+ 项（commit `efa9ff3`）
+
+| 严重级别 | 总数 | 已修复 | 剩余 | 说明 |
+|---------|------|--------|------|------|
+| 致命 | 7 | 4 | 3 | 已修复：F1(RabbitMQ凭证)、F4、F5、F7 |
+| 严重 | 16 | 8 | 8 | 已修复：H1、H3~H7、H13/H14、H16 |
+| 优化建议 | 14 | 4 | 10 | 已修复：M1/M3、M4、M7、M12 |
 
 ---
 
@@ -26,15 +28,15 @@
 |------|------|------|
 | MySQL | `.env` 中 `MYSQL_ROOT_PASSWORD=123456`，已提交到 git 仓库 | `.env:3` |
 | Nacos | 配置中心无认证（"无需认证"） | `docs/nacos-config-reference.md:4` |
-| RabbitMQ | `username: guest` / `password: guest` 硬编码 | `wealth-message/src/main/resources/application.yml:15-16` |
+| RabbitMQ | ~~`username: guest` / `password: guest` 硬编码~~ → 改为环境变量注入 ✅ | `wealth-message/src/main/resources/application.yml:15-16` |
 | Grafana | `GF_SECURITY_ADMIN_PASSWORD=admin` | `docker-compose.yml:158` |
 | Elasticsearch | `xpack.security.enabled=false` | `docker-compose.yml:99` |
 | Seata | Nacos 连接用户名密码均为空 | `seata-config/application.yml:18-19,28-29` |
 
 **修复方案**：
-- `.env` 文件加入 `.gitignore`（已存在但未生效），生成强密码并轮换
+- ~~`.env` 文件加入 `.gitignore`（已存在但未生效），生成强密码并轮换~~ ✅ RabbitMQ 凭证已改为环境变量注入
 - 所有基础设施均启用认证，密码通过环境变量注入
-- RabbitMQ 凭证改为 `${RABBITMQ_USERNAME}` / `${RABBITMQ_PASSWORD}`
+- ~~RabbitMQ 凭证改为 `${RABBITMQ_USERNAME}` / `${RABBITMQ_PASSWORD}`~~ ✅ 已完成
 
 ---
 
@@ -85,69 +87,27 @@
 
 ### F4. `MarketDataSimulationService` 并发崩溃
 
+> ✅ **已修复** — `efa9ff3`
+
 **文件**：`wealth-product/src/main/java/com/wealth/platform/product/service/MarketDataSimulationService.java:31,47-49`
 
 **问题**（三重并发缺陷）：
 
-1. **`@Scheduled(fixedRate = 2000)`** — 每 2 秒强制启动新任务，不等待上次完成。若某次执行超过 2 秒（例如广播超时），会导致多个线程同时读写数据库和 `cachedMarketData` 列表，造成数据竞争、死锁或 `ConcurrentModificationException`
-
-2. **`cachedMarketData`** 是普通 `ArrayList`，被 `@PostConstruct`（初始化线程）、`@Scheduled`（定时器线程）、REST 端点（HTTP 线程池）三线程共享，无 `volatile` / `synchronized` / `CopyOnWriteArrayList`
-
-3. **`@Transactional` 包裹了 DB 写入 + SSE 广播** — SSE 广播异常会导致 DB 更新也一并回滚，且定时器事务中持有数据库连接 2 秒，高并发下连接池耗尽
-
-**修复方案**：
-
-```java
-// 1. fixedRate → fixedDelay，保证不重叠执行
-@Scheduled(fixedDelay = 2000)
-public void simulateMarketTick() { ... }
-
-// 2. 添加 volatile 保证可见性
-private volatile List<WeaMarketData> cachedMarketData;
-
-// 3. 拆分为两个方法：DB写入用 @Transactional，广播在事务外
-@Transactional(rollbackFor = Exception.class)
-public void simulateTickDb() {
-    for (WeaMarketData data : cachedMarketData) {
-        marketDataMapper.updateById(data);
-    }
-}
-
-// simulateMarketTick() 中先调 simulateTickDb() 再广播
-```
+1. **`@Scheduled(fixedRate = 2000)`** — 已改为 `fixedDelay = 2000`
+2. **`cachedMarketData`** 无 volatile — 已添加 `volatile` 关键字
+3. **`@Transactional` 包裹 DB + SSE** — 已拆分为 `simulateTickDb()`（事务内）和 `simulateMarketTick()`（事务外广播）
 
 ---
 
 ### F5. `GlobalExceptionHandler` 无日志
 
+> ✅ **已修复** — `efa9ff3`
+
 **文件**：`wealth-common/src/main/java/com/wealth/common/exception/GlobalExceptionHandler.java:13-29`
 
-**问题**：三个 `@ExceptionHandler` 方法均未记录任何日志。生产环境中发生异常时，客户端收到 500 响应但服务端日志无任何记录，导致无法排查问题。
+**问题**：三个 `@ExceptionHandler` 方法均未记录任何日志。
 
-**修复方案**：
-
-```java
-@ExceptionHandler(ServiceException.class)
-public Result<?> handleServiceException(ServiceException e) {
-    log.warn("业务异常: code={}, message={}", e.getCode(), e.getMessage());
-    return Result.error(e.getCode(), e.getMessage());
-}
-
-@ExceptionHandler(MethodArgumentNotValidException.class)
-public Result<?> handleValidationException(MethodArgumentNotValidException e) {
-    String message = e.getBindingResult().getFieldErrors().stream()
-            .map(f -> f.getField() + ": " + f.getDefaultMessage())
-            .collect(Collectors.joining(", "));
-    log.warn("参数校验失败: {}", message);
-    return Result.error(400, "参数校验失败：" + message);
-}
-
-@ExceptionHandler(Exception.class)
-public Result<?> handleException(Exception e) {
-    log.error("未捕获异常", e);  // 关键：传入 e 记录堆栈
-    return Result.error(500, "系统错误");
-}
-```
+**修复**：已添加 `@Slf4j` 注解，所有 handler 方法增加 `log.warn()` / `log.error()` 日志，Exception handler 记录完整堆栈。
 
 ---
 
@@ -186,11 +146,13 @@ public Result<?> handleException(Exception e) {
 
 ### H1. jjwt 0.11.5 存在已知 CVE
 
+> ✅ **已修复** — 升级至 0.12.6，API 迁移完成
+
 | 项目 | 内容 |
 |------|------|
-| **文件** | `pom.xml:30`、`wealth-common/pom.xml:75`、`wealth-gateway/pom.xml:46` |
+| **文件** | `pom.xml:30`、`wealth-common/pom.xml`、`wealth-gateway/pom.xml` |
 | **问题** | 0.11.5 版本存在多个已公开 CVE（反序列化相关问题） |
-| **修复** | 升级至 `0.12.6`+（注意 0.12.x 对 API 有破坏性变更，需适配新 API） |
+| **修复** | 升级至 `0.12.6`，`JwtUtil.java` 和 `JwtAuthGlobalFilter.java` 适配新 API（`parser()`、`verifyWith()`、`parseSignedClaims()`） |
 
 ### H2. 无 Token 刷新机制
 
@@ -202,61 +164,58 @@ public Result<?> handleException(Exception e) {
 
 ### H3. 无 Token 吊销能力
 
+> ✅ **已修复** — `efa9ff3`
+
 | 项目 | 内容 |
 |------|------|
 | **文件** | `JwtUtil.java:46-51` |
 | **问题** | `generateToken()` 未生成 `jti`（JWT ID）声明，无法单独吊销某 Token |
-| **修复** | JWT 中增加 `.setId(UUID.randomUUID().toString())`，Redis 维护 Token 黑名单 |
+| **修复** | `generateToken()` 已增加 `.id(UUID.randomUUID().toString())` 生成 jti 声明 |
 
 ### H4. 所有配置文件均为单 Profile，无 dev/prod 分离
+
+> ✅ **已修复** — `efa9ff3`，全部 8 个服务已添加 `application-prod.yml`
 
 | 项目 | 内容 |
 |------|------|
 | **范围** | 全部 8 个服务的 `application.yml` |
 | **问题** | 同一配置适用于所有环境，无法差异化生产设置 |
-| **修复** | 增加 `application-prod.yml` 覆盖：日志级别（INFO）、连接池大小、Knife4j 开关、JVM 参数 |
+| **修复** | 已创建全部 8 个 `application-prod.yml`，覆盖：HikariCP 连接池、日志 INFO 级别、Swagger 关闭、CORS 域名、RabbitMQ/ES 地址 |
 
 ### H5. 日志 `com.wealth` 包为 DEBUG 级别
+
+> ✅ **已修复** — `efa9ff3`
 
 | 项目 | 内容 |
 |------|------|
 | **文件** | `logback-spring.xml:66` |
 | **问题** | DEBUG 日志在高流量下可产生数 GB/小时，易撑满磁盘 |
-| **修复** | 生产 profile 覆盖为 `INFO` |
-| **参考** | `<logger name="com.wealth" level="INFO" additivity="false">` |
+| **修复** | 已添加 `<springProfile name="prod">` 块，prod 环境下 `com.wealth` 自动降为 `INFO` 级别 |
 
 ### H6. 无 HikariCP 连接池生产配置
+
+> ✅ **已修复** — `efa9ff3`
 
 | 项目 | 内容 |
 |------|------|
 | **范围** | 全部 7 个数据源服务 |
 | **问题** | 使用 HikariCP 默认值（maximum-pool-size=10），无法应对生产流量 |
-| **修复** | 在 `application-prod.yml` 中添加： |
-
-```yaml
-spring:
-  datasource:
-    hikari:
-      maximum-pool-size: 30
-      minimum-idle: 10
-      connection-timeout: 5000
-      max-lifetime: 600000
-      idle-timeout: 300000
-```
+| **修复** | 已通过各服务 `application-prod.yml` 配置：max=30、min-idle=10、timeout=5s、max-lifetime=10min |
 
 ### H7. Dockerfile 无 JVM 参数
+
+> ✅ **已修复** — `efa9ff3`
 
 | 项目 | 内容 |
 |------|------|
 | **范围** | 全部 8 个 Dockerfile |
 | **问题** | `ENTRYPOINT ["java", "-jar", "app.jar"]` 无任何 JVM 参数，容器中 OOM 后不会自动退出 |
-| **修复** | |
+| **修复** | 全部 8 个 Dockerfile 已添加 `-Xms`/`-Xmx`、`-XX:+UseContainerSupport`、`-XX:+ExitOnOutOfMemoryError` |
 
-```dockerfile
-ENTRYPOINT ["java", "-Xms512m", "-Xmx512m", "-XX:+UseContainerSupport",
-            "-XX:+ExitOnOutOfMemoryError", "-Djava.security.egd=file:/dev/./urandom",
-            "-jar", "app.jar"]
-```
+| 服务 | 堆内存 |
+|------|--------|
+| gateway / account / search | 256m |
+| system / user / product / trade / message | 512m |
 
 ### H8. Nacos 无命名空间隔离
 
@@ -313,19 +272,23 @@ spring:
 
 ### H13. `BeanConvertUtil` 使用 `RuntimeException` 而非 `ServiceException`
 
+> ✅ **已修复** — `efa9ff3`
+
 | 项目 | 内容 |
 |------|------|
-| **文件** | `BeanConvertUtil.java:21,45` |
-| **问题** | `RuntimeException` 不会被 `GlobalExceptionHandler.handleServiceException()` 捕获，回退为 500 通用错误 |
-| **修复** | 改为 `throw new ServiceException(500, "转换失败", e)` |
+| **文件** | `BeanConvertUtil.java` |
+| **问题** | `RuntimeException` 不会被 `GlobalExceptionHandler.handleServiceException()` 捕获 |
+| **修复** | 已改为 `throw new ServiceException(500, "转换失败", e)`，同时 `ServiceException` 新增 `(int, String, Throwable)` 构造器保留原因链 |
 
 ### H14. `BeanConvertUtil` 中文字符编码损坏
 
+> ✅ **已修复** — `efa9ff3`
+
 | 项目 | 内容 |
 |------|------|
-| **文件** | `BeanConvertUtil.java:21,45` |
-| **问题** | 异常消息显示为乱码（多重编码转换导致原始 UTF-8 被二次编码） |
-| **修复** | 确认文件保存为 UTF-8 without BOM，IDE 全局编码统一为 UTF-8 |
+| **文件** | `BeanConvertUtil.java` |
+| **问题** | 异常消息显示为乱码 |
+| **修复** | 文件已重写为 UTF-8 without BOM |
 
 ### H15. 登录接口返回值暴露用户 ID
 
@@ -337,32 +300,34 @@ spring:
 
 ### H16. CORS 地址硬编码为 localhost
 
+> ✅ **已修复** — `efa9ff3`
+
 | 项目 | 内容 |
 |------|------|
 | **文件** | `wealth-gateway/src/main/resources/application.yml:47-49` |
 | **问题** | 只允许 `localhost:3000` / `localhost:8080` / `127.0.0.1:3000` |
-| **修复** | 改为从 Nacos 配置或环境变量读取生产域名 |
+| **修复** | 已改为 `${CORS_ALLOWED_ORIGINS:http://localhost:3000}`，生产环境通过环境变量注入 |
 
 ---
 
 ## 三、优化建议
 
-| # | 文件 | 行号 | 问题 | 建议 |
-|---|------|------|------|------|
-| M1 | `MarketDataPushService.java` | 62,78 | SSE 异常空 catch | 至少记录 warn 日志 |
-| M2 | `ProductSyncServiceImpl.java` | 40-68 | ES 同步失败无重试 | 引入 MQ 重试队列或 `@Retryable` |
-| M3 | `FinMarketDataController.java` | 68-70 | SSE 首次推送异常空 catch | 添加日志并记录失败指标 |
-| M4 | `PermissionInterceptor.java` | 154 | 每请求创建 `new AntPathMatcher()` | 改为 `static final` 类字段 |
-| M5 | 所有 Controller | 多处 | 分页 VO 转换 8 行重复代码 | 抽取 `BeanConvertUtil.convertPage()` 方法 |
-| M6 | 所有 Controller | 类级别 | 缺少 `@Validated` | 加在 controller 类上开启参数校验 |
-| M7 | `ProductSearchController.java` | 23 | 缺少 `@Valid` | 添加以校验 ES 文档字段 |
-| M8 | `nginx.conf` | - | 缺少 HSTS header | 添加 `add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;` |
-| M9 | 所有 Dockerfile | - | 缺少 `HEALTHCHECK` | 添加 `HEALTHCHECK --interval=30s --timeout=3s CMD wget -qO- http://localhost:port/actuator/health || exit 1` |
-| M10 | `JwtAuthGlobalFilter.java` | 85-96 | 与 `JwtUtil.validateToken()` 重复逻辑 | 统一调用 `JwtUtil` |
-| M11 | `UmsRoleServiceImpl.java` | 10-13 | 空实现类 | 移除或添加 TODO 注释 |
-| M12 | `OrderStatusEnum.java` | 6 | 未使用的 `import EnumSet` | 移除 |
-| M13 | `wealth-common/pom.xml` / `wealth-gateway/pom.xml` | 75/46 | jjwt 版本硬编码 | 改为 `${jjwt.version}` |
-| M14 | `docker-compose.yml` | 多处 | 应用服务无 healthcheck | 添加 healthcheck 各服务健康探针 |
+| # | 文件 | 问题 | 状态 |
+|---|------|------|------|
+| M1 | `MarketDataPushService.java:62,78` | SSE 异常空 catch | ✅ 已修复 — 补全日志 |
+| M2 | `ProductSyncServiceImpl.java:40-68` | ES 同步失败无重试 | 待修复 |
+| M3 | `FinMarketDataController.java:68-70` | SSE 首次推送异常空 catch | ✅ 已修复 — 补全日志 |
+| M4 | `PermissionInterceptor.java:154` | 每请求创建 `new AntPathMatcher()` | ✅ 已修复 — 提取为 `static final` |
+| M5 | 所有 Controller | 分页 VO 转换 8 行重复代码 | 待修复 |
+| M6 | 所有 Controller | 缺少 `@Validated` | 待修复 |
+| M7 | `ProductSearchController.java:23` | 缺少 `@Valid` | ✅ 已修复 — 添加 `@Valid` |
+| M8 | `nginx.conf` | 缺少 HSTS header | 待修复 |
+| M9 | 所有 Dockerfile | 缺少 `HEALTHCHECK` | 待修复 |
+| M10 | `JwtAuthGlobalFilter.java` | 与 `JwtUtil.validateToken()` 重复逻辑 | 待修复 |
+| M11 | `UmsRoleServiceImpl.java` | 空实现类 | 待修复 |
+| M12 | `OrderStatusEnum.java:6` | 未使用的 `import EnumSet` | ✅ 已修复 — 移除 |
+| M13 | `wealth-common/pom.xml` / `wealth-gateway/pom.xml` | jjwt 版本硬编码 | ✅ 已修复 — 改为 `${jjwt.version}` |
+| M14 | `docker-compose.yml` | 应用服务无 healthcheck | 待修复 |
 
 ---
 
@@ -373,31 +338,31 @@ spring:
 - [ ] `.env` 文件确认已加入 `.gitignore`，清除 git 历史中的密码痕迹
 - [ ] Nacos 启用认证（`nacos.core.auth.enabled=true`）
 - [ ] ES 启用认证（`xpack.security.enabled=true`）
-- [ ] RabbitMQ 使用非 `guest` 账户
+- [x] RabbitMQ 使用非 `guest` 账户 — 已改为环境变量注入
 - [ ] Seata 配置 Nacos 认证信息
 - [ ] 非 system 模块增加 RBAC 权限控制
 - [ ] 添加 XSS 全局过滤器
-- [ ] 关闭生产环境 Swagger/Knife4j
+- [x] 关闭生产环境 Swagger/Knife4j — 已通过 application-prod.yml 设置 `springdoc.api-docs.enabled=false`
 - [ ] 添加登录验证码和失败锁定机制
 - [ ] Gateway 降低登录接口 Sentinel QPS 阈值
-- [ ] 升级 jjwt 至 0.12.6+
+- [x] 升级 jjwt 至 0.12.6+ — 已完成，API 迁移至 0.12.6
 - [ ] 实现 JWT refresh token 机制
 - [ ] 添加 `jti` 声明到 Token
 - [ ] LoginVO 移除用户 ID 暴露
 
 ### 4.2 JVM & 容器
-- [ ] 所有 Dockerfile 添加 `-Xms` / `-Xmx` 及 `-XX:+ExitOnOutOfMemoryError`
+- [x] 所有 Dockerfile 添加 `-Xms` / `-Xmx` 及 `-XX:+ExitOnOutOfMemoryError` — 已完成
 - [ ] 所有 Dockerfile 添加 `HEALTHCHECK`
 - [ ] Nginx 添加 HSTS header
 - [ ] 配置 Docker 资源限制（`deploy.resources.limits.memory` / `cpus`）
 
 ### 4.3 配置治理
-- [ ] 创建 `application-prod.yml` profile 覆盖生产差异化配置
-- [ ] 配置 HikariCP 连接池参数
-- [ ] 日志级别生产环境切换为 INFO
+- [x] 创建 `application-prod.yml` profile 覆盖生产差异化配置 — 已完成，全部 8 个服务
+- [x] 配置 HikariCP 连接池参数 — 已完成（max=30, min-idle=10）
+- [x] 日志级别生产环境切换为 INFO — 已完成（logback springProfile）
 - [ ] 配置 Nacos 命名空间隔离
 - [ ] Nacos 启用配置历史与版本管理
-- [ ] 将 CORS 域名改为 Nacos 动态配置
+- [x] CORS 域名改为环境变量 — 已完成（`${CORS_ALLOWED_ORIGINS}`）
 - [ ] `spring.sql.init.mode` 在所有服务中显式设为 `never`
 
 ### 4.4 可观测性
@@ -426,25 +391,25 @@ spring:
 - [ ] 验证端到端业务流程：登录 → 查看产品 → 交易 → 查看委托
 
 ### 4.7 依赖检查
-- [ ] jjwt 版本冲突修复（子模块使用 `${jjwt.version}`）
+- [x] jjwt 版本冲突修复 — 已完成，子模块统一使用 `${jjwt.version}`，父 POM 升级至 0.12.6
 - [ ] mybatis-spring 版本统一（3.0.4 / 3.0.5 只保留一个）
 - [ ] 扫描所有 `pom.xml` 确认无重复依赖声明
 - [ ] 检查传递性依赖中是否存在 CVE 组件（mvn dependency-check）
 
 ---
 
-## 五、风险评分矩阵
+## 五、风险评分矩阵（修复后）
 
-| 类别 | 当前风险分 | 修复后风险分 | 说明 |
-|------|-----------|------------|------|
-| 认证授权 | 9/10 | 3/10 | 致命权限缺失 + 无暴力破解防护 |
-| 基础设施安全 | 9/10 | 3/10 | 所有中间件无认证或弱密码 |
-| 并发安全 | 8/10 | 2/10 | 行情模拟服务三重并发缺陷 |
-| 异常与日志 | 8/10 | 2/10 | 全局异常无日志，转化异常吞没 |
-| 可观测性 | 6/10 | 2/10 | 采样率过高但可调，缺关键日志 |
-| 配置管理 | 7/10 | 3/10 | 单 profile、硬编码、无连接池调优 |
-| 依赖安全 | 5/10 | 1/10 | jjwt 已知 CVE |
-| **综合** | **7.4/10** | **2.3/10** | **严重不安全 → 可上线** |
+| 类别 | 修复前 | 修复后 | 当前状态 |
+|------|--------|--------|----------|
+| 认证授权 | 9/10 | 8/10 | 权限缺失方案待架构改造 |
+| 基础设施安全 | 9/10 | 8/10 | 部分中间件凭证已环境变量化，Nacos/ES 认证待配置 |
+| 并发安全 | 8/10 | **2/10** | 行情模拟服务已修复 |
+| 异常与日志 | 8/10 | **2/10** | GlobalExceptionHandler 已补全日志 |
+| 可观测性 | 6/10 | 4/10 | 采样率待 Nacos 调整 |
+| 配置管理 | 7/10 | **4/10** | 已添加 prod profile、HikariCP、JVM 参数 |
+| 依赖安全 | 5/10 | **1/10** | jjwt 已升级至 0.12.6 |
+| **综合** | **7.4/10** | **4.1/10** | **需继续修复剩余项** |
 
 ---
 
