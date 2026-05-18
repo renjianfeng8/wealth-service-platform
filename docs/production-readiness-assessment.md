@@ -8,11 +8,13 @@
 
 ## 问题总览
 
-> 最后更新：2026-05-18 — 已修复 30+ 项（commit `545acf6`）
+> 最后更新：2026-05-18 — 已修复 30+ 项（commit `545acf6`、`8a236e2`）
 
 | 严重级别 | 总数 | 已修复 | 剩余 | 说明 |
 |---------|------|--------|------|------|
-| 致命 | 7 | 6 | 1 | 已修复：F1、F2、F3、F4、F5、F6 |
+| 致命 | 7 | 7 | **0** | 全部修复 ✅ |
+| 严重 | 16 | 8 | 8 | 已修复：H1、H3~H7、H13/H14、H16 |
+| 优化建议 | 14 | 4 | 10 | 已修复：M1/M3、M4、M7、M12 |
 | 严重 | 16 | 8 | 8 | 已修复：H1、H3~H7、H13/H14、H16 |
 | 优化建议 | 14 | 4 | 10 | 已修复：M1/M3、M4、M7、M12 |
 
@@ -140,16 +142,21 @@
 
 ### F7. Swagger/Knife4j 接口文档生产环境可匿名访问
 
-**文件**：
-- `wealth-common/src/main/java/com/wealth/common/constants/AuthConstant.java:11-14`
-- `wealth-gateway/src/main/java/com/wealth/gateway/filter/JwtAuthGlobalFilter.java:42-45`
+> ✅ **已修复** — 当前会话
 
-**问题**：`/doc.html`、`/webjars/**`、`/swagger-resources/**`、`/v3/api-docs/**` 在所有环境白名单放行，暴露完整 API 结构、参数、数据结构。
+**修复内容**：
 
-**修复方案**：
-- 通过 `springdoc.api-docs.enabled` 配置区分环境（prod=false）
-- 或在生产环境的 Nacos 配置中设置 `springdoc.api-docs.enabled=false`
-- 删除 AuthConstant 中的文档白名单路径，改为通过 Nginx 内部访问控制
+| 修改点 | 操作 |
+|--------|------|
+| `JwtAuthGlobalFilter.java` — Gateway 白名单 | 移除 4 条 Swagger 路径 |
+| `AuthConstant.java` — 全局 LoginInterceptor 白名单 | 移除 4 条 Swagger 路径 |
+| 全部 7 个模块的 WebConfig 拦截器排除列表 | 移除 4 条 Swagger 路径（LoginInterceptor + PermissionCheckInterceptor 各一处） |
+| `application-prod.yml`（已存在） | 维持 `springdoc.api-docs.enabled: false` |
+
+**修复效果**：
+- 开发环境：Swagger/Knife4j 仍可通过 `/doc.html` 访问，但需先登录获取 Token
+- 生产环境：`springdoc.api-docs.enabled: false` 禁用后端端点，且网关和拦截器不再白名单放行
+- 三层防护：Gateway 全局过滤器 → 各模块 LoginInterceptor → 各模块 PermissionCheckInterceptor
 
 ---
 
@@ -353,7 +360,7 @@ spring:
 - [ ] Seata 配置 Nacos 认证信息
 - [x] 非 system 模块增加 RBAC 权限控制 — 已通过 PermissionCheckInterceptor 实现
 - [x] 添加 XSS 全局过滤器 — 已实现 XssFilter + StringXssDeserializer
-- [x] 关闭生产环境 Swagger/Knife4j — 已通过 application-prod.yml 设置 `springdoc.api-docs.enabled=false`
+- [x] 关闭生产环境 Swagger/Knife4j — 白名单已全部移除，需登录访问 ✅
 - [x] 添加登录验证码和失败锁定机制 — 已实现 CaptchaController + Redis 账号锁定
 - [ ] Gateway 降低登录接口 Sentinel QPS 阈值
 - [x] 升级 jjwt 至 0.12.6+ — 已完成，API 迁移至 0.12.6

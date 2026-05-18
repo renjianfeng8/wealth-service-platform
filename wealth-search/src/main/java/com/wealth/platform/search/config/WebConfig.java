@@ -27,19 +27,11 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addInterceptor(new LoginInterceptor(jwtUtil))
                 .addPathPatterns("/**")
                 .excludePathPatterns(
-                        "/doc.html",
-                        "/webjars/**",
-                        "/swagger-resources/**",
-                        "/v3/api-docs/**"
                 );
         // 2. 权限校验（仅校验 POST/PUT/DELETE 写操作）
         registry.addInterceptor(new PermissionCheckInterceptor(permissionCheckFeignClient))
                 .addPathPatterns("/**")
                 .excludePathPatterns(
-                        "/doc.html",
-                        "/webjars/**",
-                        "/swagger-resources/**",
-                        "/v3/api-docs/**"
                 );
     }
 }

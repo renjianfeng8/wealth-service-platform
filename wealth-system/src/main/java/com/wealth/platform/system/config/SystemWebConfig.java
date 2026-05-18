@@ -24,11 +24,7 @@ public class SystemWebConfig implements WebMvcConfigurer {
                 .excludePathPatterns(
                         "/umsAdmin/login",
                         "/umsAdmin/checkPermission",
-                        "/captcha",
-                        "/doc.html",
-                        "/webjars/**",
-                        "/swagger-resources/**",
-                        "/v3/api-docs/**"
+                        "/captcha"
                 );
     }
 }

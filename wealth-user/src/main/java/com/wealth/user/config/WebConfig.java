@@ -29,11 +29,7 @@ public class WebConfig implements WebMvcConfigurer {
                 .excludePathPatterns(
                         "/login",
                         "/register",
-                        "/resetPassword",
-                        "/doc.html",
-                        "/webjars/**",
-                        "/swagger-resources/**",
-                        "/v3/api-docs/**"
+                        "/resetPassword"
                 );
         // 2. 权限校验（仅校验 POST/PUT/DELETE 写操作）
         registry.addInterceptor(new PermissionCheckInterceptor(permissionCheckFeignClient))
@@ -41,11 +37,7 @@ public class WebConfig implements WebMvcConfigurer {
                 .excludePathPatterns(
                         "/login",
                         "/register",
-                        "/resetPassword",
-                        "/doc.html",
-                        "/webjars/**",
-                        "/swagger-resources/**",
-                        "/v3/api-docs/**"
+                        "/resetPassword"
                 );
     }
 }

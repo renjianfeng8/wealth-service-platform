@@ -33,16 +33,13 @@ public class JwtAuthGlobalFilter implements GlobalFilter, Ordered {
 
     private final AntPathMatcher pathMatcher = new AntPathMatcher();
 
-    /** 无需认证的白名单路径 */
+    /** 无需认证的白名单路径（Swagger/Knife4j 路径已移除，需登录后访问） */
     private static final String[] PERMIT_ALL_URLS = {
             "/system/umsAdmin/login",
+            "/system/captcha",
             "/user/login",
             "/user/register",
             "/product/WeaMarketData/sse/**",
-            "/doc.html",
-            "/webjars/**",
-            "/swagger-resources/**",
-            "/v3/api-docs/**"
     };
 
     @PostConstruct
