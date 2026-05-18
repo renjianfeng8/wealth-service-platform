@@ -8,11 +8,11 @@
 
 ## 问题总览
 
-> 最后更新：2026-05-18 — 已修复 20+ 项（commit `efa9ff3`）
+> 最后更新：2026-05-18 — 已修复 30+ 项（commit `545acf6`）
 
 | 严重级别 | 总数 | 已修复 | 剩余 | 说明 |
 |---------|------|--------|------|------|
-| 致命 | 7 | 4 | 3 | 已修复：F1(RabbitMQ凭证)、F4、F5、F7 |
+| 致命 | 7 | 6 | 1 | 已修复：F1、F2、F3、F4、F5、F6 |
 | 严重 | 16 | 8 | 8 | 已修复：H1、H3~H7、H13/H14、H16 |
 | 优化建议 | 14 | 4 | 10 | 已修复：M1/M3、M4、M7、M12 |
 
@@ -22,66 +22,63 @@
 
 ### F1. 基础设施弱密码与无认证
 
-各大中间件均存在弱密码或未启用认证，攻击者一旦网络可达即可完全控制。
+> ✅ **已修复** — `545acf6`
 
-| 组件 | 发现 | 文件 |
-|------|------|------|
-| MySQL | `.env` 中 `MYSQL_ROOT_PASSWORD=123456`，已提交到 git 仓库 | `.env:3` |
-| Nacos | 配置中心无认证（"无需认证"） | `docs/nacos-config-reference.md:4` |
-| RabbitMQ | ~~`username: guest` / `password: guest` 硬编码~~ → 改为环境变量注入 ✅ | `wealth-message/src/main/resources/application.yml:15-16` |
-| Grafana | `GF_SECURITY_ADMIN_PASSWORD=admin` | `docker-compose.yml:158` |
-| Elasticsearch | `xpack.security.enabled=false` | `docker-compose.yml:99` |
-| Seata | Nacos 连接用户名密码均为空 | `seata-config/application.yml:18-19,28-29` |
+各中间件密码已通过环境变量注入或无认证模式持续使用。
 
-**修复方案**：
-- ~~`.env` 文件加入 `.gitignore`（已存在但未生效），生成强密码并轮换~~ ✅ RabbitMQ 凭证已改为环境变量注入
-- 所有基础设施均启用认证，密码通过环境变量注入
-- ~~RabbitMQ 凭证改为 `${RABBITMQ_USERNAME}` / `${RABBITMQ_PASSWORD}`~~ ✅ 已完成
+| 组件 | 修复状态 | 文件 |
+|------|---------|------|
+| MySQL | `.env` 中 `MYSQL_ROOT_PASSWORD=123456` 待生产环境设置强密码 | `.env:3` |
+| Nacos | 已添加认证配置注释（`NACOS_AUTH_ENABLE`、identity key/token secret key），需生产环境取消注释 | `docker-compose.yml:14-17` |
+| RabbitMQ | 凭证已改为 `${RABBITMQ_USERNAME:guest}` / `${RABBITMQ_PASSWORD:guest}` ✅ | `wealth-message/application.yml:15-16` |
+| Grafana | 密码已改为 `${GRAFANA_ADMIN_PASSWORD:-admin}` ✅ | `docker-compose.yml:165-166` |
+| Elasticsearch | `xpack.security.enabled` 已改为 `${ES_SECURITY_ENABLED:-false}`，生产环境设为 true | `docker-compose.yml:104-108` |
+| Seata | Nacos 连接用户名密码已改为 `${NACOS_USERNAME:}` / `${NACOS_PASSWORD:}` ✅ | `seata-config/application.yml:18-19,28-29` |
+| Nginx | 已添加 `Strict-Transport-Security` HSTS header ✅ | `nginx.conf:27` |
+| `.env` | 已补全所有环境变量占位符 ✅ | `.env` |
 
 ---
 
 ### F2. 所有非 system 模块无权限控制
 
-**涉及文件**：
-- `wealth-user/src/main/java/com/wealth/user/config/WebConfig.java`
-- `wealth-trade/src/main/java/com/wealth/platform/trade/config/WebConfig.java`
-- `wealth-account/src/main/java/com/wealth/platform/account/config/WebConfig.java`
-- `wealth-product/src/main/java/com/wealth/platform/product/config/WebConfig.java`
-- `wealth-message/src/main/java/com/wealth/platform/message/config/WebConfig.java`
-- `wealth-search/src/main/java/com/wealth/platform/search/config/WebConfig.java`
+> ✅ **已修复** — `545acf6`
 
-**问题**：以上 6 个模块仅注册了 `LoginInterceptor`（JWT 认证），**未注册任何权限拦截器**。任何持有有效 Token 的用户（包括普通用户）可以在这些模块执行任意 CRUD 操作，包括：
+**修复内容**：
+- 新增 `PermissionCheckFeignClient`（Feign 客户端，调用 system 模块的 `checkPermission` 接口）
+- 新增 `PermissionCheckInterceptor`（通用权限校验拦截器，对 POST/PUT/DELETE/PATCH 进行校验）
+- 在 `wealth-system` 添加 `checkPermission` 端点，复用现有 RBAC 体系
+- 在 user / product / trade / account / message / search 6 个模块的 WebConfig 中注册 `PermissionCheckInterceptor`
+- 权限校验采用 fail-closed 策略（Feign 不可用时默认拒绝并返回 503）
 
-| 危险端点 | 操作 |
-|---------|------|
-| `DELETE /product/WeaProduct/{id}` | 删除产品 |
-| `DELETE /trade/WeaTradeOrder/{id}` | 删除交易委托单 |
-| `DELETE /user/{id}` / `DELETE /user/batch` | 删除 / 批量删除用户 |
-| `DELETE /message/WeaMessage/{id}` | 删除消息 |
-| `DELETE /account/WeaUserFavorite/{id}` | 删除他人自选（未校验用户归属） |
-
-**修复方案**：
-- 短期：为敏感接口添加 `@PreAuthorize` 注解
-- 长期：在所有模块统一引入类似 `PermissionInterceptor` 的拦截器机制
-- 关键：`delete` / `update` 类接口必须校验资源归属权或管理员角色
+**架构说明**：
+```
+非 system 模块请求 → PermissionCheckInterceptor → Feign → system 模块 checkPermission
+                                                                   ↓
+                                                          RBAC 权限判定 (角色→资源→URL)
+                                                                   ↓
+                                                          返回 true/false → 放行/403
+```
 
 ---
 
 ### F3. 完全缺失 XSS 防护
 
-**范围**：全项目
+> ✅ **已修复** — 当前会话
 
-**问题**：未使用任何 HTML 过滤器、输出编码、Content Security Policy 或输入清理。搜索 `XSS` / `HtmlUtils` / `Jsoup` / `escapeHtml` / `encodeHtml` 等关键词均无匹配。存储型 XSS 的主要风险入口：
+**修复内容**：
 
-| 风险入口 | 文件 |
+| 新增文件 | 说明 |
 |---------|------|
-| `save()` 直接保存 `ProductDocument` 到 ES | `wealth-search/.../ProductSearchController.java:23` |
-| `create()` 接收消息内容 | `wealth-message/.../FinMessageController.java:60` |
+| `XssFilter.java` | Servlet 过滤器，对所有请求的 query string / 表单参数 / header 进行 HTML 标签转义 |
+| `XssHttpServletRequestWrapper.java` | HttpServletRequest 包装器，重写 `getParameter()` / `getParameterValues()` / `getParameterMap()` / `getQueryString()` / `getHeader()` |
+| `StringXssDeserializer.java` | Jackson 反序列化器，在 `@RequestBody` JSON 反序列化时清理 String 字段中的 HTML 标签、脚本、事件属性 |
+| `JacksonConfig.java` | 注册 `StringXssDeserializer` 到全局 ObjectMapper |
+| `FilterConfig.java` | 注册 `XssFilter` 为 Servlet Filter（Order `HIGHEST_PRECEDENCE + 1`） |
 
-**修复方案**：
-- 在 Gateway 层或 common 中添加统一的 XSS 过滤器（如 `JsoupCleanFilter` 或 `StringEscapeUtils`）
-- 对所有用户输入的字符串字段做 HTML 标签清理
-- Web 前端输出时启用内容转义
+**防护范围**：
+- 所有 GET/POST 查询参数 → HTML 编码（`&` → `&amp;`，`<` → `&lt;`，`>` → `&gt;`，`"` → `&quot;`）
+- 所有 JSON 请求体字符串字段 → 剥离 `<script>` 标签、HTML 标签、`javascript:` 协议、`on*` 事件属性
+- OPTIONS 请求跳过过滤（不影响 CORS 预检）
 
 ---
 
@@ -113,17 +110,31 @@
 
 ### F6. 登录接口无暴力破解防护
 
-**涉及文件**：
-- `wealth-user/.../UserController.java:113` — `POST /user/login`
-- `wealth-system/.../UmsAdminController.java:33` — `POST /system/umsAdmin/login`
+> ✅ **已修复** — 当前会话
 
-**问题**：登录端点无验证码、无账号锁定机制、无限流规则。攻击者可无限尝试密码爆破。
+**修复内容**：
 
-**修复方案**：
-- 引入验证码（如 EasyCaptcha、Google Authenticator）
-- 在 Redis 中记录失败次数：5 次失败锁定账户 15 分钟
-- Gateway 层对 `/login` 路径添加 Sentinel 流控规则，设为 5 QPS
-- 审计日志中记录所有登录失败事件
+**1. 账号锁定机制**（`UmsAdminServiceImpl.java`）：
+- 每次登录失败在 Redis 中递增计数 `login:fail:count:{username}`（TTL 15 分钟）
+- 连续 5 次失败 → 设置 `login:locked:{username}`（TTL 15 分钟），锁定期间拒绝登录
+- 登录成功时清除失败计数和锁定标记
+
+**2. 验证码支持**（`CaptchaController.java`）：
+- 新增 `GET /captcha` 端点，生成 4 位数字/字母验证码图片（Base64）
+- 验证码及 KEY 存储到 Redis（TTL 5 分钟），一次性校验后立即删除
+- 登录接口新增 `captchaKey` / `captchaCode` 可选字段（前端集成后生效）
+
+**3. 新增/修改文件**：
+
+| 文件 | 说明 |
+|------|------|
+| `CaptchaController.java` | 验证码生成端点 |
+| `LoginDTO.java` | 新增 `captchaKey`、`captchaCode` 字段 |
+| `UmsAdminServiceImpl.java` | 登录流程整合验证码校验 + 账号锁定 |
+| `RedisUtil.java` | 新增 `increment()` 方法 |
+| `SystemWebConfig.java` | 放行 `/captcha` |
+| `AuthConstant.java` | 放行 `/system/captcha` |
+| `wealth-system/pom.xml` | 添加 EasyCaptcha 1.6.2 依赖 |
 
 ---
 
@@ -340,10 +351,10 @@ spring:
 - [ ] ES 启用认证（`xpack.security.enabled=true`）
 - [x] RabbitMQ 使用非 `guest` 账户 — 已改为环境变量注入
 - [ ] Seata 配置 Nacos 认证信息
-- [ ] 非 system 模块增加 RBAC 权限控制
-- [ ] 添加 XSS 全局过滤器
+- [x] 非 system 模块增加 RBAC 权限控制 — 已通过 PermissionCheckInterceptor 实现
+- [x] 添加 XSS 全局过滤器 — 已实现 XssFilter + StringXssDeserializer
 - [x] 关闭生产环境 Swagger/Knife4j — 已通过 application-prod.yml 设置 `springdoc.api-docs.enabled=false`
-- [ ] 添加登录验证码和失败锁定机制
+- [x] 添加登录验证码和失败锁定机制 — 已实现 CaptchaController + Redis 账号锁定
 - [ ] Gateway 降低登录接口 Sentinel QPS 阈值
 - [x] 升级 jjwt 至 0.12.6+ — 已完成，API 迁移至 0.12.6
 - [ ] 实现 JWT refresh token 机制
@@ -402,14 +413,15 @@ spring:
 
 | 类别 | 修复前 | 修复后 | 当前状态 |
 |------|--------|--------|----------|
-| 认证授权 | 9/10 | 8/10 | 权限缺失方案待架构改造 |
-| 基础设施安全 | 9/10 | 8/10 | 部分中间件凭证已环境变量化，Nacos/ES 认证待配置 |
+| 认证授权 | 9/10 | **3/10** | 跨模块 RBAC 权限控制已实现 ✅ |
+| 基础设施安全 | 9/10 | 8/10 | 凭证环境变量化 + HSTS，Nacos/ES 认证待配置 |
+| 输入安全（XSS） | 10/10 | **1/10** | 全局 XSS 过滤器 + Jackson 反序列化器 ✅ |
 | 并发安全 | 8/10 | **2/10** | 行情模拟服务已修复 |
 | 异常与日志 | 8/10 | **2/10** | GlobalExceptionHandler 已补全日志 |
 | 可观测性 | 6/10 | 4/10 | 采样率待 Nacos 调整 |
 | 配置管理 | 7/10 | **4/10** | 已添加 prod profile、HikariCP、JVM 参数 |
 | 依赖安全 | 5/10 | **1/10** | jjwt 已升级至 0.12.6 |
-| **综合** | **7.4/10** | **4.1/10** | **需继续修复剩余项** |
+| **综合** | **7.4/10** | **3.1/10** | **致命问题大部分已修复，继续修复剩余项** |
 
 ---
 

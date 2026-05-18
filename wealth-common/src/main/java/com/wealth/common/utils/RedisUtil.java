@@ -53,4 +53,9 @@ public class RedisUtil {
     public Boolean setIfAbsent(String key, Object value, long timeout, TimeUnit unit) {
         return redisTemplate.opsForValue().setIfAbsent(key, value, timeout, unit);
     }
+
+    /** 原子自增，返回自增后的值 */
+    public Long increment(String key) {
+        return redisTemplate.opsForValue().increment(key);
+    }
 }

@@ -13,4 +13,10 @@ public class LoginDTO {
 
     @NotBlank(message = "密码不能为空")
     private String password;
+
+    @Schema(description = "验证码 KEY（需先调用 /captcha 获取）")
+    private String captchaKey;
+
+    @Schema(description = "验证码（4 位数字/字母）")
+    private String captchaCode;
 }
