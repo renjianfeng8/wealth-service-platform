@@ -10,7 +10,7 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 
 /**
- * 鍚庡彴瑙掕壊琛ㄣ€? */
+ * 后台角色表。 */
 @Getter
 @Setter
 @EqualsAndHashCode(callSuper = true)
@@ -25,7 +25,7 @@ public class UmsRole extends BaseEntity {
 
     private Integer sort;
 
-    /** ums_role 琛ㄦ棤 update_time 鍒?*/
+    /** ums_role 表无 update_time 列 */
     @TableField(exist = false)
     private LocalDateTime updateTime;
 }

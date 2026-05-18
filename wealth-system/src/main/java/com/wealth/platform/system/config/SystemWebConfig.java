@@ -18,9 +18,9 @@ public class SystemWebConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(permissionInterceptor)
-                // 娉ㄦ剰锛歛ddPathPatterns 鍖归厤鐨勬槸 context-path 鍓ョ鍚庣殑璺緞锛屼笉鑳藉姞 /system 鍓嶇紑
+                // 注意：addPathPatterns 匹配的是 context-path 剥离后的路径，不能加 /system 前缀
                 .addPathPatterns("/**")
-                // excludePathPatterns 涔熸槸 context-path 鍓ョ鍚庣殑璺緞
+                // excludePathPatterns 也是 context-path 剥离后的路径
                 .excludePathPatterns(
                         "/umsAdmin/login",
                         "/doc.html",

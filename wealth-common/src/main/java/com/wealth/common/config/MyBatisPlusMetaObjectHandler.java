@@ -9,9 +9,9 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDateTime;
 
 /**
- * MyBatis-Plus 瀛楁鑷姩濉厖澶勭悊鍣細
- * create_time / update_time 瀵瑰簲鍒板疄浣撶殑 createTime / updateTime銆?
- * 鏍囨敞 @ConditionalOnClass 浣垮緱鏈紩鍏?MyBatis-Plus 鐨勬ā鍧楋紙濡?finance-search锛変笉浼氬洜鎵弿鍒版绫昏€屽惎鍔ㄥけ璐ャ€?
+ * MyBatis-Plus 字段自动填充处理器：
+ * create_time / update_time 对应到实体的 createTime / updateTime。
+ * 标注 @ConditionalOnClass 使得未引入 MyBatis-Plus 的模块（如 finance-search）不会因扫描到此类而启动失败。
  */
 @Slf4j
 @Component

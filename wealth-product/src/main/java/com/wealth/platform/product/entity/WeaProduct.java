@@ -10,7 +10,7 @@ import lombok.Setter;
 import java.math.BigDecimal;
 
 /**
- * 鐞嗚储/璐甸噾灞炰骇鍝佽〃瀹炰綋銆? */
+ * 理财/贵金属产品表实体 */
 @Getter
 @Setter
 @EqualsAndHashCode(callSuper = true)

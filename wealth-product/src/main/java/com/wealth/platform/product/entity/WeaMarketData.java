@@ -11,7 +11,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
- * 琛屾儏鏁版嵁琛ㄥ疄浣撱€? */
+ * 行情数据表实体 */
 @Getter
 @Setter
 @EqualsAndHashCode(callSuper = true)
@@ -45,7 +45,7 @@ public class WeaMarketData extends BaseEntity {
     @TableField("market_time")
     private LocalDateTime marketTime;
 
-    /** 琛屾儏琛ㄦ棤 update_time 鍒?*/
+    /** 行情表无 update_time 列 */
     @TableField(exist = false)
     private LocalDateTime updateTime;
 }

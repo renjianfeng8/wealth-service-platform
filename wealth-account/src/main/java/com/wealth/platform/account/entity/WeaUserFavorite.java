@@ -10,7 +10,8 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 
 /**
- * 鐢ㄦ埛鑷€夊叧娉ㄨ〃瀹炰綋銆? */
+ * 用户自选关注表实体
+ */
 @Getter
 @Setter
 @EqualsAndHashCode(callSuper = true)
@@ -23,11 +24,11 @@ public class WeaUserFavorite extends BaseEntity {
     @TableField(value = "product_code")
     private String productCode;
 
-    /** 鑷€夎〃鏃?update_time 鍒?*/
+    /** 自选表无 update_time 列 */
     @TableField(exist = false)
     private LocalDateTime updateTime;
 
-    /** 鑷€夎〃鏃?del_flag 鍒?*/
+    /** 自选表无 del_flag 列 */
     @TableField(exist = false)
     private Integer delFlag;
 }

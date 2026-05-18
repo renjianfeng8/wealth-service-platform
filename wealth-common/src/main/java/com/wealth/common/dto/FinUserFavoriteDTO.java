@@ -4,7 +4,7 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 /**
- * 璺ㄦ湇鍔¤皟鐢ㄧ敤鐨?DTO锛屼粎鍖呭惈蹇呰瀛楁锛屼笉鏆撮湶瀹炰綋
+ * 跨服务调用用的 DTO，仅包含必要字段，不暴露实体
  */
 @Data
 public class FinUserFavoriteDTO {

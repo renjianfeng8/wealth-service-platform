@@ -11,6 +11,6 @@ public interface UmsAdminService extends IService<UmsAdmin> {
     Boolean createAdmin(UmsAdmin admin);
     Boolean updateAdmin(UmsAdmin admin);
 
-    // 鏉冮檺鏌ヨ
+    // 权限查询
     List<String> getResourceUrlsByIds(List<Long> resourceIds);
 }

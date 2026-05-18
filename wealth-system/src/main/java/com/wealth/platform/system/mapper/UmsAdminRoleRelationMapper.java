@@ -5,7 +5,7 @@ import com.wealth.platform.system.entity.UmsAdminRoleRelation;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
- * 鍚庡彴鐢ㄦ埛鍜岃鑹插叧绯昏〃鏁版嵁璁块棶灞傘€?
+ * 后台用户和角色关系表数据访问层。
  */
 @Mapper
 public interface UmsAdminRoleRelationMapper extends BaseMapper<UmsAdminRoleRelation> {

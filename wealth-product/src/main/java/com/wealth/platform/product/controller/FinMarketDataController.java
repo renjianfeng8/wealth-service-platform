@@ -24,7 +24,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import java.util.List;
 
 @RestController
-@Tag(name = "琛屾儏绠＄悊", description = "琛屾儏鏁版嵁鐩稿叧鎺ュ彛")
+@Tag(name = "行情管理", description = "行情数据相关接口")
 @RequestMapping("/WeaMarketData")
 @RequiredArgsConstructor
 public class FinMarketDataController {
@@ -34,7 +34,7 @@ public class FinMarketDataController {
     private final MarketDataPushService marketDataPushService;
     private final MarketDataSimulationService marketDataSimulationService;
 
-    @Operation(summary = "鏍规嵁ID鏌ヨ琛屾儏鏁版嵁")
+    @Operation(summary = "根据ID查询行情数据")
     @GetMapping("/{id}")
     public Result<FinMarketDataVO> getById(@PathVariable Long id) {
         FinMarketDataVO vo = finMarketDataService.getMarketDataById(id);
@@ -44,7 +44,7 @@ public class FinMarketDataController {
         return Result.success(vo);
     }
 
-    @Operation(summary = "鏌ヨ琛屾儏鏁版嵁鍒楄〃")
+    @Operation(summary = "查询行情数据列表")
     @GetMapping
     public Result<List<FinMarketDataVO>> list() {
         return Result.success(finMarketDataService.getMarketDataList());
@@ -71,7 +71,7 @@ public class FinMarketDataController {
         return emitter;
     }
 
-    @Operation(summary = "鍒嗛〉鏌ヨ琛屾儏鏁版嵁")
+    @Operation(summary = "分页查询行情数据")
     @GetMapping("/page")
     public Result<IPage<FinMarketDataVO>> page(
             @RequestParam(defaultValue = "1") Integer pageNum,

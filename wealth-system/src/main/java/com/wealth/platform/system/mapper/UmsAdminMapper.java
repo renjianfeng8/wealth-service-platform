@@ -5,7 +5,7 @@ import com.wealth.platform.system.entity.UmsAdmin;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
- * 鍚庡彴绠＄悊鍛樿〃鏁版嵁璁块棶灞傘€?
+ * 后台管理员表数据访问层。
  */
 @Mapper
 public interface UmsAdminMapper extends BaseMapper<UmsAdmin> {

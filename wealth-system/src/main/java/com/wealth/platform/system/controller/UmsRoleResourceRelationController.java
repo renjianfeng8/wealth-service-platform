@@ -18,7 +18,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/umsRoleResourceRelation")
-@Tag(name = "瑙掕壊-璧勬簮鍏宠仈", description = "ums_role_resource_relation")
+@Tag(name = "角色-资源关联", description = "ums_role_resource_relation")
 public class UmsRoleResourceRelationController {
 
     private final UmsRoleResourceRelationService umsRoleResourceRelationService;
@@ -27,7 +27,7 @@ public class UmsRoleResourceRelationController {
         this.umsRoleResourceRelationService = umsRoleResourceRelationService;
     }
 
-    @Operation(summary = "鏍规嵁ID鏌ヨ")
+    @Operation(summary = "根据ID查询")
     @GetMapping("/{id}")
     public Result<UmsRoleResourceRelationVO> getById(@PathVariable Long id) {
         UmsRoleResourceRelation relation = umsRoleResourceRelationService.getById(id);
@@ -37,14 +37,14 @@ public class UmsRoleResourceRelationController {
         return Result.success(BeanConvertUtil.convert(relation, UmsRoleResourceRelationVO.class));
     }
 
-    @Operation(summary = "鍒楄〃")
+    @Operation(summary = "列表")
     @GetMapping
     public Result<List<UmsRoleResourceRelationVO>> list() {
         List<UmsRoleResourceRelation> list = umsRoleResourceRelationService.list();
         return Result.success(BeanConvertUtil.convertList(list, UmsRoleResourceRelationVO.class));
     }
 
-    @Operation(summary = "鍒嗛〉")
+    @Operation(summary = "分页")
     @GetMapping("/page")
     public Result<IPage<UmsRoleResourceRelationVO>> page(
             @RequestParam(defaultValue = "1") Integer pageNum,
@@ -61,14 +61,14 @@ public class UmsRoleResourceRelationController {
         return Result.success(voPage);
     }
 
-    @Operation(summary = "鍒涘缓")
+    @Operation(summary = "创建")
     @PostMapping
     public Result<Boolean> create(@Valid @RequestBody UmsRoleResourceRelationDTO dto) {
         UmsRoleResourceRelation relation = BeanConvertUtil.convert(dto, UmsRoleResourceRelation.class);
         return Result.success(umsRoleResourceRelationService.save(relation));
     }
 
-    @Operation(summary = "鏇存柊")
+    @Operation(summary = "更新")
     @PutMapping("/{id}")
     public Result<Boolean> update(@PathVariable Long id, @Valid @RequestBody UmsRoleResourceRelationDTO dto) {
         UmsRoleResourceRelation relation = BeanConvertUtil.convert(dto, UmsRoleResourceRelation.class);
@@ -76,7 +76,7 @@ public class UmsRoleResourceRelationController {
         return Result.success(umsRoleResourceRelationService.updateById(relation));
     }
 
-    @Operation(summary = "鍒犻櫎")
+    @Operation(summary = "删除")
     @DeleteMapping("/{id}")
     public Result<Boolean> delete(@PathVariable Long id) {
         return Result.success(umsRoleResourceRelationService.removeById(id));

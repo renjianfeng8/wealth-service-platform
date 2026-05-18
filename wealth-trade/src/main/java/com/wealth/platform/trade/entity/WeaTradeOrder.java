@@ -10,7 +10,7 @@ import lombok.Setter;
 import java.math.BigDecimal;
 
 /**
- * 浜ゆ槗濮旀墭鍗曞疄浣撱€? */
+ * 交易委托单实体。 */
 @Getter
 @Setter
 @EqualsAndHashCode(callSuper = true)

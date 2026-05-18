@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@Tag(name = "浜у搧绠＄悊", description = "浜у搧鐩稿叧鎺ュ彛")
+@Tag(name = "产品管理", description = "产品相关接口")
 @RequestMapping("/WeaProduct")
 @RequiredArgsConstructor
 public class FinProductController {
@@ -30,7 +30,7 @@ public class FinProductController {
     private final FinProductService finProductService;
     private final ProductSyncService productSyncService;
 
-    @Operation(summary = "鏍规嵁ID鏌ヨ浜у搧")
+    @Operation(summary = "根据ID查询产品")
     @GetMapping("/{id}")
     public Result<FinProductVO> getById(@PathVariable Long id) {
         FinProductVO vo = finProductService.getProductById(id);
@@ -40,13 +40,13 @@ public class FinProductController {
         return Result.success(vo);
     }
 
-    @Operation(summary = "鏌ヨ浜у搧鍒楄〃")
+    @Operation(summary = "查询产品列表")
     @GetMapping
     public Result<List<FinProductVO>> list() {
         return Result.success(finProductService.getProductList());
     }
 
-    @Operation(summary = "鍒嗛〉鏌ヨ浜у搧")
+    @Operation(summary = "分页查询产品")
     @GetMapping("/page")
     public Result<IPage<FinProductVO>> page(
             @RequestParam(defaultValue = "1") Integer pageNum,

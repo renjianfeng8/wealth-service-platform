@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.wealth.platform.system.entity.UmsRole;
 
 /**
- * 鍚庡彴瑙掕壊琛ㄤ笟鍔″眰鎺ュ彛銆? */
+ * 后台角色表业务层接口。 */
 public interface UmsRoleService extends IService<UmsRole> {
 }
 

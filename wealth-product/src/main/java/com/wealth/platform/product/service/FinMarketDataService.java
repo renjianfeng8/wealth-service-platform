@@ -7,22 +7,22 @@ import com.wealth.platform.product.vo.FinMarketDataVO;
 import java.util.List;
 
 /**
- * 琛屾儏鏁版嵁琛ㄤ笟鍔″眰鎺ュ彛銆?
+ * 行情数据表业务层接口。
  */
 public interface FinMarketDataService extends IService<WeaMarketData> {
 
-    // 鏍规嵁ID鏌ュ崟涓猇O
+    // 根据ID查单个VO
     FinMarketDataVO getMarketDataById(Long id);
 
-    // 鏌ヨ鍒楄〃VO
+    // 查询列表VO
     List<FinMarketDataVO> getMarketDataList();
 
-    // 鏂板锛氭帴鏀禗TO
+    // 新增：接收DTO
     boolean createMarketData(FinMarketDataDTO dto);
 
-    // 鏇存柊锛氭帴鏀禗TO
+    // 更新：接收DTO
     boolean updateMarketData(Long id, FinMarketDataDTO dto);
 
-    // 鍒犻櫎
+    // 删除
     boolean deleteMarketData(Long id);
 }

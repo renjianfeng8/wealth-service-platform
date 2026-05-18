@@ -9,7 +9,7 @@ import com.wealth.platform.message.vo.FinMessageVO;
 import java.util.List;
 
 /**
- * 绔欏唴娑堟伅鎺ㄩ€佷笟鍔″眰鎺ュ彛銆?
+ * 站内消息推送业务层接口
  */
 public interface FinMessageService extends IService<WeaMessage> {
 

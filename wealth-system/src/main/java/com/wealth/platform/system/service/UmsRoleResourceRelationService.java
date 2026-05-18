@@ -5,11 +5,11 @@ import com.wealth.platform.system.entity.UmsRoleResourceRelation;
 import java.util.List;
 
 /**
- * 鍚庡彴瑙掕壊璧勬簮鍏崇郴琛ㄤ笟鍔″眰鎺ュ彛銆?
+ * 后台角色资源关系表业务层接口。
  */
 public interface UmsRoleResourceRelationService extends IService<UmsRoleResourceRelation> {
 
-    // 鏍规嵁瑙掕壊id鍒楄〃锛岃幏鍙栨墍鏈夎祫婧恑d
+    // 根据角色id列表，获取所有资源id
     List<Long> getResourceIdByRoleIds(List<Long> roleIds);
 }
 

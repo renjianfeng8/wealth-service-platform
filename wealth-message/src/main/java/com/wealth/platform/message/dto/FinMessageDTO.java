@@ -6,21 +6,21 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
-@Schema(description = "绔欏唴娑堟伅 DTO")
+@Schema(description = "站内消息 DTO")
 public class FinMessageDTO {
 
-    @NotNull(message = "鐢ㄦ埛ID涓嶈兘涓虹┖")
-    @Schema(description = "鐢ㄦ埛ID")
+    @NotNull(message = "用户ID不能为空")
+    @Schema(description = "用户ID")
     private Long userId;
 
-    @Schema(description = "娑堟伅绫诲瀷 1绯荤粺 2浜ゆ槗 3椋庢帶")
+    @Schema(description = "消息类型 1系统 2交易 3风控")
     private Integer msgType;
 
-    @NotBlank(message = "娑堟伅鏍囬涓嶈兘涓虹┖")
-    @Schema(description = "娑堟伅鏍囬")
+    @NotBlank(message = "消息标题不能为空")
+    @Schema(description = "消息标题")
     private String msgTitle;
 
-    @NotBlank(message = "娑堟伅鍐呭涓嶈兘涓虹┖")
-    @Schema(description = "娑堟伅鍐呭")
+    @NotBlank(message = "消息内容不能为空")
+    @Schema(description = "消息内容")
     private String msgContent;
 }

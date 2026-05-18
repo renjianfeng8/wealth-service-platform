@@ -7,12 +7,12 @@ import com.wealth.user.vo.LoginVO;
 
 public interface UserService extends IService<User> {
 
-    // 鐢ㄦ埛娉ㄥ唽
+    // 用户注册
     Boolean register(User user);
 
-    // 鐢ㄦ埛鐧诲綍
+    // 用户登录
     LoginVO login(LoginDTO dto);
 
-    // 閲嶇疆瀵嗙爜
+    // 重置密码
     Boolean resetPassword(User user);
 }

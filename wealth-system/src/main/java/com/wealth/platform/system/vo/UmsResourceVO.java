@@ -5,23 +5,23 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-@Schema(description = "璧勬簮 VO")
+@Schema(description = "资源 VO")
 public class UmsResourceVO {
     @Schema(description = "ID")
     private Long id;
 
-    @Schema(description = "璧勬簮鍚嶇О")
+    @Schema(description = "资源名称")
     private String name;
 
-    @Schema(description = "璧勬簮URL")
+    @Schema(description = "资源URL")
     private String url;
 
-    @Schema(description = "璧勬簮鎻忚堪")
+    @Schema(description = "资源描述")
     private String description;
 
-    @Schema(description = "鍒嗙被ID")
+    @Schema(description = "分类ID")
     private Long categoryId;
 
-    @Schema(description = "鍒涘缓鏃堕棿")
+    @Schema(description = "创建时间")
     private LocalDateTime createTime;
 }

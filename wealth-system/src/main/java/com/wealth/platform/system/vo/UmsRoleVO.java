@@ -5,23 +5,23 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-@Schema(description = "瑙掕壊 VO")
+@Schema(description = "角色 VO")
 public class UmsRoleVO {
     @Schema(description = "ID")
     private Long id;
 
-    @Schema(description = "瑙掕壊鍚嶇О")
+    @Schema(description = "角色名称")
     private String name;
 
-    @Schema(description = "瑙掕壊鎻忚堪")
+    @Schema(description = "角色描述")
     private String description;
 
-    @Schema(description = "鐘舵€?0绂佺敤 1姝ｅ父")
+    @Schema(description = "状态 0禁用 1正常")
     private Integer status;
 
-    @Schema(description = "鎺掑簭")
+    @Schema(description = "排序")
     private Integer sort;
 
-    @Schema(description = "鍒涘缓鏃堕棿")
+    @Schema(description = "创建时间")
     private LocalDateTime createTime;
 }

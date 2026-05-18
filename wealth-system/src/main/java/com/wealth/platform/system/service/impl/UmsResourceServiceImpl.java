@@ -12,7 +12,7 @@ import java.util.List;
 @Service
 public class UmsResourceServiceImpl extends ServiceImpl<UmsResourceMapper, UmsResource> implements UmsResourceService {
 
-    // UmsResourceServiceImpl 瀹炵幇
+    // UmsResourceServiceImpl 实现
     @Override
     public List<String> getUrlByResourceIds(List<Long> resourceIds) {
         if (resourceIds == null || resourceIds.isEmpty()) {

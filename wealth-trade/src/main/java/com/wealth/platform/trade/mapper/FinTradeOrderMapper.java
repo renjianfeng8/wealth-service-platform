@@ -5,7 +5,7 @@ import com.wealth.platform.trade.entity.WeaTradeOrder;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
- * 浜ゆ槗濮旀墭鍗曟暟鎹闂眰銆?
+ * 交易委托单数据访问层。
  */
 @Mapper
 public interface FinTradeOrderMapper extends BaseMapper<WeaTradeOrder> {

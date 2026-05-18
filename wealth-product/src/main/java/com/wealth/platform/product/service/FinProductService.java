@@ -9,7 +9,7 @@ import com.wealth.platform.product.vo.FinProductVO;
 import java.util.List;
 
 /**
- * 浜у搧琛ㄤ笟鍔″眰鎺ュ彛銆?
+ * 产品表业务层接口。
  */
 public interface FinProductService extends IService<WeaProduct> {
 

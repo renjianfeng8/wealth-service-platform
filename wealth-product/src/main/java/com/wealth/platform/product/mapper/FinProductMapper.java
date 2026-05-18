@@ -5,7 +5,7 @@ import com.wealth.platform.product.entity.WeaProduct;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
- * 浜у搧琛ㄦ暟鎹闂眰銆?
+ * 产品表数据访问层。
  */
 @Mapper
 public interface FinProductMapper extends BaseMapper<WeaProduct> {

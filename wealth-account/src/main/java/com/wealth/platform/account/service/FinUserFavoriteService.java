@@ -7,7 +7,7 @@ import com.wealth.platform.account.vo.FinUserFavoriteVO;
 import java.util.List;
 
 /**
- * 鐢ㄦ埛鑷€夊叧娉ㄨ〃涓氬姟灞傛帴鍙ｃ€?
+ * 用户自选关注表业务层接口
  */
 public interface FinUserFavoriteService extends IService<WeaUserFavorite> {
 

@@ -77,9 +77,13 @@ public class UserController {
     public Result<Boolean> update(
             @PathVariable Long id,
             @Valid @RequestBody UserDTO dto) {
-        User user = BeanConvertUtil.convert(dto, User.class);
+        User user = userService.getById(id);
+        if (user == null) {
+            return Result.error(ResultCode.NOT_FOUND);
+        }
+        BeanConvertUtil.copyNonNullProperties(dto, user);
+        user.setPassword(null); // 禁止通过更新接口修改密码
         user.setId(id);
-        user.setPassword(null); // 禁止通过更新接口修改密码，防止明文覆盖
         return Result.success(userService.updateById(user));
     }
 

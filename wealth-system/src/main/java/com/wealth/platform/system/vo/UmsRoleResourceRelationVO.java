@@ -4,14 +4,14 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 @Data
-@Schema(description = "瑙掕壊璧勬簮鍏宠仈 VO")
+@Schema(description = "角色资源关联 VO")
 public class UmsRoleResourceRelationVO {
     @Schema(description = "ID")
     private Long id;
 
-    @Schema(description = "瑙掕壊ID")
+    @Schema(description = "角色ID")
     private Long roleId;
 
-    @Schema(description = "璧勬簮ID")
+    @Schema(description = "资源ID")
     private Long resourceId;
 }

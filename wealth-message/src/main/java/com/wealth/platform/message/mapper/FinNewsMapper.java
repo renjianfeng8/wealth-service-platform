@@ -5,7 +5,7 @@ import com.wealth.platform.message.entity.WeaNews;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
- * 璐㈢粡璧勮鍏憡琛ㄦ暟鎹闂眰銆?
+ * 财经资讯公告表数据访问层
  */
 @Mapper
 public interface FinNewsMapper extends BaseMapper<WeaNews> {

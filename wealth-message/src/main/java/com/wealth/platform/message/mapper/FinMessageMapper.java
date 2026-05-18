@@ -5,7 +5,7 @@ import com.wealth.platform.message.entity.WeaMessage;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
- * 绔欏唴娑堟伅鎺ㄩ€佽〃鏁版嵁璁块棶灞傘€?
+ * 站内消息推送表数据访问层
  */
 @Mapper
 public interface FinMessageMapper extends BaseMapper<WeaMessage> {

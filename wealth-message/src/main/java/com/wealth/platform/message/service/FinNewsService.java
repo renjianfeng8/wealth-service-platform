@@ -9,7 +9,7 @@ import com.wealth.platform.message.vo.FinNewsVO;
 import java.util.List;
 
 /**
- * 璐㈢粡璧勮鍏憡涓氬姟灞傛帴鍙ｃ€?
+ * 财经资讯公告业务层接口
  */
 public interface FinNewsService extends IService<WeaNews> {
 

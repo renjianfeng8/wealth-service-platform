@@ -10,7 +10,7 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 
 /**
- * 绔欏唴娑堟伅鎺ㄩ€佽〃瀹炰綋銆? */
+ * 站内消息推送表实体 */
 @Getter
 @Setter
 @EqualsAndHashCode(callSuper = true)
@@ -32,7 +32,7 @@ public class WeaMessage extends BaseEntity {
     @TableField(value = "read_flag")
     private Integer readFlag;
 
-    /** 娑堟伅琛ㄦ棤 update_time 鍒?*/
+    /** 消息表无 update_time 列 */
     @TableField(exist = false)
     private LocalDateTime updateTime;
 }

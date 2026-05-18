@@ -5,7 +5,7 @@ import com.wealth.platform.system.entity.UmsRoleResourceRelation;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
- * 鍚庡彴瑙掕壊璧勬簮鍏崇郴琛ㄦ暟鎹闂眰銆?
+ * 后台角色资源关系表数据访问层。
  */
 @Mapper
 public interface UmsRoleResourceRelationMapper extends BaseMapper<UmsRoleResourceRelation> {

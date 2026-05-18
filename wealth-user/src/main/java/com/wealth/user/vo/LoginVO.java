@@ -6,14 +6,14 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-@Schema(description = "鐧诲綍杩斿洖缁撴灉")
+@Schema(description = "登录返回结果")
 public class LoginVO {
     @Schema(description = "JWT Token")
     private String token;
 
-    @Schema(description = "鐢ㄦ埛ID")
+    @Schema(description = "用户ID")
     private Long userId;
 
-    @Schema(description = "鐢ㄦ埛鏄电О")
+    @Schema(description = "用户昵称")
     private String nickname;
 }

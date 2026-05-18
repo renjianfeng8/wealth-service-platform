@@ -10,7 +10,7 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 
 /**
- * 鍚庡彴鐢ㄦ埛鍜岃鑹插叧绯昏〃銆? */
+ * 后台用户和角色关系表。 */
 @Getter
 @Setter
 @EqualsAndHashCode(callSuper = true)
@@ -23,11 +23,11 @@ public class UmsAdminRoleRelation extends BaseEntity {
     @TableField(value = "role_id")
     private Long roleId;
 
-    /** 鍏宠仈琛ㄦ棤 create_time 鍒?*/
+    /** 关联表无 create_time 列 */
     @TableField(exist = false)
     private LocalDateTime createTime;
 
-    /** 鍏宠仈琛ㄦ棤 update_time 鍒?*/
+    /** 关联表无 update_time 列 */
     @TableField(exist = false)
     private LocalDateTime updateTime;
 }

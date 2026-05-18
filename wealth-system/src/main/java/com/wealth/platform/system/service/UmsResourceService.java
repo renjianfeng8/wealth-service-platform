@@ -5,10 +5,10 @@ import com.wealth.platform.system.entity.UmsResource;
 import java.util.List;
 
 /**
- * 鍚庡彴璧勬簮琛ㄤ笟鍔″眰鎺ュ彛銆?
+ * 后台资源表业务层接口。
  */
 public interface UmsResourceService extends IService<UmsResource> {
-    // 鍦?UmsResourceService 鍔?
+    // 在UmsResourceService 加
     List<String> getUrlByResourceIds(List<Long> resourceIds);
 }
 

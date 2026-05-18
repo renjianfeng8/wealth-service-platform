@@ -13,8 +13,9 @@ public class RedisUtil {
     private final RedisTemplate<String, Object> redisTemplate;
 
     /**
-     * 娉ㄥ叆 RedisTemplate锛圫tring/Object 娉涘瀷锛夈€?     *
-     * @param redisTemplate RedisTemplate 瀹炰緥
+     * 注入 RedisTemplate（String/Object 泛型）。
+     *
+     * @param redisTemplate RedisTemplate 实例
      */
     public RedisUtil(RedisTemplate<String, Object> redisTemplate) {
         this.redisTemplate = redisTemplate;

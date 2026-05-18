@@ -10,7 +10,7 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 
 /**
- * 鍚庡彴绠＄悊鍛樿〃銆? */
+ * 后台管理员表。 */
 @Getter
 @Setter
 @EqualsAndHashCode(callSuper = true)
@@ -31,7 +31,7 @@ public class UmsAdmin extends BaseEntity {
 
     private LocalDateTime loginTime;
 
-    /** ums_admin 琛ㄦ棤 update_time 鍒?*/
+    /** ums_admin 表无 update_time 列 */
     @TableField(exist = false)
     private LocalDateTime updateTime;
 }

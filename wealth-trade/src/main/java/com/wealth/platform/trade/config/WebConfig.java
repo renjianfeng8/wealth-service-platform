@@ -7,7 +7,7 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
- * 浜ゆ槗妯″潡 Web 閰嶇疆 鈥?娉ㄥ唽 JWT 鐧诲綍鎷︽埅鍣? */
+ * 交易模块 Web 配置 — 注册 JWT 登录拦截器 */
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 

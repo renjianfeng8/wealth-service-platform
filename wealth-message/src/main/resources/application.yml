@@ -9,7 +9,6 @@ spring:
     url: jdbc:mysql://localhost:3306/wealth?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false
     username: root
     password: ${DB_PASSWORD}
-
   rabbitmq:
     host: localhost
     port: 5672
@@ -27,6 +26,11 @@ spring:
           initial-interval: 2000
           multiplier: 2
         default-requeue-rejected: false
+  cloud:
+    sentinel:
+      transport:
+        dashboard: localhost:8858
+      eager: true
 
 mybatis-plus:
   configuration:
@@ -48,10 +52,3 @@ seata:
       server-addr: localhost:8848
       application: seata-server
       group: SEATA_GROUP
-
-spring:
-  cloud:
-    sentinel:
-      transport:
-        dashboard: localhost:8858
-      eager: true

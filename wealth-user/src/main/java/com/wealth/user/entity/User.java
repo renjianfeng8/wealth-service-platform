@@ -8,7 +8,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 /**
- * 绯荤粺鐢ㄦ埛琛ㄥ疄浣撱€? */
+ * 系统用户表实体。 */
 @Getter
 @Setter
 @EqualsAndHashCode(callSuper = true)

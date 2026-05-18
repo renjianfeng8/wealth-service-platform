@@ -5,22 +5,22 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 @Data
-@Schema(description = "璧勬簮鏂板/淇敼 DTO")
+@Schema(description = "资源新增/修改 DTO")
 public class UmsResourceDTO {
     @Schema(description = "ID")
     private Long id;
 
-    @NotBlank(message = "璧勬簮鍚嶇О涓嶈兘涓虹┖")
-    @Schema(description = "璧勬簮鍚嶇О")
+    @NotBlank(message = "资源名称不能为空")
+    @Schema(description = "资源名称")
     private String name;
 
-    @NotBlank(message = "璧勬簮URL涓嶈兘涓虹┖")
-    @Schema(description = "璧勬簮URL")
+    @NotBlank(message = "资源URL不能为空")
+    @Schema(description = "资源URL")
     private String url;
 
-    @Schema(description = "璧勬簮鎻忚堪")
+    @Schema(description = "资源描述")
     private String description;
 
-    @Schema(description = "鍒嗙被ID")
+    @Schema(description = "分类ID")
     private Long categoryId;
 }

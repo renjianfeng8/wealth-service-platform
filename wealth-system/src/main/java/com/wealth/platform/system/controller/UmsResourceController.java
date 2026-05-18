@@ -19,31 +19,31 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * 鍚庡彴璧勬簮琛ㄦ帶鍒跺櫒銆?
+ * 后台资源表控制器。
  */
 @RestController
-@Tag(name = "璧勬簮绠＄悊", description = "ums_resource 鍚庡彴璧勬簮鐩稿叧鎺ュ彛")
+@Tag(name = "资源管理", description = "ums_resource 后台资源相关接口")
 @RequestMapping("/umsResource")
 public class UmsResourceController {
 
     private final UmsResourceService umsResourceService;
 
     /**
-     * 鍚庡彴璧勬簮琛ㄦ帶鍒跺櫒鏋勯€犲櫒銆?
+     * 后台资源表控制器构造器。
      *
-     * @param umsResourceService 鍚庡彴璧勬簮涓氬姟鏈嶅姟
+     * @param umsResourceService 后台资源业务服务
      */
     public UmsResourceController(UmsResourceService umsResourceService) {
         this.umsResourceService = umsResourceService;
     }
 
     /**
-     * 鏍规嵁 ID 鏌ヨ鍚庡彴璧勬簮淇℃伅銆?
+     * 根据 ID 查询后台资源信息。
      *
-     * @param id 鍚庡彴璧勬簮 ID
-     * @return 鏌ヨ缁撴灉
+     * @param id 后台资源 ID
+     * @return 查询结果
      */
-    @Operation(summary = "鏍规嵁ID鏌ヨ鍚庡彴璧勬簮淇℃伅")
+    @Operation(summary = "根据ID查询后台资源信息")
     @GetMapping("/{id}")
     public Result<UmsResourceVO> getById(@PathVariable Long id) {
         UmsResource resource = umsResourceService.getById(id);
@@ -54,11 +54,11 @@ public class UmsResourceController {
     }
 
     /**
-     * 鏌ヨ鍚庡彴璧勬簮鍒楄〃锛堜笉鍒嗛〉锛夈€?
+     * 查询后台资源列表（不分页）。
      *
-     * @return 鍚庡彴璧勬簮鍒楄〃
+     * @return 后台资源列表
      */
-    @Operation(summary = "鏌ヨ鍚庡彴璧勬簮鍒楄〃")
+    @Operation(summary = "查询后台资源列表")
     @GetMapping
     public Result<List<UmsResourceVO>> list() {
         List<UmsResource> list = umsResourceService.list();
@@ -66,13 +66,13 @@ public class UmsResourceController {
     }
 
     /**
-     * 鍒嗛〉鏌ヨ鍚庡彴璧勬簮鍒楄〃銆?
+     * 分页查询后台资源列表。
      *
-     * @param pageNum 椤电爜
-     * @param pageSize 姣忛〉鏉℃暟
-     * @return 鍒嗛〉缁撴灉
+     * @param pageNum 页码
+     * @param pageSize 每页条数
+     * @return 分页结果
      */
-    @Operation(summary = "鍒嗛〉鏌ヨ鍚庡彴璧勬簮鍒楄〃")
+    @Operation(summary = "分页查询后台资源列表")
     @GetMapping("/page")
     public Result<IPage<UmsResourceVO>> page(
             @RequestParam(defaultValue = "1") Integer pageNum,
@@ -92,9 +92,9 @@ public class UmsResourceController {
     }
 
     /**
-     * 鍒涘缓鍚庡彴璧勬簮銆?
+     * 创建后台资源。
      *
-     * @param dto 鍚庡彴璧勬簮鍏ュ弬
+     * @param dto 后台资源入参
      * @return 是否创建成功
      */
     @Operation(summary = "创建后台资源")
@@ -108,10 +108,10 @@ public class UmsResourceController {
     }
 
     /**
-     * 鏇存柊鍚庡彴璧勬簮淇℃伅銆?
+     * 更新后台资源信息。
      *
-     * @param id 鍚庡彴璧勬簮 ID
-     * @param dto 鍚庡彴璧勬簮鍏ュ弬
+     * @param id 后台资源 ID
+     * @param dto 后台资源入参
      * @return 是否更新成功
      */
     @Operation(summary = "更新后台资源信息")
@@ -126,10 +126,10 @@ public class UmsResourceController {
     }
 
     /**
-     * 鍒犻櫎鍚庡彴璧勬簮锛堥€昏緫鍒犻櫎锛夈€?
+     * 删除后台资源（逻辑删除）。
      *
-     * @param id 鍚庡彴璧勬簮 ID
-     * @return 鏄惁鍒犻櫎鎴愬姛
+     * @param id 后台资源 ID
+     * @return 是否删除成功
      */
     @Operation(summary = "删除后台资源")
     @DeleteMapping("/{id}")

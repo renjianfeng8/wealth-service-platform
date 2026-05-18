@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@Tag(name = "瑙掕壊绠＄悊", description = "ums_role 鍚庡彴瑙掕壊鐩稿叧鎺ュ彛")
+@Tag(name = "角色管理", description = "ums_role 后台角色相关接口")
 @RequestMapping("/umsRole")
 public class UmsRoleController {
 
@@ -29,7 +29,7 @@ public class UmsRoleController {
         this.umsRoleService = umsRoleService;
     }
 
-    @Operation(summary = "鏍规嵁ID鏌ヨ瑙掕壊淇℃伅")
+    @Operation(summary = "根据ID查询角色信息")
     @GetMapping("/{id}")
     public Result<UmsRoleVO> getById(@PathVariable Long id) {
         UmsRole role = umsRoleService.getById(id);
@@ -39,14 +39,14 @@ public class UmsRoleController {
         return Result.success(BeanConvertUtil.convert(role, UmsRoleVO.class));
     }
 
-    @Operation(summary = "鏌ヨ瑙掕壊鍒楄〃")
+    @Operation(summary = "查询角色列表")
     @GetMapping
     public Result<List<UmsRoleVO>> list() {
         List<UmsRole> list = umsRoleService.list();
         return Result.success(BeanConvertUtil.convertList(list, UmsRoleVO.class));
     }
 
-    @Operation(summary = "鍒嗛〉鏌ヨ瑙掕壊鍒楄〃")
+    @Operation(summary = "分页查询角色列表")
     @GetMapping("/page")
     public Result<IPage<UmsRoleVO>> page(
             @RequestParam(defaultValue = "1") Integer pageNum,

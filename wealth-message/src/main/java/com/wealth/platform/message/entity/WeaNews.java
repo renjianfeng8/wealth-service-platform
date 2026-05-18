@@ -10,7 +10,7 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 
 /**
- * 璐㈢粡璧勮鍏憡琛ㄥ疄浣撱€? */
+ * 财经资讯公告表实体 */
 @Getter
 @Setter
 @EqualsAndHashCode(callSuper = true)
@@ -35,7 +35,7 @@ public class WeaNews extends BaseEntity {
     @TableField(value = "publish_time")
     private LocalDateTime publishTime;
 
-    /** 璧勮琛ㄦ棤 update_time 鍒?*/
+    /** 资讯表无 update_time 列 */
     @TableField(exist = false)
     private LocalDateTime updateTime;
 }

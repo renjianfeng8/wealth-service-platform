@@ -10,7 +10,9 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 /**
- * 瀹炰綋鍩虹被銆傚惈 id銆乧reateTime銆乽pdateTime銆乨elFlag 鍥涗釜鏍囧噯瀛楁銆? * 鍚勫瓙瀹炰綋鏍规嵁鑷韩琛ㄧ粨鏋勯€夋嫨缁ф壙鎴?@TableField(exist = false) 瑕嗙洊銆? */
+ * 实体基类。含 id、createTime、updateTime、delFlag 四个标准字段。
+ * 各子实体根据自身表结构选择继承或 @TableField(exist = false) 覆盖。
+ */
 @Data
 public class BaseEntity {
 

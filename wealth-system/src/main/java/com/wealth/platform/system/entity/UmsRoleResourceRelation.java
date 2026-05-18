@@ -10,7 +10,7 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 
 /**
- * 鍚庡彴瑙掕壊璧勬簮鍏崇郴琛ㄣ€? */
+ * 后台角色资源关系表。 */
 @Getter
 @Setter
 @EqualsAndHashCode(callSuper = true)
@@ -23,11 +23,11 @@ public class UmsRoleResourceRelation extends BaseEntity {
     @TableField(value = "resource_id")
     private Long resourceId;
 
-    /** 鍏宠仈琛ㄦ棤 create_time 鍒?*/
+    /** 关联表无 create_time 列 */
     @TableField(exist = false)
     private LocalDateTime createTime;
 
-    /** 鍏宠仈琛ㄦ棤 update_time 鍒?*/
+    /** 关联表无 update_time 列 */
     @TableField(exist = false)
     private LocalDateTime updateTime;
 }
