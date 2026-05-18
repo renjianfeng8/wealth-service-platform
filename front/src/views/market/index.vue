@@ -58,11 +58,13 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue'
+import { onMounted, onUnmounted, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
 import { getMarketDataPage, createMarketData, updateMarketData, deleteMarketData } from '@/api/product'
 import { formatDateTime, formatPrice, formatRate } from '@/utils/format'
+import type { WeaMarketData } from '@/types'
+import { createMarketSSE, onMarketUpdate } from '@/utils/sse'
 
 const loading = ref(false); const saving = ref(false)
 const tableData = ref<any[]>([]); const total = ref(0)
@@ -71,6 +73,7 @@ const formRef = ref<FormInstance>()
 const query = reactive({ pageNum: 1, pageSize: 10, productCode: '' })
 const form = reactive({ id: undefined, productCode: '', currentPrice: 0, openPrice: 0, closePrice: 0, highestPrice: 0, lowestPrice: 0, riseFall: 0, riseFallRate: 0, marketTime: '' })
 const rules: FormRules = { productCode: [{ required: true, message: '必填' }] }
+let eventSource: EventSource | null = null
 
 async function fetchData() {
   loading.value = true
@@ -95,7 +98,25 @@ async function handleSave() {
   } finally { saving.value = false }
 }
 async function handleDelete(id: number) { try { await deleteMarketData(id); ElMessage.success('删除成功'); fetchData() } catch { /* handled by interceptor */ } }
-onMounted(fetchData)
+
+function handleMarketUpdate(data: WeaMarketData[]) {
+  const dataMap = new Map(data.map((d) => [d.productCode, d]))
+  tableData.value = tableData.value.map((item: any) => {
+    const update = dataMap.get(item.productCode)
+    return update ? { ...item, ...update } : item
+  })
+}
+
+onMounted(() => {
+  fetchData()
+  eventSource = createMarketSSE()
+  onMarketUpdate(eventSource, handleMarketUpdate)
+})
+
+onUnmounted(() => {
+  eventSource?.close()
+  eventSource = null
+})
 </script>
 <style scoped>
 /* Global styles handle pagination-wrap and page-header */

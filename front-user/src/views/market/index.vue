@@ -81,11 +81,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { getMarketDataPage } from '@/api/product'
 import { formatPrice, formatRate, formatDateTime } from '@/utils/format'
 import { Refresh } from '@element-plus/icons-vue'
 import type { WeaMarketData } from '@/types'
+import { createMarketSSE, onMarketUpdate } from '@/utils/sse'
 
 const marketList = ref<WeaMarketData[]>([])
 const loading = ref(false)
@@ -93,6 +94,7 @@ const refreshing = ref(false)
 const total = ref(0)
 const pageNum = ref(1)
 const pageSize = ref(20)
+let eventSource: EventSource | null = null
 
 async function fetchData() {
   loading.value = true
@@ -113,7 +115,24 @@ async function refreshData() {
   setTimeout(() => { refreshing.value = false }, 300)
 }
 
-onMounted(fetchData)
+function handleMarketUpdate(data: WeaMarketData[]) {
+  const dataMap = new Map(data.map((d) => [d.productCode, d]))
+  marketList.value = marketList.value.map((item) => {
+    const update = dataMap.get(item.productCode)
+    return update ? { ...item, ...update } : item
+  })
+}
+
+onMounted(() => {
+  fetchData()
+  eventSource = createMarketSSE()
+  onMarketUpdate(eventSource, handleMarketUpdate)
+})
+
+onUnmounted(() => {
+  eventSource?.close()
+  eventSource = null
+})
 </script>
 
 <style scoped>

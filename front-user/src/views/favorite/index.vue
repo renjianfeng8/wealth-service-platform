@@ -87,16 +87,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/store/index'
 import { getFavoritePage, createFavorite, deleteFavorite } from '@/api/favorite'
 import { getProductList } from '@/api/product'
-import { getMarketDataList } from '@/api/product'
 import { formatPrice, formatRate, formatDate } from '@/utils/format'
 import { Delete } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { WeaUserFavorite, WeaProduct, WeaMarketData } from '@/types'
+import { createMarketSSE, onMarketUpdate } from '@/utils/sse'
 
 interface FavoriteItem extends WeaUserFavorite {
   productName?: string
@@ -114,28 +114,31 @@ const total = ref(0)
 const pageNum = ref(1)
 const pageSize = ref(12)
 const newProductCode = ref('')
+let eventSource: EventSource | null = null
 
 async function enrichFavorites(records: WeaUserFavorite[]): Promise<FavoriteItem[]> {
   let allProducts: WeaProduct[] = []
-  let allMarket: WeaMarketData[] = []
   try {
     const pr = await getProductList()
     allProducts = (pr.data || []) as WeaProduct[]
   } catch { /* ignore */ }
-  try {
-    const mr = await getMarketDataList()
-    allMarket = (mr.data || []) as WeaMarketData[]
-  } catch { /* ignore */ }
 
   return records.map((fav) => {
     const product = allProducts.find((p) => p.productCode === fav.productCode)
-    const market = allMarket.find((m) => m.productCode === fav.productCode)
     return {
       ...fav,
       productName: product?.productName || fav.productCode,
-      currentPrice: market?.currentPrice,
-      riseFallRate: market?.riseFallRate,
     }
+  })
+}
+
+function handleMarketUpdate(data: WeaMarketData[]) {
+  const dataMap = new Map(data.map((d) => [d.productCode, d]))
+  favorites.value = favorites.value.map((fav) => {
+    const market = dataMap.get(fav.productCode)
+    return market
+      ? { ...fav, currentPrice: market.currentPrice, riseFallRate: market.riseFallRate }
+      : fav
   })
 }
 
@@ -195,7 +198,16 @@ function goTrade(item: FavoriteItem) {
 }
 
 onMounted(() => {
-  if (userStore.userId) fetchFavorites()
+  if (userStore.userId) {
+    fetchFavorites()
+    eventSource = createMarketSSE()
+    onMarketUpdate(eventSource, handleMarketUpdate)
+  }
+})
+
+onUnmounted(() => {
+  eventSource?.close()
+  eventSource = null
 })
 </script>
 

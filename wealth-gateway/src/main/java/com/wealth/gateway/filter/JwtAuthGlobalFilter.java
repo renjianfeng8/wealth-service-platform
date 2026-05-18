@@ -38,6 +38,7 @@ public class JwtAuthGlobalFilter implements GlobalFilter, Ordered {
             "/system/umsAdmin/login",
             "/user/login",
             "/user/register",
+            "/product/WeaMarketData/sse/**",
             "/doc.html",
             "/webjars/**",
             "/swagger-resources/**",

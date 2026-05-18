@@ -25,7 +25,8 @@ public class WebConfig implements WebMvcConfigurer {
                         "/doc.html",
                         "/webjars/**",
                         "/swagger-resources/**",
-                        "/v3/api-docs/**"
+                        "/v3/api-docs/**",
+                        "/WeaMarketData/sse/**"
                 );
     }
 }

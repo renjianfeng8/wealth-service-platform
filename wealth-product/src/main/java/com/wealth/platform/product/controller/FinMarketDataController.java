@@ -7,15 +7,19 @@ import com.wealth.common.audit.AuditLog;
 import com.wealth.common.result.Result;
 import com.wealth.common.result.ResultCode;
 import com.wealth.common.utils.BeanConvertUtil;
+import com.wealth.common.utils.JwtUtil;
 import com.wealth.platform.product.dto.FinMarketDataDTO;
 import com.wealth.platform.product.entity.WeaMarketData;
 import com.wealth.platform.product.service.FinMarketDataService;
+import com.wealth.platform.product.service.MarketDataPushService;
+import com.wealth.platform.product.service.MarketDataSimulationService;
 import com.wealth.platform.product.vo.FinMarketDataVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.List;
 
@@ -26,6 +30,9 @@ import java.util.List;
 public class FinMarketDataController {
 
     private final FinMarketDataService finMarketDataService;
+    private final JwtUtil jwtUtil;
+    private final MarketDataPushService marketDataPushService;
+    private final MarketDataSimulationService marketDataSimulationService;
 
     @Operation(summary = "鏍规嵁ID鏌ヨ琛屾儏鏁版嵁")
     @GetMapping("/{id}")
@@ -41,6 +48,27 @@ public class FinMarketDataController {
     @GetMapping
     public Result<List<FinMarketDataVO>> list() {
         return Result.success(finMarketDataService.getMarketDataList());
+    }
+
+    @Operation(summary = "SSE 实时行情推送")
+    @GetMapping("/sse")
+    @CrossOrigin
+    public SseEmitter subscribe(@RequestParam String token) {
+        if (!jwtUtil.validateToken(token)) {
+            // 无法直接返回 Result，通过异常处理返回 401
+            throw new com.wealth.common.exception.ServiceException(401, "无效的 Token");
+        }
+        // 先推送全量快照
+        List<FinMarketDataVO> snapshot = marketDataSimulationService.getAllMarketData();
+        SseEmitter emitter = marketDataPushService.createEmitter();
+        try {
+            emitter.send(SseEmitter.event()
+                    .name("market-update")
+                    .data(snapshot));
+        } catch (Exception e) {
+            // 忽略首次推送异常
+        }
+        return emitter;
     }
 
     @Operation(summary = "鍒嗛〉鏌ヨ琛屾儏鏁版嵁")
