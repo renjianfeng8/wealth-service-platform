@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,6 +24,7 @@ import java.util.List;
 @Tag(name = "消息管理", description = "wea_message 站内消息相关接口")
 @RequestMapping("/WeaMessage")
 @RequiredArgsConstructor
+@Validated
 public class FinMessageController {
 
     private final FinMessageService finMessageService;

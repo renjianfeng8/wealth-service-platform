@@ -1,5 +1,7 @@
 package com.wealth.common.utils;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.beans.BeanUtils;
 
 import java.beans.PropertyDescriptor;
@@ -18,7 +20,7 @@ public class BeanConvertUtil {
             BeanUtils.copyProperties(source, target);
             return target;
         } catch (Exception e) {
-            throw new com.wealth.common.exception.ServiceException(500, "杞崲澶辫触", e);
+            throw new com.wealth.common.exception.ServiceException(500, "转换失败", e);
         }
     }
 
@@ -27,7 +29,20 @@ public class BeanConvertUtil {
         return sourceList.stream().map(s -> convert(s, targetCls)).collect(Collectors.toList());
     }
 
-    /** 澶嶅埗闈?null 灞炴€э紝閬垮厤瑕嗙洊鐩爣瀵硅薄鐨勫凡鏈夊€?*/
+    /**
+     * 将 Entity 分页对象转换为 VO 分页对象，包括分页属性和记录转换。
+     */
+    public static <S, T> IPage<T> convertPage(IPage<S> sourcePage, Class<T> targetCls) {
+        Page<T> voPage = new Page<>();
+        voPage.setCurrent(sourcePage.getCurrent());
+        voPage.setSize(sourcePage.getSize());
+        voPage.setTotal(sourcePage.getTotal());
+        voPage.setPages(sourcePage.getPages());
+        voPage.setRecords(convertList(sourcePage.getRecords(), targetCls));
+        return voPage;
+    }
+
+    /** 复制非 null 属性，避免覆盖目标对象的已有值 */
     public static void copyNonNullProperties(Object source, Object target) {
         BeanUtils.copyProperties(source, target, getNullPropertyNames(source));
     }
@@ -42,7 +57,7 @@ public class BeanConvertUtil {
             }
             return emptyNames.toArray(new String[0]);
         } catch (Exception e) {
-            throw new com.wealth.common.exception.ServiceException(500, "鑾峰彇 null 灞炴€у悕澶辫触", e);
+            throw new com.wealth.common.exception.ServiceException(500, "获取 null 属性名失败", e);
         }
     }
 }

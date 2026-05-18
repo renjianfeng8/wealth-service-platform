@@ -14,6 +14,7 @@ import com.wealth.platform.system.vo.UmsRoleVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,6 +22,7 @@ import java.util.List;
 @RestController
 @Tag(name = "角色管理", description = "ums_role 后台角色相关接口")
 @RequestMapping("/umsRole")
+@Validated
 public class UmsRoleController {
 
     private final UmsRoleService umsRoleService;
@@ -53,16 +55,7 @@ public class UmsRoleController {
             @RequestParam(defaultValue = "10") Integer pageSize) {
 
         Page<UmsRole> page = new Page<>(pageNum, pageSize);
-        IPage<UmsRole> rolePage = umsRoleService.page(page);
-
-        Page<UmsRoleVO> voPage = new Page<>();
-        voPage.setCurrent(rolePage.getCurrent());
-        voPage.setSize(rolePage.getSize());
-        voPage.setTotal(rolePage.getTotal());
-        voPage.setPages(rolePage.getPages());
-        voPage.setRecords(BeanConvertUtil.convertList(rolePage.getRecords(), UmsRoleVO.class));
-
-        return Result.success(voPage);
+        return Result.success(BeanConvertUtil.convertPage(umsRoleService.page(page), UmsRoleVO.class));
     }
 
     @PostMapping

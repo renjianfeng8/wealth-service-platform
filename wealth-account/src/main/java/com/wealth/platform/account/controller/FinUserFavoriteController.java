@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -34,6 +35,7 @@ import java.util.List;
 @Tag(name = "用户自选管理", description = "wea_user_favorite 用户自选相关接口")
 @RequestMapping("/WeaUserFavorite")
 @RequiredArgsConstructor
+@Validated
 public class FinUserFavoriteController {
 
     private final FinUserFavoriteService finUserFavoriteService;
@@ -71,14 +73,7 @@ public class FinUserFavoriteController {
             @RequestParam(defaultValue = "1") Integer pageNum,
             @RequestParam(defaultValue = "10") Integer pageSize) {
         Page<WeaUserFavorite> page = new Page<>(pageNum, pageSize);
-        IPage<WeaUserFavorite> entityPage = finUserFavoriteService.page(page);
-        Page<FinUserFavoriteVO> voPage = new Page<>();
-        voPage.setCurrent(entityPage.getCurrent());
-        voPage.setSize(entityPage.getSize());
-        voPage.setTotal(entityPage.getTotal());
-        voPage.setPages(entityPage.getPages());
-        voPage.setRecords(BeanConvertUtil.convertList(entityPage.getRecords(), FinUserFavoriteVO.class));
-        return Result.success(voPage);
+        return Result.success(BeanConvertUtil.convertPage(finUserFavoriteService.page(page), FinUserFavoriteVO.class));
     }
 
     /**

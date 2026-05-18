@@ -18,6 +18,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.validation.annotation.Validated;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -29,6 +30,7 @@ import java.util.List;
 @Tag(name = "行情管理", description = "行情数据相关接口")
 @RequestMapping("/WeaMarketData")
 @RequiredArgsConstructor
+@Validated
 public class FinMarketDataController {
 
     private final FinMarketDataService finMarketDataService;
@@ -79,14 +81,7 @@ public class FinMarketDataController {
             @RequestParam(defaultValue = "1") Integer pageNum,
             @RequestParam(defaultValue = "10") Integer pageSize) {
         Page<WeaMarketData> page = new Page<>(pageNum, pageSize);
-        IPage<WeaMarketData> entityPage = finMarketDataService.page(page);
-        Page<FinMarketDataVO> voPage = new Page<>();
-        voPage.setCurrent(entityPage.getCurrent());
-        voPage.setSize(entityPage.getSize());
-        voPage.setTotal(entityPage.getTotal());
-        voPage.setPages(entityPage.getPages());
-        voPage.setRecords(BeanConvertUtil.convertList(entityPage.getRecords(), FinMarketDataVO.class));
-        return Result.success(voPage);
+        return Result.success(BeanConvertUtil.convertPage(finMarketDataService.page(page), FinMarketDataVO.class));
     }
 
     @Operation(summary = "创建行情数据")

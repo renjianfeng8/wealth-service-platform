@@ -9,12 +9,14 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/product")
 @Tag(name = "产品搜索接口")
 @RequiredArgsConstructor
+@Validated
 public class ProductSearchController {
 
     private final ProductSearchService productSearchService;

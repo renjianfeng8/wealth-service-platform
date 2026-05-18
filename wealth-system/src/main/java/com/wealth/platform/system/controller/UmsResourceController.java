@@ -14,6 +14,7 @@ import com.wealth.platform.system.vo.UmsResourceVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,6 +25,7 @@ import java.util.List;
 @RestController
 @Tag(name = "资源管理", description = "ums_resource 后台资源相关接口")
 @RequestMapping("/umsResource")
+@Validated
 public class UmsResourceController {
 
     private final UmsResourceService umsResourceService;
@@ -79,16 +81,7 @@ public class UmsResourceController {
             @RequestParam(defaultValue = "10") Integer pageSize) {
 
         Page<UmsResource> page = new Page<>(pageNum, pageSize);
-        IPage<UmsResource> resourcePage = umsResourceService.page(page);
-
-        Page<UmsResourceVO> voPage = new Page<>();
-        voPage.setCurrent(resourcePage.getCurrent());
-        voPage.setSize(resourcePage.getSize());
-        voPage.setTotal(resourcePage.getTotal());
-        voPage.setPages(resourcePage.getPages());
-        voPage.setRecords(BeanConvertUtil.convertList(resourcePage.getRecords(), UmsResourceVO.class));
-
-        return Result.success(voPage);
+        return Result.success(BeanConvertUtil.convertPage(umsResourceService.page(page), UmsResourceVO.class));
     }
 
     /**

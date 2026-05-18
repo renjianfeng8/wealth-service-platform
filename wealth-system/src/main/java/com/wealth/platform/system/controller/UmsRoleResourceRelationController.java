@@ -12,6 +12,7 @@ import com.wealth.platform.system.vo.UmsRoleResourceRelationVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,6 +20,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/umsRoleResourceRelation")
 @Tag(name = "角色-资源关联", description = "ums_role_resource_relation")
+@Validated
 public class UmsRoleResourceRelationController {
 
     private final UmsRoleResourceRelationService umsRoleResourceRelationService;
@@ -50,15 +52,7 @@ public class UmsRoleResourceRelationController {
             @RequestParam(defaultValue = "1") Integer pageNum,
             @RequestParam(defaultValue = "10") Integer pageSize) {
         Page<UmsRoleResourceRelation> page = new Page<>(pageNum, pageSize);
-        IPage<UmsRoleResourceRelation> pageResult = umsRoleResourceRelationService.page(page);
-
-        Page<UmsRoleResourceRelationVO> voPage = new Page<>();
-        voPage.setCurrent(pageResult.getCurrent());
-        voPage.setSize(pageResult.getSize());
-        voPage.setTotal(pageResult.getTotal());
-        voPage.setPages(pageResult.getPages());
-        voPage.setRecords(BeanConvertUtil.convertList(pageResult.getRecords(), UmsRoleResourceRelationVO.class));
-        return Result.success(voPage);
+        return Result.success(BeanConvertUtil.convertPage(umsRoleResourceRelationService.page(page), UmsRoleResourceRelationVO.class));
     }
 
     @Operation(summary = "创建")

@@ -16,6 +16,7 @@ import com.wealth.user.vo.LoginVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,6 +24,7 @@ import java.util.List;
 @RestController
 @Tag(name = "系统用户管理", description = "系统用户相关接口")
 @RequestMapping
+@Validated
 public class UserController {
 
     private final UserService userService;
@@ -55,12 +57,7 @@ public class UserController {
             @RequestParam(defaultValue = "1") Integer pageNum,
             @RequestParam(defaultValue = "10") Integer pageSize) {
         Page<User> page = new Page<>(pageNum, pageSize);
-        IPage<User> userPage = userService.page(page);
-
-        Page<UserVO> voPage = new Page<>();
-        org.springframework.beans.BeanUtils.copyProperties(userPage, voPage, "records");
-        voPage.setRecords(BeanConvertUtil.convertList(userPage.getRecords(), UserVO.class));
-        return Result.success(voPage);
+        return Result.success(BeanConvertUtil.convertPage(userService.page(page), UserVO.class));
     }
 
     @PostMapping

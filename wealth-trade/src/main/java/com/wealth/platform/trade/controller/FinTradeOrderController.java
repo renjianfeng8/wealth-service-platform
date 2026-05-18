@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,6 +24,7 @@ import java.util.List;
 @RequestMapping("/WeaTradeOrder")
 @Tag(name = "交易委托管理", description = "wea_trade_order 交易委托相关接口")
 @RequiredArgsConstructor
+@Validated
 public class FinTradeOrderController {
 
     private final FinTradeOrderService finTradeOrderService;

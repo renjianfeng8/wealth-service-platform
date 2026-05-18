@@ -16,6 +16,7 @@ import com.wealth.platform.system.vo.UmsAdminVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,6 +24,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/umsAdmin")
 @Tag(name = "后台管理员管理")
+@Validated
 public class UmsAdminController {
 
     private final UmsAdminService umsAdminService;
@@ -75,16 +77,7 @@ public class UmsAdminController {
             @RequestParam(defaultValue = "10") Integer pageSize) {
 
         Page<UmsAdmin> page = new Page<>(pageNum, pageSize);
-        IPage<UmsAdmin> userPage = umsAdminService.page(page);
-
-        Page<UmsAdminVO> voPage = new Page<>();
-        voPage.setCurrent(userPage.getCurrent());
-        voPage.setSize(userPage.getSize());
-        voPage.setTotal(userPage.getTotal());
-        voPage.setPages(userPage.getPages());
-        voPage.setRecords(BeanConvertUtil.convertList(userPage.getRecords(), UmsAdminVO.class));
-
-        return Result.success(voPage);
+        return Result.success(BeanConvertUtil.convertPage(umsAdminService.page(page), UmsAdminVO.class));
     }
 
     @PostMapping
