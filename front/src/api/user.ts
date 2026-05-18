@@ -1,6 +1,6 @@
 import request from './index'
 
-export function getUserPage(params: { pageNum: number; pageSize: number }) {
+export function getUserPage(params: { pageNum: number; pageSize: number; username?: string; status?: number }) {
   return request.get('/user/page', { params })
 }
 

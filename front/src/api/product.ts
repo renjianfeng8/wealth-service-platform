@@ -1,7 +1,7 @@
 import request from './index'
 
 // 产品
-export function getProductPage(params: { pageNum: number; pageSize: number }) {
+export function getProductPage(params: { pageNum: number; pageSize: number; productName?: string; productCode?: string; productType?: number }) {
   return request.get('/product/weaProduct/page', { params })
 }
 

@@ -5,6 +5,7 @@
       <el-form :model="query" inline>
         <el-form-item label="产品名称"><el-input v-model="query.productName" placeholder="搜索" clearable /></el-form-item>
         <el-form-item label="产品编码"><el-input v-model="query.productCode" placeholder="搜索" clearable /></el-form-item>
+        <el-form-item label="类型"><el-select v-model="query.productType" clearable style="width:120px"><el-option v-for="d in PRODUCT_TYPE_OPTIONS" :key="d.value" :label="d.label" :value="d.value" /></el-select></el-form-item>
         <el-form-item><el-button type="primary" @click="handleSearch">查询</el-button><el-button @click="handleReset">重置</el-button></el-form-item>
       </el-form>
     </el-card>
@@ -15,7 +16,7 @@
         <el-table-column prop="productName" label="产品名称" min-width="140" />
         <el-table-column prop="productCode" label="编码" width="120" />
         <el-table-column prop="productType" label="类型" width="80">
-          <template #default="{ row }"><el-tag>{{ row.productType === 1 ? '股票' : row.productType === 2 ? '基金' : '其他' }}</el-tag></template>
+          <template #default="{ row }"><el-tag>{{ productTypeText(row.productType) }}</el-tag></template>
         </el-table-column>
         <el-table-column prop="price" label="价格" width="100" :formatter="(_r:any,_c:any,v:any)=>formatPrice(v)" />
         <el-table-column prop="riseFallRate" label="涨跌幅" width="100">
@@ -43,7 +44,7 @@
           <el-col :span="12"><el-form-item label="产品编码" prop="productCode"><el-input v-model="form.productCode" /></el-form-item></el-col>
         </el-row>
         <el-row :gutter="20">
-          <el-col :span="12"><el-form-item label="产品类型" prop="productType"><el-select v-model="form.productType" style="width:100%"><el-option label="股票" :value="1" /><el-option label="基金" :value="2" /><el-option label="其他" :value="3" /></el-select></el-form-item></el-col>
+          <el-col :span="12"><el-form-item label="产品类型" prop="productType"><el-select v-model="form.productType" style="width:100%"><el-option v-for="d in PRODUCT_TYPE_OPTIONS" :key="d.value" :label="d.label" :value="d.value" /></el-select></el-form-item></el-col>
           <el-col :span="12"><el-form-item label="价格" prop="price"><el-input-number v-model="form.price" :precision="2" style="width:100%" /></el-form-item></el-col>
         </el-row>
         <el-row :gutter="20">
@@ -65,13 +66,14 @@ import { onMounted, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
 import { getProductPage, createProduct, updateProduct, deleteProduct } from '@/api/product'
-import { formatDateTime, formatPrice, formatRate, statusTag, statusText } from '@/utils/format'
+import { formatDateTime, formatPrice, formatRate, statusTag, statusText, productTypeText } from '@/utils/format'
+import { PRODUCT_TYPE_OPTIONS } from '@/types'
 
 const loading = ref(false); const saving = ref(false)
 const tableData = ref<any[]>([]); const total = ref(0)
 const dialogVisible = ref(false); const isEdit = ref(false)
 const formRef = ref<FormInstance>()
-const query = reactive({ pageNum: 1, pageSize: 10, productName: '', productCode: '' })
+const query = reactive({ pageNum: 1, pageSize: 10, productName: '', productCode: '', productType: '' })
 const form = reactive({ id: undefined, productName: '', productCode: '', productType: 1, price: 0, riseFall: 0, riseFallRate: 0, status: 1, sort: 0 })
 const rules: FormRules = { productName: [{ required: true, message: '必填' }], productCode: [{ required: true, message: '必填' }], price: [{ required: true, message: '请输入价格' }] }
 
@@ -81,12 +83,13 @@ async function fetchData() {
     const params: any = { pageNum: query.pageNum, pageSize: query.pageSize }
     if (query.productName) params.productName = query.productName
     if (query.productCode) params.productCode = query.productCode
+    if (query.productType !== '') params.productType = query.productType
     const res = await getProductPage(params)
     tableData.value = res.data.records || []; total.value = res.data.total || 0
   } finally { loading.value = false }
 }
 function handleSearch() { query.pageNum = 1; fetchData() }
-function handleReset() { query.productName = ''; query.productCode = ''; handleSearch() }
+function handleReset() { query.productName = ''; query.productCode = ''; query.productType = ''; handleSearch() }
 function handleSizeChange() { query.pageNum = 1; fetchData() }
 function handleAdd() { isEdit.value = false; Object.assign(form, { id: undefined, productName: '', productCode: '', productType: 1, price: 0, riseFall: 0, riseFallRate: 0, status: 1, sort: 0 }); dialogVisible.value = true }
 function handleEdit(row: any) { isEdit.value = true; Object.assign(form, row); dialogVisible.value = true }

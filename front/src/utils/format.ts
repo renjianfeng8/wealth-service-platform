@@ -43,3 +43,8 @@ export function orderStatusTag(status: number | undefined | null): string {
   const map: Record<number, string> = { 0: 'warning', 1: 'success', 2: 'info' }
   return status !== null && status !== undefined ? map[status] || '' : ''
 }
+
+export function productTypeText(type: number | undefined | null): string {
+  const map: Record<number, string> = { 1: '贵金属', 2: '理财产品', 3: '基金', 4: '股票' }
+  return type !== null && type !== undefined ? map[type] || '-' : '-'
+}

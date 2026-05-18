@@ -124,7 +124,10 @@ const rules: FormRules = {
 async function fetchData() {
   loading.value = true
   try {
-    const res = await getUserPage({ pageNum: query.pageNum, pageSize: query.pageSize })
+    const params: any = { pageNum: query.pageNum, pageSize: query.pageSize }
+    if (query.username) params.username = query.username
+    if (query.status !== '') params.status = query.status
+    const res = await getUserPage(params)
     tableData.value = res.data.records || []
     total.value = res.data.total || 0
   } finally { loading.value = false }
