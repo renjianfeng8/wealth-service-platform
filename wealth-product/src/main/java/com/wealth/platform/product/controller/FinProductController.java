@@ -2,6 +2,8 @@ package com.wealth.platform.product.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.wealth.common.audit.AntiReplay;
+import com.wealth.common.audit.AuditLog;
 import com.wealth.common.dto.ProductSyncDTO;
 import com.wealth.common.result.Result;
 import com.wealth.common.result.ResultCode;
@@ -54,26 +56,33 @@ public class FinProductController {
         return Result.success(finProductService.pageProducts(page, productType));
     }
 
-    @Operation(summary = "鍒涘缓浜у搧")
+    @Operation(summary = "创建产品")
     @PostMapping
+    @AuditLog(module = "产品管理", operation = "创建产品")
+    @AntiReplay
     public Result<Boolean> create(@Valid @RequestBody FinProductDTO dto) {
         return Result.success(finProductService.createProduct(dto));
     }
 
-    @Operation(summary = "鏇存柊浜у搧淇℃伅")
+    @Operation(summary = "更新产品信息")
     @PutMapping("/{id}")
+    @AuditLog(module = "产品管理", operation = "更新产品")
+    @AntiReplay
     public Result<Boolean> update(@PathVariable Long id, @Valid @RequestBody FinProductDTO dto) {
         return Result.success(finProductService.updateProduct(id, dto));
     }
 
-    @Operation(summary = "鍒犻櫎浜у搧")
+    @Operation(summary = "删除产品")
     @DeleteMapping("/{id}")
+    @AuditLog(module = "产品管理", operation = "删除产品")
+    @AntiReplay
     public Result<Boolean> delete(@PathVariable Long id) {
         return Result.success(finProductService.deleteProduct(id));
     }
 
     @Operation(summary = "手动同步产品数据到 ES")
     @PostMapping("/syncES")
+    @AuditLog(module = "产品管理", operation = "同步产品到ES")
     public Result<List<ProductSyncDTO>> syncToES() {
         return Result.success(productSyncService.syncAllToES());
     }

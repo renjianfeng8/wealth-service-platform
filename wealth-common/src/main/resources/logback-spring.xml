@@ -43,6 +43,25 @@
         </filter>
     </appender>
 
+    <!-- 审计日志独立文件 -->
+    <appender name="AUDIT_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_HOME}/audit.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_HOME}/audit.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxFileSize>100MB</maxFileSize>
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>1GB</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- 审计日志 logger（单独输出到审计文件，不继承 root） -->
+    <logger name="AUDIT_LOG" level="INFO" additivity="false">
+        <appender-ref ref="AUDIT_FILE" />
+    </logger>
+
     <!-- 项目包级别：DEBUG -->
     <logger name="com.wealth" level="DEBUG" additivity="false">
         <appender-ref ref="CONSOLE" />

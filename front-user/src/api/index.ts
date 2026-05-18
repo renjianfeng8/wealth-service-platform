@@ -12,6 +12,11 @@ request.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
   }
+  // POST/PUT/DELETE 添加防重放头（后端 @AntiReplay 校验兼容旧客户端，不传头时自动放行）
+  if (config.method && ['post', 'put', 'delete'].includes(config.method)) {
+    config.headers['X-Timestamp'] = Date.now().toString()
+    config.headers['X-Nonce'] = crypto.randomUUID()
+  }
   return config
 })
 

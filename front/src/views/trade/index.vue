@@ -89,7 +89,7 @@ async function handleSave() {
   const valid = await formRef.value?.validate().catch(() => false)
   if (!valid) return; saving.value = true
   try {
-    isEdit.value ? await updateTradeOrder(form.id!, form) : await createTradeOrder(form)
+    isEdit.value ? await updateTradeOrder(form.id!, form) : await createTradeOrder({ ...form, idempotentKey: crypto.randomUUID() })
     ElMessage.success(isEdit.value ? '更新成功' : '创建成功'); dialogVisible.value = false; fetchData()
   } finally { saving.value = false }
 }

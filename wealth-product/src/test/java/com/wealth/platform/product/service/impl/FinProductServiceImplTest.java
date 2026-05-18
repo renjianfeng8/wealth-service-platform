@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.wealth.platform.product.dto.FinProductDTO;
 import com.wealth.platform.product.entity.WeaProduct;
 import com.wealth.platform.product.mapper.FinProductMapper;
+import com.wealth.platform.product.service.ProductSyncService;
 import com.wealth.platform.product.vo.FinProductVO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -28,13 +29,16 @@ class FinProductServiceImplTest {
     @Mock
     private FinProductMapper finProductMapper;
 
+    @Mock
+    private ProductSyncService productSyncService;
+
     private FinProductServiceImpl productService;
 
     private WeaProduct mockProduct;
 
     @BeforeEach
     void setUp() {
-        productService = new FinProductServiceImpl();
+        productService = new FinProductServiceImpl(productSyncService);
         ReflectionTestUtils.setField(productService, "baseMapper", finProductMapper);
 
         mockProduct = new WeaProduct();
@@ -112,6 +116,9 @@ class FinProductServiceImplTest {
                 "新产品".equals(product.getProductName()) &&
                 "P003".equals(product.getProductCode())
         ));
+        verify(productSyncService).syncSingleToES(argThat(p ->
+                "新产品".equals(p.getProductName())
+        ));
     }
 
     @Test
@@ -161,6 +168,9 @@ class FinProductServiceImplTest {
                 "更新后的产品".equals(product.getProductName()) &&
                 product.getId() == 1L
         ));
+        verify(productSyncService).syncSingleToES(argThat(p ->
+                p.getId() == 1L
+        ));
     }
 
     @Test
@@ -183,5 +193,6 @@ class FinProductServiceImplTest {
 
         assertTrue(result);
         verify(finProductMapper).deleteById(1L);
+        verify(productSyncService).deleteFromES(1L);
     }
 }

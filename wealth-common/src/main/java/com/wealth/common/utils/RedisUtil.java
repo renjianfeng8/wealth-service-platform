@@ -47,4 +47,9 @@ public class RedisUtil {
     public Boolean hasKey(String key) {
         return redisTemplate.hasKey(key);
     }
+
+    /** 仅当 key 不存在时设置值（SET NX），用于分布式锁/防重放等场景 */
+    public Boolean setIfAbsent(String key, Object value, long timeout, TimeUnit unit) {
+        return redisTemplate.opsForValue().setIfAbsent(key, value, timeout, unit);
+    }
 }

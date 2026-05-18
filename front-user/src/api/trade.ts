@@ -23,6 +23,7 @@ export function createTradeOrder(data: {
   tradeType: number
   entrustPrice: number
   entrustNum: number
+  idempotentKey?: string
 }) {
   return request.post('/trade/weaTradeOrder', data)
 }

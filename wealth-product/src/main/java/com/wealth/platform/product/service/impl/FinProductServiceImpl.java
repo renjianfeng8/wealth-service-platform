@@ -8,6 +8,7 @@ import com.wealth.platform.product.dto.FinProductDTO;
 import com.wealth.platform.product.entity.WeaProduct;
 import com.wealth.platform.product.mapper.FinProductMapper;
 import com.wealth.platform.product.service.FinProductService;
+import com.wealth.platform.product.service.ProductSyncService;
 import com.wealth.platform.product.vo.FinProductVO;
 import com.wealth.common.utils.BeanConvertUtil;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,12 @@ import java.util.stream.Collectors;
 @Service
 public class FinProductServiceImpl extends ServiceImpl<FinProductMapper, WeaProduct>
         implements FinProductService {
+
+    private final ProductSyncService productSyncService;
+
+    public FinProductServiceImpl(ProductSyncService productSyncService) {
+        this.productSyncService = productSyncService;
+    }
 
     @Override
     public FinProductVO getProductById(Long id) {
@@ -46,7 +53,11 @@ public class FinProductServiceImpl extends ServiceImpl<FinProductMapper, WeaProd
     public boolean createProduct(FinProductDTO dto) {
         WeaProduct entity = new WeaProduct();
         BeanUtils.copyProperties(dto, entity);
-        return save(entity);
+        boolean saved = save(entity);
+        if (saved) {
+            productSyncService.syncSingleToES(entity);
+        }
+        return saved;
     }
 
     @Override
@@ -76,12 +87,20 @@ public class FinProductServiceImpl extends ServiceImpl<FinProductMapper, WeaProd
         }
         BeanConvertUtil.copyNonNullProperties(dto, entity);
         entity.setId(id);
-        return updateById(entity);
+        boolean updated = updateById(entity);
+        if (updated) {
+            productSyncService.syncSingleToES(entity);
+        }
+        return updated;
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean deleteProduct(Long id) {
-        return removeById(id);
+        boolean removed = removeById(id);
+        if (removed) {
+            productSyncService.deleteFromES(id);
+        }
+        return removed;
     }
 }

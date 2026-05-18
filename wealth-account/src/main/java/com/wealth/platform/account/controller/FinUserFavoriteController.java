@@ -2,6 +2,8 @@ package com.wealth.platform.account.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.wealth.common.audit.AntiReplay;
+import com.wealth.common.audit.AuditLog;
 import com.wealth.common.result.Result;
 import com.wealth.common.result.ResultCode;
 import com.wealth.common.utils.BeanConvertUtil;
@@ -87,6 +89,8 @@ public class FinUserFavoriteController {
      */
     @Operation(summary = "创建用户自选关注")
     @PostMapping
+    @AuditLog(module = "自选管理", operation = "添加自选关注")
+    @AntiReplay
     public Result<Boolean> create(@Valid @RequestBody FinUserFavoriteDTO dto) {
         boolean success = finUserFavoriteService.createFavorite(dto);
         if (!success) {
@@ -104,6 +108,7 @@ public class FinUserFavoriteController {
      */
     @Operation(summary = "更新用户自选关注信息")
     @PutMapping("/{id}")
+    @AuditLog(module = "自选管理", operation = "更新自选关注")
     public Result<Boolean> update(@PathVariable Long id, @Valid @RequestBody FinUserFavoriteDTO dto) {
         return Result.success(finUserFavoriteService.updateFavorite(id, dto));
     }
@@ -116,6 +121,8 @@ public class FinUserFavoriteController {
      */
     @Operation(summary = "删除用户自选关注（物理删除）")
     @DeleteMapping("/{id}")
+    @AuditLog(module = "自选管理", operation = "删除自选关注")
+    @AntiReplay
     public Result<Boolean> delete(@PathVariable Long id) {
         return Result.success(finUserFavoriteService.deleteFavorite(id));
     }

@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.wealth.common.dto.LoginDTO;
 import com.wealth.common.result.Result;
 import com.wealth.common.result.ResultCode;
+import com.wealth.common.audit.AntiReplay;
+import com.wealth.common.audit.AuditLog;
 import com.wealth.common.utils.BeanConvertUtil;
 import com.wealth.platform.system.dto.UmsAdminDTO;
 import com.wealth.platform.system.entity.UmsAdmin;
@@ -30,6 +32,7 @@ public class UmsAdminController {
 
     @PostMapping("/login")
     @Operation(summary = "管理员登录")
+    @AuditLog(module = "系统管理", operation = "管理员登录")
     public Result<String> login(@Valid @RequestBody LoginDTO dto) {
         return Result.success(umsAdminService.login(dto));
     }
@@ -72,6 +75,8 @@ public class UmsAdminController {
 
     @PostMapping
     @Operation(summary = "新增管理员")
+    @AuditLog(module = "系统管理", operation = "新增管理员")
+    @AntiReplay
     public Result<Boolean> create(@Valid @RequestBody UmsAdminDTO dto) {
         UmsAdmin admin = BeanConvertUtil.convert(dto, UmsAdmin.class);
         return Result.success(umsAdminService.createAdmin(admin));
@@ -79,6 +84,8 @@ public class UmsAdminController {
 
     @PutMapping("/{id}")
     @Operation(summary = "修改管理员")
+    @AuditLog(module = "系统管理", operation = "修改管理员")
+    @AntiReplay
     public Result<Boolean> update(@PathVariable Long id, @Valid @RequestBody UmsAdminDTO dto) {
         UmsAdmin admin = BeanConvertUtil.convert(dto, UmsAdmin.class);
         admin.setId(id);
@@ -87,6 +94,8 @@ public class UmsAdminController {
 
     @DeleteMapping("/{id}")
     @Operation(summary = "删除管理员")
+    @AuditLog(module = "系统管理", operation = "删除管理员")
+    @AntiReplay
     public Result<Boolean> delete(@PathVariable Long id) {
         return Result.success(umsAdminService.removeById(id));
     }

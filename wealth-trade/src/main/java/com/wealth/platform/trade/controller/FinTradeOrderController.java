@@ -2,6 +2,8 @@ package com.wealth.platform.trade.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.wealth.common.audit.AntiReplay;
+import com.wealth.common.audit.AuditLog;
 import com.wealth.common.result.Result;
 import com.wealth.common.result.ResultCode;
 import com.wealth.platform.trade.dto.FinTradeOrderDTO;
@@ -54,24 +56,29 @@ public class FinTradeOrderController {
 
     @Operation(summary = "创建交易委托单（支持幂等键防重）")
     @PostMapping
+    @AuditLog(module = "交易管理", operation = "创建委托单")
+    @AntiReplay
     public Result<Boolean> create(@Valid @RequestBody FinTradeOrderDTO dto) {
         return Result.success(finTradeOrderService.createOrder(dto));
     }
 
     @Operation(summary = "更新交易委托单信息")
     @PutMapping("/{id}")
+    @AuditLog(module = "交易管理", operation = "更新委托单")
     public Result<Boolean> update(@PathVariable Long id, @Valid @RequestBody FinTradeOrderDTO dto) {
         return Result.success(finTradeOrderService.updateOrder(id, dto));
     }
 
     @Operation(summary = "更新交易委托单状态（含状态机校验）")
     @PutMapping("/{id}/status")
+    @AuditLog(module = "交易管理", operation = "更新委托单状态")
     public Result<Boolean> updateStatus(@PathVariable Long id, @Valid @RequestBody FinTradeOrderStatusDTO dto) {
         return Result.success(finTradeOrderService.updateOrderStatus(id, dto));
     }
 
     @Operation(summary = "删除交易委托单（逻辑删除）")
     @DeleteMapping("/{id}")
+    @AuditLog(module = "交易管理", operation = "删除委托单")
     public Result<Boolean> delete(@PathVariable Long id) {
         return Result.success(finTradeOrderService.deleteOrder(id));
     }

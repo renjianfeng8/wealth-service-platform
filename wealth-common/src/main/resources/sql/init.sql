@@ -228,3 +228,29 @@ CREATE TABLE undo_log (
     PRIMARY KEY (id),
     UNIQUE KEY ux_undo_log (xid, branch_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Seata AT 模式回滚日志表';
+
+-- ============================================================
+-- 14. 审计日志表（由 @AuditLog 注解自动记录）
+-- ============================================================
+DROP TABLE IF EXISTS audit_log;
+CREATE TABLE audit_log (
+    id          BIGINT       NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+    user_id     BIGINT       DEFAULT NULL            COMMENT '用户ID',
+    username    VARCHAR(100) DEFAULT NULL            COMMENT '用户名',
+    module      VARCHAR(100) DEFAULT NULL            COMMENT '模块名',
+    operation   VARCHAR(200) DEFAULT NULL            COMMENT '操作描述',
+    method_name VARCHAR(200) DEFAULT NULL            COMMENT '请求方法',
+    request_url VARCHAR(255) DEFAULT NULL            COMMENT '请求URL',
+    http_method VARCHAR(10)  DEFAULT NULL            COMMENT 'HTTP方法',
+    params      TEXT         DEFAULT NULL            COMMENT '请求参数(JSON)',
+    result      TEXT         DEFAULT NULL            COMMENT '响应结果(JSON)',
+    ip          VARCHAR(50)  DEFAULT NULL            COMMENT '客户端IP',
+    duration    BIGINT       DEFAULT NULL            COMMENT '执行耗时(ms)',
+    status      TINYINT      DEFAULT '1'             COMMENT '状态 1成功 0失败',
+    error_msg   VARCHAR(1000) DEFAULT NULL           COMMENT '错误信息',
+    create_time DATETIME     DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    PRIMARY KEY (id),
+    KEY idx_user (user_id),
+    KEY idx_module (module),
+    KEY idx_create_time (create_time)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='操作审计日志表';

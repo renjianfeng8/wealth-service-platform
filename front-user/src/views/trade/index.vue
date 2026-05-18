@@ -174,12 +174,14 @@ async function handleSubmit() {
   }
   submitting.value = true
   try {
+    const idempotentKey = crypto.randomUUID()
     await createTradeOrder({
       userId: userStore.userId,
       productCode: orderForm.productCode,
       tradeType: orderForm.tradeType,
       entrustPrice: orderForm.entrustPrice,
       entrustNum: orderForm.entrustNum,
+      idempotentKey,
     })
     ElMessage.success('委托提交成功')
     orderForm.productCode = ''

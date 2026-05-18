@@ -2,6 +2,8 @@ package com.wealth.platform.message.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.wealth.common.audit.AntiReplay;
+import com.wealth.common.audit.AuditLog;
 import com.wealth.common.result.Result;
 import com.wealth.common.result.ResultCode;
 import com.wealth.common.utils.BeanConvertUtil;
@@ -53,18 +55,24 @@ public class FinNewsController {
 
     @Operation(summary = "创建财经资讯公告")
     @PostMapping
+    @AuditLog(module = "资讯管理", operation = "创建资讯")
+    @AntiReplay
     public Result<Boolean> create(@Valid @RequestBody FinNewsDTO dto) {
         return Result.success(finNewsService.createNews(dto));
     }
 
     @Operation(summary = "更新财经资讯公告信息")
     @PutMapping("/{id}")
+    @AuditLog(module = "资讯管理", operation = "更新资讯")
+    @AntiReplay
     public Result<Boolean> update(@PathVariable Long id, @Valid @RequestBody FinNewsDTO dto) {
         return Result.success(finNewsService.updateNews(id, dto));
     }
 
     @Operation(summary = "删除财经资讯公告（逻辑删除）")
     @DeleteMapping("/{id}")
+    @AuditLog(module = "资讯管理", operation = "删除资讯")
+    @AntiReplay
     public Result<Boolean> delete(@PathVariable Long id) {
         return Result.success(finNewsService.deleteNews(id));
     }

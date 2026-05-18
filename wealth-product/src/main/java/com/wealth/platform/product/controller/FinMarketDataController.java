@@ -2,6 +2,8 @@ package com.wealth.platform.product.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.wealth.common.audit.AntiReplay;
+import com.wealth.common.audit.AuditLog;
 import com.wealth.common.result.Result;
 import com.wealth.common.result.ResultCode;
 import com.wealth.common.utils.BeanConvertUtil;
@@ -57,20 +59,26 @@ public class FinMarketDataController {
         return Result.success(voPage);
     }
 
-    @Operation(summary = "鍒涘缓琛屾儏鏁版嵁")
+    @Operation(summary = "创建行情数据")
     @PostMapping
+    @AuditLog(module = "行情管理", operation = "创建行情数据")
+    @AntiReplay
     public Result<Boolean> create(@Valid @RequestBody FinMarketDataDTO dto) {
         return Result.success(finMarketDataService.createMarketData(dto));
     }
 
-    @Operation(summary = "鏇存柊琛屾儏鏁版嵁")
+    @Operation(summary = "更新行情数据")
     @PutMapping("/{id}")
+    @AuditLog(module = "行情管理", operation = "更新行情数据")
+    @AntiReplay
     public Result<Boolean> update(@PathVariable Long id, @Valid @RequestBody FinMarketDataDTO dto) {
         return Result.success(finMarketDataService.updateMarketData(id, dto));
     }
 
-    @Operation(summary = "鍒犻櫎琛屾儏鏁版嵁")
+    @Operation(summary = "删除行情数据")
     @DeleteMapping("/{id}")
+    @AuditLog(module = "行情管理", operation = "删除行情数据")
+    @AntiReplay
     public Result<Boolean> delete(@PathVariable Long id) {
         return Result.success(finMarketDataService.deleteMarketData(id));
     }

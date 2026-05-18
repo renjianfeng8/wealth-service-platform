@@ -2,6 +2,8 @@ package com.wealth.platform.system.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.wealth.common.audit.AntiReplay;
+import com.wealth.common.audit.AuditLog;
 import com.wealth.common.result.Result;
 import com.wealth.common.result.ResultCode;
 import com.wealth.common.utils.BeanConvertUtil;
@@ -93,10 +95,12 @@ public class UmsResourceController {
      * 鍒涘缓鍚庡彴璧勬簮銆?
      *
      * @param dto 鍚庡彴璧勬簮鍏ュ弬
-     * @return 鏄惁鍒涘缓鎴愬姛
+     * @return 是否创建成功
      */
-    @Operation(summary = "鍒涘缓鍚庡彴璧勬簮")
+    @Operation(summary = "创建后台资源")
     @PostMapping
+    @AuditLog(module = "系统管理", operation = "创建资源")
+    @AntiReplay
     public Result<Boolean> create(@Valid @RequestBody UmsResourceDTO dto) {
         UmsResource resource = BeanConvertUtil.convert(dto, UmsResource.class);
         boolean saved = umsResourceService.save(resource);
@@ -108,10 +112,12 @@ public class UmsResourceController {
      *
      * @param id 鍚庡彴璧勬簮 ID
      * @param dto 鍚庡彴璧勬簮鍏ュ弬
-     * @return 鏄惁鏇存柊鎴愬姛
+     * @return 是否更新成功
      */
-    @Operation(summary = "鏇存柊鍚庡彴璧勬簮淇℃伅")
+    @Operation(summary = "更新后台资源信息")
     @PutMapping("/{id}")
+    @AuditLog(module = "系统管理", operation = "更新资源")
+    @AntiReplay
     public Result<Boolean> update(@PathVariable Long id, @Valid @RequestBody UmsResourceDTO dto) {
         UmsResource resource = BeanConvertUtil.convert(dto, UmsResource.class);
         resource.setId(id);
@@ -125,8 +131,10 @@ public class UmsResourceController {
      * @param id 鍚庡彴璧勬簮 ID
      * @return 鏄惁鍒犻櫎鎴愬姛
      */
-    @Operation(summary = "鍒犻櫎鍚庡彴璧勬簮")
+    @Operation(summary = "删除后台资源")
     @DeleteMapping("/{id}")
+    @AuditLog(module = "系统管理", operation = "删除资源")
+    @AntiReplay
     public Result<Boolean> delete(@PathVariable Long id) {
         boolean removed = umsResourceService.removeById(id);
         return Result.success(removed);

@@ -2,6 +2,8 @@ package com.wealth.platform.system.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.wealth.common.audit.AntiReplay;
+import com.wealth.common.audit.AuditLog;
 import com.wealth.common.result.Result;
 import com.wealth.common.result.ResultCode;
 import com.wealth.common.utils.BeanConvertUtil;
@@ -63,23 +65,29 @@ public class UmsRoleController {
         return Result.success(voPage);
     }
 
-    @Operation(summary = "鍒涘缓瑙掕壊")
     @PostMapping
+    @Operation(summary = "创建角色")
+    @AuditLog(module = "系统管理", operation = "创建角色")
+    @AntiReplay
     public Result<Boolean> create(@Valid @RequestBody UmsRoleDTO dto) {
         UmsRole role = BeanConvertUtil.convert(dto, UmsRole.class);
         return Result.success(umsRoleService.save(role));
     }
 
-    @Operation(summary = "鏇存柊瑙掕壊淇℃伅")
     @PutMapping("/{id}")
+    @Operation(summary = "更新角色信息")
+    @AuditLog(module = "系统管理", operation = "更新角色")
+    @AntiReplay
     public Result<Boolean> update(@PathVariable Long id, @Valid @RequestBody UmsRoleDTO dto) {
         UmsRole role = BeanConvertUtil.convert(dto, UmsRole.class);
         role.setId(id);
         return Result.success(umsRoleService.updateById(role));
     }
 
-    @Operation(summary = "鍒犻櫎瑙掕壊")
     @DeleteMapping("/{id}")
+    @Operation(summary = "删除角色")
+    @AuditLog(module = "系统管理", operation = "删除角色")
+    @AntiReplay
     public Result<Boolean> delete(@PathVariable Long id) {
         return Result.success(umsRoleService.removeById(id));
     }

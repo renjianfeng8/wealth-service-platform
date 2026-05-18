@@ -25,7 +25,7 @@ public class ProductSyncServiceImpl implements ProductSyncService {
     }
 
     @Override
-    @Scheduled(fixedRate = 1800000)
+    @Scheduled(fixedRate = 120000)
     public List<ProductSyncDTO> syncAllToES() {
         log.info("开始同步产品数据到 ES");
         List<WeaProduct> products = productMapper.selectList(null);
@@ -45,6 +45,27 @@ public class ProductSyncServiceImpl implements ProductSyncService {
 
         log.info("产品数据同步完成 | 总数={} | 成功={}", products.size(), synced.size());
         return synced;
+    }
+
+    @Override
+    public void syncSingleToES(WeaProduct product) {
+        try {
+            syncFeignClient.save(toSyncDTO(product));
+            log.info("实时同步产品到 ES 成功 | id={} | code={}", product.getId(), product.getProductCode());
+        } catch (Exception e) {
+            log.error("实时同步产品到 ES 失败 | id={} | code={} | error={}",
+                    product.getId(), product.getProductCode(), e.getMessage());
+        }
+    }
+
+    @Override
+    public void deleteFromES(Long productId) {
+        try {
+            syncFeignClient.deleteById(productId);
+            log.info("从 ES 删除产品成功 | id={}", productId);
+        } catch (Exception e) {
+            log.error("从 ES 删除产品失败 | id={} | error={}", productId, e.getMessage());
+        }
     }
 
     private ProductSyncDTO toSyncDTO(WeaProduct p) {

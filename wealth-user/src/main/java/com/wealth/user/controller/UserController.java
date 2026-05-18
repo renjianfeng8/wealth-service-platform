@@ -2,6 +2,8 @@ package com.wealth.user.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.wealth.common.audit.AntiReplay;
+import com.wealth.common.audit.AuditLog;
 import com.wealth.common.dto.LoginDTO;
 import com.wealth.common.result.Result;
 import com.wealth.common.result.ResultCode;
@@ -63,6 +65,7 @@ public class UserController {
 
     @PostMapping
     @Operation(summary = "新增用户")
+    @AuditLog(module = "用户管理", operation = "新增用户")
     public Result<Boolean> create(@Valid @RequestBody UserDTO dto) {
         User user = BeanConvertUtil.convert(dto, User.class);
         return Result.success(userService.save(user));
@@ -70,6 +73,7 @@ public class UserController {
 
     @PutMapping("/{id}")
     @Operation(summary = "修改用户")
+    @AuditLog(module = "用户管理", operation = "修改用户")
     public Result<Boolean> update(
             @PathVariable Long id,
             @Valid @RequestBody UserDTO dto) {
@@ -81,18 +85,22 @@ public class UserController {
 
     @DeleteMapping("/{id}")
     @Operation(summary = "删除用户")
+    @AuditLog(module = "用户管理", operation = "删除用户")
     public Result<Boolean> delete(@PathVariable Long id) {
         return Result.success(userService.removeById(id));
     }
 
     @DeleteMapping("/batch")
     @Operation(summary = "批量删除")
+    @AuditLog(module = "用户管理", operation = "批量删除用户")
     public Result<Boolean> deleteBatch(@RequestBody List<Long> ids) {
         return Result.success(userService.removeByIds(ids));
     }
 
     @PostMapping("/register")
     @Operation(summary = "用户注册")
+    @AuditLog(module = "用户管理", operation = "用户注册")
+    @AntiReplay
     public Result<Boolean> register(@Valid @RequestBody UserDTO dto) {
         User user = BeanConvertUtil.convert(dto, User.class);
         return Result.success(userService.register(user));
@@ -100,12 +108,15 @@ public class UserController {
 
     @PostMapping("/login")
     @Operation(summary = "用户登录")
+    @AuditLog(module = "用户管理", operation = "用户登录")
     public Result<LoginVO> login(@Valid @RequestBody LoginDTO dto) {
         return Result.success(userService.login(dto));
     }
 
     @PostMapping("/resetPassword")
     @Operation(summary = "重置密码")
+    @AuditLog(module = "用户管理", operation = "重置密码")
+    @AntiReplay
     public Result<Boolean> resetPassword(@Valid @RequestBody UserDTO dto) {
         User user = BeanConvertUtil.convert(dto, User.class);
         return Result.success(userService.resetPassword(user));
