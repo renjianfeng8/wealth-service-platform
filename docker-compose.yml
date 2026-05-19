@@ -32,7 +32,7 @@ services:
     image: mysql:8.0.37
     container_name: wealth-mysql
     ports:
-      - "3307:3306"
+      - "3306:3306"
     command:
       - "--binlog-expire-logs-seconds=604800"
       - "--max-binlog-size=104857600"
