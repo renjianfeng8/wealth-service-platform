@@ -9,7 +9,7 @@ CREATE DATABASE IF NOT EXISTS wealth DEFAULT CHARSET utf8mb4 COLLATE utf8mb4_uni
 USE wealth;
 
 -- ============================================================
--- 1. 用户模块 (finance-user) — 系统用户表
+-- 1. 用户模块 (wealth-user) — 系统用户表
 -- ============================================================
 DROP TABLE IF EXISTS sys_user;
 CREATE TABLE sys_user (
@@ -28,10 +28,10 @@ CREATE TABLE sys_user (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='系统用户表';
 
 -- ============================================================
--- 2. 产品&行情模块 (finance-product) — 产品表
+-- 2. 产品&行情模块 (wealth-product) — 产品表
 -- ============================================================
-DROP TABLE IF EXISTS fin_product;
-CREATE TABLE fin_product (
+DROP TABLE IF EXISTS wea_product;
+CREATE TABLE wea_product (
     id             BIGINT       NOT NULL AUTO_INCREMENT COMMENT '主键ID',
     product_name   VARCHAR(100) NOT NULL                COMMENT '产品名称',
     product_code   VARCHAR(50)  NOT NULL                COMMENT '产品编码',
@@ -49,10 +49,10 @@ CREATE TABLE fin_product (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='理财/贵金属产品表';
 
 -- ============================================================
--- 3. 产品&行情模块 (finance-product) — 行情数据表
+-- 3. 产品&行情模块 (wealth-product) — 行情数据表
 -- ============================================================
-DROP TABLE IF EXISTS fin_market_data;
-CREATE TABLE fin_market_data (
+DROP TABLE IF EXISTS wea_market_data;
+CREATE TABLE wea_market_data (
     id             BIGINT       NOT NULL AUTO_INCREMENT COMMENT '主键ID',
     product_code   VARCHAR(50)  NOT NULL                COMMENT '产品编码',
     current_price  DECIMAL(10,2) NOT NULL               COMMENT '实时价格',
@@ -70,10 +70,10 @@ CREATE TABLE fin_market_data (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='行情数据表';
 
 -- ============================================================
--- 4. 自选模块 (finance-account) — 用户自选表
+-- 4. 自选模块 (wealth-account) — 用户自选表
 -- ============================================================
-DROP TABLE IF EXISTS fin_user_favorite;
-CREATE TABLE fin_user_favorite (
+DROP TABLE IF EXISTS wea_user_favorite;
+CREATE TABLE wea_user_favorite (
     id           BIGINT      NOT NULL AUTO_INCREMENT COMMENT '主键ID',
     user_id      BIGINT      NOT NULL                COMMENT '用户ID',
     product_code VARCHAR(50) NOT NULL                COMMENT '产品编码',
@@ -83,10 +83,10 @@ CREATE TABLE fin_user_favorite (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户自选关注表';
 
 -- ============================================================
--- 5. 交易模块 (finance-trade) — 交易委托单
+-- 5. 交易模块 (wealth-trade) — 交易委托单
 -- ============================================================
-DROP TABLE IF EXISTS fin_trade_order;
-CREATE TABLE fin_trade_order (
+DROP TABLE IF EXISTS wea_trade_order;
+CREATE TABLE wea_trade_order (
     id             BIGINT       NOT NULL AUTO_INCREMENT COMMENT '主键ID',
     order_no       VARCHAR(64)  NOT NULL                COMMENT '委托单号',
     user_id        BIGINT       NOT NULL                COMMENT '用户ID',
@@ -105,10 +105,10 @@ CREATE TABLE fin_trade_order (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='模拟委托交易单';
 
 -- ============================================================
--- 6. 资讯&消息模块 (finance-message) — 财经资讯
+-- 6. 资讯&消息模块 (wealth-message) — 财经资讯
 -- ============================================================
-DROP TABLE IF EXISTS fin_news;
-CREATE TABLE fin_news (
+DROP TABLE IF EXISTS wea_news;
+CREATE TABLE wea_news (
     id           BIGINT       NOT NULL AUTO_INCREMENT COMMENT '主键ID',
     title        VARCHAR(200) NOT NULL                COMMENT '资讯标题',
     content      TEXT         DEFAULT NULL            COMMENT '资讯内容',
@@ -123,10 +123,10 @@ CREATE TABLE fin_news (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='财经资讯公告表';
 
 -- ============================================================
--- 7. 资讯&消息模块 (finance-message) — 站内消息
+-- 7. 资讯&消息模块 (wealth-message) — 站内消息
 -- ============================================================
-DROP TABLE IF EXISTS fin_message;
-CREATE TABLE fin_message (
+DROP TABLE IF EXISTS wea_message;
+CREATE TABLE wea_message (
     id          BIGINT       NOT NULL AUTO_INCREMENT COMMENT '主键ID',
     user_id     BIGINT       DEFAULT NULL            COMMENT '用户ID 0全局消息',
     msg_type    TINYINT      DEFAULT NULL            COMMENT '1行情提醒 2资讯推送 3委托通知',
@@ -140,7 +140,7 @@ CREATE TABLE fin_message (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='站内消息推送表';
 
 -- ============================================================
--- 8. 后台权限模块 (finance-system) — 管理员表
+-- 8. 后台权限模块 (wealth-system) — 管理员表
 -- ============================================================
 DROP TABLE IF EXISTS ums_admin;
 CREATE TABLE ums_admin (
@@ -158,7 +158,7 @@ CREATE TABLE ums_admin (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='后台用户表';
 
 -- ============================================================
--- 9. 后台权限模块 (finance-system) — 角色表
+-- 9. 后台权限模块 (wealth-system) — 角色表
 -- ============================================================
 DROP TABLE IF EXISTS ums_role;
 CREATE TABLE ums_role (
@@ -173,7 +173,7 @@ CREATE TABLE ums_role (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='后台角色表';
 
 -- ============================================================
--- 10. 后台权限模块 (finance-system) — 资源表
+-- 10. 后台权限模块 (wealth-system) — 资源表
 -- ============================================================
 DROP TABLE IF EXISTS ums_resource;
 CREATE TABLE ums_resource (
@@ -188,7 +188,7 @@ CREATE TABLE ums_resource (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='后台资源表';
 
 -- ============================================================
--- 11. 后台权限模块 (finance-system) — 管理员角色关联表
+-- 11. 后台权限模块 (wealth-system) — 管理员角色关联表
 -- ============================================================
 DROP TABLE IF EXISTS ums_admin_role_relation;
 CREATE TABLE ums_admin_role_relation (
@@ -200,7 +200,7 @@ CREATE TABLE ums_admin_role_relation (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='后台用户和角色关系表';
 
 -- ============================================================
--- 12. 后台权限模块 (finance-system) — 角色资源关联表
+-- 12. 后台权限模块 (wealth-system) — 角色资源关联表
 -- ============================================================
 DROP TABLE IF EXISTS ums_role_resource_relation;
 CREATE TABLE ums_role_resource_relation (

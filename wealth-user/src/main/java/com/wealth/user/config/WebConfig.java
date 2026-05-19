@@ -29,16 +29,14 @@ public class WebConfig implements WebMvcConfigurer {
                 .addPathPatterns("/**")
                 .excludePathPatterns(
                         "/login",
-                        "/register",
-                        "/resetPassword"
+                        "/register"
                 );
         // 2. 权限校验（仅校验 POST/PUT/DELETE 写操作）
         registry.addInterceptor(new PermissionCheckInterceptor(permissionCheckFeignClient))
                 .addPathPatterns("/**")
                 .excludePathPatterns(
                         "/login",
-                        "/register",
-                        "/resetPassword"
+                        "/register"
                 );
     }
 }
