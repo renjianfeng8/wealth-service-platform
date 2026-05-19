@@ -8,13 +8,12 @@
 
 ## 问题总览
 
-> 最后更新：2026-05-18 — 已修复 30+ 项（commit `545acf6`、`8a236e2`、`d8ac3e7`）
+> 最后更新：2026-05-19 — 已修复 30+ 项（基础设施安全认证、XSS、暴力破解、JWT 双 Token、跨模块 RBAC 等），详见 CHANGELOG
 
 | 严重级别 | 总数 | 已修复 | 剩余 | 说明 |
 |---------|------|--------|------|------|
 | 致命 | 7 | 7 | **0** | 全部修复 ✅ |
 | 严重 | 16 | 9 | 7 | 已修复：H1、H2、H3~H7、H13/H14、H16 |
-| 优化建议 | 14 | 4 | 10 | 已修复：M1/M3、M4、M7、M12 |
 | 优化建议 | 14 | 4 | 10 | 已修复：M1/M3、M4、M7、M12 |
 
 ---
@@ -29,14 +28,14 @@
 
 | 组件 | 修复状态 | 文件 |
 |------|---------|------|
-| MySQL | `.env` 中 `MYSQL_ROOT_PASSWORD=123456` 待生产环境设置强密码 | `.env:3` |
-| Nacos | 已添加认证配置注释（`NACOS_AUTH_ENABLE`、identity key/token secret key），需生产环境取消注释 | `docker-compose.yml:14-17` |
+| MySQL | `.env` 中 `MYSQL_ROOT_PASSWORD` 通过环境变量注入，生产环境需设置强密码 | `.env` |
+| Nacos | **已启用认证**（`NACOS_AUTH_ENABLE=true`），默认凭据 nacos/nacos ✅ | `docker-compose.yml:13-16` |
 | RabbitMQ | 凭证已改为 `${RABBITMQ_USERNAME:guest}` / `${RABBITMQ_PASSWORD:guest}` ✅ | `wealth-message/application.yml:15-16` |
 | Grafana | 密码已改为 `${GRAFANA_ADMIN_PASSWORD:-admin}` ✅ | `docker-compose.yml:165-166` |
-| Elasticsearch | `xpack.security.enabled` 已改为 `${ES_SECURITY_ENABLED:-false}`，生产环境设为 true | `docker-compose.yml:104-108` |
+| Elasticsearch | **已启用安全认证**（`xpack.security.enabled=true`），search 服务通过用户名密码连接 ✅ | `docker-compose.yml:103-105` |
 | Seata | Nacos 连接用户名密码已改为 `${NACOS_USERNAME:}` / `${NACOS_PASSWORD:}` ✅ | `seata-config/application.yml:18-19,28-29` |
 | Nginx | 已添加 `Strict-Transport-Security` HSTS header ✅ | `nginx.conf:27` |
-| `.env` | 已补全所有环境变量占位符 ✅ | `.env` |
+| `.env` | **已从 git 历史中永久清理**（filter-branch 重写全部历史）✅ | 已从版本控制中移除 |
 
 ---
 
@@ -381,10 +380,10 @@ spring:
 ## 四、上线前检查清单
 
 ### 4.1 安全加固
-- [ ] 修改所有基础设施初始密码（MySQL / Nacos / RabbitMQ / Grafana / ES / Seata）
-- [ ] `.env` 文件确认已加入 `.gitignore`，清除 git 历史中的密码痕迹
-- [ ] Nacos 启用认证（`nacos.core.auth.enabled=true`）
-- [ ] ES 启用认证（`xpack.security.enabled=true`）
+- [ ] 修改所有基础设施初始密码（MySQL / RabbitMQ / Grafana / ES / Seata）
+- [x] `.env` 文件已加入 `.gitignore`，**已清除 git 历史中的密码痕迹**（filter-branch 重写全部历史）✅
+- [x] **Nacos 已启用认证**（`NACOS_AUTH_ENABLE=true`）✅
+- [x] **ES 已启用认证**（`xpack.security.enabled=true`）✅
 - [x] RabbitMQ 使用非 `guest` 账户 — 已改为环境变量注入
 - [ ] Seata 配置 Nacos 认证信息
 - [x] 非 system 模块增加 RBAC 权限控制 — 已通过 PermissionCheckInterceptor 实现
@@ -450,7 +449,7 @@ spring:
 | 类别 | 修复前 | 修复后 | 当前状态 |
 |------|--------|--------|----------|
 | 认证授权 | 9/10 | **3/10** | 跨模块 RBAC 权限控制已实现 ✅ |
-| 基础设施安全 | 9/10 | 8/10 | 凭证环境变量化 + HSTS，Nacos/ES 认证待配置 |
+| 基础设施安全 | 9/10 | **4/10** | 凭证环境变量化 + HSTS + Nacos/ES 已启用认证 ✅ |
 | 输入安全（XSS） | 10/10 | **1/10** | 全局 XSS 过滤器 + Jackson 反序列化器 ✅ |
 | 并发安全 | 8/10 | **2/10** | 行情模拟服务已修复 |
 | 异常与日志 | 8/10 | **2/10** | GlobalExceptionHandler 已补全日志 |
@@ -486,4 +485,4 @@ curl http://localhost:8082/system/actuator/prometheus
 
 ---
 
-> **总结**：项目架构设计合理，已集成 Sentinel、Seata、Micrometer Tracing、审计日志、幂等性防重等企业级特性。但安全与运维配置存在严重缺失，综合风险评分 **7.4/10**。致命问题（无权限控制、XSS、基础设施无认证、并发崩溃、无日志、无暴力破解防护）是上线阻塞项。建议按优先级：安全加固 → 配置治理 → JVM/容器 → 可观测性。逐项修复后风险可降至 **2.3/10**，达到生产部署标准。
+> **总结**：项目架构设计合理，已集成 Sentinel、Seata、Micrometer Tracing、审计日志、幂等性防重等企业级特性。致命问题（无权限控制、XSS、基础设施无认证、并发崩溃、无日志、无暴力破解防护）已全部修复。建议按优先级：安全加固 → 配置治理 → JVM/容器 → 可观测性。逐项修复后风险可降至 **2.3/10**，达到生产部署标准。

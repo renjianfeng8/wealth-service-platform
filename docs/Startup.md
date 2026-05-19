@@ -72,9 +72,11 @@ docker ps --format "table {{.Names}}\t{{.Status}}"
 
 ### 3.2 Nacos 配置中心设置
 
-访问 Nacos 控制台 [http://localhost:8848/nacos](http://localhost:8848/nacos)（无需认证），在 `DEFAULT_GROUP` 下创建共享配置：
+访问 Nacos 控制台 [http://localhost:8848/nacos](http://localhost:8848/nacos)，在 `DEFAULT_GROUP` 下创建共享配置：
 - **Data ID**：`wealth-shared.yaml`
 - **配置格式**：YAML
+
+> Nacos 已启用认证（`NACOS_AUTH_ENABLE=true`），默认凭据：`nacos/nacos`。
 
 配置内容、配置项说明、变更历史及覆盖优先级详见 [Nacos 配置参考](nacos-config-reference.md)。
 
@@ -82,11 +84,11 @@ docker ps --format "table {{.Names}}\t{{.Status}}"
 
 ## 四、数据库初始化
 ```bash
-# 创建数据库
-mysql -u root -p123456 -e "CREATE DATABASE IF NOT EXISTS Wealth DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+# 创建数据库（密码从 .env 中获取）
+mysql -u root -p"${MYSQL_ROOT_PASSWORD}" -e "CREATE DATABASE IF NOT EXISTS Wealth DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
 
 # 导入建表语句 + 测试数据
-mysql -u root -p123456 Wealth < wealth-common/src/main/resources/sql/init.sql
+mysql -u root -p"${MYSQL_ROOT_PASSWORD}" Wealth < wealth-common/src/main/resources/sql/init.sql
 ```
 
 数据库 `Wealth` 包含 12 张表，覆盖全业务场景。
@@ -115,18 +117,20 @@ mvn clean install -DskipTests
 
 ## 六、后端服务启动（按顺序）
 
-数据库密码统一通过环境变量传入（Windows 使用 `set`，Linux/Mac 使用 `export`）：
+数据库密码通过 `.env` 文件（项目根目录）统一管理，Docker Compose 自动读取。若需在宿主机直接运行服务，需手动导出环境变量：
 
 ```bash
 # Windows PowerShell
-$env:DB_PASSWORD="123456"
+$env:DB_PASSWORD="your_password"
 
 # Windows CMD
-set DB_PASSWORD=123456
+set DB_PASSWORD=your_password
 
 # Linux / Mac
-export DB_PASSWORD=123456
+export DB_PASSWORD=your_password
 ```
+
+> `DB_PASSWORD` 默认值见 `.env` 文件中的 `MYSQL_ROOT_PASSWORD`。
 
 ### 6.1 网关（最先启动，依赖 Nacos）
 ```bash
@@ -138,7 +142,7 @@ java -jar wealth-gateway/target/wealth-gateway-1.0.0.jar > gateway.log 2>&1 &
 - 类型：Spring Cloud Gateway（WebFlux）
 ### 6.2 系统服务（提供登录鉴权和 RBAC 权限）
 ```bash
-DB_PASSWORD=123456 java -jar wealth-system/target/wealth-system-1.0.0.jar > system.log 2>&1 &
+DB_PASSWORD=your_password java -jar wealth-system/target/wealth-system-1.0.0.jar > system.log 2>&1 &
 ```
 
 - 端口：**8082**，context-path：`/system`
@@ -147,22 +151,22 @@ DB_PASSWORD=123456 java -jar wealth-system/target/wealth-system-1.0.0.jar > syst
 ### 6.3 业务服务（无先后依赖，可并行启动）
 ```bash
 # 用户服务（前端用户管理）
-DB_PASSWORD=123456 java -jar wealth-user/target/wealth-user-1.0.0.jar > user.log 2>&1 &
+DB_PASSWORD=your_password java -jar wealth-user/target/wealth-user-1.0.0.jar > user.log 2>&1 &
 
 # 产品服务（产品 + 行情）
-DB_PASSWORD=123456 java -jar wealth-product/target/wealth-product-1.0.0.jar > product.log 2>&1 &
+DB_PASSWORD=your_password java -jar wealth-product/target/wealth-product-1.0.0.jar > product.log 2>&1 &
 
 # 账户服务（用户自选）
-DB_PASSWORD=123456 java -jar wealth-account/target/wealth-account-1.0.0.jar > account.log 2>&1 &
+DB_PASSWORD=your_password java -jar wealth-account/target/wealth-account-1.0.0.jar > account.log 2>&1 &
 
 # 交易服务（委托交易）
-DB_PASSWORD=123456 java -jar wealth-trade/target/wealth-trade-1.0.0.jar > trade.log 2>&1 &
+DB_PASSWORD=your_password java -jar wealth-trade/target/wealth-trade-1.0.0.jar > trade.log 2>&1 &
 
 # 消息服务（资讯 + 站内消息）
-DB_PASSWORD=123456 java -jar wealth-message/target/wealth-message-1.0.0.jar > message.log 2>&1 &
+DB_PASSWORD=your_password java -jar wealth-message/target/wealth-message-1.0.0.jar > message.log 2>&1 &
 
 # 搜索服务（ES 产品搜索，无数据库依赖）
-DB_PASSWORD=123456 java -jar wealth-search/target/wealth-search-1.0.0.jar > search.log 2>&1 &
+DB_PASSWORD=your_password java -jar wealth-search/target/wealth-search-1.0.0.jar > search.log 2>&1 &
 ```
 
 ### 6.4 验证后端服务

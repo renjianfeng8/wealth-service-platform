@@ -1,7 +1,7 @@
 # Nacos 配置中心参考文档
 
 > 记录 Nacos 配置中心 `wealth-shared.yaml` 的内容及变更历史。
-> Nacos 地址：`http://localhost:8848`（无需认证），Group：`DEFAULT_GROUP`。
+> Nacos 地址：`http://localhost:8848`（已启用认证，默认凭据：nacos/nacos），Group：`DEFAULT_GROUP`。
 > 各模块通过 `bootstrap.yml` 的 `shared-configs` 引用此配置。
 
 ---

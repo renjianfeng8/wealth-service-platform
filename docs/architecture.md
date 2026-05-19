@@ -68,7 +68,7 @@ gateway（端口 8080）负责统一路由转发，所有前端请求统一经�
 ---
 
 ## Nacos 配置中心（Docker: nacos/nacos-server:v2.3.2）
-地址：`localhost:8848`（无需认证）
+地址：`localhost:8848`（已启用认证，默认凭据：nacos/nacos）
 ### wealth-shared.yaml（DEFAULT_GROUP，YAML 格式）
 所有模块共享的唯一 Nacos 配置。**完整内容及变更历史见 [Nacos 配置参考](nacos-config-reference.md)**。
 
@@ -176,7 +176,7 @@ spring:
     username: root
     password: ${DB_PASSWORD}
 ```
-> 注：`password: ${DB_PASSWORD}` 由 Nacos `wealth-shared.yaml` 中的 `spring.datasource.password: 123456` 覆盖。
+> 注：`password: ${DB_PASSWORD}` 由 Nacos `wealth-shared.yaml` 中的 `spring.datasource.password` 覆盖（默认值见 `.env` 文件）。
 #### wealth-user（端口 8083，context-path: /user）
 ```yaml
 server:
@@ -269,7 +269,7 @@ spring:
 | server.servlet.context-path | application.yml | 无 | 本地值 |
 | spring.datasource.url | application.yml | 无 | 本地值（Nacos 同名配置已被此覆盖） |
 | spring.datasource.username | application.yml | N/A | 本地值 |
-| **spring.datasource.password** | application.yml (`${DB_PASSWORD}`) | **`123456`** | **Nacos 覆盖生效** |
+| **spring.datasource.password** | application.yml (`${DB_PASSWORD}`) | **`.env` 中的值** | **Nacos 覆盖生效** |
 | spring.elasticsearch.* | application.yml (search) | 无 | 本地值 |
 | mybatis-plus.* | application.yml | 无 | 本地值 |
 | springdoc.* | application.yml | 无 | 本地值 |
@@ -279,7 +279,7 @@ spring:
 | **management.zipkin.tracing.endpoint** | 无 | **wealth-shared.yaml** | **从 Nacos** |
 | **management.endpoints.web.exposure.include** | 无 | **wealth-shared.yaml** | **从 Nacos** |
 
-> 关键：`password: ${DB_PASSWORD}` 本身是无意义的环境变量引用（系统中未设置 `DB_PASSWORD`），数据库密码由 Nacos `wealth-shared.yaml` 中的 `spring.datasource.password: 123456` 提供。Nacos 配置优先级高于本地配置中的环境变量引用。
+> 关键：`password: ${DB_PASSWORD}` 本身是无意义的环境变量引用（系统中未设置 `DB_PASSWORD`），数据库密码由 Nacos `wealth-shared.yaml` 中的 `spring.datasource.password` 提供（默认值见 `.env`）。Nacos 配置优先级高于本地配置中的环境变量引用。
 
 ---
 

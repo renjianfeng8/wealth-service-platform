@@ -5,6 +5,77 @@
 
 ---
 
+## v1.7.0 (2026-05-19 — 当前开发版)
+
+### 基础设施安全认证
+
+- **Nacos 认证启用**：`NACOS_AUTH_ENABLE=true`，所有服务通过配置的用户名密码连接 Nacos
+- **Elasticsearch 安全认证启用**：`xpack.security.enabled=true`，search 服务连接 ES 需提供用户名密码
+- `.env` 文件从 git 历史中永久清理（使用 filter-branch 重写全部历史，移除泄露的凭据）
+- `docker-compose.yml` 历史中硬编码的 `123456` 密码已替换为环境变量引用
+- `seata-config/application.yml` 中硬编码的 `secretKey` 已改为环境变量注入（`${SEATA_SECRET_KEY}`）
+
+### JWT 双 Token 机制
+
+- **双 Token 登录**：登录返回 `access_token`（30 分钟有效）+ `refresh_token`（7 天有效）
+- **Refresh 端点**：`POST /umsAdmin/refresh` 支持无感续期
+- **安全增强**：refresh_token 一次性使用（防重放），jti 存入 Redis 支持手动吊销
+
+### 安全加固（XSS + 暴力破解防护）
+
+- **XSS 全局过滤器**：`XssFilter` + `StringXssDeserializer` 覆盖 GET/POST 参数和 JSON 请求体
+- **登录暴力破解防护**：连续 5 次失败锁定 15 分钟（Redis），含验证码支持
+- **Swagger/Knife4j 白名单移除**：三层防护（Gateway → LoginInterceptor → PermissionCheckInterceptor）
+
+### 跨模块权限控制
+
+- **PermissionCheckInterceptor**：所有业务模块的 POST/PUT/DELETE 请求统一调用 system 模块 RBAC 鉴权
+- **PermissionCheckFeignClient**：Feign 调用链路（business → system → 权限判定）
+
+### 架构优化
+
+- 抽取分页 VO 转换通用方法，消除 Controller 层重复代码
+- 修复全模块中文注释乱码、YAML 重复键
+- 统一 update 方法 null 安全更新模式（`BeanConvertUtil.copyNonNullProperties`）
+- 添加 `@Validated` 注解到所有 Controller 类
+
+### 文档
+
+- 添加[生产环境部署前全面评估报告](docs/production-readiness-assessment.md)
+- 修复评估报告发现的 20+ 个安全与稳定性问题
+- 文档治理：标准化所有 `.md` 文件，精简 README 与 Startup.md 重复内容
+
+---
+
+## v1.6.3 (2026-05-18)
+
+### 文档精简
+
+- 精简 README.md 启动说明，移除与 Startup.md 重复的 Nacos 配置内容
+- 启动文档结构优化，减少维护负担
+
+---
+
+## v1.6.2 (2026-05-18)
+
+### 文档治理与工程结构优化
+
+- 全项目文档标准化治理（README、Startup、架构文档一致性对齐）
+- 工程结构优化，移除冗余文件
+- 文件编码与格式标准化
+
+---
+
+## v1.6.1 (2026-05-18)
+
+### 全模块编码与配置修复
+
+- **中文注释乱码修复**：修复全模块 Java 文件中中文注释显示为乱码的问题
+- **YAML 重复键修复**：清理各模块 application.yml 中重复的配置键
+- **update 模式标准化**：统一各模块 ServiceImpl 中 update 方法的 null 安全更新模式
+
+---
+
 ## v1.6.0 (2026-05-18)
 
 ### SSE 实时行情推送体系
