@@ -303,6 +303,7 @@ services:
     ports:
       - "8085:8085"
     environment:
+      - spring.profiles.active=prod
       - spring.cloud.nacos.discovery.server-addr=nacos:8848
       - spring.cloud.nacos.config.server-addr=nacos:8848
       - spring.cloud.nacos.username=${NACOS_USERNAME}
