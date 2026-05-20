@@ -14,7 +14,7 @@ public class UmsAdminRoleRelationDTO {
     @Schema(description = "管理员ID")
     private Long adminId;
 
-    @NotNull(message = "瑙掕壊ID涓嶈兘涓虹┖")
-    @Schema(description = "瑙掕壊ID")
+    @NotNull(message = "角色ID不能为空")
+    @Schema(description = "角色ID")
     private Long roleId;
 }

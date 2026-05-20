@@ -12,6 +12,6 @@ public class UmsAdminRoleRelationVO {
     @Schema(description = "管理员ID")
     private Long adminId;
 
-    @Schema(description = "瑙掕壊ID")
+    @Schema(description = "角色ID")
     private Long roleId;
 }
