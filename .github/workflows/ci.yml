@@ -60,7 +60,7 @@ jobs:
             docker build -f wealth-$service/Dockerfile \
               -t ghcr.io/renjianfeng8/wealth-service-platform/wealth-$service:latest \
               -t ghcr.io/renjianfeng8/wealth-service-platform/wealth-$service:${GITHUB_SHA::8} \
-              .
+              wealth-$service
             docker push --all-tags ghcr.io/renjianfeng8/wealth-service-platform/wealth-$service
           done
 
@@ -101,7 +101,6 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: front-user
-          file: front-user/Dockerfile
           push: true
           tags: |
             ghcr.io/renjianfeng8/wealth-service-platform/wealth-front-user:latest
@@ -144,7 +143,6 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: front
-          file: front/Dockerfile
           push: true
           tags: |
             ghcr.io/renjianfeng8/wealth-service-platform/wealth-front:latest
