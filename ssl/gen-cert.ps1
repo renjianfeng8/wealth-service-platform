@@ -1,23 +1,32 @@
 # Generate SSL certificates for development or production
 #
 # Usage:
-#   .\ssl\gen-cert.ps1              # Generate ECDSA self-signed dev cert (default)
-#   .\ssl\gen-cert.ps1 -Type prod   # Generate RSA CSR for production CA signing
-#   .\ssl\gen-cert.ps1 -Type dev -Algorithm RSA  # Generate RSA self-signed dev cert
+#   .\ssl\gen-cert.ps1                           # ECDSA self-signed dev cert (default)
+#   .\ssl\gen-cert.ps1 -Type prod -Domain example.com   # RSA CSR for CA signing
+#   .\ssl\gen-cert.ps1 -Type dev -Algorithm RSA  # RSA self-signed dev cert
+#   .\ssl\gen-cert.ps1 -Type pfx                 # Convert existing .crt+.key to PKCS12
 #
-# Production: submit the generated .csr to your CA (Let's Encrypt, etc.)
-# Then place the signed cert + chain in ssl/wealth.crt and keep wealth.key secret.
+# Production renewal workflow:
+#   1. .\ssl\gen-cert.ps1 -Type prod -Domain rjfwealth.cn
+#   2. Submit ssl\wealth.csr to CA → receive wealth.crt + chain
+#   3. Place signed cert in ssl\wealth.crt
+#   4. .\ssl\gen-cert.ps1 -Type pfx
+#   5. Copy ssl\wealth.pfx to gateway resources
+#   6. Restart gateway
 
 param(
-    [ValidateSet("dev", "prod")]
+    [ValidateSet("dev", "prod", "pfx")]
     [string]$Type = "dev",
 
     [ValidateSet("RSA", "ECDSA")]
-    [string]$Algorithm = "ECDSA"
+    [string]$Algorithm = "ECDSA",
+
+    [string]$Domain = "localhost"
 )
 
 $projectRoot = Split-Path $PSScriptRoot -Parent
 $sslDir = Join-Path $projectRoot "ssl"
+$gatewaySslDir = Join-Path $projectRoot "wealth-gateway\src\main\resources\ssl"
 
 if (-not (Test-Path $sslDir)) {
     New-Item -ItemType Directory -Path $sslDir -Force | Out-Null
@@ -31,13 +40,45 @@ if ($Type -eq "dev") {
         Write-Host "Generating RSA 2048 self-signed cert (dev)..." -ForegroundColor Green
         docker run --rm -v "${sslDir}:/certs" alpine:latest sh -c "apk add --no-cache openssl >/dev/null 2>&1 && openssl req -x509 -nodes -days 1825 -newkey rsa:2048 -keyout /certs/wealth.key -out /certs/wealth.crt -subj '/CN=localhost' -addext 'subjectAltName=DNS:localhost,IP:127.0.0.1'"
     }
-} else {
-    # Production: generate a CSR for CA signing
-    Write-Host "Generating RSA 2048 key + CSR for production CA..." -ForegroundColor Yellow
-    Write-Host "Submit wealth.csr to your CA (Let's Encrypt, etc.)" -ForegroundColor Yellow
-    docker run --rm -v "${sslDir}:/certs" alpine:latest sh -c "apk add --no-cache openssl >/dev/null 2>&1 && openssl req -nodes -new -newkey rsa:2048 -keyout /certs/wealth.key -out /certs/wealth.csr -subj '/CN=your-production-domain.com' -addext 'subjectAltName=DNS:your-production-domain.com'"
+} elseif ($Type -eq "prod") {
+    # Production: generate a CSR for CA signing / renewal
+    Write-Host "Generating RSA 2048 key + CSR for $Domain ..." -ForegroundColor Yellow
+    Write-Host "Submit wealth.csr to your CA (TrustAsia / Let's Encrypt, etc.)" -ForegroundColor Yellow
+    # Preserve existing key if present (renewal without losing the key)
+    $keyExists = Test-Path (Join-Path $sslDir "wealth.key")
+    if ($keyExists) {
+        Write-Host "Using existing wealth.key (preserve for cert renewal)" -ForegroundColor Cyan
+        docker run --rm -v "${sslDir}:/certs" alpine:latest sh -c "apk add --no-cache openssl >/dev/null 2>&1 && openssl req -new -key /certs/wealth.key -out /certs/wealth.csr -subj '/CN=$Domain' -addext 'subjectAltName=DNS:$Domain,DNS:www.$Domain'"
+    } else {
+        docker run --rm -v "${sslDir}:/certs" alpine:latest sh -c "apk add --no-cache openssl >/dev/null 2>&1 && openssl req -nodes -new -newkey rsa:2048 -keyout /certs/wealth.key -out /certs/wealth.csr -subj '/CN=$Domain' -addext 'subjectAltName=DNS:$Domain,DNS:www.$Domain'"
+    }
     Write-Host "CSR generated: $sslDir\wealth.csr" -ForegroundColor Yellow
-    Write-Host "After CA signs it, replace wealth.crt with the issued certificate + chain." -ForegroundColor Yellow
+    Write-Host "After CA signs it, replace ssl\wealth.crt with the issued certificate + chain." -ForegroundColor Yellow
+    Write-Host "Then run: .\ssl\gen-cert.ps1 -Type pfx" -ForegroundColor Yellow
+} else {
+    # PKCS12 conversion: convert existing .crt + .key → .pfx for SpringBoot
+    $crtPath = Join-Path $sslDir "wealth.crt"
+    $keyPath = Join-Path $sslDir "wealth.key"
+    if (-not (Test-Path $crtPath) -or -not (Test-Path $keyPath)) {
+        Write-Host "ERROR: wealth.crt and wealth.key must exist in $sslDir" -ForegroundColor Red
+        exit 1
+    }
+    # Generate random password
+    $pass = -join ((65..90) + (97..122) + (48..57) | Get-Random -Count 32 | ForEach-Object {[char]$_})
+    $pass | Out-File (Join-Path $sslDir ".pfx-pass.txt") -Encoding utf8 -NoNewline
+    Write-Host "PKCS12 password saved to ssl\.pfx-pass.txt" -ForegroundColor Cyan
+    # Convert
+    docker run --rm -v "${sslDir}:/certs" alpine:latest sh -c "apk add --no-cache openssl >/dev/null 2>&1 && openssl pkcs12 -export -in /certs/wealth.crt -inkey /certs/wealth.key -out /certs/wealth.pfx -passout pass:$pass"
+    Write-Host "PKCS12 generated: $sslDir\wealth.pfx" -ForegroundColor Green
+    # Copy to gateway resources
+    if (-not (Test-Path $gatewaySslDir)) {
+        New-Item -ItemType Directory -Path $gatewaySslDir -Force | Out-Null
+    }
+    Copy-Item (Join-Path $sslDir "wealth.pfx") (Join-Path $gatewaySslDir "wealth.pfx") -Force
+    Write-Host "Copied to $gatewaySslDir\wealth.pfx" -ForegroundColor Green
+    Write-Host ""
+    Write-Host "Update gateway's application-prod.yml with this password:" -ForegroundColor Yellow
+    Write-Host "  key-store-password: $pass" -ForegroundColor Yellow
 }
 
 Write-Host "`nFiles in $sslDir :"
