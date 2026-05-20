@@ -25,7 +25,9 @@ public class SystemWebConfig implements WebMvcConfigurer {
                         "/umsAdmin/login",
                         "/umsAdmin/refresh",
                         "/umsAdmin/checkPermission",
-                        "/captcha"
+                        "/captcha",
+                        "/error",
+                        "/actuator/**"
                 );
     }
 }

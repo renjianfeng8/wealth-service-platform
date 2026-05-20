@@ -191,7 +191,7 @@ services:
       - spring.cloud.nacos.password=${NACOS_PASSWORD}
       - JWT_SECRET=wealth-micro-service-20260501-very-safe-secret-key-123456789
       - JWT_EXPIRE=604800000
-      - spring.datasource.url=jdbc:mysql://mysql:3306/wealth?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false
+      - spring.datasource.url=jdbc:mysql://mysql:3306/wealth?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
       - spring.datasource.password=${MYSQL_ROOT_PASSWORD}
       - spring.redis.host=redis
       - spring.elasticsearch.uris=http://elasticsearch:9200
@@ -216,8 +216,10 @@ services:
       - spring.cloud.nacos.password=${NACOS_PASSWORD}
       - JWT_SECRET=wealth-micro-service-20260501-very-safe-secret-key-123456789
       - JWT_EXPIRE=604800000
-      - spring.datasource.url=jdbc:mysql://mysql:3306/wealth?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false
+      - spring.datasource.url=jdbc:mysql://mysql:3306/wealth?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
       - spring.datasource.password=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+    entrypoint: ["java", "-Xms256m", "-Xmx256m", "-XX:+UseContainerSupport", "-XX:+ExitOnOutOfMemoryError", "-Djava.security.egd=file:/dev/./urandom", "-Dspring.redis.host=redis", "-jar", "app.jar"]
     depends_on:
       nacos:
         condition: service_started
@@ -240,7 +242,7 @@ services:
       - spring.cloud.nacos.password=${NACOS_PASSWORD}
       - JWT_SECRET=wealth-micro-service-20260501-very-safe-secret-key-123456789
       - JWT_EXPIRE=604800000
-      - spring.datasource.url=jdbc:mysql://mysql:3306/wealth?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false
+      - spring.datasource.url=jdbc:mysql://mysql:3306/wealth?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
       - spring.datasource.password=${MYSQL_ROOT_PASSWORD}
     depends_on:
       nacos:
@@ -264,7 +266,7 @@ services:
       - spring.cloud.nacos.password=${NACOS_PASSWORD}
       - JWT_SECRET=wealth-micro-service-20260501-very-safe-secret-key-123456789
       - JWT_EXPIRE=604800000
-      - spring.datasource.url=jdbc:mysql://mysql:3306/wealth?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false
+      - spring.datasource.url=jdbc:mysql://mysql:3306/wealth?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
       - spring.datasource.password=${MYSQL_ROOT_PASSWORD}
     depends_on:
       nacos:
@@ -288,7 +290,7 @@ services:
       - spring.cloud.nacos.password=${NACOS_PASSWORD}
       - JWT_SECRET=wealth-micro-service-20260501-very-safe-secret-key-123456789
       - JWT_EXPIRE=604800000
-      - spring.datasource.url=jdbc:mysql://mysql:3306/wealth?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false
+      - spring.datasource.url=jdbc:mysql://mysql:3306/wealth?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
       - spring.datasource.password=${MYSQL_ROOT_PASSWORD}
     depends_on:
       nacos:
@@ -312,7 +314,7 @@ services:
       - spring.cloud.nacos.password=${NACOS_PASSWORD}
       - JWT_SECRET=wealth-micro-service-20260501-very-safe-secret-key-123456789
       - JWT_EXPIRE=604800000
-      - spring.datasource.url=jdbc:mysql://mysql:3306/wealth?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false
+      - spring.datasource.url=jdbc:mysql://mysql:3306/wealth?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
       - spring.datasource.password=${MYSQL_ROOT_PASSWORD}
     depends_on:
       nacos:
@@ -336,7 +338,7 @@ services:
       - spring.cloud.nacos.password=${NACOS_PASSWORD}
       - JWT_SECRET=wealth-micro-service-20260501-very-safe-secret-key-123456789
       - JWT_EXPIRE=604800000
-      - spring.datasource.url=jdbc:mysql://mysql:3306/wealth?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false
+      - spring.datasource.url=jdbc:mysql://mysql:3306/wealth?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
       - spring.datasource.password=${MYSQL_ROOT_PASSWORD}
       - RABBITMQ_HOST=rabbitmq
       - RABBITMQ_PORT=5672

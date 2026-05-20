@@ -1,6 +1,7 @@
 package com.wealth.common.exception;
 
 import com.wealth.common.result.Result;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -14,6 +15,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -81,6 +84,21 @@ public class GlobalExceptionHandler {
     public Result<?> handleDataIntegrityViolation(DataIntegrityViolationException e) {
         log.error("数据完整性违例", e);
         return Result.error(500, "数据操作失败");
+    }
+
+    @ExceptionHandler(IllegalStateException.class)
+    public void handleIllegalState(IllegalStateException e, HttpServletResponse response) {
+        log.error("响应状态异常，直接写入错误响应", e);
+        if (response.isCommitted()) return;
+        response.setStatus(500);
+        response.setContentType("application/json;charset=UTF-8");
+        byte[] body = "{\"code\":500,\"message\":\"系统错误\"}".getBytes(StandardCharsets.UTF_8);
+        response.setContentLength(body.length);
+        try {
+            response.getOutputStream().write(body);
+        } catch (IllegalStateException ex) {
+            try { response.getWriter().write(new String(body, StandardCharsets.UTF_8)); } catch (IOException ignored) {}
+        } catch (IOException ignored) {}
     }
 
     @ExceptionHandler(Exception.class)

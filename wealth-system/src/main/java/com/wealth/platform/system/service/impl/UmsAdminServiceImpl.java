@@ -15,6 +15,9 @@ import com.wealth.platform.system.service.UmsAdminRoleRelationService;
 import com.wealth.platform.system.service.UmsAdminService;
 import com.wealth.platform.system.service.UmsResourceService;
 import com.wealth.platform.system.service.UmsRoleResourceRelationService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -27,6 +30,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class UmsAdminServiceImpl extends ServiceImpl<UmsAdminMapper, UmsAdmin> implements UmsAdminService {
+
+    private static final Logger log = LoggerFactory.getLogger(UmsAdminServiceImpl.class);
 
     /** 最大登录失败次数 */
     private static final int MAX_LOGIN_ATTEMPTS = 5;
@@ -73,9 +78,16 @@ public class UmsAdminServiceImpl extends ServiceImpl<UmsAdminMapper, UmsAdmin> i
             validateCaptcha(dto.getCaptchaKey(), dto.getCaptchaCode());
         }
 
-        // 2. 检查账号是否被锁定
+        // 2. 检查账号是否被锁定（Redis 不可用时不阻塞登录）
         String lockKey = KEY_LOGIN_LOCKED + dto.getUsername();
-        if (Boolean.TRUE.equals(redisUtil.hasKey(lockKey))) {
+        Boolean isLocked;
+        try {
+            isLocked = redisUtil.hasKey(lockKey);
+        } catch (RedisConnectionFailureException e) {
+            log.warn("Redis 不可用，跳过锁定检查: {}", e.getMessage());
+            isLocked = false;
+        }
+        if (Boolean.TRUE.equals(isLocked)) {
             throw new ServiceException(401, "账号已被锁定，请" + LOCK_DURATION_MINUTES + "分钟后再试");
         }
 
@@ -100,9 +112,13 @@ public class UmsAdminServiceImpl extends ServiceImpl<UmsAdminMapper, UmsAdmin> i
 
         // 6. 生成双 Token（access_token + refresh_token）
         TokenPair pair = jwtUtil.generateTokenPair(admin.getUsername());
-        // 将 refresh_token 的 jti 存入 Redis（TTL 7 天）
+        // 将 refresh_token 的 jti 存入 Redis（TTL 7 天），Redis 不可用时不阻塞登录
         String jti = jwtUtil.getTokenIdFromToken(pair.refreshToken());
-        redisUtil.set(KEY_REFRESH_JTI + jti, admin.getUsername(), 7, TimeUnit.DAYS);
+        try {
+            redisUtil.set(KEY_REFRESH_JTI + jti, admin.getUsername(), 7, TimeUnit.DAYS);
+        } catch (RedisConnectionFailureException e) {
+            log.warn("Redis 不可用，refresh_token 未持久化: {}", e.getMessage());
+        }
         return pair;
     }
 
@@ -122,43 +138,77 @@ public class UmsAdminServiceImpl extends ServiceImpl<UmsAdminMapper, UmsAdmin> i
             throw new ServiceException(401, "refreshToken 无效或已过期");
         }
 
-        // 2. 检查是否已吊销（Redis 中是否存在）
-        if (Boolean.FALSE.equals(redisUtil.hasKey(KEY_REFRESH_JTI + jti))) {
+        // 2. 检查是否已吊销（Redis 中是否存在），Redis 不可用时要求重新登录
+        Boolean exists;
+        try {
+            exists = redisUtil.hasKey(KEY_REFRESH_JTI + jti);
+        } catch (RedisConnectionFailureException e) {
+            log.warn("Redis 不可用，无法校验 refresh_token: {}", e.getMessage());
+            throw new ServiceException(401, "认证服务暂时不可用，请重新登录");
+        }
+        if (Boolean.FALSE.equals(exists)) {
             throw new ServiceException(401, "refreshToken 已吊销，请重新登录");
         }
 
         // 3. 吊销旧 refresh_token（一次性使用，防重放）
-        redisUtil.delete(KEY_REFRESH_JTI + jti);
+        try {
+            redisUtil.delete(KEY_REFRESH_JTI + jti);
+        } catch (RedisConnectionFailureException e) {
+            log.warn("Redis 不可用，跳过旧 refresh_token 删除: {}", e.getMessage());
+        }
 
         // 4. 生成新的 token 对
         TokenPair pair = jwtUtil.generateTokenPair(username);
         String newJti = jwtUtil.getTokenIdFromToken(pair.refreshToken());
-        redisUtil.set(KEY_REFRESH_JTI + newJti, username, 7, TimeUnit.DAYS);
+        try {
+            redisUtil.set(KEY_REFRESH_JTI + newJti, username, 7, TimeUnit.DAYS);
+        } catch (RedisConnectionFailureException e) {
+            log.warn("Redis 不可用，新 refresh_token 未持久化: {}", e.getMessage());
+        }
         return pair;
     }
 
     /**
      * 记录登录失败次数，达到阈值时锁定账号。
+     * Redis 不可用时跳过计数，不阻塞登录。
      */
     private void recordFailedAttempt(String username) {
         String countKey = KEY_LOGIN_FAIL_COUNT + username;
-        Long count = redisUtil.increment(countKey);
+        Long count;
+        try {
+            count = redisUtil.increment(countKey);
+        } catch (RedisConnectionFailureException e) {
+            log.warn("Redis 不可用，跳过登录失败计数: {}", e.getMessage());
+            return;
+        }
         if (count == null) return;
 
         if (count == 1) {
-            redisUtil.expire(countKey, FAIL_COUNT_TTL_MINUTES, TimeUnit.MINUTES);
+            try {
+                redisUtil.expire(countKey, FAIL_COUNT_TTL_MINUTES, TimeUnit.MINUTES);
+            } catch (RedisConnectionFailureException e) {
+                log.warn("Redis 不可用，无法设置失败计数 TTL: {}", e.getMessage());
+            }
         }
 
         if (count >= MAX_LOGIN_ATTEMPTS) {
             String lockKey = KEY_LOGIN_LOCKED + username;
-            redisUtil.set(lockKey, "1", LOCK_DURATION_MINUTES, TimeUnit.MINUTES);
-            redisUtil.delete(countKey);
+            try {
+                redisUtil.set(lockKey, "1", LOCK_DURATION_MINUTES, TimeUnit.MINUTES);
+                redisUtil.delete(countKey);
+            } catch (RedisConnectionFailureException e) {
+                log.warn("Redis 不可用，无法锁定账号: {}", e.getMessage());
+            }
         }
     }
 
     private void clearFailedAttempts(String username) {
-        redisUtil.delete(KEY_LOGIN_FAIL_COUNT + username);
-        redisUtil.delete(KEY_LOGIN_LOCKED + username);
+        try {
+            redisUtil.delete(KEY_LOGIN_FAIL_COUNT + username);
+            redisUtil.delete(KEY_LOGIN_LOCKED + username);
+        } catch (RedisConnectionFailureException e) {
+            log.warn("Redis 不可用，无法清除登录失败记录: {}", e.getMessage());
+        }
     }
 
     private void validateCaptcha(String captchaKey, String captchaCode) {
@@ -166,7 +216,13 @@ public class UmsAdminServiceImpl extends ServiceImpl<UmsAdminMapper, UmsAdmin> i
             throw new ServiceException(400, "验证码不能为空");
         }
         String redisKey = KEY_CAPTCHA + captchaKey;
-        String stored = (String) redisUtil.get(redisKey);
+        String stored;
+        try {
+            stored = (String) redisUtil.get(redisKey);
+        } catch (RedisConnectionFailureException e) {
+            log.warn("Redis 不可用，跳过验证码校验: {}", e.getMessage());
+            return;
+        }
         if (stored == null) {
             throw new ServiceException(400, "验证码已过期，请重新获取");
         }

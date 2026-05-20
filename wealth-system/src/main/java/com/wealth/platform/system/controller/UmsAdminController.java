@@ -15,9 +15,10 @@ import com.wealth.platform.system.service.UmsAdminService;
 import com.wealth.platform.system.vo.UmsAdminVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -41,16 +42,19 @@ public class UmsAdminController {
     @PostMapping("/login")
     @Operation(summary = "管理员登录（返回 access_token + refresh_token）")
     @AuditLog(module = "系统管理", operation = "管理员登录")
-    public Result<TokenPair> login(@Valid @RequestBody LoginDTO dto, HttpServletResponse servletResponse) {
+    public ResponseEntity<Result<TokenPair>> login(@Valid @RequestBody LoginDTO dto) {
         TokenPair tokenPair = umsAdminService.login(dto);
-        // 设置 httpOnly Cookie（防 XSS 窃取 JWT）
-        Cookie cookie = new Cookie("wealth_token", tokenPair.accessToken());
-        cookie.setHttpOnly(true);
-        cookie.setSecure(true);
-        cookie.setPath("/");
-        cookie.setMaxAge((int) (tokenPair.expiresIn() / 1000));
-        servletResponse.addCookie(cookie);
-        return Result.success(tokenPair);
+
+        ResponseCookie cookie = ResponseCookie.from("wealth_token", tokenPair.accessToken())
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(tokenPair.expiresIn() / 1000)
+                .build();
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .body(Result.success(tokenPair));
     }
 
     @PostMapping("/refresh")
