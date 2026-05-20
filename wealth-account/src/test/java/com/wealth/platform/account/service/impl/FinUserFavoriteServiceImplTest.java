@@ -104,12 +104,21 @@ class FinUserFavoriteServiceImplTest {
         assertNull(result);
     }
 
+    @SuppressWarnings("unchecked")
+    private LambdaQueryChainWrapper<WeaUserFavorite> setupListQueryChain(List<WeaUserFavorite> resultList) {
+        LambdaQueryChainWrapper<WeaUserFavorite> qc = mock(LambdaQueryChainWrapper.class);
+        when(qc.eq(any(), any())).thenReturn(qc);
+        when(qc.list()).thenReturn(resultList);
+        doReturn(qc).when(favoriteService).lambdaQuery();
+        return qc;
+    }
+
     @Test
     @DisplayName("查询自选列表-有数据")
     void getFavoriteList_WithData() {
-        when(favoriteMapper.selectList(any())).thenReturn(List.of(mockFavorite));
+        setupListQueryChain(List.of(mockFavorite));
 
-        List<FinUserFavoriteVO> result = favoriteService.getFavoriteList();
+        List<FinUserFavoriteVO> result = favoriteService.getFavoriteList(100L);
 
         assertEquals(1, result.size());
         assertEquals("P001", result.get(0).getProductCode());
@@ -118,9 +127,9 @@ class FinUserFavoriteServiceImplTest {
     @Test
     @DisplayName("查询自选列表-空数据")
     void getFavoriteList_Empty() {
-        when(favoriteMapper.selectList(any())).thenReturn(List.of());
+        setupListQueryChain(List.of());
 
-        List<FinUserFavoriteVO> result = favoriteService.getFavoriteList();
+        List<FinUserFavoriteVO> result = favoriteService.getFavoriteList(100L);
 
         assertTrue(result.isEmpty());
     }
