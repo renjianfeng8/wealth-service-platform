@@ -72,9 +72,13 @@ public class UmsRoleController {
     @AuditLog(module = "系统管理", operation = "更新角色")
     @AntiReplay
     public Result<Boolean> update(@PathVariable Long id, @Valid @RequestBody UmsRoleDTO dto) {
-        UmsRole role = BeanConvertUtil.convert(dto, UmsRole.class);
-        role.setId(id);
-        return Result.success(umsRoleService.updateById(role));
+        UmsRole existing = umsRoleService.getById(id);
+        if (existing == null) {
+            return Result.error(ResultCode.NOT_FOUND);
+        }
+        BeanConvertUtil.copyNonNullProperties(dto, existing);
+        existing.setId(id);
+        return Result.success(umsRoleService.updateById(existing));
     }
 
     @DeleteMapping("/{id}")
@@ -82,6 +86,10 @@ public class UmsRoleController {
     @AuditLog(module = "系统管理", operation = "删除角色")
     @AntiReplay
     public Result<Boolean> delete(@PathVariable Long id) {
+        UmsRole existing = umsRoleService.getById(id);
+        if (existing == null) {
+            return Result.error(ResultCode.NOT_FOUND);
+        }
         return Result.success(umsRoleService.removeById(id));
     }
 }

@@ -13,7 +13,7 @@ public interface FinUserFavoriteService extends IService<WeaUserFavorite> {
 
     FinUserFavoriteVO getFavoriteById(Long id);
 
-    List<FinUserFavoriteVO> getFavoriteList();
+    List<FinUserFavoriteVO> getFavoriteList(Long userId);
 
     boolean createFavorite(FinUserFavoriteDTO dto);
 

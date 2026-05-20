@@ -8,7 +8,6 @@ import com.wealth.platform.product.service.FinMarketDataService;
 import com.wealth.platform.product.vo.FinMarketDataVO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.beans.BeanUtils;
 import com.wealth.common.utils.BeanConvertUtil;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -23,8 +22,7 @@ public class FinMarketDataServiceImpl extends ServiceImpl<FinMarketDataMapper, W
         if (entity == null) {
             return null;
         }
-        FinMarketDataVO vo = new FinMarketDataVO();
-        BeanUtils.copyProperties(entity, vo);
+        FinMarketDataVO vo = BeanConvertUtil.convert(entity, FinMarketDataVO.class);
         return vo;
     }
 
@@ -32,8 +30,7 @@ public class FinMarketDataServiceImpl extends ServiceImpl<FinMarketDataMapper, W
     public List<FinMarketDataVO> getMarketDataList() {
         List<WeaMarketData> list = list();
         return list.stream().map(entity -> {
-            FinMarketDataVO vo = new FinMarketDataVO();
-            BeanUtils.copyProperties(entity, vo);
+            FinMarketDataVO vo = BeanConvertUtil.convert(entity, FinMarketDataVO.class);
             return vo;
         }).collect(Collectors.toList());
     }
@@ -41,8 +38,7 @@ public class FinMarketDataServiceImpl extends ServiceImpl<FinMarketDataMapper, W
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean createMarketData(FinMarketDataDTO dto) {
-        WeaMarketData entity = new WeaMarketData();
-        BeanUtils.copyProperties(dto, entity);
+        WeaMarketData entity = BeanConvertUtil.convert(dto, WeaMarketData.class);
         return save(entity);
     }
 

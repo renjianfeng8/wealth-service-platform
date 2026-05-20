@@ -104,9 +104,13 @@ public class UmsAdminController {
     @AuditLog(module = "系统管理", operation = "修改管理员")
     @AntiReplay
     public Result<Boolean> update(@PathVariable Long id, @Valid @RequestBody UmsAdminDTO dto) {
-        UmsAdmin admin = BeanConvertUtil.convert(dto, UmsAdmin.class);
-        admin.setId(id);
-        return Result.success(umsAdminService.updateAdmin(admin));
+        UmsAdmin existing = umsAdminService.getById(id);
+        if (existing == null) {
+            return Result.error(ResultCode.NOT_FOUND);
+        }
+        BeanConvertUtil.copyNonNullProperties(dto, existing);
+        existing.setId(id);
+        return Result.success(umsAdminService.updateById(existing));
     }
 
     @DeleteMapping("/{id}")
@@ -114,6 +118,10 @@ public class UmsAdminController {
     @AuditLog(module = "系统管理", operation = "删除管理员")
     @AntiReplay
     public Result<Boolean> delete(@PathVariable Long id) {
+        UmsAdmin existing = umsAdminService.getById(id);
+        if (existing == null) {
+            return Result.error(ResultCode.NOT_FOUND);
+        }
         return Result.success(umsAdminService.removeById(id));
     }
 

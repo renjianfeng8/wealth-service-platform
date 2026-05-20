@@ -6,7 +6,6 @@ import com.wealth.platform.account.entity.WeaUserFavorite;
 import com.wealth.platform.account.mapper.FinUserFavoriteMapper;
 import com.wealth.platform.account.service.FinUserFavoriteService;
 import com.wealth.platform.account.vo.FinUserFavoriteVO;
-import org.springframework.beans.BeanUtils;
 import com.wealth.common.utils.BeanConvertUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,17 +23,20 @@ public class FinUserFavoriteServiceImpl extends ServiceImpl<FinUserFavoriteMappe
         if (entity == null) {
             return null;
         }
-        FinUserFavoriteVO vo = new FinUserFavoriteVO();
-        BeanUtils.copyProperties(entity, vo);
+        FinUserFavoriteVO vo = BeanConvertUtil.convert(entity, FinUserFavoriteVO.class);
         return vo;
     }
 
     @Override
-    public List<FinUserFavoriteVO> getFavoriteList() {
-        List<WeaUserFavorite> list = list();
+    public List<FinUserFavoriteVO> getFavoriteList(Long userId) {
+        List<WeaUserFavorite> list;
+        if (userId != null) {
+            list = lambdaQuery().eq(WeaUserFavorite::getUserId, userId).list();
+        } else {
+            list = list();
+        }
         return list.stream().map(entity -> {
-            FinUserFavoriteVO vo = new FinUserFavoriteVO();
-            BeanUtils.copyProperties(entity, vo);
+            FinUserFavoriteVO vo = BeanConvertUtil.convert(entity, FinUserFavoriteVO.class);
             return vo;
         }).collect(Collectors.toList());
     }
@@ -50,8 +52,7 @@ public class FinUserFavoriteServiceImpl extends ServiceImpl<FinUserFavoriteMappe
         if (count > 0) {
             return false;
         }
-        WeaUserFavorite entity = new WeaUserFavorite();
-        BeanUtils.copyProperties(dto, entity);
+        WeaUserFavorite entity = BeanConvertUtil.convert(dto, WeaUserFavorite.class);
         return save(entity);
     }
 

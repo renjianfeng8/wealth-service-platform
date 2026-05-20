@@ -2,6 +2,8 @@ package com.wealth.platform.system.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.wealth.common.audit.AntiReplay;
+import com.wealth.common.audit.AuditLog;
 import com.wealth.common.result.Result;
 import com.wealth.common.result.ResultCode;
 import com.wealth.common.utils.BeanConvertUtil;
@@ -57,6 +59,8 @@ public class UmsAdminRoleRelationController {
 
     @Operation(summary = "创建")
     @PostMapping
+    @AuditLog(module = "系统管理", operation = "创建管理员-角色关联")
+    @AntiReplay
     public Result<Boolean> create(@Valid @RequestBody UmsAdminRoleRelationDTO dto) {
         UmsAdminRoleRelation relation = BeanConvertUtil.convert(dto, UmsAdminRoleRelation.class);
         return Result.success(umsAdminRoleRelationService.save(relation));
@@ -64,15 +68,27 @@ public class UmsAdminRoleRelationController {
 
     @Operation(summary = "更新")
     @PutMapping("/{id}")
+    @AuditLog(module = "系统管理", operation = "更新管理员-角色关联")
+    @AntiReplay
     public Result<Boolean> update(@PathVariable Long id, @Valid @RequestBody UmsAdminRoleRelationDTO dto) {
-        UmsAdminRoleRelation relation = BeanConvertUtil.convert(dto, UmsAdminRoleRelation.class);
-        relation.setId(id);
-        return Result.success(umsAdminRoleRelationService.updateById(relation));
+        UmsAdminRoleRelation existing = umsAdminRoleRelationService.getById(id);
+        if (existing == null) {
+            return Result.error(ResultCode.NOT_FOUND);
+        }
+        BeanConvertUtil.copyNonNullProperties(dto, existing);
+        existing.setId(id);
+        return Result.success(umsAdminRoleRelationService.updateById(existing));
     }
 
     @Operation(summary = "删除")
     @DeleteMapping("/{id}")
+    @AuditLog(module = "系统管理", operation = "删除管理员-角色关联")
+    @AntiReplay
     public Result<Boolean> delete(@PathVariable Long id) {
+        UmsAdminRoleRelation existing = umsAdminRoleRelationService.getById(id);
+        if (existing == null) {
+            return Result.error(ResultCode.NOT_FOUND);
+        }
         return Result.success(umsAdminRoleRelationService.removeById(id));
     }
 }

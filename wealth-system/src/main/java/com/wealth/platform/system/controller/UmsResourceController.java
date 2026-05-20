@@ -112,10 +112,13 @@ public class UmsResourceController {
     @AuditLog(module = "系统管理", operation = "更新资源")
     @AntiReplay
     public Result<Boolean> update(@PathVariable Long id, @Valid @RequestBody UmsResourceDTO dto) {
-        UmsResource resource = BeanConvertUtil.convert(dto, UmsResource.class);
-        resource.setId(id);
-        boolean updated = umsResourceService.updateById(resource);
-        return Result.success(updated);
+        UmsResource existing = umsResourceService.getById(id);
+        if (existing == null) {
+            return Result.error(ResultCode.NOT_FOUND);
+        }
+        BeanConvertUtil.copyNonNullProperties(dto, existing);
+        existing.setId(id);
+        return Result.success(umsResourceService.updateById(existing));
     }
 
     /**
@@ -129,6 +132,10 @@ public class UmsResourceController {
     @AuditLog(module = "系统管理", operation = "删除资源")
     @AntiReplay
     public Result<Boolean> delete(@PathVariable Long id) {
+        UmsResource existing = umsResourceService.getById(id);
+        if (existing == null) {
+            return Result.error(ResultCode.NOT_FOUND);
+        }
         boolean removed = umsResourceService.removeById(id);
         return Result.success(removed);
     }

@@ -17,7 +17,6 @@ import com.wealth.platform.trade.mapper.FinTradeOrderMapper;
 import com.wealth.platform.trade.service.FinTradeOrderService;
 import com.wealth.platform.trade.vo.FinTradeOrderVO;
 import io.seata.spring.annotation.GlobalTransactional;
-import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,8 +46,7 @@ public class FinTradeOrderServiceImpl extends ServiceImpl<FinTradeOrderMapper, W
         if (order == null) {
             return null;
         }
-        FinTradeOrderVO vo = new FinTradeOrderVO();
-        BeanUtils.copyProperties(order, vo);
+        FinTradeOrderVO vo = BeanConvertUtil.convert(order, FinTradeOrderVO.class);
         return vo;
     }
 
@@ -56,8 +54,7 @@ public class FinTradeOrderServiceImpl extends ServiceImpl<FinTradeOrderMapper, W
     public List<FinTradeOrderVO> getOrderList() {
         List<WeaTradeOrder> list = list();
         return list.stream().map(order -> {
-            FinTradeOrderVO vo = new FinTradeOrderVO();
-            BeanUtils.copyProperties(order, vo);
+            FinTradeOrderVO vo = BeanConvertUtil.convert(order, FinTradeOrderVO.class);
             return vo;
         }).collect(Collectors.toList());
     }
@@ -75,8 +72,7 @@ public class FinTradeOrderServiceImpl extends ServiceImpl<FinTradeOrderMapper, W
         }
 
         // 3. DTO → Entity
-        WeaTradeOrder order = new WeaTradeOrder();
-        BeanUtils.copyProperties(dto, order);
+        WeaTradeOrder order = BeanConvertUtil.convert(dto, WeaTradeOrder.class);
 
         String orderNo = "ORDER_" + UUID.randomUUID().toString().replace("-", "").substring(0, 12);
         order.setOrderNo(orderNo);

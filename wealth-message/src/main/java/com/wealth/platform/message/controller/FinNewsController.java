@@ -68,7 +68,11 @@ public class FinNewsController {
     @AuditLog(module = "资讯管理", operation = "更新资讯")
     @AntiReplay
     public Result<Boolean> update(@PathVariable Long id, @Valid @RequestBody FinNewsDTO dto) {
-        return Result.success(finNewsService.updateNews(id, dto));
+        boolean success = finNewsService.updateNews(id, dto);
+        if (!success) {
+            return Result.error(ResultCode.NOT_FOUND);
+        }
+        return Result.success(true);
     }
 
     @Operation(summary = "删除财经资讯公告（逻辑删除）")
@@ -76,6 +80,10 @@ public class FinNewsController {
     @AuditLog(module = "资讯管理", operation = "删除资讯")
     @AntiReplay
     public Result<Boolean> delete(@PathVariable Long id) {
-        return Result.success(finNewsService.deleteNews(id));
+        boolean success = finNewsService.deleteNews(id);
+        if (!success) {
+            return Result.error(ResultCode.NOT_FOUND);
+        }
+        return Result.success(true);
     }
 }

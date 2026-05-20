@@ -14,7 +14,6 @@ import com.wealth.platform.message.mq.RabbitMqProducer;
 import com.wealth.platform.message.service.FinMessageService;
 import com.wealth.platform.message.vo.FinMessageVO;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,8 +41,7 @@ public class FinMessageServiceImpl extends ServiceImpl<FinMessageMapper, WeaMess
         if (entity == null) {
             return null;
         }
-        FinMessageVO vo = new FinMessageVO();
-        BeanUtils.copyProperties(entity, vo);
+        FinMessageVO vo = BeanConvertUtil.convert(entity, FinMessageVO.class);
         return vo;
     }
 
@@ -51,8 +49,7 @@ public class FinMessageServiceImpl extends ServiceImpl<FinMessageMapper, WeaMess
     public List<FinMessageVO> getMessageList() {
         List<WeaMessage> list = list();
         return list.stream().map(entity -> {
-            FinMessageVO vo = new FinMessageVO();
-            BeanUtils.copyProperties(entity, vo);
+            FinMessageVO vo = BeanConvertUtil.convert(entity, FinMessageVO.class);
             return vo;
         }).collect(Collectors.toList());
     }
@@ -60,8 +57,7 @@ public class FinMessageServiceImpl extends ServiceImpl<FinMessageMapper, WeaMess
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean createMessage(FinMessageDTO dto) {
-        WeaMessage entity = new WeaMessage();
-        BeanUtils.copyProperties(dto, entity);
+        WeaMessage entity = BeanConvertUtil.convert(dto, WeaMessage.class);
         entity.setReadFlag(0);
         boolean saved = save(entity);
 

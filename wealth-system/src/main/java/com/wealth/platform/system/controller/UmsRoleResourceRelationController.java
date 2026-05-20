@@ -2,6 +2,8 @@ package com.wealth.platform.system.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.wealth.common.audit.AntiReplay;
+import com.wealth.common.audit.AuditLog;
 import com.wealth.common.result.Result;
 import com.wealth.common.result.ResultCode;
 import com.wealth.common.utils.BeanConvertUtil;
@@ -57,6 +59,8 @@ public class UmsRoleResourceRelationController {
 
     @Operation(summary = "创建")
     @PostMapping
+    @AuditLog(module = "系统管理", operation = "创建角色-资源关联")
+    @AntiReplay
     public Result<Boolean> create(@Valid @RequestBody UmsRoleResourceRelationDTO dto) {
         UmsRoleResourceRelation relation = BeanConvertUtil.convert(dto, UmsRoleResourceRelation.class);
         return Result.success(umsRoleResourceRelationService.save(relation));
@@ -64,15 +68,27 @@ public class UmsRoleResourceRelationController {
 
     @Operation(summary = "更新")
     @PutMapping("/{id}")
+    @AuditLog(module = "系统管理", operation = "更新角色-资源关联")
+    @AntiReplay
     public Result<Boolean> update(@PathVariable Long id, @Valid @RequestBody UmsRoleResourceRelationDTO dto) {
-        UmsRoleResourceRelation relation = BeanConvertUtil.convert(dto, UmsRoleResourceRelation.class);
-        relation.setId(id);
-        return Result.success(umsRoleResourceRelationService.updateById(relation));
+        UmsRoleResourceRelation existing = umsRoleResourceRelationService.getById(id);
+        if (existing == null) {
+            return Result.error(ResultCode.NOT_FOUND);
+        }
+        BeanConvertUtil.copyNonNullProperties(dto, existing);
+        existing.setId(id);
+        return Result.success(umsRoleResourceRelationService.updateById(existing));
     }
 
     @Operation(summary = "删除")
     @DeleteMapping("/{id}")
+    @AuditLog(module = "系统管理", operation = "删除角色-资源关联")
+    @AntiReplay
     public Result<Boolean> delete(@PathVariable Long id) {
+        UmsRoleResourceRelation existing = umsRoleResourceRelationService.getById(id);
+        if (existing == null) {
+            return Result.error(ResultCode.NOT_FOUND);
+        }
         return Result.success(umsRoleResourceRelationService.removeById(id));
     }
 }

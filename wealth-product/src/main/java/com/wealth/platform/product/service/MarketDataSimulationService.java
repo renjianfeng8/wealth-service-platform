@@ -5,8 +5,9 @@ import com.wealth.platform.product.entity.WeaMarketData;
 import com.wealth.platform.product.mapper.FinMarketDataMapper;
 import com.wealth.platform.product.vo.FinMarketDataVO;
 import jakarta.annotation.PostConstruct;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,14 +23,24 @@ import java.util.Random;
  */
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class MarketDataSimulationService {
 
     private final FinMarketDataMapper marketDataMapper;
     private final MarketDataPushService pushService;
 
+    /** 自注入代理，解决 @Transactional 自调用失效问题 */
+    @Lazy
+    @Autowired
+    private MarketDataSimulationService self;
+
     private volatile List<WeaMarketData> cachedMarketData;
     private final Random random = new Random();
+
+    public MarketDataSimulationService(FinMarketDataMapper marketDataMapper,
+                                        MarketDataPushService pushService) {
+        this.marketDataMapper = marketDataMapper;
+        this.pushService = pushService;
+    }
 
     @PostConstruct
     public void init() {
@@ -49,8 +60,8 @@ public class MarketDataSimulationService {
     public void simulateMarketTick() {
         if (cachedMarketData.isEmpty()) return;
 
-        // 1. 事务内更新数据库（仅 DB 操作）
-        simulateTickDb();
+        // 1. 事务内更新数据库（通过代理调用以触发 @Transactional）
+        self.simulateTickDb();
 
         // 2. 事务外广播 SSE（避免广播异常导致 DB 回滚）
         List<FinMarketDataVO> voList = BeanConvertUtil.convertList(cachedMarketData, FinMarketDataVO.class);

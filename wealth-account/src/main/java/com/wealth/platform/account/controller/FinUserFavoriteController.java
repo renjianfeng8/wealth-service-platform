@@ -59,12 +59,13 @@ public class FinUserFavoriteController {
     /**
      * 查询用户自选关注列表（不分页）。
      *
+     * @param userId 用户ID（为空时返回空列表，避免数据泄露）
      * @return 用户自选关注列表
      */
     @Operation(summary = "查询用户自选关注列表")
     @GetMapping
-    public Result<List<FinUserFavoriteVO>> list() {
-        return Result.success(finUserFavoriteService.getFavoriteList());
+    public Result<List<FinUserFavoriteVO>> list(@RequestParam(required = false) Long userId) {
+        return Result.success(finUserFavoriteService.getFavoriteList(userId));
     }
 
     @Operation(summary = "分页查询用户自选关注")

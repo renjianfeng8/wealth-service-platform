@@ -13,7 +13,6 @@ import com.wealth.platform.product.vo.FinProductVO;
 import com.wealth.common.utils.BeanConvertUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.beans.BeanUtils;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -33,8 +32,7 @@ public class FinProductServiceImpl extends ServiceImpl<FinProductMapper, WeaProd
         if (entity == null) {
             return null;
         }
-        FinProductVO vo = new FinProductVO();
-        BeanUtils.copyProperties(entity, vo);
+        FinProductVO vo = BeanConvertUtil.convert(entity, FinProductVO.class);
         return vo;
     }
 
@@ -42,8 +40,7 @@ public class FinProductServiceImpl extends ServiceImpl<FinProductMapper, WeaProd
     public List<FinProductVO> getProductList() {
         List<WeaProduct> list = list();
         return list.stream().map(entity -> {
-            FinProductVO vo = new FinProductVO();
-            BeanUtils.copyProperties(entity, vo);
+            FinProductVO vo = BeanConvertUtil.convert(entity, FinProductVO.class);
             return vo;
         }).collect(Collectors.toList());
     }
@@ -51,8 +48,7 @@ public class FinProductServiceImpl extends ServiceImpl<FinProductMapper, WeaProd
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean createProduct(FinProductDTO dto) {
-        WeaProduct entity = new WeaProduct();
-        BeanUtils.copyProperties(dto, entity);
+        WeaProduct entity = BeanConvertUtil.convert(dto, WeaProduct.class);
         boolean saved = save(entity);
         if (saved) {
             productSyncService.syncSingleToES(entity);

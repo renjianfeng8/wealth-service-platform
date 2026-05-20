@@ -10,7 +10,6 @@ import com.wealth.platform.message.entity.WeaNews;
 import com.wealth.platform.message.mapper.FinNewsMapper;
 import com.wealth.platform.message.service.FinNewsService;
 import com.wealth.platform.message.vo.FinNewsVO;
-import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,8 +26,7 @@ public class FinNewsServiceImpl extends ServiceImpl<FinNewsMapper, WeaNews>
         if (entity == null) {
             return null;
         }
-        FinNewsVO vo = new FinNewsVO();
-        BeanUtils.copyProperties(entity, vo);
+        FinNewsVO vo = BeanConvertUtil.convert(entity, FinNewsVO.class);
         return vo;
     }
 
@@ -36,8 +34,7 @@ public class FinNewsServiceImpl extends ServiceImpl<FinNewsMapper, WeaNews>
     public List<FinNewsVO> getNewsList() {
         List<WeaNews> list = list();
         return list.stream().map(entity -> {
-            FinNewsVO vo = new FinNewsVO();
-            BeanUtils.copyProperties(entity, vo);
+            FinNewsVO vo = BeanConvertUtil.convert(entity, FinNewsVO.class);
             return vo;
         }).collect(Collectors.toList());
     }
@@ -45,8 +42,7 @@ public class FinNewsServiceImpl extends ServiceImpl<FinNewsMapper, WeaNews>
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean createNews(FinNewsDTO dto) {
-        WeaNews entity = new WeaNews();
-        BeanUtils.copyProperties(dto, entity);
+        WeaNews entity = BeanConvertUtil.convert(dto, WeaNews.class);
         return save(entity);
     }
 

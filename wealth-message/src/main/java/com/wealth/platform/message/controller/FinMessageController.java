@@ -68,7 +68,11 @@ public class FinMessageController {
     @AuditLog(module = "消息管理", operation = "更新消息")
     @AntiReplay
     public Result<Boolean> update(@PathVariable Long id, @Valid @RequestBody FinMessageDTO dto) {
-        return Result.success(finMessageService.updateMessage(id, dto));
+        boolean success = finMessageService.updateMessage(id, dto);
+        if (!success) {
+            return Result.error(ResultCode.NOT_FOUND);
+        }
+        return Result.success(true);
     }
 
     @Operation(summary = "删除站内消息推送（逻辑删除）")
@@ -76,6 +80,10 @@ public class FinMessageController {
     @AuditLog(module = "消息管理", operation = "删除消息")
     @AntiReplay
     public Result<Boolean> delete(@PathVariable Long id) {
-        return Result.success(finMessageService.deleteMessage(id));
+        boolean success = finMessageService.deleteMessage(id);
+        if (!success) {
+            return Result.error(ResultCode.NOT_FOUND);
+        }
+        return Result.success(true);
     }
 }
