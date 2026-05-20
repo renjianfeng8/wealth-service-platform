@@ -1,4 +1,4 @@
-package com.wealth.platform.system;
+package com.wealth.platform.message;
 
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
@@ -7,13 +7,13 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 
 /**
- * 后台权限模块微服务启动类。
+ * 资讯与消息微服务启动类。
  */
 @SpringBootApplication(scanBasePackages = "com.wealth")
 @EnableDiscoveryClient
 @EnableFeignClients(basePackages = "com.wealth.common.feign")
-@MapperScan("com.wealth.platform.system.mapper")
-public class FinanceSystemApplication {
+@MapperScan("com.wealth.platform.message.mapper")
+public class WealthMessageApplication {
 
     /**
      * Spring Boot 启动入口。
@@ -21,7 +21,7 @@ public class FinanceSystemApplication {
      * @param args 启动参数
      */
     public static void main(String[] args) {
-        SpringApplication.run(FinanceSystemApplication.class, args);
+        SpringApplication.run(WealthMessageApplication.class, args);
     }
 }
 

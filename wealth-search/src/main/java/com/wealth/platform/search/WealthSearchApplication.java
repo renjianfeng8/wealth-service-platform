@@ -14,8 +14,8 @@ import org.springframework.data.elasticsearch.repository.config.EnableElasticsea
 @EnableDiscoveryClient
 @EnableFeignClients(basePackages = "com.wealth.common.feign")
 @EnableElasticsearchRepositories(basePackages = "com.wealth.platform.search.repository")
-public class FinanceSearchApplication {
+public class WealthSearchApplication {
     public static void main(String[] args) {
-        SpringApplication.run(FinanceSearchApplication.class, args);
+        SpringApplication.run(WealthSearchApplication.class, args);
     }
 }

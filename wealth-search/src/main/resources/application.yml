@@ -16,7 +16,7 @@ knife4j:
   openapi:
     title: 金融平台搜索服务接口文档
     description: 提供产品、资讯等数据的全文检索服务
-    email: admin@finance.com
+    email: admin@wealth.com
     contact: 开发团队
     version: v1.0.0
 

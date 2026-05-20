@@ -10,13 +10,13 @@ import org.mybatis.spring.annotation.MapperScan;
 @EnableDiscoveryClient
 @EnableFeignClients(basePackages = "com.wealth.common.feign")
 @MapperScan("com.wealth.user.mapper")
-public class FinanceUserApplication {
+public class WealthUserApplication {
     /**
      * Spring Boot 启动入口
      *
      * @param args 启动参数
      */
     public static void main(String[] args) {
-        SpringApplication.run(FinanceUserApplication.class, args);
+        SpringApplication.run(WealthUserApplication.class, args);
     }
 }

@@ -16,7 +16,7 @@ public class SwaggerConfig {
                         .title("金融系统 - 用户模块接口文档")
                         .version("1.0")
                         .description("用户登录、注册、个人信息相关接口")
-                        .contact(new Contact().name("Finance Team"))
+                        .contact(new Contact().name("Wealth Team"))
                 );
     }
 }

@@ -10,7 +10,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
-@Document(indexName = "finance_product")
+@Document(indexName = "wealth_product")
 public class ProductDocument {
 
     @Id
