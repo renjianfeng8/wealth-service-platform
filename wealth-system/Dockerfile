@@ -12,4 +12,4 @@ EXPOSE 8082
 
 ENV TZ=Asia/Shanghai
 
-ENTRYPOINT ["java", "-Xms512m", "-Xmx512m", "-XX:+UseContainerSupport", "-XX:+ExitOnOutOfMemoryError", "-Djava.security.egd=file:/dev/./urandom", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-Xms256m", "-Xmx256m", "-XX:+UseContainerSupport", "-XX:+ExitOnOutOfMemoryError", "-Djava.security.egd=file:/dev/./urandom", "-jar", "app.jar"]

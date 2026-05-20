@@ -14,6 +14,8 @@ services:
       NACOS_AUTH_IDENTITY_KEY: "nacos"
       NACOS_AUTH_IDENTITY_VALUE: "nacos"
       NACOS_AUTH_TOKEN: "${NACOS_AUTH_TOKEN}"
+      JVM_XMS: 256m
+      JVM_XMX: 256m
     restart: unless-stopped
     networks:
       - wealth-net
@@ -106,7 +108,7 @@ services:
       - xpack.security.enabled=${ES_SECURITY_ENABLED:-false}
       - xpack.security.authc.api_key.enabled=${ES_SECURITY_ENABLED:-false}
       - ELASTIC_PASSWORD=${ES_PASSWORD}
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "ES_JAVA_OPTS=-Xms256m -Xmx256m"
     volumes:
       - es-data:/usr/share/elasticsearch/data
     restart: unless-stopped
