@@ -15,6 +15,8 @@ import com.wealth.platform.system.service.UmsAdminService;
 import com.wealth.platform.system.vo.UmsAdminVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -39,8 +41,16 @@ public class UmsAdminController {
     @PostMapping("/login")
     @Operation(summary = "管理员登录（返回 access_token + refresh_token）")
     @AuditLog(module = "系统管理", operation = "管理员登录")
-    public Result<TokenPair> login(@Valid @RequestBody LoginDTO dto) {
-        return Result.success(umsAdminService.login(dto));
+    public Result<TokenPair> login(@Valid @RequestBody LoginDTO dto, HttpServletResponse servletResponse) {
+        TokenPair tokenPair = umsAdminService.login(dto);
+        // 设置 httpOnly Cookie（防 XSS 窃取 JWT）
+        Cookie cookie = new Cookie("wealth_token", tokenPair.accessToken());
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true);
+        cookie.setPath("/");
+        cookie.setMaxAge((int) (tokenPair.expiresIn() / 1000));
+        servletResponse.addCookie(cookie);
+        return Result.success(tokenPair);
     }
 
     @PostMapping("/refresh")
@@ -49,7 +59,7 @@ public class UmsAdminController {
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             return Result.error(ResultCode.TOKEN_INVALID);
         }
-        String refreshToken = authHeader.replace("Bearer ", "");
+        String refreshToken = authHeader.substring(7);
         return Result.success(umsAdminService.refreshToken(refreshToken));
     }
 
@@ -115,7 +125,7 @@ public class UmsAdminController {
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             return Result.success(false);
         }
-        String token = authHeader.replace("Bearer ", "");
+        String token = authHeader.substring(7);
         if (!jwtUtil.validateToken(token)) {
             return Result.success(false);
         }

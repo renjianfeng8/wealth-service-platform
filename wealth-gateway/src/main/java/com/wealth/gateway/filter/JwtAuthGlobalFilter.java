@@ -1,5 +1,6 @@
 package com.wealth.gateway.filter;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
@@ -9,6 +10,7 @@ import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
 import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.http.HttpCookie;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -42,6 +44,9 @@ public class JwtAuthGlobalFilter implements GlobalFilter, Ordered {
             "/product/WeaMarketData/sse/**",
     };
 
+    /** JWT Cookie 名称（httpOnly，防 XSS 窃取） */
+    private static final String TOKEN_COOKIE_NAME = "wealth_token";
+
     @PostConstruct
     public void init() {
         byte[] keyBytes = secretKey.getBytes(StandardCharsets.UTF_8);
@@ -69,21 +74,41 @@ public class JwtAuthGlobalFilter implements GlobalFilter, Ordered {
             }
         }
 
-        // 从请求头中获取 Token
+        // 从请求头或 httpOnly Cookie 中获取 Token
         String authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+        String token = null;
+
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            token = authHeader.substring(7);
+        } else {
+            // 降级：从 httpOnly Cookie 获取（防 XSS 窃取 JWT）
+            HttpCookie tokenCookie = exchange.getRequest().getCookies().getFirst(TOKEN_COOKIE_NAME);
+            if (tokenCookie != null) {
+                token = tokenCookie.getValue();
+            }
+        }
+
+        if (token == null) {
             log.warn("无Token，返回401 | 路径：{}", path);
             return unauthorized(exchange, "未登录");
         }
 
-        String token = authHeader.substring(7);
-
-        // 校验 Token
+        // 校验 Token 并提取用户身份
         try {
-            Jwts.parser()
+            Claims claims = Jwts.parser()
                     .verifyWith(getSigningKey())
                     .build()
-                    .parseSignedClaims(token);
+                    .parseSignedClaims(token)
+                    .getPayload();
+
+            // 将用户身份传递到下游服务（注入请求头）
+            ServerWebExchange mutatedExchange = exchange.mutate()
+                    .request(r -> r.header("X-User-Name", claims.getSubject())
+                                   .header("X-User-Jti", claims.getId()))
+                    .build();
+
+            log.debug("Token校验通过 | 路径：{} | 用户：{}", path, claims.getSubject());
+            return chain.filter(mutatedExchange);
         } catch (io.jsonwebtoken.ExpiredJwtException e) {
             log.warn("Token已过期 | 路径：{}", path);
             return unauthorized(exchange, "Token已过期");
@@ -91,9 +116,6 @@ public class JwtAuthGlobalFilter implements GlobalFilter, Ordered {
             log.warn("Token无效 | 路径：{}, 错误：{}", path, e.getMessage());
             return unauthorized(exchange, "Token无效");
         }
-
-        log.debug("Token校验通过 | 路径：{}", path);
-        return chain.filter(exchange);
     }
 
     /** 返回 401 未授权响应 */

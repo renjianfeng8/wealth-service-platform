@@ -2,7 +2,8 @@
 # 激活方式：spring.profiles.active=prod 或环境变量 SPRING_PROFILES_ACTIVE=prod
 
 server:
-  # 生产环境可关闭 Knife4j/Swagger 文档
+
+# 生产环境可关闭 SpringDoc/Knife4j 文档
 springdoc:
   api-docs:
     enabled: false

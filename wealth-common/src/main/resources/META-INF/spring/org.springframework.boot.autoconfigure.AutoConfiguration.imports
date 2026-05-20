@@ -1,0 +1,5 @@
+com.wealth.common.config.FilterConfig
+com.wealth.common.config.JacksonConfig
+com.wealth.common.config.MyBatisPlusConfig
+com.wealth.common.config.PasswordEncoderConfig
+com.wealth.common.config.RedisConfig

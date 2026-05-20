@@ -8,6 +8,7 @@ import com.wealth.platform.system.entity.UmsRoleResourceRelation;
 import com.wealth.platform.system.service.UmsAdminRoleRelationService;
 import com.wealth.platform.system.service.UmsAdminService;
 import com.wealth.platform.system.service.UmsRoleResourceRelationService;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +29,7 @@ public class PermissionInterceptor implements HandlerInterceptor {
 
     private static final String CACHE_KEY_PREFIX = "permission:urls:";
     private static final long CACHE_TTL_MINUTES = 5;
+    private static final String TOKEN_COOKIE_NAME = "wealth_token";
 
     private final JwtUtil jwtUtil;
     private final UmsAdminService adminService;
@@ -52,9 +54,9 @@ public class PermissionInterceptor implements HandlerInterceptor {
         String uri = request.getRequestURI();
         log.info("权限拦截器 | 请求地址：{}", uri);
 
-        // 1. 获取Token
-        String authHeader = request.getHeader("Authorization");
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+        // 1. 从请求头或 httpOnly Cookie 获取 Token
+        String token = extractToken(request);
+        if (token == null) {
             log.warn("无Token，返回401");
             response.setCharacterEncoding("UTF-8");
             response.setContentType("application/json;charset=UTF-8");
@@ -63,8 +65,6 @@ public class PermissionInterceptor implements HandlerInterceptor {
             response.getWriter().flush();
             return false;
         }
-
-        String token = authHeader.replace("Bearer ", "");
 
         // 2. 校验Token
         if (!jwtUtil.validateToken(token)) {
@@ -165,5 +165,23 @@ public class PermissionInterceptor implements HandlerInterceptor {
 
         log.info("权限校验通过，放行！");
         return true;
+    }
+
+    private String extractToken(HttpServletRequest request) {
+        // 优先从 Authorization header 获取
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            return authHeader.substring(7);
+        }
+        // 降级：从 httpOnly Cookie 获取
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (TOKEN_COOKIE_NAME.equals(cookie.getName())) {
+                    return cookie.getValue();
+                }
+            }
+        }
+        return null;
     }
 }

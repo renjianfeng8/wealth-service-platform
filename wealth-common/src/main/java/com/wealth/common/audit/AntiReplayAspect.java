@@ -1,6 +1,7 @@
 package com.wealth.common.audit;
 
 import com.wealth.common.exception.ServiceException;
+import com.wealth.common.utils.JwtUtil;
 import com.wealth.common.utils.RedisUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -19,7 +20,7 @@ import java.util.concurrent.TimeUnit;
  * 防重放切面。
  * 拦截 @AntiReplay 注解方法，校验：
  * 1. X-Timestamp 是否在时间窗口内（防时间篡改）
- * 2. X-Nonce 在 Redis 中是否已存在（防重复提交）
+ * 2. X-Nonce 在 Redis 中是否已存在（防重复提交，按用户隔离）
  * 不传 X-Timestamp/X-Nonce 头的旧客户端仍可正常访问（兼容降级）。
  */
 @Aspect
@@ -30,9 +31,12 @@ public class AntiReplayAspect {
     private static final String NONCE_KEY_PREFIX = "nonce:";
 
     private final ObjectProvider<RedisUtil> redisUtilProvider;
+    private final ObjectProvider<JwtUtil> jwtUtilProvider;
 
-    public AntiReplayAspect(ObjectProvider<RedisUtil> redisUtilProvider) {
+    public AntiReplayAspect(ObjectProvider<RedisUtil> redisUtilProvider,
+                            ObjectProvider<JwtUtil> jwtUtilProvider) {
         this.redisUtilProvider = redisUtilProvider;
+        this.jwtUtilProvider = jwtUtilProvider;
     }
 
     @Around("@annotation(antiReplay)")
@@ -73,8 +77,11 @@ public class AntiReplayAspect {
             throw new ServiceException(400, "请求已过期，请重新发送");
         }
 
-        // 2. 校验 nonce 唯一性（SET NX，TTL 等于时间窗口）
-        String redisKey = NONCE_KEY_PREFIX + nonce;
+        // 2. 提取当前用户（用于 nonce 隔离）
+        String username = extractUsername(request);
+
+        // 3. 校验 nonce 唯一性（SET NX，TTL 等于时间窗口，按用户隔离）
+        String redisKey = NONCE_KEY_PREFIX + username + ":" + nonce;
         Boolean success = redisUtil.setIfAbsent(redisKey, "1", timeWindow, TimeUnit.SECONDS);
         if (Boolean.FALSE.equals(success)) {
             log.warn("防重放校验失败：nonce 重复使用 | nonce={}", nonce);
@@ -87,5 +94,25 @@ public class AntiReplayAspect {
     private HttpServletRequest currentRequest() {
         ServletRequestAttributes attrs = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         return attrs != null ? attrs.getRequest() : null;
+    }
+
+    /**
+     * 从 Authorization header 提取用户名用于 nonce 隔离。
+     * 未登录或提取失败时返回 "anonymous"，避免阻断未登录场景使用 @AntiReplay。
+     */
+    private String extractUsername(HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return "anonymous";
+        }
+        try {
+            JwtUtil jwtUtil = jwtUtilProvider.getIfAvailable();
+            if (jwtUtil == null) return "anonymous";
+            String token = authHeader.substring(7);
+            return jwtUtil.getUsernameFromToken(token);
+        } catch (Exception e) {
+            log.debug("提取用户名失败，使用 anonymous | {}", e.getMessage());
+            return "anonymous";
+        }
     }
 }

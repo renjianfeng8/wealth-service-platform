@@ -5,12 +5,22 @@ import jakarta.servlet.http.HttpServletRequestWrapper;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Pattern;
 
 /**
- * XSS 过滤包装器 — 对请求参数、请求头和 query string 进行 HTML 标签转义。
- * 注意：JSON 请求体（@RequestBody）由 Jackson 反序列化，不在本包装器处理范围内。
+ * XSS 过滤包装器 — 对请求参数、请求头和 query string 进行 XSS 防护。
+ * 仅剥离危险脚本内容，不做 HTML 实体转义，避免数据损坏。
+ * 注意：JSON 请求体（@RequestBody）由 Jackson 反序列化处理（StringXssDeserializer），不在本包装器处理范围内。
  */
 public class XssHttpServletRequestWrapper extends HttpServletRequestWrapper {
+
+    private static final Pattern SCRIPT_TAG = Pattern.compile(
+            "<script[^>]*>.*?</script>", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+    private static final Pattern HTML_TAG = Pattern.compile("<[^>]*>");
+    private static final Pattern JAVASCRIPT_PROTOCOL = Pattern.compile(
+            "javascript:\\s*", Pattern.CASE_INSENSITIVE);
+    private static final Pattern ON_EVENT_ATTR = Pattern.compile(
+            "\\s+on\\w+\\s*=\\s*['\"].*?['\"]", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 
     public XssHttpServletRequestWrapper(HttpServletRequest request) {
         super(request);
@@ -62,15 +72,16 @@ public class XssHttpServletRequestWrapper extends HttpServletRequestWrapper {
     }
 
     /**
-     * 对输入进行 HTML 编码，转义特殊字符以防止 XSS 攻击。
+     * 剥离危险脚本内容（移除 script 标签、HTML 标签、javascript: 协议、事件属性）。
+     * 不进行 HTML 实体转义，避免在输入阶段损坏正常数据。
      */
     private String cleanXss(String value) {
         if (value == null || value.isEmpty()) return value;
-        return value
-                .replace("&", "&amp;")
-                .replace("<", "&lt;")
-                .replace(">", "&gt;")
-                .replace("\"", "&quot;")
-                .replace("'", "&#x27;");
+        String cleaned = value;
+        cleaned = SCRIPT_TAG.matcher(cleaned).replaceAll("");
+        cleaned = HTML_TAG.matcher(cleaned).replaceAll("");
+        cleaned = JAVASCRIPT_PROTOCOL.matcher(cleaned).replaceAll("");
+        cleaned = ON_EVENT_ATTR.matcher(cleaned).replaceAll("");
+        return cleaned;
     }
 }

@@ -15,6 +15,8 @@ import com.wealth.user.vo.UserVO;
 import com.wealth.user.vo.LoginVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -110,8 +112,16 @@ public class UserController {
     @PostMapping("/login")
     @Operation(summary = "用户登录")
     @AuditLog(module = "用户管理", operation = "用户登录")
-    public Result<LoginVO> login(@Valid @RequestBody LoginDTO dto) {
-        return Result.success(userService.login(dto));
+    public Result<LoginVO> login(@Valid @RequestBody LoginDTO dto, HttpServletResponse servletResponse) {
+        LoginVO loginVO = userService.login(dto);
+        // 设置 httpOnly Cookie（防 XSS 窃取 JWT）
+        Cookie cookie = new Cookie("wealth_token", loginVO.getToken());
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true);
+        cookie.setPath("/");
+        cookie.setMaxAge(1800); // 30 分钟，与 access_token 有效期一致
+        servletResponse.addCookie(cookie);
+        return Result.success(loginVO);
     }
 
     @PostMapping("/resetPassword")
