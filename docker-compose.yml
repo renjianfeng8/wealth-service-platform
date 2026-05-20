@@ -13,7 +13,7 @@ services:
       NACOS_AUTH_ENABLE: "true"
       NACOS_AUTH_IDENTITY_KEY: "nacos"
       NACOS_AUTH_IDENTITY_VALUE: "nacos"
-      NACOS_AUTH_TOKEN_SECRET_KEY: "${NACOS_AUTH_TOKEN_SECRET_KEY}"
+      NACOS_AUTH_TOKEN: "${NACOS_AUTH_TOKEN}"
     restart: unless-stopped
     networks:
       - wealth-net
@@ -31,7 +31,7 @@ services:
     image: mysql:8.0.37
     container_name: wealth-mysql
     ports:
-      - "3306:3306"
+      - "3307:3306"
     command:
       - "--binlog-expire-logs-seconds=604800"
       - "--max-binlog-size=104857600"
@@ -178,12 +178,16 @@ services:
     ports:
       - "8080:8080"
     environment:
+      - CORS_ALLOWED_ORIGINS=https://rjfwealth.cn
       - spring.cloud.nacos.discovery.server-addr=nacos:8848
       - spring.cloud.nacos.config.server-addr=nacos:8848
       - spring.cloud.nacos.username=${NACOS_USERNAME}
       - spring.cloud.nacos.password=${NACOS_PASSWORD}
+      - JWT_SECRET=wealth-micro-service-20260501-very-safe-secret-key-123456789
+      - JWT_EXPIRE=604800000
       - spring.datasource.url=jdbc:mysql://mysql:3306/wealth?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false
       - spring.datasource.password=${MYSQL_ROOT_PASSWORD}
+      - spring.redis.host=redis
       - spring.elasticsearch.uris=http://elasticsearch:9200
     depends_on:
       - nacos
@@ -198,10 +202,13 @@ services:
     ports:
       - "8082:8082"
     environment:
+      - spring.application.name=wealth-system
       - spring.cloud.nacos.discovery.server-addr=nacos:8848
       - spring.cloud.nacos.config.server-addr=nacos:8848
       - spring.cloud.nacos.username=${NACOS_USERNAME}
       - spring.cloud.nacos.password=${NACOS_PASSWORD}
+      - JWT_SECRET=wealth-micro-service-20260501-very-safe-secret-key-123456789
+      - JWT_EXPIRE=604800000
       - spring.datasource.url=jdbc:mysql://mysql:3306/wealth?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false
       - spring.datasource.password=${MYSQL_ROOT_PASSWORD}
     depends_on:
@@ -223,6 +230,8 @@ services:
       - spring.cloud.nacos.config.server-addr=nacos:8848
       - spring.cloud.nacos.username=${NACOS_USERNAME}
       - spring.cloud.nacos.password=${NACOS_PASSWORD}
+      - JWT_SECRET=wealth-micro-service-20260501-very-safe-secret-key-123456789
+      - JWT_EXPIRE=604800000
       - spring.datasource.url=jdbc:mysql://mysql:3306/wealth?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false
       - spring.datasource.password=${MYSQL_ROOT_PASSWORD}
     depends_on:
@@ -244,6 +253,8 @@ services:
       - spring.cloud.nacos.config.server-addr=nacos:8848
       - spring.cloud.nacos.username=${NACOS_USERNAME}
       - spring.cloud.nacos.password=${NACOS_PASSWORD}
+      - JWT_SECRET=wealth-micro-service-20260501-very-safe-secret-key-123456789
+      - JWT_EXPIRE=604800000
       - spring.datasource.url=jdbc:mysql://mysql:3306/wealth?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false
       - spring.datasource.password=${MYSQL_ROOT_PASSWORD}
     depends_on:
@@ -265,6 +276,8 @@ services:
       - spring.cloud.nacos.config.server-addr=nacos:8848
       - spring.cloud.nacos.username=${NACOS_USERNAME}
       - spring.cloud.nacos.password=${NACOS_PASSWORD}
+      - JWT_SECRET=wealth-micro-service-20260501-very-safe-secret-key-123456789
+      - JWT_EXPIRE=604800000
       - spring.datasource.url=jdbc:mysql://mysql:3306/wealth?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false
       - spring.datasource.password=${MYSQL_ROOT_PASSWORD}
     depends_on:
@@ -286,6 +299,8 @@ services:
       - spring.cloud.nacos.config.server-addr=nacos:8848
       - spring.cloud.nacos.username=${NACOS_USERNAME}
       - spring.cloud.nacos.password=${NACOS_PASSWORD}
+      - JWT_SECRET=wealth-micro-service-20260501-very-safe-secret-key-123456789
+      - JWT_EXPIRE=604800000
       - spring.datasource.url=jdbc:mysql://mysql:3306/wealth?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false
       - spring.datasource.password=${MYSQL_ROOT_PASSWORD}
     depends_on:
@@ -307,8 +322,14 @@ services:
       - spring.cloud.nacos.config.server-addr=nacos:8848
       - spring.cloud.nacos.username=${NACOS_USERNAME}
       - spring.cloud.nacos.password=${NACOS_PASSWORD}
+      - JWT_SECRET=wealth-micro-service-20260501-very-safe-secret-key-123456789
+      - JWT_EXPIRE=604800000
       - spring.datasource.url=jdbc:mysql://mysql:3306/wealth?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false
       - spring.datasource.password=${MYSQL_ROOT_PASSWORD}
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
+      - RABBITMQ_USERNAME=${RABBITMQ_DEFAULT_USER}
+      - RABBITMQ_PASSWORD=${RABBITMQ_DEFAULT_PASS}
     depends_on:
       nacos:
         condition: service_started
@@ -328,6 +349,8 @@ services:
       - spring.cloud.nacos.config.server-addr=nacos:8848
       - spring.cloud.nacos.username=${NACOS_USERNAME}
       - spring.cloud.nacos.password=${NACOS_PASSWORD}
+      - JWT_SECRET=wealth-micro-service-20260501-very-safe-secret-key-123456789
+      - JWT_EXPIRE=604800000
       - spring.elasticsearch.uris=http://elasticsearch:9200
       - spring.elasticsearch.username=${ES_USERNAME}
       - spring.elasticsearch.password=${ES_PASSWORD}
