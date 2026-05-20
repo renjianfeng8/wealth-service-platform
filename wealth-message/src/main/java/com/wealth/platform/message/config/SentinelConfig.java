@@ -14,7 +14,7 @@ public class SentinelConfig {
     @PostConstruct
     public void initFlowRules() {
         FlowRule rule = new FlowRule();
-        rule.setResource("POST:/message/WeaMessage");
+        rule.setResource("POST:/message/wea-message");
         rule.setGrade(RuleConstant.FLOW_GRADE_QPS);
         rule.setCount(200);
         rule.setLimitApp("default");

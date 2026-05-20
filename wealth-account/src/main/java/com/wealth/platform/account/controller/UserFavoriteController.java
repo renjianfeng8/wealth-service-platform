@@ -33,10 +33,10 @@ import java.util.List;
  */
 @RestController
 @Tag(name = "用户自选管理", description = "wea_user_favorite 用户自选相关接口")
-@RequestMapping("/WeaUserFavorite")
+@RequestMapping("/wea-user-favorite")
 @RequiredArgsConstructor
 @Validated
-public class FinUserFavoriteController {
+public class UserFavoriteController {
 
     private final FinUserFavoriteService finUserFavoriteService;
 

@@ -22,10 +22,10 @@ import java.util.List;
 
 @RestController
 @Tag(name = "资讯管理", description = "wea_news 财经资讯相关接口")
-@RequestMapping("/WeaNews")
+@RequestMapping("/wea-news")
 @RequiredArgsConstructor
 @Validated
-public class FinNewsController {
+public class NewsController {
 
     private final FinNewsService finNewsService;
 

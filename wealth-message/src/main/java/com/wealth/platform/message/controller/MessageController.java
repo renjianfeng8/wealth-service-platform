@@ -22,10 +22,10 @@ import java.util.List;
 
 @RestController
 @Tag(name = "消息管理", description = "wea_message 站内消息相关接口")
-@RequestMapping("/WeaMessage")
+@RequestMapping("/wea-message")
 @RequiredArgsConstructor
 @Validated
-public class FinMessageController {
+public class MessageController {
 
     private final FinMessageService finMessageService;
 

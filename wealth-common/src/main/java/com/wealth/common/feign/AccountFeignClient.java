@@ -15,12 +15,12 @@ import java.util.List;
 @FeignClient(name = "wealth-account", configuration = FeignConfig.class)
 public interface AccountFeignClient {
 
-    @GetMapping("/account/WeaUserFavorite/{id}")
+    @GetMapping("/account/wea-user-favorite/{id}")
     Result<FinUserFavoriteDTO> getById(@PathVariable("id") Long id);
 
-    @GetMapping("/account/WeaUserFavorite")
+    @GetMapping("/account/wea-user-favorite")
     Result<List<FinUserFavoriteDTO>> list();
 
-    @GetMapping("/account/WeaUserFavorite/byUser")
+    @GetMapping("/account/wea-user-favorite/byUser")
     Result<List<FinUserFavoriteDTO>> getAccountByUserId(@RequestParam("userId") Long userId);
 }

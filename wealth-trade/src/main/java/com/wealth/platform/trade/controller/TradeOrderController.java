@@ -21,11 +21,11 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/WeaTradeOrder")
+@RequestMapping("/wea-trade-order")
 @Tag(name = "交易委托管理", description = "wea_trade_order 交易委托相关接口")
 @RequiredArgsConstructor
 @Validated
-public class FinTradeOrderController {
+public class TradeOrderController {
 
     private final FinTradeOrderService finTradeOrderService;
 

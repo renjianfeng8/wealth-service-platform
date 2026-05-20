@@ -28,10 +28,10 @@ import java.util.List;
 @Slf4j
 @RestController
 @Tag(name = "行情管理", description = "行情数据相关接口")
-@RequestMapping("/WeaMarketData")
+@RequestMapping("/wea-market-data")
 @RequiredArgsConstructor
 @Validated
-public class FinMarketDataController {
+public class MarketDataController {
 
     private final FinMarketDataService finMarketDataService;
     private final JwtUtil jwtUtil;

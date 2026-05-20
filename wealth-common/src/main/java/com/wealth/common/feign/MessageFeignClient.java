@@ -11,6 +11,6 @@ import org.springframework.web.bind.annotation.RequestBody;
         fallback = MessageFeignClientFallback.class)
 public interface MessageFeignClient {
 
-    @PostMapping("/message/WeaMessage")
+    @PostMapping("/message/wea-message")
     Result<Boolean> createMessage(@RequestBody MessageFeignDTO dto);
 }

@@ -1,25 +1,25 @@
 import request from './index'
 
 export function getTradeOrderPage(params: any) {
-  return request.get('/trade/WeaTradeOrder/page', { params })
+  return request.get('/trade/wea-trade-order/page', { params })
 }
 
 export function getTradeOrderList() {
-  return request.get('/trade/WeaTradeOrder')
+  return request.get('/trade/wea-trade-order')
 }
 
 export function getTradeOrderById(id: number) {
-  return request.get(`/trade/WeaTradeOrder/${id}`)
+  return request.get(`/trade/wea-trade-order/${id}`)
 }
 
 export function createTradeOrder(data: any) {
-  return request.post('/trade/WeaTradeOrder', data)
+  return request.post('/trade/wea-trade-order', data)
 }
 
 export function updateTradeOrder(id: number, data: any) {
-  return request.put(`/trade/WeaTradeOrder/${id}`, data)
+  return request.put(`/trade/wea-trade-order/${id}`, data)
 }
 
 export function deleteTradeOrder(id: number) {
-  return request.delete(`/trade/WeaTradeOrder/${id}`)
+  return request.delete(`/trade/wea-trade-order/${id}`)
 }

@@ -24,10 +24,10 @@ import java.util.List;
 
 @RestController
 @Tag(name = "产品管理", description = "产品相关接口")
-@RequestMapping("/WeaProduct")
+@RequestMapping("/wea-product")
 @RequiredArgsConstructor
 @Validated
-public class FinProductController {
+public class ProductController {
 
     private final FinProductService finProductService;
     private final ProductSyncService productSyncService;

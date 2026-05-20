@@ -28,13 +28,13 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addInterceptor(new LoginInterceptor(jwtUtil))
                 .addPathPatterns("/**")
                 .excludePathPatterns(
-                        "/WeaMarketData/sse/**"
+                        "/wea-market-data/sse/**"
                 );
         // 2. 权限校验（仅校验 POST/PUT/DELETE 写操作）
         registry.addInterceptor(new PermissionCheckInterceptor(permissionCheckFeignClient))
                 .addPathPatterns("/**")
                 .excludePathPatterns(
-                        "/WeaMarketData/sse/**"
+                        "/wea-market-data/sse/**"
                 );
     }
 }

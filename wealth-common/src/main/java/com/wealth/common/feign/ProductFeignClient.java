@@ -10,6 +10,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 @FeignClient(name = "wealth-product", configuration = FeignConfig.class)
 public interface ProductFeignClient {
 
-    @GetMapping("/product/WeaProduct/{id}")
+    @GetMapping("/product/wea-product/{id}")
     Result<?> getProductById(@PathVariable("id") Long id);
 }

@@ -2,50 +2,50 @@ import request from './index'
 
 // 产品
 export function getProductPage(params: { pageNum: number; pageSize: number; productName?: string; productCode?: string; productType?: number }) {
-  return request.get('/product/WeaProduct/page', { params })
+  return request.get('/product/wea-product/page', { params })
 }
 
 export function getProductList() {
-  return request.get('/product/WeaProduct')
+  return request.get('/product/wea-product')
 }
 
 export function getProductById(id: number) {
-  return request.get(`/product/WeaProduct/${id}`)
+  return request.get(`/product/wea-product/${id}`)
 }
 
 export function createProduct(data: any) {
-  return request.post('/product/WeaProduct', data)
+  return request.post('/product/wea-product', data)
 }
 
 export function updateProduct(id: number, data: any) {
-  return request.put(`/product/WeaProduct/${id}`, data)
+  return request.put(`/product/wea-product/${id}`, data)
 }
 
 export function deleteProduct(id: number) {
-  return request.delete(`/product/WeaProduct/${id}`)
+  return request.delete(`/product/wea-product/${id}`)
 }
 
 // 行情数据
 export function getMarketDataPage(params: { pageNum: number; pageSize: number }) {
-  return request.get('/product/WeaMarketData/page', { params })
+  return request.get('/product/wea-market-data/page', { params })
 }
 
 export function getMarketDataList() {
-  return request.get('/product/WeaMarketData')
+  return request.get('/product/wea-market-data')
 }
 
 export function getMarketDataById(id: number) {
-  return request.get(`/product/WeaMarketData/${id}`)
+  return request.get(`/product/wea-market-data/${id}`)
 }
 
 export function createMarketData(data: any) {
-  return request.post('/product/WeaMarketData', data)
+  return request.post('/product/wea-market-data', data)
 }
 
 export function updateMarketData(id: number, data: any) {
-  return request.put(`/product/WeaMarketData/${id}`, data)
+  return request.put(`/product/wea-market-data/${id}`, data)
 }
 
 export function deleteMarketData(id: number) {
-  return request.delete(`/product/WeaMarketData/${id}`)
+  return request.delete(`/product/wea-market-data/${id}`)
 }

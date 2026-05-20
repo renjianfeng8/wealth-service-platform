@@ -14,7 +14,7 @@ public class SentinelConfig {
     @PostConstruct
     public void initFlowRules() {
         FlowRule rule = new FlowRule();
-        rule.setResource("POST:/trade/WeaTradeOrder");
+        rule.setResource("POST:/trade/wea-trade-order");
         rule.setGrade(RuleConstant.FLOW_GRADE_QPS);
         rule.setCount(100);
         rule.setLimitApp("default");
