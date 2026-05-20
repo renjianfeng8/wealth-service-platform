@@ -5,7 +5,15 @@
 
 ---
 
-## v1.7.0 (2026-05-19 — 当前开发版)
+## v1.7.1 (2026-05-20)
+
+### 故障修复
+
+- **Redis 不可用时登录降级**：所有 Redis 操作（锁定检查、失败计数、验证码校验、refresh_token 持久化）添加 `RedisConnectionFailureException` try-catch，Redis 不可用时跳过但不阻塞登录
+- **登录 401 响应修复**：Controller 改用 `ResponseEntity` + `ResponseCookie` 避免 `getWriter()`/`getOutputStream()` 冲突；`/error` 和 `/actuator/**` 加入拦截器放行列表；新增 `IllegalStateException` 全局处理器直接写入错误响应
+- **配置修复**：docker-compose.yml 中 MySQL JDBC URL 添加 `allowPublicKeyRetrieval=true`；System 服务添加 `-Dspring.redis.host=redis` JVM 参数确保 Redis 地址配置生效
+
+## v1.7.0 (2026-05-19)
 
 ### 基础设施安全认证
 
