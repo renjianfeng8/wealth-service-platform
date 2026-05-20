@@ -1,10 +1,10 @@
 -- ============================================================
 -- 金融中台系统 测试数据（追加数据，不冲突唯一键）
--- 数据库: finance
+-- 数据库: wealth
 -- 说明：先执行 init.sql 建表，再执行本脚本插入测试数据
 -- ============================================================
 
-USE finance;
+USE wealth;
 
 -- ============================================================
 -- 1. sys_user — 系统用户（8条）
@@ -103,12 +103,12 @@ INSERT INTO fin_message (user_id, msg_type, msg_title, msg_content, read_flag) V
 -- 8. ums_admin — 后台管理员（6条）
 -- ============================================================
 INSERT INTO ums_admin (username, password, email, nick_name, status, login_time, create_time) VALUES
-('admin',    '$2b$04$.IbVq3aPZ5lZnfaoo22sJeECer7ertr5zY7fB1l2J8ZlGGYn.UVmy', 'admin@finance.com',    '超级管理员', 1, '2026-05-10 08:30:00', '2026-04-01 08:00:00'),
-('zhangsan', '$2b$04$hy8tzH1X1GAaVNI/NH/YV.burYsETKkkXwpC4yQkYfh/TDSws.Cv2', 'zhangsan@finance.com', '张三',       1, '2026-05-09 16:00:00', '2026-04-02 10:00:00'),
-('lisi',     '$2b$04$T3t2IvIofOd0pg5D37Mwrue/sjmnFzv0xk9Zw7H7kwB.l/8YfO/Ra', 'lisi@finance.com',     '李四',       1, '2026-05-08 10:00:00', '2026-04-03 10:00:00'),
-('wangwu',   '$2b$04$LI/0on7HMMrs2D.lcVen8.QKFTW.9paFicW6fP2oaJ40p4EwadpY2', 'wangwu@finance.com',   '王五',       1, NULL,                '2026-04-04 10:00:00'),
-('zhaoqi',   '$2b$04$rZ0iu.8n7XCFVg46y6ObKe4hFBsz6IC3amlUVsGhkSJ0DvkCob8Ey', 'zhaoqi@finance.com',   '赵琦',       0, NULL,                '2026-04-05 10:00:00'),
-('sunjiu',   '$2b$04$sdW2N6KoDwdV753sh7eFduKcJg9s5aAinXPiEylrqlQI1VOsGulyS', 'sunjiu@finance.com',   '孙九',       1, NULL,                '2026-04-06 10:00:00');
+('admin',    '$2b$04$.IbVq3aPZ5lZnfaoo22sJeECer7ertr5zY7fB1l2J8ZlGGYn.UVmy', 'admin@wealth.com',    '超级管理员', 1, '2026-05-10 08:30:00', '2026-04-01 08:00:00'),
+('zhangsan', '$2b$04$hy8tzH1X1GAaVNI/NH/YV.burYsETKkkXwpC4yQkYfh/TDSws.Cv2', 'zhangsan@wealth.com', '张三',       1, '2026-05-09 16:00:00', '2026-04-02 10:00:00'),
+('lisi',     '$2b$04$T3t2IvIofOd0pg5D37Mwrue/sjmnFzv0xk9Zw7H7kwB.l/8YfO/Ra', 'lisi@wealth.com',     '李四',       1, '2026-05-08 10:00:00', '2026-04-03 10:00:00'),
+('wangwu',   '$2b$04$LI/0on7HMMrs2D.lcVen8.QKFTW.9paFicW6fP2oaJ40p4EwadpY2', 'wangwu@wealth.com',   '王五',       1, NULL,                '2026-04-04 10:00:00'),
+('zhaoqi',   '$2b$04$rZ0iu.8n7XCFVg46y6ObKe4hFBsz6IC3amlUVsGhkSJ0DvkCob8Ey', 'zhaoqi@wealth.com',   '赵琦',       0, NULL,                '2026-04-05 10:00:00'),
+('sunjiu',   '$2b$04$sdW2N6KoDwdV753sh7eFduKcJg9s5aAinXPiEylrqlQI1VOsGulyS', 'sunjiu@wealth.com',   '孙九',       1, NULL,                '2026-04-06 10:00:00');
 -- 密码对照: admin=admin123, zhangsan=123456, lisi=abc123, wangwu=test123, zhaoqi=password, sunjiu=hello123
 
 -- ============================================================
