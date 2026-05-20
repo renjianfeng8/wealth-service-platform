@@ -1,17 +1,9 @@
 # ============================================================
-# 生产环境配置 — SSL / HTTPS
+# 生产环境配置
 # ============================================================
-# Nginx 负责外部 443 SSL 终止，Gateway 额外提供 HTTPS 直连
-# 端口 8443，供非 Nginx 部署场景或内部直连使用。
-# 开发环境（默认 profile）保持 HTTP 8080，使用自签名 ECDSA 证书。
+# Nginx 负责外部 443 SSL 终止，Gateway 通过 HTTP 8080 内部通信。
 server:
-  port: 8443
-  ssl:
-    enabled: true
-    key-store: classpath:ssl/wealth.pfx
-    key-store-password: MEtGlVR8mIj5rObSKQTX1Ng0kuHfiFeZ
-    key-store-type: PKCS12
-    key-alias: 1
+  port: 8080
 
 springdoc:
   api-docs:
