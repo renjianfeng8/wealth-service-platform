@@ -438,3 +438,128 @@ mysqldump: Got error: 1045: "Plugin caching_sha2_password could not be loaded:
 
 - `scripts/backup-scheduler.sh`（`--ssl=0` + 分步写入替代管道）
 - `docker-compose.yml`（mysql-backup 服务使用 alpine 镜像）
+
+---
+
+## OOM 风险审查报告 (2026-05-21)
+
+> 审查范围：全部 8 个微服务模块 + wealth-common 公共模块
+> 审查方法：代码静态分析，覆盖集合使用、大对象加载、资源管理、内存泄漏模式、SSE/定时任务
+
+### 【高风险】真实 OOM 场景
+
+#### H1. SSE Emitter 集合无界增长
+**文件**: `wealth-product/.../service/MarketDataPushService.java:20`
+
+```java
+private final CopyOnWriteArrayList<SseEmitter> emitters = new CopyOnWriteArrayList<>();
+```
+
+- `createEmitter()` 每次客户端连接无条件 `emitters.add(emitter)`，**无数量上限**
+- `onCompletion`/`onTimeout`/`onError` 在客户端网络闪断时可能不触发，导致僵尸 emitter 泄漏
+- 每个 `SseEmitter(86400_000L)` 持有 24h 超时的底层缓冲区
+
+**OOM 路径**: 攻击者批量创建 SSE 连接后断网 → emitter 泄漏 → CopyOnWriteArrayList 持续膨胀 → OOM
+
+**修改建议**:
+1. 添加 emitter 数量上限（如 MAX_EMITTERS = 500），超限时拒绝新连接或替换最旧连接
+2. 添加心跳检测，广播前使用 `emitters.removeIf(Emitters::isExpired)` 清理僵尸连接
+3. 使用 `ExecutorService` 异步广播，避免串行阻塞定时任务
+
+---
+
+#### H2. selectList(null) 全表无界加载
+**文件**: 
+- `wealth-product/.../impl/ProductSyncServiceImpl.java:31`
+- `wealth-product/.../service/MarketDataSimulationService.java:52`
+
+```java
+List<WeaProduct> products = productMapper.selectList(null);  // 全表加载
+```
+
+- `ProductSyncServiceImpl` 每 2 分钟无条件全量加载产品表
+- `MarketDataSimulationService` 在 `@PostConstruct` 时全量加载行情表
+- 当前演示数据仅几十条，但**生产环境数据达数万行时**将直接 OOM
+
+**修改建议**:
+1. `ProductSyncServiceImpl` 改为分页批量同步（MyBatis-Plus Page 分批取数 → 逐页同步 ES）
+2. `MarketDataSimulationService` 若数据量增大，改为仅加载活跃产品
+
+---
+
+#### H3. 全 Controller list() 接口无分页全量查询（10+ 端点）
+**涉及文件**: UserController、ProductController、MarketDataController、TradeOrderController、NewsController、MessageController、UmsAdminController、UmsRoleController、UmsResourceController 等全部 `@GetMapping` 无参 `list()` 端点
+
+```java
+@GetMapping
+public Result<List<FinProductVO>> list() {
+    return Result.success(finProductService.getProductList());  // → selectList(null)
+}
+```
+
+- 全部调用 MyBatis-Plus `service.list()` → `selectList(null)`，无防呆、无上限
+- 订单表、资讯表等持续增长的表一旦被遍历将导致堆溢出
+
+**修改建议**:
+1. 为每个 `list()` 端点添加上限保护（如 `LIMIT 1000`），或强制前端走分页接口
+2. 移除前端不需要全量数据的 `list()` 端点
+
+---
+
+### 【中风险】特定条件下可能 OOM
+
+#### M1. 行情广播全量拷贝 + 串行发送压力
+**文件**: `wealth-product/.../service/MarketDataSimulationService.java:67`
+
+- 每 2 秒对全量行情数据执行 `BeanConvertUtil.convertList()` 创建 VO 副本
+- `broadcastMarketUpdate()` 同步串行遍历所有 emitter 发送
+- emitter 数量大或行情数据多时，瞬时堆占用飙升
+
+---
+
+#### M2. 无自定义线程池配置
+**文件**: 全局未发现 `ThreadPoolTaskExecutor` 或 `@EnableAsync` 配置
+
+- `@Scheduled` 默认使用单线程执行器
+- 如果引入 `@Async` 或异步任务，默认无界线程池将导致线程泄漏
+
+---
+
+#### M3. JwtUtil 每次调用创建 SecretKey 对象
+**文件**: `wealth-common/.../utils/JwtUtil.java:46-48`
+
+```java
+private SecretKey getSigningKey() {
+    byte[] keyBytes = secretKey.getBytes(StandardCharsets.UTF_8);
+    return Keys.hmacShaKeyFor(keyBytes);  // 每次创建新对象
+}
+```
+
+- 高并发下反复分配 `byte[]` + `SecretKey`，给 GC 增加压力
+
+---
+
+#### M4. BeanConvertUtil 反射无缓存
+**文件**: `wealth-common/.../utils/BeanConvertUtil.java:50-58`
+
+- `copyNonNullProperties` 每次调用反射遍历类的全部属性描述符
+- 高频 PUT 接口反复触发反射，大量短生命周期 `HashSet` + `String[]` 增加 Young GC 频率
+
+---
+
+### 【低风险】关注点
+
+- 项目中不存在文件上传、递归调用、大 JSON/XML 解析、Bitmap/图片处理等常见 OOM 场景
+- 无 ThreadLocal 使用，不存在 ThreadLocal 泄漏
+- Token 刷新路径无长度校验，但 JWT 自身签名校验可拦截恶意 payload
+
+---
+
+### 排查要点（审查时逐项过）
+- [ ] SSE emitter 集合是否设定了最大数量上限
+- [ ] 全表 `selectList(null)` 是否改为分页或条件查询
+- [ ] 所有 `list()` 端点是否添加上限保护或改为分页
+- [ ] 行情模拟服务是否改为分批或条件查询
+- [ ] 线程池是否自定义配置（含队列上限）
+- [ ] JwtUtil SecretKey 是否缓存复用
+- [ ] BeanConvertUtil 反射是否使用 PropertyDescriptor 缓存
