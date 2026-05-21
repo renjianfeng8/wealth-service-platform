@@ -3,12 +3,9 @@ package com.wealth.platform.message.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wealth.platform.message.dto.FinMessageDTO;
 import com.wealth.platform.message.entity.WeaMessage;
 import com.wealth.platform.message.mapper.FinMessageMapper;
-import com.wealth.platform.message.mq.RabbitMqProducer;
 import com.wealth.platform.message.vo.FinMessageVO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -16,13 +13,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
-import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 class FinMessageServiceImplTest {
@@ -30,19 +27,13 @@ class FinMessageServiceImplTest {
     @Mock
     private FinMessageMapper messageMapper;
 
-    @Mock
-    private RabbitMqProducer rabbitMqProducer;
-
-    @Mock
-    private ObjectMapper objectMapper;
-
     private FinMessageServiceImpl messageService;
 
     private WeaMessage mockMessage;
 
     @BeforeEach
     void setUp() {
-        messageService = new FinMessageServiceImpl(rabbitMqProducer, objectMapper);
+        messageService = new FinMessageServiceImpl();
         ReflectionTestUtils.setField(messageService, "baseMapper", messageMapper);
 
         mockMessage = new WeaMessage();
@@ -55,8 +46,8 @@ class FinMessageServiceImplTest {
     }
 
     @Test
-    @DisplayName("创建消息成功-发送RabbitMQ")
-    void createMessage_Success() throws Exception {
+    @DisplayName("创建消息成功")
+    void createMessage_Success() {
         FinMessageDTO dto = new FinMessageDTO();
         dto.setUserId(100L);
         dto.setMsgType(1);
@@ -64,56 +55,15 @@ class FinMessageServiceImplTest {
         dto.setMsgContent("新消息内容");
 
         doReturn(1).when(messageMapper).insert(any(WeaMessage.class));
-        when(objectMapper.writeValueAsString(any(WeaMessage.class))).thenReturn("{}");
 
         boolean result = messageService.createMessage(dto);
 
         assertTrue(result);
-
-        // 验证 readFlag 被初始化为 0
         verify(messageMapper).insert(argThat((WeaMessage msg) ->
                 "新消息".equals(msg.getMsgTitle()) &&
                 "新消息内容".equals(msg.getMsgContent()) &&
                 0 == msg.getReadFlag()
         ));
-
-        // 验证 RabbitMQ 消息发送
-        verify(rabbitMqProducer).send(anyString(), anyString(), eq("{}"));
-    }
-
-    @Test
-    @DisplayName("创建消息-保存失败不发送MQ")
-    void createMessage_SaveFailed() {
-        FinMessageDTO dto = new FinMessageDTO();
-        dto.setUserId(100L);
-        dto.setMsgType(1);
-        dto.setMsgTitle("新消息");
-        dto.setMsgContent("新消息内容");
-
-        doReturn(0).when(messageMapper).insert(any(WeaMessage.class));
-
-        boolean result = messageService.createMessage(dto);
-
-        assertFalse(result);
-        verify(rabbitMqProducer, never()).send(anyString(), anyString(), anyString());
-    }
-
-    @Test
-    @DisplayName("创建消息-MQ发送失败不影响主流程")
-    void createMessage_MqFails_StillReturnsTrue() throws Exception {
-        FinMessageDTO dto = new FinMessageDTO();
-        dto.setUserId(100L);
-        dto.setMsgType(1);
-        dto.setMsgTitle("新消息");
-        dto.setMsgContent("新消息内容");
-
-        when(messageMapper.insert(any(WeaMessage.class))).thenReturn(1);
-        when(objectMapper.writeValueAsString(any(WeaMessage.class))).thenThrow(new JsonProcessingException("序列化失败") {});
-
-        boolean result = messageService.createMessage(dto);
-
-        assertTrue(result);
-        verify(rabbitMqProducer, never()).send(anyString(), anyString(), anyString());
     }
 
     @Test
