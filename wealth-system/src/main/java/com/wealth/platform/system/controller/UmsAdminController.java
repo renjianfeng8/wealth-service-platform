@@ -80,7 +80,7 @@ public class UmsAdminController {
     @GetMapping
     @Operation(summary = "列表查询")
     public Result<List<UmsAdminVO>> list() {
-        List<UmsAdmin> list = umsAdminService.list();
+        List<UmsAdmin> list = umsAdminService.lambdaQuery().last("LIMIT 1000").list();
         return Result.success(BeanConvertUtil.convertList(list, UmsAdminVO.class));
     }
 

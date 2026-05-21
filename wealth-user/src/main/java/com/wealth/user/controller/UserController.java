@@ -48,7 +48,7 @@ public class UserController {
     @GetMapping
     @Operation(summary = "查询用户列表")
     public Result<List<UserVO>> list() {
-        List<User> list = userService.list();
+        List<User> list = userService.lambdaQuery().last("LIMIT 1000").list();
         List<UserVO> voList = BeanConvertUtil.convertList(list, UserVO.class);
         return Result.success(voList);
     }

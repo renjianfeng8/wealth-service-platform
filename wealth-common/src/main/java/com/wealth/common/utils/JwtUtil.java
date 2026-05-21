@@ -25,6 +25,7 @@ public class JwtUtil {
 
     @Value("${jwt.secret}")
     private String secretKey;
+    private SecretKey cachedSigningKey;
 
     /** access_token 有效期（默认 30 分钟） */
     @Value("${jwt.access-expire:1800000}")
@@ -41,11 +42,11 @@ public class JwtUtil {
             throw new IllegalStateException(
                     "JWT 密钥长度不足，当前" + keyBytes.length + " 字节，需要至少 32 字节（256位）");
         }
+        this.cachedSigningKey = Keys.hmacShaKeyFor(keyBytes);
     }
 
     private SecretKey getSigningKey() {
-        byte[] keyBytes = secretKey.getBytes(StandardCharsets.UTF_8);
-        return Keys.hmacShaKeyFor(keyBytes);
+        return cachedSigningKey;
     }
 
     /** 生成 Token（向后兼容），有效期由 jwt.access-expire 决定 */

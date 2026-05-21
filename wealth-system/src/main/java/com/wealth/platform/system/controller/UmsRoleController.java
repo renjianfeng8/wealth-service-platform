@@ -44,7 +44,7 @@ public class UmsRoleController {
     @Operation(summary = "查询角色列表")
     @GetMapping
     public Result<List<UmsRoleVO>> list() {
-        List<UmsRole> list = umsRoleService.list();
+        List<UmsRole> list = umsRoleService.lambdaQuery().last("LIMIT 1000").list();
         return Result.success(BeanConvertUtil.convertList(list, UmsRoleVO.class));
     }
 

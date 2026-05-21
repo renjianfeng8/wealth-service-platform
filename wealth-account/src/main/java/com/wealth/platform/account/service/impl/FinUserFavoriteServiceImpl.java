@@ -33,7 +33,7 @@ public class FinUserFavoriteServiceImpl extends ServiceImpl<FinUserFavoriteMappe
         if (userId != null) {
             list = lambdaQuery().eq(WeaUserFavorite::getUserId, userId).list();
         } else {
-            list = list();
+            list = lambdaQuery().last("LIMIT 1000").list();
         }
         return list.stream().map(entity -> {
             FinUserFavoriteVO vo = BeanConvertUtil.convert(entity, FinUserFavoriteVO.class);

@@ -28,7 +28,7 @@ public class FinMarketDataServiceImpl extends ServiceImpl<FinMarketDataMapper, W
 
     @Override
     public List<FinMarketDataVO> getMarketDataList() {
-        List<WeaMarketData> list = list();
+        List<WeaMarketData> list = lambdaQuery().last("LIMIT 1000").list();
         return list.stream().map(entity -> {
             FinMarketDataVO vo = BeanConvertUtil.convert(entity, FinMarketDataVO.class);
             return vo;

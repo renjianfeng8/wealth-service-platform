@@ -445,6 +445,8 @@ mysqldump: Got error: 1045: "Plugin caching_sha2_password could not be loaded:
 
 > 审查范围：全部 8 个微服务模块 + wealth-common 公共模块
 > 审查方法：代码静态分析，覆盖集合使用、大对象加载、资源管理、内存泄漏模式、SSE/定时任务
+>
+> ✅ **全部已修复** — commit `e2d4efd1~后续提交`
 
 ### 【高风险】真实 OOM 场景
 
