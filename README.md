@@ -85,7 +85,7 @@
 | Nacos (2.x) | 服务注册发现 + 配置中心 |
 | Spring Cloud Gateway | 网关路由转发 |
 | OpenFeign | 服务间声明式调用 |
-| JWT (jjwt 0.11.5) | 无状态认证 |
+| JWT (jjwt 0.12.6) | 无状态认证 + 双 Token 机制 |
 | Knife4j (4.4.0) | API 文档 |
 | BCrypt (spring-security-crypto) | 密码加密 |
 | Lombok | 代码简化 |
@@ -183,8 +183,15 @@ com.wealth.platform.{模块名}
 **权限拦截流程**：
 1. 请求通过 Gateway 路由到具体服务
 2. `LoginInterceptor` 校验 JWT Token 有效性（放行白名单 URL）
-3. `PermissionInterceptor` 校验当前管理员是否拥有目标资源权限
+3. `PermissionCheckInterceptor` 跨模块调用 system 服务 RBAC 鉴权
 4. 无角色或资源权限时直接返回 403
+
+### 安全防护体系
+
+- **XSS 防护**：全局 `XssFilter` + `StringXssDeserializer` 覆盖 GET/POST 参数和 JSON 请求体
+- **暴力破解防护**：连续 5 次失败锁定 15 分钟（Redis），支持验证码
+- **JWT 双 Token**：`access_token`（30 分钟）+ `refresh_token`（7 天），refresh 一次性使用防重放
+- **跨模块权限**：`PermissionCheckInterceptor` 对所有业务模块 POST/PUT/DELETE 进行 RBAC 鉴权
 
 ### 用户模块 (wealth-user)
 
@@ -197,6 +204,7 @@ com.wealth.platform.{模块名}
 
 - 金融产品 CRUD（按名称/编码/类型搜索）
 - 实时行情数据管理（`wea_market_data`）
+- **SSE 实时推送**：每 2 秒模拟行情变化并广播全量快照到所有客户端（`/WeaMarketData/sse` 端点）
 - 支持分页查询
 
 ### 自选管理 (wealth-account)
@@ -231,6 +239,8 @@ com.wealth.platform.{模块名}
 
 ### Swagger / Knife4j 访问地址
 
+> **注意**：自 v1.7.0 起，Swagger/Knife4j 接口文档已移出白名单，需登录获取 Token 后访问。
+
 | 模块 | 文档地址 |
 |------|----------|
 | 网关统一入口 | http://localhost:8080/doc.html |
@@ -243,7 +253,7 @@ com.wealth.platform.{模块名}
 
 ### 常用接口示例
 
-#### 管理员登录
+#### 管理员登录（v1.7.0+ 返回双 Token）
 ```bash
 POST /system/umsAdmin/login
 Content-Type: application/json
@@ -257,7 +267,27 @@ Response:
 {
   "code": 200,
   "message": "success",
-  "data": "eyJhbGciOiJIUzI1NiJ9..."
+  "data": {
+    "accessToken": "eyJhbGciOiJIUzUxMiJ9...",
+    "refreshToken": "eyJhbGciOiJIUzUxMiJ9...",
+    "expireIn": 604800000
+  }
+}
+```
+
+#### Token 刷新
+```bash
+POST /system/umsAdmin/refresh
+Authorization: Bearer <refresh_token>
+
+Response:
+{
+  "code": 200,
+  "message": "success",
+  "data": {
+    "accessToken": "eyJ...",
+    "refreshToken": "eyJ..."
+  }
 }
 ```
 
@@ -382,4 +412,6 @@ public class SomeService {
 - Feign 接口路径必须包含服务端 `context-path`
 
 > 变更记录详见 [CHANGELOG.md](docs/CHANGELOG.md)  
-> 开发规范详见 [CLAUDE.md](CLAUDE.md)
+> 开发规范详见 [CLAUDE.md](CLAUDE.md)  
+> 数据库设计详见 [database-schema.md](docs/database-schema.md)  
+> 生产就绪评估详见 [production-readiness-assessment.md](docs/production-readiness-assessment.md)

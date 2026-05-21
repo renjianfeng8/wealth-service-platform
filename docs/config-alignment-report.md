@@ -1,6 +1,6 @@
 # 全链路配置对齐检查报告
 
-> 生成日期：2026-05-20
+> 生成日期：2026-05-20（最近同步：2026-05-21）
 > 检查范围：本地开发环境 ↔ 云服务器生产环境 (124.222.155.20)
 > 检查内容：前端配置、后端配置、Nginx、Docker、Nacos、环境变量
 
@@ -57,6 +57,8 @@
 ---
 
 ## 第 II 部分：本地 vs 云服务器配置对比
+
+> **注**：本报告生成后生产服务器已有进一步部署（2026-05-20 晚），后端 8 个服务已全部启动运行，但内存压力极大（3.3/3.6GB），以下逐项对比仍反映根本性配置差异。
 
 ### 2.1 docker-compose.yml 对比
 
@@ -132,34 +134,36 @@ auth:
 | Nacos 中含 Redis 配置 | ❌ **未发现**，应用使用默认值 |
 | wealth-system.yaml 配置 | ⚠️ 不完整（URL 缺少参数） |
 
-### 2.5 云服务器容器运行状态
+### 2.5 云服务器容器运行状态（2026-05-21 更新）
 
 | 容器 | 状态 | 端口映射 |
 |------|:----:|---------|
 | wealth-nacos | ✅ | 8848:8848, 9848:9848 |
-| wealth-mysql | ✅ ✅ healthy | 3306:3306 |
-| wealth-redis | ✅ | 6379:6379 |
+| wealth-mysql | ✅ healthy | 3306:3306 |
+| wealth-redis | ✅ (不可用) | 6379:6379 |
+| wealth-rabbitmq | ✅ | 5672:5672 |
+| wealth-es | ✅ | 9200:9200 |
 | wealth-nginx | ✅ | 80:80, 443:443 |
+| wealth-zipkin | ✅ | 9411:9411 |
+| wealth-prometheus | ✅ | 9090:9090 |
+| wealth-grafana | ✅ | 3001:3001 |
+| wealth-sentinel | ❌ | - |
+| wealth-seata | ❌ | - |
 | wealth-gateway | ✅ | 8080:8080 |
-| wealth-system | ✅ (频繁重启) | 8082:8082 |
+| wealth-system | ✅ (Redis 不可用致 health=DOWN) | 8082:8082 |
+| wealth-user | ✅ | 8083:8083 |
+| wealth-product | ✅ | 8084:8084 |
+| wealth-trade | ✅ | 8085:8085 |
+| wealth-account | ✅ | 8086:8086 |
+| wealth-message | ✅ | 8087:8087 |
+| wealth-search | ✅ | 8089:8089 |
 | wealth-front | ✅ | 3000:80 |
 | wealth-front-user | ✅ | 3002:80 |
-| wealth-sentinel | ❌ | - |
-| wealth-rabbitmq | ❌ | - |
-| wealth-seata | ❌ | - |
-| wealth-es | ❌ | - |
-| wealth-zipkin | ❌ | - |
-| wealth-prometheus | ❌ | - |
-| wealth-grafana | ❌ | - |
-| wealth-user | ❌ | - |
-| wealth-product | ❌ | - |
-| wealth-account | ❌ | - |
-| wealth-trade | ❌ | - |
-| wealth-message | ❌ | - |
-| wealth-search | ❌ | - |
 | wealth-mysql-backup | ❌ | - |
 
-**Nacos 已注册服务**：仅 `wealth-gateway` + `wealth-system`（共 2 个，应为 8 个）
+**Nacos 已注册服务**：8 个后端服务已全部注册 ✅
+
+> 当前问题：内存 92%（3.3/3.6GB），Redis 因 Alpine musl 兼容性问题不可用（已降级处理），Nacos 配置未发布。
 
 ---
 
@@ -167,11 +171,11 @@ auth:
 
 ### 🔴 严重问题
 
-#### 🔴 P1. 服务器仅部署 2/8 后端服务
+#### 🔴 P1. 服务器内存严重不足（已全量部署但处于临界状态）
 
-- **现状**：只有 gateway 和 system 运行，user/product/trade/account/message/search 全部未启动
-- **根因**：服务器仅有 **3.6GB RAM**，当前已用 2.9GB（含 docker 镜像 11GB 占用磁盘），剩余 660MB 不足以启动更多 Java 服务
-- **影响**：所有业务接口不可用（产品查询、交易、账户、自选、消息、搜索等）
+- **现状**：8 个后端服务已全部启动运行 ✅，但 **内存高达 92%（3.3/3.6GB）**，swap 已用 2.5GB/5GB
+- **根因**：JVM 堆虽已调优（v1.7.1），但 15 个容器并发仍超过 3.6GB 物理内存上限
+- **影响**：内存耗尽风险高，可能触发 OOM
 
 #### 🔴 P2. 服务器 docker-compose.yml 与本地严重偏离
 
@@ -180,12 +184,12 @@ auth:
 - MySQL 端口本地改为 3307 但服务器仍是 3306
 - 后续重新部署时若直接用本地 docker-compose.yml 覆盖，会丢失 JWT、CORS、Redis 等环境变量
 
-#### 🔴 P3. 基础设施服务大面积未运行
+#### 🔴 P3. 部分基础设施服务未运行
 
-- rabbitmq、es、seata、sentinel、zipkin、prometheus、grafana 全部未启动
-- message 模块即使部署也无法连接 RabbitMQ
-- search 模块无法连接 ES
-- trade/message 无法使用 Seata 分布式事务
+- rabbitmq、es ✅ **已启动**（message/search 可连接）
+- sentinel、seata ❌ **未启动**
+- zipkin、prometheus、grafana ✅ **已启动**（可观测性可用）
+- Redis ❌ **已启动但不可用**（Alpine musl 兼容性问题，已做降级处理）
 
 #### 🔴 P4. NACOS_AUTH_TOKEN 本地与服务器值不同
 
@@ -242,7 +246,7 @@ auth:
 |-----|-------------|----------------|-----------|-----------|--------------|--------|-----------|
 | **本地开发** | ✅ localhost:3000 → 8080 | ✅ lb://service | ✅ localhost:3306 | ✅ Nacos 默认 | ✅ localhost:5672 | ✅ localhost:9200 | N/A |
 | **本地 Docker** | ✅ frontend:80 → gateway:8080 | ✅ lb://service | ✅ mysql:3306 | ✅ Nacos 默认 | ❌ message → localhost | ✅ elasticsearch:9200 | ✅ rewrite 对齐 |
-| **云服务器** | ✅ rjfwealth.cn → nginx → gateway:8080 | ✅ lb://service | ✅ mysql:3306 | ✅ redis:6379 | ❌ 未部署 | ❌ 未部署 | ✅ rewrite 对齐 |
+| **云服务器** | ✅ rjfwealth.cn → nginx → gateway:8080 | ✅ lb://service | ✅ mysql:3306 | ⚠️ redis:6379（不可用）| ✅ rabbitmq:5672 | ✅ elasticsearch:9200 | ✅ rewrite 对齐 |
 
 ---
 

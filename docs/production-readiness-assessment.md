@@ -1,20 +1,20 @@
 # 财富服务平台 — 生产环境部署前全面评估报告
 
-**评估日期**：2026-05-18
-**项目版本**：1.0.0
+**评估日期**：2026-05-18（最近更新：2026-05-21）
+**项目版本**：v1.7.1
 **技术栈**：Spring Boot 3.3.5 / Spring Cloud 2023.0.3 / Spring Cloud Alibaba 2023.0.1.2 / JDK 21
 
 ---
 
 ## 问题总览
 
-> 最后更新：2026-05-19 — 已修复 30+ 项（基础设施安全认证、XSS、暴力破解、JWT 双 Token、跨模块 RBAC 等），详见 CHANGELOG
+> 最后更新：2026-05-21 — 已修复 30+ 项（基础设施安全认证、XSS、暴力破解、JWT 双 Token、跨模块 RBAC、Redis 降级等），详见 CHANGELOG
 
 | 严重级别 | 总数 | 已修复 | 剩余 | 说明 |
 |---------|------|--------|------|------|
 | 致命 | 7 | 7 | **0** | 全部修复 ✅ |
-| 严重 | 16 | 9 | 7 | 已修复：H1、H2、H3~H7、H13/H14、H16 |
-| 优化建议 | 14 | 4 | 10 | 已修复：M1/M3、M4、M7、M12 |
+| 严重 | 16 | 10 | 6 | 已修复：H1~H7、H13/H14、H16；v1.7.1 新增 Redis 降级修复 |
+| 优化建议 | 14 | 5 | 9 | 已修复：M1/M3、M4、M7、M12；v1.7.1 修复 M5（GlobalExceptionHandler 补充异常处理器）|
 
 ---
 
@@ -270,6 +270,9 @@ access_token 过期 → 前端用 refresh_token 调 /refresh
 | **范围** | 全部 `bootstrap.yml` |
 | **问题** | 所有环境共享 Nacos public 命名空间，dev/staging/prod 配置相互可见 |
 | **修复** | 在各 `bootstrap.yml` 中添加 `spring.cloud.nacos.config.namespace=prod-namespace-id` |
+| **状态** | ❌ **未修复** — 需在生产部署时配置 |
+
+> ⚠️ 当前生产服务器 Nacos 尚未发布 `wealth-shared.yaml`，待 Nacos 配置就绪后方可处理命名空间隔离。
 
 ### H9. Sentinel 规则未持久化
 
@@ -292,6 +295,8 @@ spring:
             rule-type: flow
 ```
 
+> ❌ **未修复** — 需配合 Nacos 动态配置数据源
+
 ### H10. Seata 使用文件存储
 
 | 项目 | 内容 |
@@ -299,6 +304,7 @@ spring:
 | **文件** | `seata-config/application.yml:31` |
 | **问题** | `store.mode: file` 重启后丢失事务记录，不支持 HA 部署 |
 | **修复** | 改为 `store.mode: db`，配置 MySQL 连接存储事务日志 |
+| **状态** | ❌ **未修复** — 待 Seata 正式启用时处理 |
 
 ### H11. Zipkin 链路追踪采样率 100%
 
@@ -307,6 +313,7 @@ spring:
 | **来源** | Nacos 配置 `wealth-shared.yaml` |
 | **问题** | `sampling.probability: 1.0` 全量采样，生产环境产生海量数据，增加存储和网络开销 |
 | **修复** | 改为 `0.01`（1% 采样），生产环境推荐 `0.01` ~ `0.1` |
+| **状态** | ❌ **未修复** — 将在生产 Nacos 配置中调整 |
 
 ### H12. Gateway 限流 QPS 阈值过高且硬编码
 
@@ -315,6 +322,7 @@ spring:
 | **文件** | `SentinelGatewayConfig.java:21-27` |
 | **问题** | trade 50 QPS、其他 100 QPS，均为内存硬编码 |
 | **修复** | 降低默认值，通过 Nacos 动态配置。登录接口建议单独设为 5 QPS |
+| **状态** | ❌ **未修复** — 待 Sentinel 规则持久化时同步处理 |
 
 ### H13. `BeanConvertUtil` 使用 `RuntimeException` 而非 `ServiceException`
 
@@ -343,6 +351,7 @@ spring:
 | **文件** | `UserServiceImpl.java:59` — `new LoginVO(token, dbUser.getId(), dbUser.getNickname())` |
 | **问题** | Token 中已包含用户身份信息，额外返回用户 ID 提升了攻击面（配合权限缺失可枚举用户） |
 | **修复** | LoginVO 中移除 `userId` 或仅在需要时通过专用接口返回 |
+| **状态** | ❌ **未修复** — 属于前端依赖 userId 的场景，需同步修改前端代码 |
 
 ### H16. CORS 地址硬编码为 localhost
 
@@ -361,19 +370,19 @@ spring:
 | # | 文件 | 问题 | 状态 |
 |---|------|------|------|
 | M1 | `MarketDataPushService.java:62,78` | SSE 异常空 catch | ✅ 已修复 — 补全日志 |
-| M2 | `ProductSyncServiceImpl.java:40-68` | ES 同步失败无重试 | 待修复 |
+| M2 | `ProductSyncServiceImpl.java:40-68` | ES 同步失败无重试 | ❌ 待修复 |
 | M3 | `FinMarketDataController.java:68-70` | SSE 首次推送异常空 catch | ✅ 已修复 — 补全日志 |
 | M4 | `PermissionInterceptor.java:154` | 每请求创建 `new AntPathMatcher()` | ✅ 已修复 — 提取为 `static final` |
-| M5 | 所有 Controller | 分页 VO 转换 8 行重复代码 | 待修复 |
-| M6 | 所有 Controller | 缺少 `@Validated` | 待修复 |
+| M5 | 所有 Controller | 分页 VO 转换 8 行重复代码 | ❌ 待修复 |
+| M6 | 所有 Controller | 缺少 `@Validated` | ❌ 待修复（已纳入规范要求） |
 | M7 | `ProductSearchController.java:23` | 缺少 `@Valid` | ✅ 已修复 — 添加 `@Valid` |
-| M8 | `nginx.conf` | 缺少 HSTS header | 待修复 |
-| M9 | 所有 Dockerfile | 缺少 `HEALTHCHECK` | 待修复 |
-| M10 | `JwtAuthGlobalFilter.java` | 与 `JwtUtil.validateToken()` 重复逻辑 | 待修复 |
-| M11 | `UmsRoleServiceImpl.java` | 空实现类 | 待修复 |
+| M8 | `nginx.conf` | 缺少 HSTS header | ❌ 待修复 |
+| M9 | 所有 Dockerfile | 缺少 `HEALTHCHECK` | ❌ 待修复 |
+| M10 | `JwtAuthGlobalFilter.java` | 与 `JwtUtil.validateToken()` 重复逻辑 | ❌ 待修复 |
+| M11 | `UmsRoleServiceImpl.java` | 空实现类 | ❌ 待修复 |
 | M12 | `OrderStatusEnum.java:6` | 未使用的 `import EnumSet` | ✅ 已修复 — 移除 |
 | M13 | `wealth-common/pom.xml` / `wealth-gateway/pom.xml` | jjwt 版本硬编码 | ✅ 已修复 — 改为 `${jjwt.version}` |
-| M14 | `docker-compose.yml` | 应用服务无 healthcheck | 待修复 |
+| M14 | `docker-compose.yml` | 应用服务无 healthcheck | ❌ 待修复 |
 
 ---
 
@@ -390,6 +399,7 @@ spring:
 - [x] 添加 XSS 全局过滤器 — 已实现 XssFilter + StringXssDeserializer
 - [x] 关闭生产环境 Swagger/Knife4j — 白名单已全部移除，需登录访问 ✅
 - [x] 添加登录验证码和失败锁定机制 — 已实现 CaptchaController + Redis 账号锁定
+- [x] **Redis 不可用时登录降级** — v1.7.1 所有 Redis 操作添加 `RedisConnectionFailureException` try-catch ✅
 - [ ] Gateway 降低登录接口 Sentinel QPS 阈值
 - [x] 升级 jjwt 至 0.12.6+ — 已完成，API 迁移至 0.12.6
 - [x] 实现 JWT refresh token 机制 — 已实现双 Token + /umsAdmin/refresh
@@ -398,6 +408,7 @@ spring:
 
 ### 4.2 JVM & 容器
 - [x] 所有 Dockerfile 添加 `-Xms` / `-Xmx` 及 `-XX:+ExitOnOutOfMemoryError` — 已完成
+- [x] **JVM 堆配置调优** — v1.7.1 降低堆配置以适配 3.57GB 服务器 ✅
 - [ ] 所有 Dockerfile 添加 `HEALTHCHECK`
 - [ ] Nginx 添加 HSTS header
 - [ ] 配置 Docker 资源限制（`deploy.resources.limits.memory` / `cpus`）
@@ -406,6 +417,7 @@ spring:
 - [x] 创建 `application-prod.yml` profile 覆盖生产差异化配置 — 已完成，全部 8 个服务
 - [x] 配置 HikariCP 连接池参数 — 已完成（max=30, min-idle=10）
 - [x] 日志级别生产环境切换为 INFO — 已完成（logback springProfile）
+- [x] **Redis 配置修复** — docker-compose.yml 添加 `-Dspring.redis.host=redis` JVM 参数 ✅
 - [ ] 配置 Nacos 命名空间隔离
 - [ ] Nacos 启用配置历史与版本管理
 - [x] CORS 域名改为环境变量 — 已完成（`${CORS_ALLOWED_ORIGINS}`）
@@ -452,11 +464,11 @@ spring:
 | 基础设施安全 | 9/10 | **4/10** | 凭证环境变量化 + HSTS + Nacos/ES 已启用认证 ✅ |
 | 输入安全（XSS） | 10/10 | **1/10** | 全局 XSS 过滤器 + Jackson 反序列化器 ✅ |
 | 并发安全 | 8/10 | **2/10** | 行情模拟服务已修复 |
-| 异常与日志 | 8/10 | **2/10** | GlobalExceptionHandler 已补全日志 |
-| 可观测性 | 6/10 | 4/10 | 采样率待 Nacos 调整 |
-| 配置管理 | 7/10 | **4/10** | 已添加 prod profile、HikariCP、JVM 参数 |
+| 异常与日志 | 8/10 | **2/10** | GlobalExceptionHandler 已补全日志；v1.7.1 新增 `IllegalStateException` 处理器 |
+| 可观测性 | 6/10 | 4/10 | 采样率待生产 Nacos 调整 |
+| 配置管理 | 7/10 | **3/10** | 已添加 prod profile、HikariCP、JVM 参数；v1.7.1 修复 Redis 降级与 401 响应 |
 | 依赖安全 | 5/10 | **1/10** | jjwt 已升级至 0.12.6 |
-| **综合** | **7.4/10** | **3.1/10** | **致命问题大部分已修复，继续修复剩余项** |
+| **综合** | **7.4/10** | **2.9/10** | **致命问题全部修复，继续修复剩余严重 + 优化项** |
 
 ---
 
