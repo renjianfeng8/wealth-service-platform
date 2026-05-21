@@ -1,5 +1,6 @@
 package com.wealth.platform.product.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.wealth.platform.product.dto.FinMarketDataDTO;
 import com.wealth.platform.product.entity.WeaMarketData;
@@ -28,7 +29,7 @@ public class FinMarketDataServiceImpl extends ServiceImpl<FinMarketDataMapper, W
 
     @Override
     public List<FinMarketDataVO> getMarketDataList() {
-        List<WeaMarketData> list = lambdaQuery().last("LIMIT 1000").list();
+        List<WeaMarketData> list = list(new LambdaQueryWrapper<WeaMarketData>().last("LIMIT 1000"));
         return list.stream().map(entity -> {
             FinMarketDataVO vo = BeanConvertUtil.convert(entity, FinMarketDataVO.class);
             return vo;

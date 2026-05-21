@@ -52,7 +52,7 @@ public class FinTradeOrderServiceImpl extends ServiceImpl<FinTradeOrderMapper, W
 
     @Override
     public List<FinTradeOrderVO> getOrderList() {
-        List<WeaTradeOrder> list = lambdaQuery().last("LIMIT 1000").list();
+        List<WeaTradeOrder> list = list(new LambdaQueryWrapper<WeaTradeOrder>().last("LIMIT 1000"));
         return list.stream().map(order -> {
             FinTradeOrderVO vo = BeanConvertUtil.convert(order, FinTradeOrderVO.class);
             return vo;

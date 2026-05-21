@@ -38,7 +38,7 @@ public class FinProductServiceImpl extends ServiceImpl<FinProductMapper, WeaProd
 
     @Override
     public List<FinProductVO> getProductList() {
-        List<WeaProduct> list = lambdaQuery().last("LIMIT 1000").list();
+        List<WeaProduct> list = list(new LambdaQueryWrapper<WeaProduct>().last("LIMIT 1000"));
         return list.stream().map(entity -> {
             FinProductVO vo = BeanConvertUtil.convert(entity, FinProductVO.class);
             return vo;
