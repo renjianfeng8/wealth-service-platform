@@ -18,12 +18,7 @@ spring:
         - id: wealth-product
           uri: lb://wealth-product
           predicates:
-            - Path=/product/**
-
-        - id: wealth-account
-          uri: lb://wealth-account
-          predicates:
-            - Path=/account/**
+            - Path=/product/**,/account/**
 
         - id: wealth-trade
           uri: lb://wealth-trade
@@ -73,14 +68,10 @@ knife4j:
         service-name: wealth-user
         url: /user/v3/api-docs
         order: 2
-      - name: 产品行情
+      - name: 产品行情（含自选）
         service-name: wealth-product
         url: /product/v3/api-docs
         order: 3
-      - name: 账户自选
-        service-name: wealth-account
-        url: /account/v3/api-docs
-        order: 4
       - name: 交易委托
         service-name: wealth-trade
         url: /trade/v3/api-docs
