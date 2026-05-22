@@ -18,7 +18,7 @@ spring:
         - id: wealth-product
           uri: lb://wealth-product
           predicates:
-            - Path=/product/**,/account/**
+            - Path=/product/**
 
         - id: wealth-trade
           uri: lb://wealth-trade

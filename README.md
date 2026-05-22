@@ -1,6 +1,6 @@
 # 理财服务平台 (Wealth Service Platform)
 
-> 基于 Spring Boot 3.x + Spring Cloud Alibaba 的金融级微服务中台架构项目，覆盖用户、账户、产品、交易、消息等核心业务领域，提供高可用、高扩展的企业级金融解决方案。
+> 基于 Spring Boot 3.x + Spring Cloud Alibaba 的金融级微服务中台架构项目，覆盖用户、产品、交易、消息等核心业务领域，提供高可用、高扩展的企业级金融解决方案。
 
 ---
 
@@ -36,8 +36,7 @@
 | 领域 | 模块 | 核心能力 |
 |------|------|----------|
 | 用户域 | wealth-user | 系统用户注册/登录、个人信息管理 |
-| 产品域 | wealth-product | 金融产品管理、行情数据 |
-| 账户域 | wealth-account | 用户自选产品管理 |
+| 产品域 | wealth-product | 金融产品管理、行情数据、用户自选 |
 | 交易域 | wealth-trade | 交易委托单发起、撤单、查询 |
 | 消息域 | wealth-message | 财经资讯、站内消息 |
 | 搜索域 | wealth-search | 基于 ES 的产品全文检索 |
@@ -61,10 +60,7 @@
 | MyBatis-Plus | **3.5.7** | ORM 框架（最后一个包含 PaginationInnerInterceptor 的稳定版本） |
 | MySQL | 8.0.37 | 关系型数据库 |
 | Redis | 5.0.14.1 | 缓存 |
-| RabbitMQ | 3.10.20 | 消息队列 |
-| Elasticsearch | 8.8.2 | 搜索引擎 |
-| Sentinel | 1.8.6 | 熔断限流 |
-| Seata | 2.0.0 | 分布式事务 |
+| Elasticsearch | 8.8.2 | 搜索引擎（可选，降级 MySQL LIKE） |
 
 ### 前端
 
@@ -92,8 +88,6 @@
 | Micrometer Tracing + Brave + Zipkin | 全链路追踪 |
 | Micrometer Prometheus Registry | 监控指标暴露 |
 | Prometheus + Grafana | 指标存储与可视化 |
-| Sentinel | 熔断限流 |
-| Seata | 分布式事务 |
 
 ### 中间件版本对应
 | 中间件 | 端口 | 部署方式 | 用途 |
@@ -101,10 +95,7 @@
 | Nacos Server | 8848 / 9848 | Docker | 注册中心 + 配置中心 |
 | MySQL | 3306 | Docker / 本地 | 数据库 |
 | Redis | 6379 | Docker | 缓存 |
-| RabbitMQ | 5672 / 15672 | Docker | 消息队列 |
-| Elasticsearch | 9200 / 9300 | Docker | 搜索引擎 |
-| Sentinel Dashboard | 8858 | Docker | 熔断限流控制台 |
-| Seata Server | 7091 / 8091 | Docker | 分布式事务协调器 |
+| Elasticsearch | 9200 / 9300 | Docker | 搜索引擎（可选） |
 | Nginx | 80 | Docker | 反向代理 |
 | Zipkin | 9411 | Docker | 链路追踪 |
 | Prometheus | 9090 | Docker | 监控指标存储 |
@@ -120,9 +111,8 @@
 wealth-service-platform (pom)
 ├── wealth-common      → 所有模块依赖（公共工具、Feign 接口、统一返回、异常处理、全局配置）
 ├── wealth-gateway     → 网关路由（依赖 common）
-├── wealth-system      → 后台权限（依赖 common，通过 Feign 调用 account/product）
+├── wealth-system      → 后台权限（依赖 common，通过 Feign 调用 product）
 ├── wealth-user        → 用户服务（依赖 common）
-├── wealth-account     → 自选服务（依赖 common）
 ├── wealth-product     → 产品服务（依赖 common）
 ├── wealth-trade       → 交易服务（依赖 common）
 ├── wealth-message     → 消息服务（依赖 common）
@@ -138,7 +128,6 @@ wealth-service-platform (pom)
 | wealth-system | 8082 | /system | wealth-system |
 | wealth-product | 8084 | /product | wealth-product |
 | wealth-trade | 8085 | /trade | wealth-trade |
-| wealth-account | 8086 | /account | wealth-account |
 | wealth-message | 8087 | /message | wealth-message |
 | wealth-user | 8083 | /user | wealth-user |
 | wealth-search | 8089 | - | wealth-search |
@@ -207,7 +196,7 @@ com.wealth.platform.{模块名}
 - **SSE 实时推送**：每 2 秒模拟行情变化并广播全量快照到所有客户端（`/WeaMarketData/sse` 端点）
 - 支持分页查询
 
-### 自选管理 (wealth-account)
+### 自选管理 (wealth-product)
 
 - 用户自选产品添加/删除
 - 自选列表查询（按用户 ID）
@@ -221,8 +210,7 @@ com.wealth.platform.{模块名}
 ### 消息与资讯 (wealth-message)
 
 - 财经资讯管理（`wea_news`）
-- 站内消息推送（`wea_message`，集成 RabbitMQ）
-- RabbitMQ 队列和交换机配置在 `RabbitMqConfig` 中统一管理
+- 站内消息推送（`wea_message`，DB 轮询替代 RabbitMQ）
 
 ### 搜索服务 (wealth-search)
 
@@ -247,7 +235,6 @@ com.wealth.platform.{模块名}
 | 系统服务 | http://localhost:8082/system/doc.html |
 | 用户服务 | http://localhost:8083/user/doc.html |
 | 产品服务 | http://localhost:8084/product/doc.html |
-| 账户服务 | http://localhost:8086/account/doc.html |
 | 交易服务 | http://localhost:8085/trade/doc.html |
 | 消息服务 | http://localhost:8087/message/doc.html |
 

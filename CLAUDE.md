@@ -106,7 +106,7 @@ public class MyBatisPlusConfig {
 | sys_user | 用户管理 | wealth-user |
 | wea_product | 产品管理 | wealth-product |
 | wea_market_data | 行情实时数据 | wealth-product |
-| wea_user_favorite | 用户自选 | wealth-account |
+| wea_user_favorite | 用户自选 | wealth-product |
 | wea_trade_order | 交易委托 | wealth-trade |
 | wea_news | 资讯 | wealth-search |
 | wea_message | 消息推送 | wealth-message |
@@ -250,11 +250,10 @@ throw new ServiceException(400, "参数不合法");
 FeignClient 定义在 wealth-common 中，各模块引入依赖后即可调用：
 
 ```java
-@FeignClient("wealth-account")
-public interface AccountFeignClient {
-    // 注意：路径必须包含服务端 context-path 前缀 /account
-    @GetMapping("/account/weaUserFavorite/{id}")
-    Result<WeaUserFavoriteDTO> getById(@PathVariable("id") Long id);
+@FeignClient("wealth-product")
+public interface ProductFeignClient {
+    @GetMapping("/product/xxx")
+    Result<XxxDTO> getById(@PathVariable("id") Long id);
 }
 ```
 
@@ -322,7 +321,7 @@ JwtUtil 在 @PostConstruct 中校验密钥字节≥32，启动时即失败而非
 - [ ] MySQL 运行且 wealth 库存在
 - [ ] Nacos 配置 `wealth-shared.yaml` 已发布且内容完整（JWT + 数据源 + management.tracing + management.endpoints.prometheus）
 - [ ] 全量编译：`mvn clean install -DskipTests`（如 common 有变更，先单独 `-pl wealth-common`）
-- [ ] 按顺序启动：gateway → system → user → product → account → trade → message → search
+- [ ] 按顺序启动：gateway → system → user → product → trade → message → search
 - [ ] 各服务 HikariPool 启动成功（日志中搜索 "HikariPool-1 - Start completed"）
 - [ ] 各服务 /actuator/prometheus 端点可访问（验证监控指标暴露）
 - [ ] 前端 `npm install && npx vite` 可正常访问
@@ -370,7 +369,7 @@ JwtUtil 在 @PostConstruct 中校验密钥字节≥32，启动时即失败而非
 
 ## scope 可选范围
 
-本项目的 scope 对应模块名：common、gateway、system、user、product、account、trade、message、search。
+本项目的 scope 对应模块名：common、gateway、system、user、product、trade、message、search。
 
 ## description 要求
 

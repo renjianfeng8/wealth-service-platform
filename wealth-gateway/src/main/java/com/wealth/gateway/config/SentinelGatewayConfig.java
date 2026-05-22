@@ -22,7 +22,6 @@ public class SentinelGatewayConfig {
         rules.add(new GatewayFlowRule("wealth-user").setCount(100));
         rules.add(new GatewayFlowRule("wealth-product").setCount(100));
         rules.add(new GatewayFlowRule("wealth-system").setCount(100));
-        rules.add(new GatewayFlowRule("wealth-account").setCount(100));
         rules.add(new GatewayFlowRule("wealth-message").setCount(100));
         rules.add(new GatewayFlowRule("wealth-search").setCount(30));
         GatewayRuleManager.loadRules(rules);

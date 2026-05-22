@@ -142,7 +142,6 @@
         <module>wealth-gateway</module>
         <module>wealth-system</module>
         <module>wealth-user</module>
-        <module>wealth-account</module>
         <module>wealth-product</module>
         <module>wealth-trade</module>
         <module>wealth-message</module>

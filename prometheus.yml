@@ -40,13 +40,6 @@ scrape_configs:
         labels:
           service: wealth-trade
 
-  - job_name: 'wealth-account'
-    metrics_path: '/account/actuator/prometheus'
-    static_configs:
-      - targets: ['account:8086']
-        labels:
-          service: wealth-account
-
   - job_name: 'wealth-message'
     metrics_path: '/message/actuator/prometheus'
     static_configs:

@@ -70,7 +70,7 @@ CREATE TABLE wea_market_data (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='行情数据表';
 
 -- ============================================================
--- 4. 自选模块 (wealth-account) — 用户自选表
+-- 4. 自选模块 (wealth-product) — 用户自选表
 -- ============================================================
 DROP TABLE IF EXISTS wea_user_favorite;
 CREATE TABLE wea_user_favorite (
