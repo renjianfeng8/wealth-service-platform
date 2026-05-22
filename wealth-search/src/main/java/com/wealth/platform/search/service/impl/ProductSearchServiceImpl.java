@@ -7,8 +7,8 @@ import com.wealth.platform.search.entity.WeaProduct;
 import com.wealth.platform.search.mapper.WeaProductMapper;
 import com.wealth.platform.search.repository.ProductRepository;
 import com.wealth.platform.search.service.ProductSearchService;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -19,14 +19,30 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class ProductSearchServiceImpl implements ProductSearchService {
 
-    private final ProductRepository productRepository;
+    private ProductRepository productRepository;
     private final WeaProductMapper weaProductMapper;
+
+    @Autowired(required = false)
+    public void setProductRepository(ProductRepository productRepository) {
+        this.productRepository = productRepository;
+    }
+
+    public ProductSearchServiceImpl(WeaProductMapper weaProductMapper) {
+        this.weaProductMapper = weaProductMapper;
+    }
+
+    private boolean esAvailable() {
+        return productRepository != null;
+    }
 
     @Override
     public ProductDocument save(ProductDocument document) {
+        if (!esAvailable()) {
+            log.warn("ES 不可用，save 降级跳过");
+            return document;
+        }
         try {
             return productRepository.save(document);
         } catch (Exception e) {
@@ -37,32 +53,38 @@ public class ProductSearchServiceImpl implements ProductSearchService {
 
     @Override
     public ProductDocument getById(Long id) {
-        try {
-            return productRepository.findById(id).orElse(null);
-        } catch (Exception e) {
-            log.warn("ES 不可用，降级查询 MySQL: {}", e.getMessage());
-            WeaProduct product = weaProductMapper.selectById(id);
-            return product != null ? toDocument(product) : null;
+        if (esAvailable()) {
+            try {
+                return productRepository.findById(id).orElse(null);
+            } catch (Exception e) {
+                log.warn("ES 不可用，降级查询 MySQL: {}", e.getMessage());
+            }
         }
+        WeaProduct product = weaProductMapper.selectById(id);
+        return product != null ? toDocument(product) : null;
     }
 
     @Override
     public Page<ProductDocument> search(String keyword, Integer page, Integer size) {
-        try {
-            PageRequest pageRequest = PageRequest.of(page - 1, size);
-            return productRepository.searchByKeyword(keyword, pageRequest);
-        } catch (Exception e) {
-            log.warn("ES 不可用，降级 MySQL LIKE 查询: {}", e.getMessage());
-            return searchFromMysql(keyword, page, size);
+        if (esAvailable()) {
+            try {
+                PageRequest pageRequest = PageRequest.of(page - 1, size);
+                return productRepository.searchByKeyword(keyword, pageRequest);
+            } catch (Exception e) {
+                log.warn("ES 不可用，降级 MySQL LIKE 查询: {}", e.getMessage());
+            }
         }
+        return searchFromMysql(keyword, page, size);
     }
 
     @Override
     public void deleteById(Long id) {
-        try {
-            productRepository.deleteById(id);
-        } catch (Exception e) {
-            log.warn("ES 不可用，delete 降级跳过: {}", e.getMessage());
+        if (esAvailable()) {
+            try {
+                productRepository.deleteById(id);
+            } catch (Exception e) {
+                log.warn("ES 不可用，delete 降级跳过: {}", e.getMessage());
+            }
         }
     }
 

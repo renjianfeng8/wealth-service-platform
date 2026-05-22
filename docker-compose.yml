@@ -1,7 +1,7 @@
 name: wealth-platform
 
 services:
-  # ====================== Infrastructure ======================
+  # ====================== Essential Infrastructure ======================
   nacos:
     image: nacos/nacos-server:v2.3.2
     container_name: wealth-nacos
@@ -16,15 +16,6 @@ services:
       NACOS_AUTH_TOKEN: "${NACOS_AUTH_TOKEN}"
       JVM_XMS: 256m
       JVM_XMX: 256m
-    restart: unless-stopped
-    networks:
-      - wealth-net
-
-  sentinel-dashboard:
-    image: bladex/sentinel-dashboard:latest
-    container_name: wealth-sentinel
-    ports:
-      - "8858:8858"
     restart: unless-stopped
     networks:
       - wealth-net
@@ -66,55 +57,6 @@ services:
     networks:
       - wealth-net
 
-  rabbitmq:
-    image: rabbitmq:3.10-management
-    container_name: wealth-rabbitmq
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-    environment:
-      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
-      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
-    restart: unless-stopped
-    networks:
-      - wealth-net
-
-  seata-server:
-    image: seataio/seata-server:2.0.0
-    container_name: wealth-seata
-    ports:
-      - "7091:7091"
-      - "8091:8091"
-    environment:
-      - SEATA_IP=seata-server
-      - SEATA_PORT=8091
-    volumes:
-      - ./seata-config/application.yml:/seata-server/resources/application.yml
-    depends_on:
-      nacos:
-        condition: service_started
-    restart: unless-stopped
-    networks:
-      - wealth-net
-
-  elasticsearch:
-    image: elasticsearch:8.8.2
-    container_name: wealth-es
-    ports:
-      - "9200:9200"
-      - "9300:9300"
-    environment:
-      - discovery.type=single-node
-      - xpack.security.enabled=${ES_SECURITY_ENABLED:-false}
-      - xpack.security.authc.api_key.enabled=${ES_SECURITY_ENABLED:-false}
-      - ELASTIC_PASSWORD=${ES_PASSWORD}
-      - "ES_JAVA_OPTS=-Xms256m -Xmx256m"
-    volumes:
-      - es-data:/usr/share/elasticsearch/data
-    restart: unless-stopped
-    networks:
-      - wealth-net
-
   nginx:
     image: nginx:latest
     container_name: wealth-nginx
@@ -127,53 +69,6 @@ services:
     restart: unless-stopped
     networks:
       - wealth-net
-
-  zipkin:
-    image: openzipkin/zipkin:latest
-    container_name: wealth-zipkin
-    ports:
-      - "9411:9411"
-    networks:
-      - wealth-net
-    restart: unless-stopped
-
-  prometheus:
-    image: prom/prometheus:latest
-    container_name: wealth-prometheus
-    ports:
-      - "9090:9090"
-    volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-    networks:
-      - wealth-net
-    restart: unless-stopped
-    depends_on:
-      - gateway
-      - system
-      - user
-      - product
-      - trade
-      - message
-      - search
-
-  grafana:
-    image: grafana/grafana:latest
-    container_name: wealth-grafana
-    ports:
-      - "3001:3000"
-    environment:
-      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:-admin}
-      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
-      - GF_INSTALL_PLUGINS=
-    volumes:
-      - grafana-data:/var/lib/grafana
-    networks:
-      - wealth-net
-    restart: unless-stopped
-    depends_on:
-      - prometheus
 
   # ====================== Backend Services ======================
   gateway:
@@ -193,7 +88,7 @@ services:
       - spring.datasource.url=jdbc:mysql://mysql:3306/wealth?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
       - spring.datasource.password=${MYSQL_ROOT_PASSWORD}
       - spring.redis.host=redis
-      - spring.elasticsearch.uris=http://elasticsearch:9200
+      - server.ssl.enabled=false
     depends_on:
       - nacos
       - mysql
@@ -217,7 +112,6 @@ services:
       - JWT_EXPIRE=604800000
       - spring.datasource.url=jdbc:mysql://mysql:3306/wealth?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
       - spring.datasource.password=${MYSQL_ROOT_PASSWORD}
-      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
     entrypoint: ["java", "-Xms256m", "-Xmx256m", "-XX:+UseContainerSupport", "-XX:+ExitOnOutOfMemoryError", "-Djava.security.egd=file:/dev/./urandom", "-Dspring.redis.host=redis", "-jar", "app.jar"]
     depends_on:
       nacos:
@@ -229,7 +123,7 @@ services:
       - wealth-net
 
   user:
-    image: ghcr.io/renjianfeng8/wealth-service-platform/wealth-user:latest
+    image: wealth-user:updated
     container_name: wealth-user
     ports:
       - "8083:8083"
@@ -253,7 +147,7 @@ services:
       - wealth-net
 
   product:
-    image: ghcr.io/renjianfeng8/wealth-service-platform/wealth-product:latest
+    image: wealth-product:updated
     container_name: wealth-product
     ports:
       - "8084:8084"
@@ -277,7 +171,7 @@ services:
       - wealth-net
 
   trade:
-    image: ghcr.io/renjianfeng8/wealth-service-platform/wealth-trade:latest
+    image: wealth-trade:updated
     container_name: wealth-trade
     ports:
       - "8085:8085"
@@ -291,6 +185,7 @@ services:
       - JWT_EXPIRE=604800000
       - spring.datasource.url=jdbc:mysql://mysql:3306/wealth?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
       - spring.datasource.password=${MYSQL_ROOT_PASSWORD}
+      - seata.enabled=false
     depends_on:
       nacos:
         condition: service_started
@@ -301,7 +196,7 @@ services:
       - wealth-net
 
   message:
-    image: ghcr.io/renjianfeng8/wealth-service-platform/wealth-message:latest
+    image: wealth-message:updated
     container_name: wealth-message
     ports:
       - "8087:8087"
@@ -315,10 +210,7 @@ services:
       - JWT_EXPIRE=604800000
       - spring.datasource.url=jdbc:mysql://mysql:3306/wealth?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
       - spring.datasource.password=${MYSQL_ROOT_PASSWORD}
-      - RABBITMQ_HOST=rabbitmq
-      - RABBITMQ_PORT=5672
-      - RABBITMQ_USERNAME=${RABBITMQ_DEFAULT_USER}
-      - RABBITMQ_PASSWORD=${RABBITMQ_DEFAULT_PASS}
+      - seata.enabled=false
     depends_on:
       nacos:
         condition: service_started
@@ -329,7 +221,7 @@ services:
       - wealth-net
 
   search:
-    image: ghcr.io/renjianfeng8/wealth-service-platform/wealth-search:latest
+    image: wealth-search:updated
     container_name: wealth-search
     ports:
       - "8089:8089"
@@ -341,14 +233,12 @@ services:
       - spring.cloud.nacos.password=${NACOS_PASSWORD}
       - JWT_SECRET=wealth-micro-service-20260501-very-safe-secret-key-123456789
       - JWT_EXPIRE=604800000
-      - spring.elasticsearch.uris=http://elasticsearch:9200
-      - spring.elasticsearch.username=${ES_USERNAME}
-      - spring.elasticsearch.password=${ES_PASSWORD}
+      - spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchDataAutoConfiguration,org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchRepositoriesAutoConfiguration
     depends_on:
       nacos:
         condition: service_started
-      elasticsearch:
-        condition: service_started
+      mysql:
+        condition: service_healthy
     restart: unless-stopped
     networks:
       - wealth-net
@@ -394,8 +284,6 @@ services:
 
 volumes:
   mysql-data:
-  es-data:
-  grafana-data:
 
 networks:
   wealth-net:
