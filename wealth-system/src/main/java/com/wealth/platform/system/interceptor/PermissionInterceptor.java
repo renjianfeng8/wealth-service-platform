@@ -13,6 +13,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -100,10 +101,14 @@ public class PermissionInterceptor implements HandlerInterceptor {
         List<String> allowedUrls = null;
 
         if (redisUtil != null) {
-            Object cached = redisUtil.get(cacheKey);
-            if (cached instanceof List) {
-                allowedUrls = (List<String>) cached;
-                log.debug("权限缓存命中 | adminId={}", admin.getId());
+            try {
+                Object cached = redisUtil.get(cacheKey);
+                if (cached instanceof List) {
+                    allowedUrls = (List<String>) cached;
+                    log.debug("权限缓存命中 | adminId={}", admin.getId());
+                }
+            } catch (DataAccessException e) {
+                log.warn("Redis 不可用，降级到数据库查询 | error={}", e.getMessage());
             }
         }
 
@@ -148,7 +153,11 @@ public class PermissionInterceptor implements HandlerInterceptor {
 
             // 写入缓存（TTL 5 分钟）
             if (redisUtil != null) {
-                redisUtil.set(cacheKey, allowedUrls, CACHE_TTL_MINUTES, TimeUnit.MINUTES);
+                try {
+                    redisUtil.set(cacheKey, allowedUrls, CACHE_TTL_MINUTES, TimeUnit.MINUTES);
+                } catch (DataAccessException e) {
+                    log.warn("Redis 不可用，无法写入缓存 | error={}", e.getMessage());
+                }
             }
         }
 
