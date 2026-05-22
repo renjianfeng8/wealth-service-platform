@@ -10,5 +10,6 @@ public class AuthConstant {
             "/user/login",
             "/user/register",
             "/product/wea-market-data/sse/**",
+            "/actuator/**",
     };
 }
