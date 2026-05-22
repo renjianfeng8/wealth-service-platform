@@ -1,12 +1,12 @@
 package com.wealth.platform.search.service.impl;
 
 import com.wealth.platform.search.entity.ProductDocument;
+import com.wealth.platform.search.mapper.WeaProductMapper;
 import com.wealth.platform.search.repository.ProductRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
@@ -27,13 +27,18 @@ class ProductSearchServiceImplTest {
     @Mock
     private ProductRepository productRepository;
 
-    @InjectMocks
+    @Mock
+    private WeaProductMapper weaProductMapper;
+
     private ProductSearchServiceImpl searchService;
 
     private ProductDocument mockDoc;
 
     @BeforeEach
     void setUp() {
+        searchService = new ProductSearchServiceImpl(weaProductMapper);
+        searchService.setProductRepository(productRepository);
+
         mockDoc = new ProductDocument();
         mockDoc.setId(1L);
         mockDoc.setProductName("测试基金");
