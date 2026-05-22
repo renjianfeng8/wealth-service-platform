@@ -1,6 +1,5 @@
 package com.wealth.platform.system.config;
 
-import com.wealth.common.constants.AuthConstant;
 import com.wealth.platform.system.interceptor.PermissionInterceptor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
