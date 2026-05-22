@@ -20,8 +20,7 @@
 | 网关 | Spring Cloud Gateway | 4.1.5 |
 | 数据库 | MySQL | 8.0.37 |
 | 缓存 | Redis | 5.0.14.1 |
-| 消息队列 | RabbitMQ | 3.10.20 |
-| 搜索引擎 | Elasticsearch | 8.8.2 |
+| 搜索引擎 | Elasticsearch | 8.8.2（可选，降级 MySQL LIKE） |
 | 前端（双端） | Vue 3 + Vite + Element Plus + Pinia + TypeScript | 3.5.13 / 6.3.1 / 2.9.7 / 2.3.1 / 5.7 |
 | E2E 测试 | Playwright | 1.59+ |
 
@@ -40,11 +39,14 @@
 
 ## 三、中间件启动（Docker）
 
-推荐使用 Docker Compose 一键启动所有中间件（项目根目录下已提供 `docker-compose.yml`）：
+推荐使用 Docker Compose 启动中间件（项目根目录下已提供 `docker-compose.yml`）：
 
 ```bash
-# 一键启动全部 11 个中间件容器
-docker compose up -d nacos mysql redis rabbitmq es nginx zipkin prometheus grafana sentinel-dashboard seata-server
+# 启动必需中间件（Nacos + MySQL + Redis + Nginx）
+docker compose up -d nacos mysql redis nginx
+
+# 可选：启动监控链路组件（需先取消 docker-compose.yml 中对应服务的注释）
+# docker compose up -d zipkin prometheus grafana
 
 # 验证运行状态
 docker ps --format "table {{.Names}}\t{{.Status}}"
@@ -52,23 +54,19 @@ docker ps --format "table {{.Names}}\t{{.Status}}"
 
 ### 3.1 各中间件容器详情
 
-当前项目依赖以下 11 个基础设施中间件：
+| 服务 | 镜像 | 端口 | 必需 | 说明 |
+|------|------|:----:|:----:|------|
+| Nacos | nacos/nacos-server:v2.3.2 | 8848 | 是 | 注册中心 + 配置中心 |
+| MySQL | mysql:8.0.37 | 3306 | 是 | 数据库 |
+| Redis | redis:latest | 6379 | 是 | 缓存 |
+| Nginx | nginx:latest | 80 | 是 | 反向代理 |
+| Elasticsearch | elasticsearch:8.8.2 | 9200 / 9300 | 否 | 搜索引擎（降级 MySQL LIKE） |
+| Zipkin | openzipkin/zipkin:latest | 9411 | 否 | 链路追踪 |
+| Prometheus | prom/prometheus:latest | 9090 | 否 | 监控指标采集 |
+| Grafana | grafana/grafana:latest | 3001 | 否 | 监控可视化仪表盘 |
 
-| 服务 | 镜像 | 端口 | 说明 |
-|------|------|:----:|------|
-| Nacos | nacos/nacos-server:v2.3.2 | 8848 | 注册中心 + 配置中心 |
-| MySQL | mysql:8.0.37 | 3306 | 数据库 |
-| Redis | redis:5.0.14.1 | 6379 | 缓存 |
-| RabbitMQ | rabbitmq:3.10-management | 5672 / 15672 | 消息队列 / 管理控制台 |
-| Elasticsearch | elasticsearch:8.8.2 | 9200 / 9300 | 搜索引擎 |
-| Sentinel | bladex/sentinel-dashboard:latest | 8858 | 熔断限流控制台 |
-| Seata | seataio/seata-server:2.0.0 | 7091 / 8091 | 分布式事务 |
-| Nginx | nginx:latest | 80 | 反向代理 |
-| Zipkin | openzipkin/zipkin:latest | 9411 | 链路追踪 |
-| Prometheus | prom/prometheus:latest | 9090 | 监控指标采集 |
-| Grafana | grafana/grafana:latest | 3001 | 监控可视化仪表盘 |
-
-> 若需单独启动某个容器，Docker run 命令示例可参考项目 `docker-compose.yml` 中的配置。
+> 注意：RabbitMQ、Seata、Sentinel 已停用，docker-compose.yml 中已移除对应服务块。
+> 完整中间件列表及说明见 [模块架构与配置体系 > 基础设施容器](architecture.md#三基础设施容器)。
 
 ### 3.2 Nacos 配置中心设置
 
@@ -153,19 +151,16 @@ DB_PASSWORD=your_password java -jar wealth-system/target/wealth-system-1.0.0.jar
 # 用户服务（前端用户管理）
 DB_PASSWORD=your_password java -jar wealth-user/target/wealth-user-1.0.0.jar > user.log 2>&1 &
 
-# 产品服务（产品 + 行情）
+# 产品服务（产品 + 行情 + 用户自选）
 DB_PASSWORD=your_password java -jar wealth-product/target/wealth-product-1.0.0.jar > product.log 2>&1 &
-
-# 账户服务（用户自选）
-DB_PASSWORD=your_password java -jar wealth-account/target/wealth-account-1.0.0.jar > account.log 2>&1 &
 
 # 交易服务（委托交易）
 DB_PASSWORD=your_password java -jar wealth-trade/target/wealth-trade-1.0.0.jar > trade.log 2>&1 &
 
-# 消息服务（资讯 + 站内消息）
+# 消息服务（资讯 + 站内消息，DB 轮询替代 RabbitMQ）
 DB_PASSWORD=your_password java -jar wealth-message/target/wealth-message-1.0.0.jar > message.log 2>&1 &
 
-# 搜索服务（ES 产品搜索，无数据库依赖）
+# 搜索服务（ES 产品搜索，ES 不可用时降级 MySQL LIKE）
 DB_PASSWORD=your_password java -jar wealth-search/target/wealth-search-1.0.0.jar > search.log 2>&1 &
 ```
 
@@ -173,13 +168,13 @@ DB_PASSWORD=your_password java -jar wealth-search/target/wealth-search-1.0.0.jar
 
 ```bash
 # 检查端口监听
-netstat -ano | findstr ':8080 :8082 :8083 :8084 :8085 :8086 :8087 :8089'
+netstat -ano | findstr ':8080 :8082 :8083 :8084 :8085 :8087 :8089'
 
 # 检查启动日志
-grep "Started" gateway.log system.log user.log product.log account.log trade.log message.log search.log
+grep "Started" gateway.log system.log user.log product.log trade.log message.log search.log
 ```
 
-预期输出 8 行 `Started xxxApplication in ...`（每个服务一行）。
+预期输出 7 行 `Started xxxApplication in ...`（每个服务一行）。
 
 ---
 
@@ -277,11 +272,7 @@ curl -s --noproxy "*" -H "Authorization: Bearer $TOKEN" \
 curl -s --noproxy "*" -H "Authorization: Bearer $TOKEN" \
   "http://localhost:8080/message/WeaNews/page?pageNum=1&pageSize=10"
 
-# 用户自选列表
-curl -s --noproxy "*" -H "Authorization: Bearer $TOKEN" \
-  "http://localhost:8080/account/WeaUserFavorite/list?userId=1"
-
-# 搜索（需 ES 运行）
+# 搜索（ES 优先，降级 MySQL LIKE）
 curl -s --noproxy "*" -H "Authorization: Bearer $TOKEN" \
   "http://localhost:8080/search/product/search?keyword=黄金&page=1&size=10"
 ```
@@ -341,23 +332,18 @@ node e2e-test.mjs
 | Nacos | 8848 / 9848 | - | - | 注册中心/配置中心 |
 | MySQL | 3306 | - | - | 数据库 |
 | Redis | 6379 | - | - | 缓存 |
-| RabbitMQ | 5672 / 15672 | - | - | 消息队列 / 管理控制台 |
-| Elasticsearch | 9200 / 9300 | - | - | 搜索引擎 |
-| Sentinel | 8858 | - | - | 熔断限流控制台 |
-| Seata | 7091 / 8091 | - | - | 分布式事务协调器 |
 | Nginx | 80 | - | - | 反向代理 |
-| Zipkin | 9411 | - | - | 链路追踪 UI |
-| Prometheus | 9090 | - | - | 监控指标存储 |
-| Grafana | 3001 | - | - | 监控仪表盘 |
+| Zipkin | 9411 | - | - | 链路追踪 UI（可选）|
+| Prometheus | 9090 | - | - | 监控指标存储（可选）|
+| Grafana | 3001 | - | - | 监控仪表盘（可选）|
 | **后端服务** | | | | |
 | wealth-gateway | **8080** | - | wealth-gateway | 网关（统一入口） |
 | wealth-system | **8082** | /system | wealth-system | 后台权限管理 |
 | wealth-user | **8083** | /user | wealth-user | 前端用户管理 |
-| wealth-product | **8084** | /product | wealth-product | 产品 + 行情 |
+| wealth-product | **8084** | /product | wealth-product | 产品 + 行情 + 自选 |
 | wealth-trade | **8085** | /trade | wealth-trade | 交易委托 |
-| wealth-account | **8086** | /account | wealth-account | 用户自选 |
 | wealth-message | **8087** | /message | wealth-message | 资讯 + 消息 |
-| wealth-search | **8089** | - | wealth-search | ES 搜索 |
+| wealth-search | **8089** | /search | wealth-search | ES 搜索（降级 MySQL LIKE） |
 | **前端** | | | | |
 | 管理员后台 | **3000** | - | - | front/（Vite 开发服务器）|
 | 用户前台 | **3001** | - | - | front-user/（Vite 开发服务器）|
@@ -407,7 +393,7 @@ taskkill /PID <PID> /F
 ### E2E 测试失败
 
 1. **浏览器未安装** → 执行 `npx playwright install chromium`
-2. **后端未启动** → 确保所有 8 个后端服务已在运行
+2. **后端未启动** → 确保所有 7 个后端服务已在运行
 3. **测试用户不存在** → 检查 `sys_user` 表中是否有 `zhangwei` 且密码为 BCrypt 加密的 `123456`
 
 ---
@@ -416,8 +402,8 @@ taskkill /PID <PID> /F
 
 ```
 基础设施中间件容器（Docker Compose 一键启动）
-  nacos / mysql / redis / rabbitmq / es / nginx
-  zipkin / prometheus / grafana / sentinel / seata
+  nacos / mysql / redis / nginx
+  （可选：zipkin / prometheus / grafana）
          ↓
 wealth-common（Maven 依赖，必须先 mvn install）
          ↓
@@ -425,8 +411,8 @@ wealth-gateway（最先启动，依赖 Nacos）
          ↓
 wealth-system（第二启动，提供登录鉴权 + 权限拦截）
          ↓
-wealth-user ─ wealth-product ─ wealth-account
-wealth-trade ─ wealth-message ─ wealth-search
+wealth-user ─ wealth-product ─ wealth-trade
+wealth-message ─ wealth-search
 （无先后依赖，可并行启动）
          ↓
          ├──────────────────────┤
@@ -435,7 +421,7 @@ wealth-trade ─ wealth-message ─ wealth-search
   (port 3000)                   (port 3001)
   npm run dev                   npm run dev
 
-可观测性：
+可观测性（可选）：
   Zipkin(9411)  ← 各服务上报链路 Span
   Prometheus(9090)  ← 各服务 /actuator/prometheus 抓取指标
   Grafana(3001)  ← Prometheus 数据源可视化

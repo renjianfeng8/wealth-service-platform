@@ -1,5 +1,11 @@
 # 财富服务平台 — 生产环境部署前全面评估报告
 
+> **⚠️ 历史归档**：本报告记录 v1.7.1 评估阶段的审计结果（2026-05-18 ~ 2026-05-21）。
+> 其中 F1-F7（致命）、H1-H7/H13/H14/H16（严重）已在代码审计中修复。
+> 剩余未修复项（H8 Nacos 命名空间、H9 Sentinel 规则持久化、H10 Seata、H11 采样率等）
+> 已在后续迭代中通过架构调整解决或不再适用（Seata/Sentinel 已停用）。
+> **当前架构状态请参考 [architecture.md](architecture.md) 和 [server-lightweight-strategy.md](server-lightweight-strategy.md)。**
+
 **评估日期**：2026-05-18（最近更新：2026-05-21）
 **项目版本**：v1.7.1
 **技术栈**：Spring Boot 3.3.5 / Spring Cloud 2023.0.3 / Spring Cloud Alibaba 2023.0.1.2 / JDK 21
