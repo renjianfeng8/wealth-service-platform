@@ -39,13 +39,10 @@
         <el-menu-item index="/trade">委托单管理</el-menu-item>
       </el-sub-menu>
 
-      <el-sub-menu index="account-mgmt">
-        <template #title>
-          <el-icon><Star /></el-icon>
-          <span>账户管理</span>
-        </template>
-        <el-menu-item index="/favorite">自选管理</el-menu-item>
-      </el-sub-menu>
+      <el-menu-item index="/favorite">
+        <el-icon><Star /></el-icon>
+        <span>自选管理</span>
+      </el-menu-item>
 
       <el-sub-menu index="msg-mgmt">
         <template #title>
@@ -68,7 +65,7 @@
 
       <el-menu-item index="/search">
         <el-icon><Search /></el-icon>
-        <span>ES 搜索</span>
+        <span>全文搜索</span>
       </el-menu-item>
     </el-menu>
   </div>
