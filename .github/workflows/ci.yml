@@ -55,7 +55,7 @@ jobs:
       - name: Build & push backend images
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
-          for service in gateway system user product account trade message search; do
+          for service in gateway system user product trade message search; do
             echo "=== Building wealth-$service ==="
             docker build -f wealth-$service/Dockerfile \
               -t ghcr.io/renjianfeng8/wealth-service-platform/wealth-$service:latest \
