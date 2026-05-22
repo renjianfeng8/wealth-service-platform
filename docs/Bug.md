@@ -441,6 +441,81 @@ mysqldump: Got error: 1045: "Plugin caching_sha2_password could not be loaded:
 
 ---
 
+## Bug-013: Redis 配置在 Docker 容器内完全被忽略，始终连接 localhost:6379
+
+**日期**: 2026-05-22
+**模块**: wealth-system / wealth-user（所有引入 Redis 的模块）
+**影响**: Redis 相关业务不可用，权限拦截器因未捕获的 `DataAccessException` 返回 500
+
+### 现象
+
+容器内所有配置方式均无法覆盖 `spring.redis.host` 默认值 `localhost`：
+
+```
+# 错误堆栈
+Caused by: io.netty.channel.AbstractChannel$AnnotatedConnectException: Connection refused: localhost/127.0.0.1:6379
+```
+
+Redis 容器 `wealth-redis` 运行正常（172.18.0.7:6379），网络连通性验证通过（`nc -zv redis 6379` 成功），但应用仍然连 `localhost`。
+
+### 尝试过的配置方式（全部无效）
+
+| # | 配置方式 | 预期优先级 | 实际效果 |
+|---|---------|-----------|---------|
+| 1 | `application-prod.yml`: `spring.redis.host: redis` | 中等 | 被忽略 |
+| 2 | `-Dspring.redis.host=redis`（JVM 系统属性，在 Dockerfile 和 docker-compose entrypoint） | 高 | 被忽略 |
+| 3 | `SPRING_REDIS_HOST=redis`（OS 环境变量，下划线大写格式） | 高 | 被忽略 |
+| 4 | `SPRING_APPLICATION_JSON={"spring":{"redis":{"host":"redis"}}}`（Spring Boot 最高优先级 env，仅次命令行参数） | 最高 | 被忽略 |
+
+### 验证过的事实
+
+- `/proc/1/cmdline` 确认 `-Dspring.redis.host=redis` 已传入 Java 进程
+- `env | grep SPRING` 确认 `SPRING_APPLICATION_JSON` 环境变量值正确
+- `docker exec wealth-system sh -c 'nc -zv redis 6379'` 网络连通正常
+- Redis 容器运行正常，其他服务（如系统服务连 MySQL）通过同格式环境变量正常工作
+- 项目代码中不存在自定义 `RedisConnectionFactory` bean 覆盖自动配置
+- `application.yml` 中未定义 `spring.redis.host`（非默认值覆盖问题）
+
+### 根因
+
+**未查明。** 所有标准配置方式均被 Spring Boot 3.3.5 的 `RedisAutoConfiguration` 忽略。怀疑方向：
+
+1. `RedisConfig`（`AutoConfiguration.imports` 注册）可能在 `RedisAutoConfiguration` 之前触发了 `RedisConnectionFactory` 的早期初始化，导致属性未绑定
+2. Spring Boot 3.3.5 特定版本与 Lettuce 的自动配置存在竞态条件
+3. Docker 镜像层（eclipse-temurin:21-jre-alpine）或 JVM 实现差异
+
+### 修复
+
+不在追究配置问题，改为业务代码防御性处理：
+
+在 `PermissionInterceptor` 的 Redis 读写处加 `try-catch(DataAccessException)`，Redis 不可用时降级到数据库查询（不影响业务，仅失去缓存加速）：
+
+```java
+if (redisUtil != null) {
+    try {
+        Object cached = redisUtil.get(cacheKey);
+        if (cached instanceof List) {
+            allowedUrls = (List<String>) cached;
+        }
+    } catch (DataAccessException e) {
+        log.warn("Redis 不可用，降级到数据库查询");
+    }
+}
+```
+
+`UmsAdminServiceImpl` 中原有的 `refresh_token` 写入已有 try-catch 兜底，无需改动。
+
+### 涉及文件
+
+- `wealth-system/src/main/java/com/wealth/platform/system/interceptor/PermissionInterceptor.java`
+
+### 排查要点（后续遇到类似问题先查此清单）
+- [ ] Redis 相关 500 错误 → 确认 `management.health.redis.enabled=false` 已配置
+- [ ] 业务代码中 Redis 调用是否被 try-catch 包裹（Redis 不可用不应阻断业务）
+- [ ] 如要调试配置绑定问题 → 临时暴露 `/actuator/env` 端点或使用 `jinfo -sysprops` 检查 JVM 属性
+
+---
+
 ## OOM 风险审查报告 (2026-05-21)
 
 > 审查范围：全部 8 个微服务模块 + wealth-common 公共模块
