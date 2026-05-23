@@ -221,18 +221,31 @@ ES 索引重建后产品数据未自动同步。项目无自动同步机制，�
 
 ### Bug-013: Redis 配置在 Docker 容器内被忽略，始终连接 localhost:6379
 
-**日期**: 2026-05-22 | **状态**: 已降级处理（未查明根因）
-**模块**: wealth-system / wealth-user（所有引入 Redis 的模块）
+**日期**: 2026-05-22 | **状态**: 已查明根因并修复（2026-05-23）
+**模块**: wealth-common（`RedisConfig`）
 
 #### 根因
 
-**未查明。** 所有标准配置方式（application-prod.yml、-D 系统属性、SPRING_APPLICATION_JSON 环境变量）均被 Spring Boot 3.3.5 忽略。
+`RedisConfig.java` 使用 `@Configuration` 并被注册在
+`AutoConfiguration.imports` 中，作为 auto-configuration 加载。但它未声明对
+`RedisAutoConfiguration` 的依赖顺序，导致 Spring Boot 处理 auto-configuration
+时 **`RedisConfig` 可能在 `RedisAutoConfiguration` 之前执行**。
 
-#### 修复
+当 `RedisConfig.redisTemplate()` 创建 `@Primary RedisTemplate` 时，需要注入
+`RedisConnectionFactory`，这会触发 `LettuceConnectionConfiguration` 提前初始化
+连接工厂，而此时 `RedisAutoConfiguration` 尚未处理，
+`@EnableConfigurationProperties(RedisProperties.class)` 未生效，
+`RedisProperties` 未被绑定，始终使用默认值 `host=localhost`。
 
-改为业务代码防御性处理：`PermissionInterceptor` 中 Redis 读写加 `try-catch(DataAccessException)`，不可用时降级到数据库查询。
+#### 修复（2026-05-23）
 
-**验证**: `PermissionInterceptor.java:104-110` 确认包含 `try-catch(DataAccessException)`。
+1. **根因修复**: `RedisConfig.java` 改为 `@AutoConfiguration(after = RedisAutoConfiguration.class)`，
+   确保在 Spring Boot 的 Redis 自动配置完成（`RedisProperties` 已绑定，
+   `RedisConnectionFactory` 已正确创建）之后再初始化自定义 `RedisTemplate`。
+2. **防御性代码保留**: `PermissionInterceptor` 的 `try-catch(DataAccessException)`
+   和 `AntiReplayAspect` 的 `ObjectProvider<RedisUtil>` 降级作为安全网保留。
+
+**验证**: `RedisConfig.java:29` 确认包含 `@AutoConfiguration(after = RedisAutoConfiguration.class)`。
 
 ---
 

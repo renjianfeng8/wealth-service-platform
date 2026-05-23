@@ -10,6 +10,10 @@ import com.wealth.common.feign.MessageFeignClient;
 import com.wealth.common.utils.BeanConvertUtil;
 import com.wealth.common.utils.RedisUtil;
 import com.wealth.platform.trade.constant.OrderStatusEnum;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.dao.DataAccessException;
 import com.wealth.platform.trade.dto.FinTradeOrderDTO;
 import com.wealth.platform.trade.dto.FinTradeOrderStatusDTO;
 import com.wealth.platform.trade.entity.WeaTradeOrder;
@@ -29,15 +33,16 @@ import java.util.stream.Collectors;
 public class FinTradeOrderServiceImpl extends ServiceImpl<FinTradeOrderMapper, WeaTradeOrder>
         implements FinTradeOrderService {
 
+    private static final Logger log = LoggerFactory.getLogger(FinTradeOrderServiceImpl.class);
     private static final String IDEMPOTENT_KEY_PREFIX = "idempotent:trade:";
     private static final long IDEMPOTENT_TTL_HOURS = 24;
 
     private final MessageFeignClient messageFeignClient;
     private final RedisUtil redisUtil;
 
-    public FinTradeOrderServiceImpl(MessageFeignClient messageFeignClient, RedisUtil redisUtil) {
+    public FinTradeOrderServiceImpl(MessageFeignClient messageFeignClient, ObjectProvider<RedisUtil> redisUtilProvider) {
         this.messageFeignClient = messageFeignClient;
-        this.redisUtil = redisUtil;
+        this.redisUtil = redisUtilProvider.getIfAvailable();
     }
 
     @Override
@@ -85,8 +90,12 @@ public class FinTradeOrderServiceImpl extends ServiceImpl<FinTradeOrderMapper, W
         }
 
         // 5. 记录幂等键（设置 TTL 防止 Redis 内存泄漏）
-        if (dto.getIdempotentKey() != null) {
-            redisUtil.set(IDEMPOTENT_KEY_PREFIX + dto.getIdempotentKey(), orderNo, IDEMPOTENT_TTL_HOURS, TimeUnit.HOURS);
+        if (dto.getIdempotentKey() != null && redisUtil != null) {
+            try {
+                redisUtil.set(IDEMPOTENT_KEY_PREFIX + dto.getIdempotentKey(), orderNo, IDEMPOTENT_TTL_HOURS, TimeUnit.HOURS);
+            } catch (DataAccessException e) {
+                log.warn("Redis 不可用，幂等键未记录: {}", e.getMessage());
+            }
         }
 
         // 6. 发送通知消息（Feign 调用）
@@ -166,17 +175,26 @@ public class FinTradeOrderServiceImpl extends ServiceImpl<FinTradeOrderMapper, W
 
     /**
      * 幂等性校验：客户端传入 idempotentKey 时，检查 Redis 中是否已存在。
+     * Redis 不可用时跳过校验（不阻塞订单提交），仅记录警告日志。
      */
     private void checkIdempotent(FinTradeOrderDTO dto) {
         String key = dto.getIdempotentKey();
         if (key == null || key.isBlank()) {
             return; // 未传幂等键，跳过校验（兼容旧客户端）
         }
+        if (redisUtil == null) {
+            log.warn("RedisUtil 不可用，跳过幂等性校验");
+            return;
+        }
 
         String redisKey = IDEMPOTENT_KEY_PREFIX + key;
-        if (Boolean.TRUE.equals(redisUtil.hasKey(redisKey))) {
-            Object existing = redisUtil.get(redisKey);
-            throw new ServiceException(400, "请勿重复提交，已有订单: " + existing);
+        try {
+            if (Boolean.TRUE.equals(redisUtil.hasKey(redisKey))) {
+                Object existing = redisUtil.get(redisKey);
+                throw new ServiceException(400, "请勿重复提交，已有订单: " + existing);
+            }
+        } catch (DataAccessException e) {
+            log.warn("Redis 不可用，跳过幂等性校验: {}", e.getMessage());
         }
     }
 }

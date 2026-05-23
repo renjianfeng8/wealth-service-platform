@@ -1,8 +1,9 @@
 package com.wealth.common.config;
 
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -15,8 +16,10 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
  * <p>放在 wealth-common 中，确保所有业务模块在扫描到公共组件时
  * 都能获得 {@code RedisTemplate<String, Object>} Bean。</p>
  * <p>标注 {@code @ConditionalOnClass} 防止无 Redis 依赖的模块（如 wealth-search）启动失败。</p>
+ * <p>必须在 {@link RedisAutoConfiguration} 之后加载，确保 {@code RedisConnectionFactory}
+ * 已使用正确的 {@code spring.redis.*} 配置初始化。</p>
  */
-@Configuration
+@AutoConfiguration(after = RedisAutoConfiguration.class)
 @ConditionalOnClass(name = "org.springframework.data.redis.core.RedisTemplate")
 public class RedisConfig {
 

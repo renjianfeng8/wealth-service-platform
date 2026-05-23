@@ -26,6 +26,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
@@ -40,6 +41,9 @@ class FinTradeOrderServiceImplTest {
     @Mock
     private RedisUtil redisUtil;
 
+    @Mock
+    private ObjectProvider<RedisUtil> redisUtilProvider;
+
     @Captor
     private ArgumentCaptor<WeaTradeOrder> orderCaptor;
 
@@ -49,7 +53,8 @@ class FinTradeOrderServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        tradeOrderService = new FinTradeOrderServiceImpl(messageFeignClient, redisUtil);
+        when(redisUtilProvider.getIfAvailable()).thenReturn(redisUtil);
+        tradeOrderService = new FinTradeOrderServiceImpl(messageFeignClient, redisUtilProvider);
         ReflectionTestUtils.setField(tradeOrderService, "baseMapper", tradeOrderMapper);
 
         mockOrder = new WeaTradeOrder();
