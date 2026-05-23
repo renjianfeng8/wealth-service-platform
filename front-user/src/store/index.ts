@@ -16,16 +16,17 @@ export const useUserStore = defineStore('user', {
   actions: {
     async login(username: string, password: string) {
       const res = await userLogin({ username, password })
-      const { token, userId } = res.data
+      // JWT 已由后端写入 httpOnly Cookie，前端仅记录登录状态
+      const { userId } = res.data
       const nickname = res.data.nickname || ''
       const avatar = res.data.avatar || ''
-      this.token = token
+      setToken(res.data.token as string)
+      setStoredUser({ username, userId, nickname, avatar })
+      this.token = getToken() || ''
       this.username = username
       this.userId = userId
       this.nickname = nickname
       this.avatar = avatar
-      setToken(token)
-      setStoredUser({ username, userId, nickname, avatar })
     },
     setUserInfo(info: { userId: number; nickname: string; avatar: string }) {
       this.userId = info.userId

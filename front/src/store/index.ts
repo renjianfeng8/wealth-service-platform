@@ -18,11 +18,11 @@ export const useUserStore = defineStore('user', {
   actions: {
     async login(username: string, password: string) {
       const res = await loginApi({ username, password })
-      const token = res.data.accessToken as string
-      this.token = token
-      this.username = username
-      setToken(token)
+      // JWT 已由后端写入 httpOnly Cookie，前端仅记录登录状态
+      setToken(res.data.accessToken as string)
       setStoredUser({ username })
+      this.token = getToken() || ''
+      this.username = username
     },
     logout() {
       this.token = ''

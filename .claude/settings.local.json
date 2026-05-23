@@ -118,7 +118,8 @@
       "Bash(taskkill *)",
       "PowerShell(docker *)",
       "PowerShell(mvn *)",
-      "PowerShell(python *)"
+      "PowerShell(python *)",
+      "Bash(npx tsc *)"
     ]
   }
 }

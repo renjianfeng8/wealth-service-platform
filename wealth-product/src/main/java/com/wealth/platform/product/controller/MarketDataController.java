@@ -7,7 +7,6 @@ import com.wealth.common.audit.AuditLog;
 import com.wealth.common.result.Result;
 import com.wealth.common.result.ResultCode;
 import com.wealth.common.utils.BeanConvertUtil;
-import com.wealth.common.utils.JwtUtil;
 import com.wealth.platform.product.dto.FinMarketDataDTO;
 import com.wealth.platform.product.entity.WeaMarketData;
 import com.wealth.platform.product.service.FinMarketDataService;
@@ -34,7 +33,6 @@ import java.util.List;
 public class MarketDataController {
 
     private final FinMarketDataService finMarketDataService;
-    private final JwtUtil jwtUtil;
     private final MarketDataPushService marketDataPushService;
     private final MarketDataSimulationService marketDataSimulationService;
 
@@ -54,14 +52,10 @@ public class MarketDataController {
         return Result.success(finMarketDataService.getMarketDataList());
     }
 
-    @Operation(summary = "SSE 实时行情推送")
+    @Operation(summary = "SSE 实时行情推送（JWT 由 Gateway 校验或 httpOnly Cookie 携带）")
     @GetMapping("/sse")
-    @CrossOrigin
-    public SseEmitter subscribe(@RequestParam String token) {
-        if (!jwtUtil.validateToken(token)) {
-            // 无法直接返回 Result，通过异常处理返回 401
-            throw new com.wealth.common.exception.ServiceException(401, "无效的 Token");
-        }
+    public SseEmitter subscribe() {
+        // JWT 身份认证由 Gateway 统一处理，此处不再单独校验
         // 先推送全量快照
         List<FinMarketDataVO> snapshot = marketDataSimulationService.getAllMarketData();
         SseEmitter emitter = marketDataPushService.createEmitter();

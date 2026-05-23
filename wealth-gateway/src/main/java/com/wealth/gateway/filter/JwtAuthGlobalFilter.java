@@ -41,7 +41,6 @@ public class JwtAuthGlobalFilter implements GlobalFilter, Ordered {
             "/system/captcha",
             "/user/login",
             "/user/register",
-            "/product/wea-market-data/sse/**",
     };
 
     /** JWT Cookie 名称（httpOnly，防 XSS 窃取） */

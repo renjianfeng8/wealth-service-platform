@@ -1,16 +1,23 @@
-const TOKEN_KEY = 'wealth_user_token'
+const LOGIN_KEY = 'wealth_user_logged_in'
 const USER_KEY = 'wealth_user_info'
 
+/**
+ * 返回登录状态标记（true/false）。JWT 已由后端写入 httpOnly Cookie，
+ * 前端无法读取，仅用此标记判断是否已登录。
+ */
 export function getToken(): string | null {
-  return localStorage.getItem(TOKEN_KEY)
+  return localStorage.getItem(LOGIN_KEY)
 }
 
-export function setToken(token: string) {
-  localStorage.setItem(TOKEN_KEY, token)
+/**
+ * 记录登录状态。JWT 已由后端写入 httpOnly Cookie，此处不存储明文 token。
+ */
+export function setToken(_token: string) {
+  localStorage.setItem(LOGIN_KEY, 'true')
 }
 
 export function removeToken() {
-  localStorage.removeItem(TOKEN_KEY)
+  localStorage.removeItem(LOGIN_KEY)
   localStorage.removeItem(USER_KEY)
 }
 

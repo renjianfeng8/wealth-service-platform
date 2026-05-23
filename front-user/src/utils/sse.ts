@@ -1,16 +1,11 @@
-import { getToken } from './auth'
 import type { WeaMarketData } from '@/types'
 
 /**
- * 创建行情 SSE 连接。EventSource 不支持自定义请求头，
- * JWT token 通过查询参数传递。
+ * 创建行情 SSE 连接。JWT 由 httpOnly Cookie 自动携带，
+ * 参见后端 MarketDataController.subscribe() 对 wealth_token Cookie 的支持。
  */
 export function createMarketSSE(): EventSource {
-  const token = getToken()
-  const url = token
-    ? `/api/v1/product/wea-market-data/sse?token=${encodeURIComponent(token)}`
-    : '/api/v1/product/wea-market-data/sse'
-  return new EventSource(url)
+  return new EventSource('/api/v1/product/wea-market-data/sse')
 }
 
 /**
