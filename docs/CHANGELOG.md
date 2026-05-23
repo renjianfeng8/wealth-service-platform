@@ -5,17 +5,40 @@
 
 ---
 
-## v1.7.1 (2026-05-21)
+## v1.7.2 (2026-05-23)
 
-### 故障修复
+### 安全加固
 
-- **Redis 不可用时登录降级**：所有 Redis 操作（锁定检查、失败计数、验证码校验、refresh_token 持久化）添加 `RedisConnectionFailureException` try-catch，Redis 不可用时跳过但不阻塞登录
-- **登录 401 响应修复**：Controller 改用 `ResponseEntity` + `ResponseCookie` 避免 `getWriter()`/`getOutputStream()` 冲突；`/error` 和 `/actuator/**` 加入拦截器放行列表；新增 `IllegalStateException` 全局处理器直接写入错误响应
-- **配置修复**：docker-compose.yml 中 MySQL JDBC URL 添加 `allowPublicKeyRetrieval=true`；System 服务添加 `-Dspring.redis.host=redis` JVM 参数确保 Redis 地址配置生效
+- **JWT 存储迁移**：前端移除 localStorage 存储，改用 httpOnly Cookie 防止 XSS 窃取 Token（admin 前台 + user 前台同步更新）
+- **Redis 配置加载修复**：修复 `RedisConfig` 因 `@ConditionalOnClass` 加载顺序导致 `@Value` 未注入（`${spring.redis.host}` 始终为 `localhost`）的根因
+- **输入校验增强**：全模块补充 DTO `@NotBlank`、`@NotNull`、`@Size` 等参数校验注解；新增安全响应头（`X-Content-Type-Options`、`X-Frame-Options`、`X-XSS-Protection`）
+- **数据库连接池加固**：各模块 `spring.datasource.hikari` 添加连接超时、空闲超时、最大生命周期等防泄漏配置
+- **搜索服务**：移除 `application-prod.yml` 中数据源密码明文回退值
 
-### 代码审查
+### 监控与可观测性
 
-- **OOM 风险审查**：全模块静态分析发现 3 项高风险（SSE Emitter 无界增长、selectList 全表加载、10+ 端点 list() 无分页）、4 项中风险和 3 项低风险点，详见 [Bug.md](./Bug.md#oom-风险审查报告-2026-05-21)
+- **Prometheus + Grafana 内置**：docker-compose.yml 新增 `prometheus`（端口 127.0.0.1:9090）和 `grafana`（端口 127.0.0.1:3001）容器，Grafana 自动配置 Prometheus 数据源
+- **Docker 健康检查**：所有后端服务健康检查命令统一从 `curl -sf` 改为 `wget -q -O /dev/null`（eclipse-temurin JDK 镜像内置 wget 无 curl）；添加进程守护脚本实现容器异常自动重启
+- **容器日志轮转**：所有服务添加 `logging.options` 日志轮转配置（max-size: 100m, max-file: 5）
+- **Prometheus 抓取修复**：search 服务 metrics_path `/actuator/prometheus` → `/search/actuator/prometheus`
+- **链路追踪采样优化**：Nacos `wealth-shared.yaml` 采样率 `1.0` → `0.1`（100% → 10%），降低生产环境存储开销
+- **k6 压力测试脚本**：新增 `k6/basic-test.js`，配置阶梯并发（5→20 并发）和性能阈值（p95<3s）
+
+### 业务逻辑修复
+
+- **404 响应标准化**：全模块 `getById` 返回 null 时补充 `ServiceException(404, "资源不存在")`，消除空指针风险
+- **外部请求超时控制**：生产环境添加 RestTemplate/WebClient 连接超时（5000ms）和读取超时（10000ms）配置
+
+### 工程治理
+
+- **文件清理**：移除项目根目录多余文件（`.dockerignore`、`Dockerfile*`、`un概念.txt`、`e2e-test-report.md` 等），保持根目录整洁
+- **权限白名单精简**：移除 `AuthConstant.PERMIT_ALL_URLS` 中已下线的 account 模块路径
+- **文档更新**：Bug.md 确认 Bug-001~013 已修复，新增 Bug-014~016 记录
+
+### 基础设施
+
+- **Nginx 配置修复**：`server_name localhost` → `rjfwealth.cn www.rjfwealth.cn`，补齐缺失的 `/api/v1/account/` 路由
+- **Nginx HTTP/2 + OCSP 尝试**：实验性开启 HTTP/2 和 OCSP Stapling，因生产环境缺失 `wealth-chain.crt` 导致 HTTPS 连接重置，已回退
 
 ## v1.7.0 (2026-05-19)
 

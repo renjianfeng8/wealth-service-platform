@@ -317,9 +317,9 @@ JwtUtil 在 @PostConstruct 中校验密钥字节≥32，启动时即失败而非
 
 每次启动逐项确认：
 
-- [ ] Docker 容器全部运行：`docker ps`（nacos、mysql、redis、rabbitmq、es、nginx、zipkin、prometheus、grafana、sentinel、seata）
+- [ ] Docker 容器全部运行：`docker ps`（nacos、mysql、redis、nginx、gateway、system、user、product、trade、message、search、front、front-user、mysql-backup、prometheus、grafana）
 - [ ] MySQL 运行且 wealth 库存在
-- [ ] Nacos 配置 `wealth-shared.yaml` 已发布且内容完整（JWT + 数据源 + management.tracing + management.endpoints.prometheus）
+- [ ] Nacos 配置 `wealth-shared.yaml` 已发布且内容完整（JWT + management.tracing.sampling.probability=0.1 + management.endpoints.prometheus）
 - [ ] 全量编译：`mvn clean install -DskipTests`（如 common 有变更，先单独 `-pl wealth-common`）
 - [ ] 按顺序启动：gateway → system → user → product → trade → message → search
 - [ ] 各服务 HikariPool 启动成功（日志中搜索 "HikariPool-1 - Start completed"）
@@ -339,6 +339,8 @@ JwtUtil 在 @PostConstruct 中校验密钥字节≥32，启动时即失败而非
 - [ ] 拦截器 pathPatterns 与 context-path 一致（不能加前缀）
 - [ ] update 方法使用 BeanConvertUtil.copyNonNullProperties 而非 BeanUtils.copyProperties
 - [ ] 业务异常使用 ServiceException(code, message) 而非 RuntimeException
+- [ ] Docker Compose healthcheck 使用 `wget -q -O /dev/null`（eclipse-temurin JDK 镜像含 wget 无 curl，nacos-server 例外使用 `curl -sf`）
+- [ ] 新增模块须在 prometheus.yml 添加对应 job（metrics_path 含 context-path 前缀，如 `/system/actuator/prometheus`）
 - [ ] 链路追踪配置使用 `management.zipkin.tracing.endpoint` 而非 `zipkin.base-url`
 - [ ] 新增模块须引入 `micrometer-tracing-bridge-brave` + `zipkin-sender-okhttp3` 依赖
 - [ ] 新增模块须引入 `micrometer-registry-prometheus` 依赖（暴露 /actuator/prometheus）

@@ -42,11 +42,14 @@
 推荐使用 Docker Compose 启动中间件（项目根目录下已提供 `docker-compose.yml`）：
 
 ```bash
-# 启动必需中间件（Nacos + MySQL + Redis + Nginx）
+# 启动必需的中间件（Nacos + MySQL + Redis + Nginx）
 docker compose up -d nacos mysql redis nginx
 
-# 可选：启动监控链路组件（需先取消 docker-compose.yml 中对应服务的注释）
-# docker compose up -d zipkin prometheus grafana
+# 同时启动监控组件（Prometheus + Grafana 已内置在 docker-compose.yml 中）
+docker compose up -d nacos mysql redis nginx prometheus grafana
+
+# 可选：启动链路追踪（Zipkin，需在 docker-compose.yml 中取消注释 zipkin 服务）
+# docker compose up -d zipkin
 
 # 验证运行状态
 docker ps --format "table {{.Names}}\t{{.Status}}"
