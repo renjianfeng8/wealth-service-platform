@@ -20,7 +20,7 @@ management:
         include: health,info,prometheus
   tracing:
     sampling:
-      probability: 1.0
+      probability: 0.1
   zipkin:
     tracing:
       endpoint: http://localhost:9411/api/v2/spans
@@ -36,7 +36,7 @@ management:
 |---------|-----|------|
 | `jwt.secret` | 56 字节密钥 | HMAC-SHA256 签名密钥，JwtUtil 启动时校验 ≥32 字节 |
 | `jwt.expire` | 604800000 (7天) | Token 过期时间（毫秒） |
-| `management.tracing.sampling.probability` | 1.0 | 链路追踪采样率（1.0 = 100%，开发环境全采样） |
+| `management.tracing.sampling.probability` | 0.1 | 链路追踪采样率（0.1 = 10%，生产环境降低存储开销） |
 | `management.zipkin.tracing.endpoint` | http://localhost:9411/api/v2/spans | Zipkin 服务端 Span 上报地址 |
 | `management.endpoints.web.exposure.include` | health,info,prometheus | Actuator 暴露的端点列表（Prometheus 指标抓取） |
 
@@ -50,6 +50,7 @@ management:
 | 2026-05-17 | 审计修复 | 新增链路追踪配置。**注意**：`zipkin.base-url` 是 Spring Cloud Sleuth（Spring Boot 2.x）的旧属性，在 Spring Boot 3.x + Micrometer Tracing 中须使用 `management.zipkin.tracing.endpoint` |
 | 2026-05-17 | 监控集成 | 新增 `management.endpoints.web.exposure.include: health,info,prometheus` 暴露 Prometheus 指标端点 |
 | 2026-05-22 | 文档治理 | 移除 `spring.datasource` 配置（数据源由 application.yml/env 提供），与 architecture.md 保持一致 |
+| 2026-05-23 | 生产优化 | 采样率 `1.0` → `0.1`（100% → 10%），降低生产环境链路追踪存储开销 |
 
 ---
 

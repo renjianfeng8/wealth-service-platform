@@ -48,7 +48,7 @@ scrape_configs:
           service: wealth-message
 
   - job_name: 'wealth-search'
-    metrics_path: '/actuator/prometheus'
+    metrics_path: '/search/actuator/prometheus'
     static_configs:
       - targets: ['search:8089']
         labels:
