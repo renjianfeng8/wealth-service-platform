@@ -23,6 +23,10 @@ services:
       retries: 3
       start_period: 60s
     restart: unless-stopped
+    logging:
+      options:
+        max-size: "100m"
+        max-file: "5"
     networks:
       - wealth-net
 
@@ -52,6 +56,10 @@ services:
       timeout: 5s
       retries: 5
     restart: unless-stopped
+    logging:
+      options:
+        max-size: "100m"
+        max-file: "5"
     networks:
       - wealth-net
 
@@ -67,6 +75,10 @@ services:
       retries: 3
       start_period: 10s
     restart: unless-stopped
+    logging:
+      options:
+        max-size: "100m"
+        max-file: "5"
     networks:
       - wealth-net
 
@@ -86,6 +98,10 @@ services:
       retries: 3
       start_period: 10s
     restart: unless-stopped
+    logging:
+      options:
+        max-size: "100m"
+        max-file: "5"
     networks:
       - wealth-net
 
@@ -121,6 +137,10 @@ services:
       mysql:
         condition: service_healthy
     restart: unless-stopped
+    logging:
+      options:
+        max-size: "100m"
+        max-file: "5"
     networks:
       - wealth-net
 
@@ -153,6 +173,10 @@ services:
       retries: 3
       start_period: 60s
     restart: unless-stopped
+    logging:
+      options:
+        max-size: "100m"
+        max-file: "5"
     networks:
       - wealth-net
 
@@ -185,6 +209,10 @@ services:
       retries: 3
       start_period: 60s
     restart: unless-stopped
+    logging:
+      options:
+        max-size: "100m"
+        max-file: "5"
     networks:
       - wealth-net
 
@@ -217,6 +245,10 @@ services:
       retries: 3
       start_period: 60s
     restart: unless-stopped
+    logging:
+      options:
+        max-size: "100m"
+        max-file: "5"
     networks:
       - wealth-net
 
@@ -250,6 +282,10 @@ services:
       retries: 3
       start_period: 60s
     restart: unless-stopped
+    logging:
+      options:
+        max-size: "100m"
+        max-file: "5"
     networks:
       - wealth-net
 
@@ -283,6 +319,10 @@ services:
       retries: 3
       start_period: 60s
     restart: unless-stopped
+    logging:
+      options:
+        max-size: "100m"
+        max-file: "5"
     networks:
       - wealth-net
 
@@ -312,6 +352,10 @@ services:
       retries: 3
       start_period: 60s
     restart: unless-stopped
+    logging:
+      options:
+        max-size: "100m"
+        max-file: "5"
     networks:
       - wealth-net
 
@@ -327,6 +371,10 @@ services:
       retries: 3
       start_period: 20s
     restart: unless-stopped
+    logging:
+      options:
+        max-size: "100m"
+        max-file: "5"
     networks:
       - wealth-net
 
@@ -342,6 +390,10 @@ services:
       retries: 3
       start_period: 20s
     restart: unless-stopped
+    logging:
+      options:
+        max-size: "100m"
+        max-file: "5"
     networks:
       - wealth-net
 
@@ -363,6 +415,10 @@ services:
       mysql:
         condition: service_healthy
     restart: unless-stopped
+    logging:
+      options:
+        max-size: "100m"
+        max-file: "5"
     networks:
       - wealth-net
 
