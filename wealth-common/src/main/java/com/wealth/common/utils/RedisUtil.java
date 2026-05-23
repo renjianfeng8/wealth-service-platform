@@ -1,5 +1,6 @@
 package com.wealth.common.utils;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
@@ -17,7 +18,7 @@ public class RedisUtil {
      *
      * @param redisTemplate RedisTemplate 实例
      */
-    public RedisUtil(RedisTemplate<String, Object> redisTemplate) {
+    public RedisUtil(@Qualifier("jsonRedisTemplate") RedisTemplate<String, Object> redisTemplate) {
         this.redisTemplate = redisTemplate;
     }
 
