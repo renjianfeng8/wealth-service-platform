@@ -1,6 +1,8 @@
 package com.wealth.platform.product.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -18,6 +20,8 @@ public class FinProductDTO {
     @Schema(description = "产品编码")
     private String productCode;
 
+    @Min(value = 0, message = "产品类型不能小于0")
+    @Max(value = 999, message = "产品类型不能大于999")
     @Schema(description = "产品类型")
     private Integer productType;
 
@@ -31,9 +35,13 @@ public class FinProductDTO {
     @Schema(description = "涨跌率")
     private BigDecimal riseFallRate;
 
+    @Min(value = 0, message = "状态值不能小于0")
+    @Max(value = 1, message = "状态值不能大于1")
     @Schema(description = "状态")
     private Integer status;
 
+    @Min(value = 0, message = "排序值不能小于0")
+    @Max(value = 9999, message = "排序值不能大于9999")
     @Schema(description = "排序")
     private Integer sort;
 }

@@ -144,7 +144,9 @@ class FinTradeOrderServiceImplTest {
     @Test
     @DisplayName("查询订单列表-有数据")
     void getOrderList_WithData() {
-        when(tradeOrderMapper.selectList(any())).thenReturn(List.of(mockOrder));
+        Page<WeaTradeOrder> mockPage = new Page<>(1, 1000, 1);
+        mockPage.setRecords(List.of(mockOrder));
+        when(tradeOrderMapper.selectPage(any(Page.class), any(LambdaQueryWrapper.class))).thenReturn(mockPage);
 
         List<FinTradeOrderVO> result = tradeOrderService.getOrderList();
 
@@ -155,7 +157,9 @@ class FinTradeOrderServiceImplTest {
     @Test
     @DisplayName("查询订单列表-空数据")
     void getOrderList_Empty() {
-        when(tradeOrderMapper.selectList(any())).thenReturn(List.of());
+        Page<WeaTradeOrder> mockPage = new Page<>(1, 1000, 0);
+        mockPage.setRecords(List.of());
+        when(tradeOrderMapper.selectPage(any(Page.class), any(LambdaQueryWrapper.class))).thenReturn(mockPage);
 
         List<FinTradeOrderVO> result = tradeOrderService.getOrderList();
 

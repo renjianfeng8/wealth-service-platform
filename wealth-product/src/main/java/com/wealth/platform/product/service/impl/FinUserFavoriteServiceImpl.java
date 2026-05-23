@@ -1,5 +1,6 @@
 package com.wealth.platform.product.service.impl;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.wealth.common.utils.BeanConvertUtil;
 import com.wealth.platform.product.dto.FinUserFavoriteDTO;
@@ -35,7 +36,7 @@ public class FinUserFavoriteServiceImpl extends ServiceImpl<FinUserFavoriteMappe
         if (userId != null) {
             list = lambdaQuery().eq(WeaUserFavorite::getUserId, userId).list();
         } else {
-            list = lambdaQuery().last("LIMIT 1000").list();
+            list = lambdaQuery().page(new Page<>(1, 1000)).getRecords();
         }
         return list.stream().map(entity -> BeanConvertUtil.convert(entity, FinUserFavoriteVO.class))
                 .collect(Collectors.toList());

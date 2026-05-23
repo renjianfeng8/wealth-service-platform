@@ -63,7 +63,7 @@ public class UmsResourceController {
     @Operation(summary = "查询后台资源列表")
     @GetMapping
     public Result<List<UmsResourceVO>> list() {
-        List<UmsResource> list = umsResourceService.lambdaQuery().last("LIMIT 1000").list();
+        List<UmsResource> list = umsResourceService.page(new Page<>(1, 1000)).getRecords();
         return Result.success(BeanConvertUtil.convertList(list, UmsResourceVO.class));
     }
 

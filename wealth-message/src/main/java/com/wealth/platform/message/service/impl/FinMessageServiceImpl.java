@@ -31,7 +31,7 @@ public class FinMessageServiceImpl extends ServiceImpl<FinMessageMapper, WeaMess
 
     @Override
     public List<FinMessageVO> getMessageList() {
-        List<WeaMessage> list = list(new LambdaQueryWrapper<WeaMessage>().last("LIMIT 1000"));
+        List<WeaMessage> list = page(new Page<>(1, 1000), new LambdaQueryWrapper<>()).getRecords();
         return list.stream().map(entity -> BeanConvertUtil.convert(entity, FinMessageVO.class))
                 .collect(Collectors.toList());
     }

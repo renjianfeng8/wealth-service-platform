@@ -69,7 +69,9 @@ class FinNewsServiceImplTest {
     @Test
     @DisplayName("查询资讯列表-有数据")
     void getNewsList_WithData() {
-        when(newsMapper.selectList(any())).thenReturn(List.of(mockNews));
+        Page<WeaNews> mockPage = new Page<>(1, 1000, 1);
+        mockPage.setRecords(List.of(mockNews));
+        when(newsMapper.selectPage(any(Page.class), any(LambdaQueryWrapper.class))).thenReturn(mockPage);
 
         List<FinNewsVO> result = newsService.getNewsList();
 
@@ -80,7 +82,9 @@ class FinNewsServiceImplTest {
     @Test
     @DisplayName("查询资讯列表-空数据")
     void getNewsList_Empty() {
-        when(newsMapper.selectList(any())).thenReturn(List.of());
+        Page<WeaNews> mockPage = new Page<>(1, 1000, 0);
+        mockPage.setRecords(List.of());
+        when(newsMapper.selectPage(any(Page.class), any(LambdaQueryWrapper.class))).thenReturn(mockPage);
 
         List<FinNewsVO> result = newsService.getNewsList();
 

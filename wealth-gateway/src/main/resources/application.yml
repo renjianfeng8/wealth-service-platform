@@ -4,6 +4,10 @@ server:
 spring:
   cloud:
     gateway:
+      default-filters:
+        - "AddResponseHeader=Content-Security-Policy, default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; form-action 'self'; base-uri 'self'"
+        - "AddResponseHeader=X-Content-Type-Options, nosniff"
+        - "AddResponseHeader=X-Frame-Options, DENY"
       routes:
         - id: wealth-system
           uri: lb://wealth-system

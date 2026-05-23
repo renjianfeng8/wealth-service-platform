@@ -44,7 +44,7 @@ public class UmsAdminRoleRelationController {
     @Operation(summary = "列表")
     @GetMapping
     public Result<List<UmsAdminRoleRelationVO>> list() {
-        List<UmsAdminRoleRelation> list = umsAdminRoleRelationService.lambdaQuery().last("LIMIT 1000").list();
+        List<UmsAdminRoleRelation> list = umsAdminRoleRelationService.page(new Page<>(1, 1000)).getRecords();
         return Result.success(BeanConvertUtil.convertList(list, UmsAdminRoleRelationVO.class));
     }
 

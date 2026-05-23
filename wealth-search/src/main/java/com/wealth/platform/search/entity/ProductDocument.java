@@ -1,5 +1,7 @@
 package com.wealth.platform.search.entity;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.DateFormat;
@@ -16,15 +18,19 @@ public class ProductDocument {
     @Id
     private Long id;
 
+    @NotBlank(message = "产品名称不能为空")
     @Field(type = FieldType.Text, analyzer = "ik_max_word", searchAnalyzer = "ik_smart")
     private String productName;
 
+    @NotBlank(message = "产品编码不能为空")
     @Field(type = FieldType.Keyword)
     private String productCode;
 
+    @NotNull(message = "产品类型不能为空")
     @Field(type = FieldType.Integer)
     private Integer productType;
 
+    @NotNull(message = "价格不能为空")
     @Field(type = FieldType.Scaled_Float, scalingFactor = 10000)
     private BigDecimal price;
 
@@ -34,12 +40,14 @@ public class ProductDocument {
     @Field(type = FieldType.Scaled_Float, scalingFactor = 10000)
     private BigDecimal riseFallRate;
 
+    @NotNull(message = "状态不能为空")
     @Field(type = FieldType.Integer)
     private Integer status;
 
     @Field(type = FieldType.Integer)
     private Integer sort;
 
+    @NotNull(message = "删除标识不能为空")
     @Field(type = FieldType.Integer)
     private Integer delFlag;
 

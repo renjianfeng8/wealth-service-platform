@@ -92,7 +92,9 @@ class FinMessageServiceImplTest {
     @Test
     @DisplayName("查询消息列表-有数据")
     void getMessageList_WithData() {
-        when(messageMapper.selectList(any())).thenReturn(List.of(mockMessage));
+        Page<WeaMessage> mockPage = new Page<>(1, 1000, 1);
+        mockPage.setRecords(List.of(mockMessage));
+        when(messageMapper.selectPage(any(Page.class), any(LambdaQueryWrapper.class))).thenReturn(mockPage);
 
         List<FinMessageVO> result = messageService.getMessageList();
 

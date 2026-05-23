@@ -18,6 +18,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -48,7 +49,7 @@ public class UserController {
     @GetMapping
     @Operation(summary = "查询用户列表")
     public Result<List<UserVO>> list() {
-        List<User> list = userService.lambdaQuery().last("LIMIT 1000").list();
+        List<User> list = userService.page(new Page<>(1, 1000)).getRecords();
         List<UserVO> voList = BeanConvertUtil.convertList(list, UserVO.class);
         return Result.success(voList);
     }
@@ -100,7 +101,7 @@ public class UserController {
     @DeleteMapping("/batch")
     @Operation(summary = "批量删除")
     @AuditLog(module = "用户管理", operation = "批量删除用户")
-    public Result<Boolean> deleteBatch(@RequestBody List<Long> ids) {
+    public Result<Boolean> deleteBatch(@Valid @NotEmpty(message = "ID列表不能为空") @RequestBody List<Long> ids) {
         return Result.success(userService.removeByIds(ids));
     }
 

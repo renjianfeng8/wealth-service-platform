@@ -32,7 +32,7 @@ public class FinNewsServiceImpl extends ServiceImpl<FinNewsMapper, WeaNews>
 
     @Override
     public List<FinNewsVO> getNewsList() {
-        List<WeaNews> list = list(new LambdaQueryWrapper<WeaNews>().last("LIMIT 1000"));
+        List<WeaNews> list = page(new Page<>(1, 1000), new LambdaQueryWrapper<>()).getRecords();
         return list.stream().map(entity -> {
             FinNewsVO vo = BeanConvertUtil.convert(entity, FinNewsVO.class);
             return vo;

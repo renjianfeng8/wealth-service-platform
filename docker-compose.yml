@@ -28,6 +28,7 @@ services:
     command:
       - "--binlog-expire-logs-seconds=604800"
       - "--max-binlog-size=104857600"
+      - "--max-connections=200"
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: wealth

@@ -81,7 +81,9 @@ class FinProductServiceImplTest {
         p2.setProductName("测试产品2");
         p2.setProductCode("P002");
 
-        when(finProductMapper.selectList(any())).thenReturn(List.of(mockProduct, p2));
+        Page<WeaProduct> mockPage = new Page<>(1, 1000, 2);
+        mockPage.setRecords(List.of(mockProduct, p2));
+        when(finProductMapper.selectPage(any(Page.class), any(LambdaQueryWrapper.class))).thenReturn(mockPage);
 
         List<FinProductVO> result = productService.getProductList();
 
@@ -93,7 +95,9 @@ class FinProductServiceImplTest {
     @Test
     @DisplayName("查询产品列表-空数据")
     void getProductList_Empty() {
-        when(finProductMapper.selectList(any())).thenReturn(List.of());
+        Page<WeaProduct> mockPage = new Page<>(1, 1000, 0);
+        mockPage.setRecords(List.of());
+        when(finProductMapper.selectPage(any(Page.class), any(LambdaQueryWrapper.class))).thenReturn(mockPage);
 
         List<FinProductVO> result = productService.getProductList();
 
