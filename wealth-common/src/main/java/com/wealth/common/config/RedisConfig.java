@@ -19,7 +19,7 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
  * <p>必须在 {@link RedisAutoConfiguration} 之后加载，确保 {@code RedisConnectionFactory}
  * 已使用正确的 {@code spring.redis.*} 配置初始化。</p>
  */
-@AutoConfiguration(after = RedisAutoConfiguration.class)
+@AutoConfiguration(before = RedisAutoConfiguration.class)
 @ConditionalOnClass(name = "org.springframework.data.redis.core.RedisTemplate")
 public class RedisConfig {
 
