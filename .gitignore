@@ -76,3 +76,15 @@ seata-config/
 
 # Environment variables (contains credentials)
 .env
+
+# Local helper scripts (devops/deployment utilities)
+scripts/
+
+# Compiled Java classes (standalone, not build output)
+*.class
+
+# Compressed archives
+*.tar.gz
+
+# Python scripts in project root
+/*.py
