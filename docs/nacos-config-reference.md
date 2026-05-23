@@ -27,6 +27,32 @@ management:
 ```
 
 > 注意：**不含 `spring.datasource`**。数据源配置由各模块的 `application.yml` 或 docker-compose 环境变量提供，避免 Nacos 覆盖。
+>
+> 注意：**`spring.redis.*` 不在 Nacos 中统一管理**。Redis 配置由各模块 `application.yml` / `application-prod.yml` 的环境变量占位符（`${REDIS_HOST:localhost}`）提供，通过 `.env` / `SPRING_REDIS_HOST` 环境变量注入。详情见 [Redis 配置说明](#redis-配置说明)。
+
+---
+
+## Redis 配置说明
+
+Redis 配置**不在 Nacos** 中管理，由各模块 `application.yml` / `application-prod.yml` 通过环境变量占位符统一声明：
+
+```yaml
+spring:
+  redis:
+    host: ${REDIS_HOST:localhost}
+    port: ${REDIS_PORT:6379}
+    timeout: ${REDIS_TIMEOUT:2000ms}
+```
+
+### 配置注入方式
+
+| 场景 | 注入方式 | 示例值 |
+|------|---------|--------|
+| 本地开发 | `.env` 文件或系统环境变量 | `REDIS_HOST=localhost` |
+| Docker Compose | docker-compose.yml `environment` | `SPRING_REDIS_HOST=redis` |
+| 生产服务器 | 系统环境变量 | `REDIS_HOST=192.168.1.100` |
+
+> 优先级：`SPRING_REDIS_HOST`（Spring 环境变量命名）> `REDIS_HOST`（自定义环境变量）> `localhost`（application.yml 默认值）
 
 ---
 

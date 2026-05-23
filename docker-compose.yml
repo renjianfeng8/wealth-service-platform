@@ -124,7 +124,12 @@ services:
       - spring.datasource.url=jdbc:mysql://mysql:3306/wealth?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
       - spring.datasource.password=${MYSQL_ROOT_PASSWORD}
       - SPRING_REDIS_HOST=redis
+      - SPRING_REDIS_PORT=6379
       - SPRING_REDIS_TIMEOUT=2000ms
+      - REDIS_HOST=redis
+      - management.health.redis.enabled=false
+      - management.health.elasticsearch.enabled=false
+      - management.health.rabbit.enabled=false
       - server.ssl.enabled=false
     healthcheck:
       test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://localhost:8080/actuator/health"]
@@ -162,7 +167,13 @@ services:
       - spring.datasource.url=jdbc:mysql://mysql:3306/wealth?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
       - spring.datasource.password=${MYSQL_ROOT_PASSWORD}
       - SPRING_REDIS_HOST=redis
-    entrypoint: ["java", "-Xms256m", "-Xmx256m", "-XX:+UseContainerSupport", "-XX:+ExitOnOutOfMemoryError", "-Djava.security.egd=file:/dev/./urandom", "-Dspring.redis.timeout=2000ms", "-jar", "app.jar", "--spring.redis.host=redis"]
+      - SPRING_REDIS_PORT=6379
+      - SPRING_REDIS_TIMEOUT=2000ms
+      - REDIS_HOST=redis
+      - management.health.redis.enabled=false
+      - management.health.elasticsearch.enabled=false
+      - management.health.rabbit.enabled=false
+    entrypoint: ["java", "-Xms256m", "-Xmx256m", "-XX:+UseContainerSupport", "-XX:+ExitOnOutOfMemoryError", "-Djava.security.egd=file:/dev/./urandom -Dspring.redis.host=redis", "-jar", "app.jar"]
     depends_on:
       nacos:
         condition: service_started
@@ -185,7 +196,7 @@ services:
   user:
     image: wealth-user:updated
     container_name: wealth-user
-    entrypoint: ["java", "-Xms256m", "-Xmx256m", "-XX:+UseContainerSupport", "-XX:+ExitOnOutOfMemoryError", "-Djava.security.egd=file:/dev/./urandom", "-jar", "app.jar", "--spring.redis.host=redis"]
+    entrypoint: ["java", "-Xms256m", "-Xmx256m", "-XX:+UseContainerSupport", "-XX:+ExitOnOutOfMemoryError", "-Djava.security.egd=file:/dev/./urandom -Dspring.redis.host=redis", "-jar", "app.jar"]
     ports:
       - "8083:8083"
     environment:
@@ -199,7 +210,12 @@ services:
       - spring.datasource.url=jdbc:mysql://mysql:3306/wealth?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
       - spring.datasource.password=${MYSQL_ROOT_PASSWORD}
       - SPRING_REDIS_HOST=redis
+      - SPRING_REDIS_PORT=6379
       - SPRING_REDIS_TIMEOUT=2000ms
+      - REDIS_HOST=redis
+      - management.health.redis.enabled=false
+      - management.health.elasticsearch.enabled=false
+      - management.health.rabbit.enabled=false
     depends_on:
       nacos:
         condition: service_started
@@ -222,7 +238,7 @@ services:
   product:
     image: wealth-product:updated
     container_name: wealth-product
-    entrypoint: ["java", "-Xms256m", "-Xmx256m", "-XX:+UseContainerSupport", "-XX:+ExitOnOutOfMemoryError", "-Djava.security.egd=file:/dev/./urandom", "-jar", "app.jar", "--spring.redis.host=redis"]
+    entrypoint: ["java", "-Xms256m", "-Xmx256m", "-XX:+UseContainerSupport", "-XX:+ExitOnOutOfMemoryError", "-Djava.security.egd=file:/dev/./urandom -Dspring.redis.host=redis", "-jar", "app.jar"]
     ports:
       - "8084:8084"
     environment:
@@ -236,7 +252,12 @@ services:
       - spring.datasource.url=jdbc:mysql://mysql:3306/wealth?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
       - spring.datasource.password=${MYSQL_ROOT_PASSWORD}
       - SPRING_REDIS_HOST=redis
+      - SPRING_REDIS_PORT=6379
       - SPRING_REDIS_TIMEOUT=2000ms
+      - REDIS_HOST=redis
+      - management.health.redis.enabled=false
+      - management.health.elasticsearch.enabled=false
+      - management.health.rabbit.enabled=false
     depends_on:
       nacos:
         condition: service_started
@@ -259,7 +280,7 @@ services:
   trade:
     image: wealth-trade:updated
     container_name: wealth-trade
-    entrypoint: ["java", "-Xms256m", "-Xmx256m", "-XX:+UseContainerSupport", "-XX:+ExitOnOutOfMemoryError", "-Djava.security.egd=file:/dev/./urandom", "-jar", "app.jar", "--spring.redis.host=redis"]
+    entrypoint: ["java", "-Xms256m", "-Xmx256m", "-XX:+UseContainerSupport", "-XX:+ExitOnOutOfMemoryError", "-Djava.security.egd=file:/dev/./urandom -Dspring.redis.host=redis", "-jar", "app.jar"]
     ports:
       - "8085:8085"
     environment:
@@ -273,7 +294,12 @@ services:
       - spring.datasource.url=jdbc:mysql://mysql:3306/wealth?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
       - spring.datasource.password=${MYSQL_ROOT_PASSWORD}
       - SPRING_REDIS_HOST=redis
+      - SPRING_REDIS_PORT=6379
       - SPRING_REDIS_TIMEOUT=2000ms
+      - REDIS_HOST=redis
+      - management.health.redis.enabled=false
+      - management.health.elasticsearch.enabled=false
+      - management.health.rabbit.enabled=false
       - seata.enabled=false
     depends_on:
       nacos:
@@ -297,7 +323,7 @@ services:
   message:
     image: wealth-message:updated
     container_name: wealth-message
-    entrypoint: ["java", "-Xms256m", "-Xmx256m", "-XX:+UseContainerSupport", "-XX:+ExitOnOutOfMemoryError", "-Djava.security.egd=file:/dev/./urandom", "-jar", "app.jar", "--spring.redis.host=redis"]
+    entrypoint: ["java", "-Xms256m", "-Xmx256m", "-XX:+UseContainerSupport", "-XX:+ExitOnOutOfMemoryError", "-Djava.security.egd=file:/dev/./urandom -Dspring.redis.host=redis", "-jar", "app.jar"]
     ports:
       - "8087:8087"
     environment:
@@ -311,7 +337,12 @@ services:
       - spring.datasource.url=jdbc:mysql://mysql:3306/wealth?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
       - spring.datasource.password=${MYSQL_ROOT_PASSWORD}
       - SPRING_REDIS_HOST=redis
+      - SPRING_REDIS_PORT=6379
       - SPRING_REDIS_TIMEOUT=2000ms
+      - REDIS_HOST=redis
+      - management.health.redis.enabled=false
+      - management.health.elasticsearch.enabled=false
+      - management.health.rabbit.enabled=false
       - seata.enabled=false
     depends_on:
       nacos:
@@ -335,7 +366,7 @@ services:
   search:
     image: wealth-search:updated
     container_name: wealth-search
-    entrypoint: ["java", "-Xms128m", "-Xmx128m", "-XX:+UseContainerSupport", "-XX:+ExitOnOutOfMemoryError", "-Djava.security.egd=file:/dev/./urandom", "-jar", "app.jar", "--spring.redis.host=redis"]
+    entrypoint: ["java", "-Xms128m", "-Xmx128m", "-XX:+UseContainerSupport", "-XX:+ExitOnOutOfMemoryError", "-Djava.security.egd=file:/dev/./urandom -Dspring.redis.host=redis", "-jar", "app.jar"]
     ports:
       - "8089:8089"
     environment:
@@ -348,7 +379,15 @@ services:
       - JWT_EXPIRE=604800000
       - spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchDataAutoConfiguration,org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchRepositoriesAutoConfiguration
       - SPRING_REDIS_HOST=redis
+      - SPRING_REDIS_PORT=6379
       - SPRING_REDIS_TIMEOUT=2000ms
+      - REDIS_HOST=redis
+      - management.health.redis.enabled=false
+      - management.health.elasticsearch.enabled=false
+      - management.health.rabbit.enabled=false
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/wealth?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=${MYSQL_ROOT_PASSWORD}
     depends_on:
       nacos:
         condition: service_started

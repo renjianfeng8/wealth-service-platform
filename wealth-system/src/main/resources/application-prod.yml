@@ -15,7 +15,9 @@ spring:
       max-lifetime: 600000
       idle-timeout: 300000
   redis:
-    host: redis
+    host: ${REDIS_HOST:redis}
+    port: ${REDIS_PORT:6379}
+    timeout: ${REDIS_TIMEOUT:2000ms}
 
 springdoc:
   api-docs:

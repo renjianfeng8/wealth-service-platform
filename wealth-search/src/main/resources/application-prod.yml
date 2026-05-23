@@ -5,6 +5,10 @@ spring:
     uris: ${ES_URIS:http://localhost:9200}
     username: ${ES_USERNAME:elastic}
     password: ${ES_PASSWORD:}
+  redis:
+    host: ${REDIS_HOST:redis}
+    port: ${REDIS_PORT:6379}
+    timeout: ${REDIS_TIMEOUT:2000ms}
 
 springdoc:
   api-docs:

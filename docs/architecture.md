@@ -91,6 +91,7 @@ management:
 
 > **作用范围**：通过各模块 bootstrap.yml 的 `shared-configs` 引用，被所有模块加载。
 > **不含 `spring.datasource`**：数据源配置由各模块的 application.yml 或 docker-compose 环境变量提供，避免 Nacos 覆盖。
+> **不含 `spring.redis.*`**：Redis 配置由各模块 `application.yml` 中的环境变量占位符（`${REDIS_HOST:localhost}`）统一管理，通过 `.env` / `SPRING_REDIS_HOST` 注入，详情见 [Nacos 配置参考 > Redis 配置说明](nacos-config-reference.md#redis-配置说明)。
 
 ### 配置加载链路
 
