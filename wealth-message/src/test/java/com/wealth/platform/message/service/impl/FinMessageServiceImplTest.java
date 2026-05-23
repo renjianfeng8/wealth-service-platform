@@ -17,6 +17,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
 
+import com.wealth.common.exception.ServiceException;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -146,13 +147,12 @@ class FinMessageServiceImplTest {
     }
 
     @Test
-    @DisplayName("更新消息-不存在返回false")
+    @DisplayName("更新消息-不存在抛404")
     void updateMessage_NotFound() {
         when(messageMapper.selectById(99L)).thenReturn(null);
 
-        boolean result = messageService.updateMessage(99L, new FinMessageDTO());
-
-        assertFalse(result);
+        assertThrows(ServiceException.class, () ->
+                messageService.updateMessage(99L, new FinMessageDTO()));
         verify(messageMapper, never()).updateById(isA(WeaMessage.class));
     }
 

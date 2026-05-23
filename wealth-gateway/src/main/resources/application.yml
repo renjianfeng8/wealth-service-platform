@@ -50,6 +50,10 @@ spring:
               - OPTIONS
             allow-credentials: true
 
+      httpclient:
+        connect-timeout: 5000
+        response-timeout: 10s
+
       sentinel:
         transport:
           dashboard: localhost:8858

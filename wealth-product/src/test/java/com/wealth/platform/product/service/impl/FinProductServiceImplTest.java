@@ -18,6 +18,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.math.BigDecimal;
 import java.util.List;
 
+import com.wealth.common.exception.ServiceException;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -174,13 +175,12 @@ class FinProductServiceImplTest {
     }
 
     @Test
-    @DisplayName("更新产品-不存在返回false")
+    @DisplayName("更新产品-不存在抛404")
     void updateProduct_NotFound() {
         when(finProductMapper.selectById(99L)).thenReturn(null);
 
-        boolean result = productService.updateProduct(99L, new FinProductDTO());
-
-        assertFalse(result);
+        assertThrows(ServiceException.class, () ->
+                productService.updateProduct(99L, new FinProductDTO()));
         verify(finProductMapper, never()).updateById(isA(WeaProduct.class));
     }
 

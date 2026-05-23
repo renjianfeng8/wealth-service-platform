@@ -88,6 +88,7 @@ services:
       - spring.datasource.url=jdbc:mysql://mysql:3306/wealth?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
       - spring.datasource.password=${MYSQL_ROOT_PASSWORD}
       - spring.redis.host=redis
+      - spring.redis.timeout=2000ms
       - server.ssl.enabled=false
     depends_on:
       - nacos
@@ -112,7 +113,7 @@ services:
       - JWT_EXPIRE=604800000
       - spring.datasource.url=jdbc:mysql://mysql:3306/wealth?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
       - spring.datasource.password=${MYSQL_ROOT_PASSWORD}
-    entrypoint: ["java", "-Xms256m", "-Xmx256m", "-XX:+UseContainerSupport", "-XX:+ExitOnOutOfMemoryError", "-Djava.security.egd=file:/dev/./urandom", "-Dspring.redis.host=redis", "-jar", "app.jar"]
+    entrypoint: ["java", "-Xms256m", "-Xmx256m", "-XX:+UseContainerSupport", "-XX:+ExitOnOutOfMemoryError", "-Djava.security.egd=file:/dev/./urandom", "-Dspring.redis.host=redis", "-Dspring.redis.timeout=2000ms", "-jar", "app.jar"]
     depends_on:
       nacos:
         condition: service_started
@@ -138,6 +139,7 @@ services:
       - spring.datasource.url=jdbc:mysql://mysql:3306/wealth?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
       - spring.datasource.password=${MYSQL_ROOT_PASSWORD}
       - spring.redis.host=redis
+      - spring.redis.timeout=2000ms
     depends_on:
       nacos:
         condition: service_started
@@ -163,6 +165,7 @@ services:
       - spring.datasource.url=jdbc:mysql://mysql:3306/wealth?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
       - spring.datasource.password=${MYSQL_ROOT_PASSWORD}
       - spring.redis.host=redis
+      - spring.redis.timeout=2000ms
     depends_on:
       nacos:
         condition: service_started
@@ -188,6 +191,7 @@ services:
       - spring.datasource.url=jdbc:mysql://mysql:3306/wealth?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
       - spring.datasource.password=${MYSQL_ROOT_PASSWORD}
       - spring.redis.host=redis
+      - spring.redis.timeout=2000ms
       - seata.enabled=false
     depends_on:
       nacos:
@@ -214,6 +218,7 @@ services:
       - spring.datasource.url=jdbc:mysql://mysql:3306/wealth?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
       - spring.datasource.password=${MYSQL_ROOT_PASSWORD}
       - spring.redis.host=redis
+      - spring.redis.timeout=2000ms
       - seata.enabled=false
     depends_on:
       nacos:

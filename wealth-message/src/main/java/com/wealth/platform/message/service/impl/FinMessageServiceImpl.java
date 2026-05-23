@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.wealth.common.exception.ServiceException;
 import com.wealth.common.utils.BeanConvertUtil;
 import com.wealth.platform.message.dto.FinMessageDTO;
 import com.wealth.platform.message.entity.WeaMessage;
@@ -48,7 +49,7 @@ public class FinMessageServiceImpl extends ServiceImpl<FinMessageMapper, WeaMess
     public boolean updateMessage(Long id, FinMessageDTO dto) {
         WeaMessage entity = getById(id);
         if (entity == null) {
-            return false;
+            throw new ServiceException(404, "消息不存在");
         }
         BeanConvertUtil.copyNonNullProperties(dto, entity);
         entity.setId(id);

@@ -15,6 +15,9 @@ spring:
       transport:
         dashboard: ${SENTINEL_DASHBOARD:localhost:8858}
     gateway:
+      httpclient:
+        connect-timeout: 5000
+        response-timeout: 10s
       globalcors:
         cors-configurations:
           '[/**]':

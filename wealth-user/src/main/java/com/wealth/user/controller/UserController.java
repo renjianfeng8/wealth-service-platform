@@ -90,6 +90,10 @@ public class UserController {
     @Operation(summary = "删除用户")
     @AuditLog(module = "用户管理", operation = "删除用户")
     public Result<Boolean> delete(@PathVariable Long id) {
+        User existing = userService.getById(id);
+        if (existing == null) {
+            return Result.error(ResultCode.NOT_FOUND);
+        }
         return Result.success(userService.removeById(id));
     }
 

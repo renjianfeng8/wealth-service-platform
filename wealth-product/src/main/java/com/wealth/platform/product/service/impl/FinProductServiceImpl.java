@@ -10,6 +10,7 @@ import com.wealth.platform.product.mapper.FinProductMapper;
 import com.wealth.platform.product.service.FinProductService;
 import com.wealth.platform.product.service.ProductSyncService;
 import com.wealth.platform.product.vo.FinProductVO;
+import com.wealth.common.exception.ServiceException;
 import com.wealth.common.utils.BeanConvertUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -79,7 +80,7 @@ public class FinProductServiceImpl extends ServiceImpl<FinProductMapper, WeaProd
     public boolean updateProduct(Long id, FinProductDTO dto) {
         WeaProduct entity = getById(id);
         if (entity == null) {
-            return false;
+            throw new ServiceException(404, "产品不存在");
         }
         BeanConvertUtil.copyNonNullProperties(dto, entity);
         entity.setId(id);
