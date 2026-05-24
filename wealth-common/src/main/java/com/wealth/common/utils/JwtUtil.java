@@ -16,7 +16,6 @@ import java.util.UUID;
 
 /**
  * JWT Token 生成与验证工具。
- * jwt.secret / jwt.expire 需在 Nacos 共享配置中定义。
  * 支持双 Token 机制：access_token（短时效）+ refresh_token（长时效）。
  */
 @Slf4j
