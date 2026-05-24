@@ -29,7 +29,7 @@ public class ProductSyncServiceImpl implements ProductSyncService {
     }
 
     @Override
-    @Scheduled(fixedRate = 120000)
+    @Scheduled(fixedRateString = "${product.sync.interval:120000}")
     public List<ProductSyncDTO> syncAllToES() {
         log.info("开始同步产品数据到 ES");
 

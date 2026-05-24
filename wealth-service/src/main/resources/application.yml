@@ -1,0 +1,73 @@
+server:
+  port: 8081
+  tomcat:
+    threads:
+      max: 400
+    max-connections: 8192
+
+spring:
+  cloud:
+    nacos:
+      config:
+        enabled: false
+      discovery:
+        enabled: false
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${MYSQL_HOST:localhost}:3306/wealth?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+    username: root
+    password: ${MYSQL_ROOT_PASSWORD}
+    hikari:
+      maximum-pool-size: 30
+      minimum-idle: 10
+      connection-timeout: 5000
+      idle-timeout: 300000
+      max-lifetime: 1200000
+  redis:
+    host: ${REDIS_HOST:localhost}
+    port: ${REDIS_PORT:6379}
+    password: ${REDIS_PASSWORD:}
+    timeout: 2000ms
+    lettuce:
+      pool:
+        max-active: 32
+        max-idle: 16
+        min-idle: 4
+  elasticsearch:
+    uris: ${ES_URIS:http://localhost:9200}
+    username: ${ES_USERNAME:elastic}
+    password: ${ES_PASSWORD:}
+    connection-timeout: 10s
+    socket-timeout: 30s
+  task:
+    execution:
+      pool:
+        core-size: 4
+        max-size: 8
+        queue-capacity: 100
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+
+springdoc:
+  api-docs:
+    enabled: true
+
+# Knife4j 各模块分组
+knife4j:
+  enable: true
+  openapi:
+    title: 理财服务平台 — 单体聚合接口
+    description: 原 6 个业务模块合并后的统一 API 文档
+    version: v1.7.3
+
+# ========== 业务调度与超时配置 ==========
+market:
+  simulation:
+    interval: 2000        # 行情模拟推送间隔（ms）
+  sse:
+    timeout: 86400000     # SSE 连接超时（ms，默认 24h）
+product:
+  sync:
+    interval: 120000      # 产品数据同步 ES 间隔（ms）
