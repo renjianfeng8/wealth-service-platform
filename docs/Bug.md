@@ -18,18 +18,18 @@
 
 #### 涉及文件（12 个）
 
-- `wealth-system/.../controller/UmsAdminController.java`
-- `wealth-system/.../controller/UmsRoleController.java`
-- `wealth-system/.../controller/UmsAdminRoleRelationController.java`
-- `wealth-system/.../controller/UmsRoleResourceRelationController.java`
-- `wealth-system/.../controller/UmsResourceController.java`
-- `wealth-user/.../controller/UserController.java`
-- `wealth-product/.../controller/ProductController.java`
-- `wealth-product/.../controller/MarketDataController.java`
-- `wealth-product/.../controller/UserFavoriteController.java`
-- `wealth-trade/.../controller/TradeOrderController.java`
-- `wealth-message/.../controller/NewsController.java`
-- `wealth-message/.../controller/MessageController.java`
+- `wealth-service/.../system/controller/UmsAdminController.java`
+- `wealth-service/.../system/controller/UmsRoleController.java`
+- `wealth-service/.../system/controller/UmsAdminRoleRelationController.java`
+- `wealth-service/.../system/controller/UmsRoleResourceRelationController.java`
+- `wealth-service/.../system/controller/UmsResourceController.java`
+- `wealth-service/.../user/controller/UserController.java`
+- `wealth-service/.../product/controller/ProductController.java`
+- `wealth-service/.../product/controller/MarketDataController.java`
+- `wealth-service/.../product/controller/UserFavoriteController.java`
+- `wealth-service/.../trade/controller/TradeOrderController.java`
+- `wealth-service/.../message/controller/NewsController.java`
+- `wealth-service/.../message/controller/MessageController.java`
 
 #### 备注
 
@@ -40,10 +40,10 @@
 ### Bug-015: UserController.deleteBatch 缺少 @Valid 注解
 
 **日期**: 2026-05-23
-**模块**: wealth-user
+**模块**: wealth-service (user 域)
 **影响**: 违反 CLAUDE.md 规范，`@RequestBody` 无 `@Valid`
 
-**文件**: `wealth-user/.../controller/UserController.java:99`
+**文件**: `wealth-service/.../user/controller/UserController.java:99`
 ```java
 public Result<Boolean> deleteBatch(@RequestBody List<Long> ids) {
 ```
@@ -57,10 +57,10 @@ public Result<Boolean> deleteBatch(@RequestBody List<Long> ids) {
 ### Bug-016: UmsAdminServiceImpl.updateAdmin 存在死代码
 
 **日期**: 2026-05-23
-**模块**: wealth-system
+**模块**: wealth-service (system 域)
 **影响**: 无用代码，未使用 `copyNonNullProperties`
 
-**文件**: `wealth-system/.../service/impl/UmsAdminServiceImpl.java:244`
+**文件**: `wealth-service/.../system/service/impl/UmsAdminServiceImpl.java:244`
 ```java
 public Boolean updateAdmin(UmsAdmin admin) {
     admin.setPassword(null);
@@ -77,7 +77,7 @@ Controller 层已直接在调用处使用 `BeanConvertUtil.copyNonNullProperties
 ### Bug-001: ES 搜索报 ConversionException（日期格式不匹配）
 
 **日期**: 2026-05-12 | **状态**: 已修复（commit 不详）
-**模块**: wealth-search
+**模块**: wealth-service (search 域)
 **影响**: ES 搜索接口返回 500
 
 #### 根因
@@ -92,10 +92,10 @@ Controller 层已直接在调用处使用 `BeanConvertUtil.copyNonNullProperties
 
 ---
 
-### Bug-002: wealth-search 启动失败（RedisSerializer NoClassDefFoundError）
+### Bug-002: RedisSerializer NoClassDefFoundError（无 Redis 依赖模块启动崩溃）
 
 **日期**: 2026-05-12 | **状态**: 已修复
-**模块**: wealth-common / wealth-search
+**模块**: wealth-common
 **影响**: 无 Redis 依赖的模块启动崩溃
 
 #### 根因
@@ -113,7 +113,7 @@ Controller 层已直接在调用处使用 `BeanConvertUtil.copyNonNullProperties
 ### Bug-003: ES 索引数据为空（索引重建后未同步）
 
 **日期**: 2026-05-12 | **状态**: 已记录（操作性问题）
-**模块**: wealth-search / wealth-product
+**模块**: wealth-service (search 域 / product 域)
 
 #### 说明
 
@@ -124,7 +124,7 @@ ES 索引重建后产品数据未自动同步。项目无自动同步机制，�
 ### Bug-004: 交易委托提交提示"用户信息异常"（userId 为 0）
 
 **日期**: 2026-05-12 | **状态**: 已修复（commit 不详）
-**模块**: front-user / wealth-user
+**模块**: front-user / wealth-service (user 域)
 **影响**: 登录后无法提交交易委托单
 
 #### 根因
@@ -142,7 +142,7 @@ ES 索引重建后产品数据未自动同步。项目无自动同步机制，�
 ### Bug-005: 交易委托分页筛选不生效（orderStatus 参数被忽略）
 
 **日期**: 2026-05-12 | **状态**: 已修复（commit `6f7d0a44`）
-**模块**: wealth-trade
+**模块**: wealth-service (trade 域)
 
 #### 根因
 
@@ -155,7 +155,7 @@ ES 索引重建后产品数据未自动同步。项目无自动同步机制，�
 ### Bug-006: 产品中心分类筛选不生效（productType 参数被忽略）
 
 **日期**: 2026-05-12 | **状态**: 已修复（commit `d6603220`）
-**模块**: wealth-product
+**模块**: wealth-service (product 域)
 
 **验证**: `ProductController.java:56-58` 确认已包含 `@RequestParam(required = false) Integer productType`。
 
@@ -164,7 +164,7 @@ ES 索引重建后产品数据未自动同步。项目无自动同步机制，�
 ### Bug-007: 财经资讯/消息中心分类筛选不生效（newsType/userId 参数被忽略）
 
 **日期**: 2026-05-12 | **状态**: 已修复（commit `ed7b778c`）
-**模块**: wealth-message
+**模块**: wealth-service (message 域)
 
 **验证**: `NewsController.java:53` 确认 `newsType`；`MessageController.java:53` 确认 `userId`。
 

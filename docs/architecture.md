@@ -1,5 +1,5 @@
 # 模块架构与配置体系
-> 跨模块开发时引用 — 模块架构、端口、依赖层级、网关路由、Nacos 配置体系。
+> 跨模块开发时引用 — 模块架构、端口、依赖层级、网关路由、配置体系。
 
 ---
 
@@ -7,153 +7,140 @@
 
 ```
 wealth-service-platform (pom)
-├── wealth-common      # 公共依赖：DTO、工具类、Feign接口、统一返回、异常处理、通用配置
+├── wealth-common      # 公共依赖：DTO、工具类、contract接口、统一返回、异常处理、通用配置
 ├── wealth-gateway     # 网关（Spring Cloud Gateway 路由转发、全局CORS，无数据源）
-├── wealth-system      # 系统服务（后台权限管理 ums_*、管理员JWT登录、RBAC权限拦截）
-├── wealth-user        # 用户服务（前端用户管理 sys_user）
-├── wealth-product     # 产品服务（产品 wea_product + 行情 wea_market_data + SSE + 用户自选）
-├── wealth-trade       # 交易服务（委托交易 wea_trade_order）
-├── wealth-message     # 消息服务（资讯 wea_news + 站内消息 wea_message，DB 轮询替代 RabbitMQ）
-└── wealth-search      # 搜索服务（ES 优先，ES 不可用时降级 MySQL LIKE 查询）
+└── wealth-service     # 业务聚合服务：所有业务域合并为单个可部署单元
 ```
 
-注：`wealth-account` 已合并到 `wealth-product`，不再独立部署。
+## 架构演进
+
+v1.7.3 完成模块合并，6 个独立微服务合并为单一的 `wealth-service`，保留 Gateway 网关层：
+
+```
+v1.7.2 (微服务)                  v1.7.3+ (单体聚合)
+wealth-system (8082)             
+wealth-user   (8083)             
+wealth-product (8084)            →  wealth-service (8081)
+wealth-trade   (8085)            
+wealth-message (8087)            
+wealth-search  (8089)            
+wealth-gateway (8080)            →  wealth-gateway (8080)
+```
 
 ## 依赖层级
 
-- `wealth-common` 被除 gateway 外的所有模块依赖（修改后需先 `mvn clean install -pl wealth-common`）
-- `wealth-gateway` 不依赖 `wealth-common`（避免 `spring-boot-starter-web` 与 WebFlux 冲突）
-- 业务模块间通过 Feign 接口调用，FeignClient 定义在 `wealth-common` 中
+- `wealth-common` 被所有模块依赖（修改后需先 `mvn clean install -pl wealth-common`）
+- `wealth-gateway` 依赖 `wealth-common`（工具类、DTO、常量）
+- 跨域调用通过 contract 接口（`com.wealth.common.contract`）直接调用，无需 Feign
 
 ## 各模块端口号
 
 | 模块 | 端口 | context-path | 说明 |
-|------|------|-------------|------|
-| wealth-gateway | 8080 | - | Spring Cloud Gateway（WebFlux）|
-| wealth-system  | 8082 | /system | 后台权限管理 |
-| wealth-user    | 8083 | /user | 前端用户管理 |
-| wealth-product | 8084 | /product | 产品 + 行情 + 自选 |
-| wealth-trade   | 8085 | /trade | 交易委托 |
-| wealth-message | 8087 | /message | 资讯 + 消息 |
-| wealth-search  | 8089 | /search | 产品搜索 |
+|------|:----:|:-----------:|------|
+| wealth-gateway | 8080 | - | Spring Cloud Gateway（WebFlux） |
+| wealth-service | 8081 | / | 所有业务域聚合 |
 
-## 各模块 Java 包基路径
+## 业务域与包路径
 
-| 模块 | 基础包 |
-|------|--------|
-| wealth-common  | com.wealth.common |
-| wealth-gateway | com.wealth.gateway |
-| wealth-user    | com.wealth.user |
-| 其余业务模块    | com.wealth.platform.{模块名} |
+所有业务域在 `wealth-service` 模块内，基包 `com.wealth.platform.{domain}`：
+
+| 业务域 | domain | 表前缀 | 说明 |
+|--------|--------|--------|------|
+| 后台权限 | system | ums_* | 管理员、角色、资源、RBAC 权限拦截 |
+| 用户管理 | user | sys_user | 前端用户注册/登录/信息管理 |
+| 产品行情 | product | wea_product, wea_market_data, wea_user_favorite | 产品管理、行情 SSE 推送、用户自选 |
+| 交易委托 | trade | wea_trade_order | 交易订单发起、撤单、查询 |
+| 消息推送 | message | wea_news, wea_message | 财经资讯、站内消息（DB 轮询） |
+| 搜索服务 | search | - | ES 全文检索（ES 不可用时降级 MySQL LIKE）|
 
 ## 网关路由
 
-gateway（端口 8080）负责统一路由转发：
+gateway（端口 8080）负责统一路由转发（静态 HTTP 路由，无需 Nacos）：
 
-| 路由前缀 | 目标服务 |
-|---------|---------|
-| /system/** | wealth-system |
-| /user/** | wealth-user |
-| /product/** | wealth-product |
-| /trade/** | wealth-trade |
-| /message/** | wealth-message |
-| /search/** | wealth-search |
+| 路由前缀 | 转发目标 | 对应业务域 |
+|---------|---------|-----------|
+| /system/** | http://localhost:8081 | 后台权限 |
+| /user/** | http://localhost:8081 | 用户管理 |
+| /product/** | http://localhost:8081 | 产品行情 |
+| /trade/** | http://localhost:8081 | 交易委托 |
+| /message/** | http://localhost:8081 | 消息推送 |
+| /search/** | http://localhost:8081 | 搜索服务 |
+
+> 所有路由转发到同一 `wealth-service` 实例，不同前缀在服务端通过 context-path 区分。
 
 ---
 
 # 二、配置体系
 
-## Nacos 配置中心（Docker: nacos/nacos-server:v2.3.2）
+## 配置架构
 
-地址：`localhost:8848`（已启用认证，默认凭据：nacos/nacos）
-
-### wealth-shared.yaml（DEFAULT_GROUP，YAML 格式）
-
-所有模块共享的 Nacos 配置，完整内容及变更历史见 [Nacos 配置参考](nacos-config-reference.md)。
-
-```yaml
-jwt:
-  secret: wealth-micro-service-20260501-very-safe-secret-key-123456789
-  expire: 604800000
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info,prometheus
-  tracing:
-    sampling:
-      probability: 0.1
-  zipkin:
-    tracing:
-      endpoint: http://localhost:9411/api/v2/spans
-```
-
-> **作用范围**：通过各模块 bootstrap.yml 的 `shared-configs` 引用，被所有模块加载。
-> **不含 `spring.datasource`**：数据源配置由各模块的 application.yml 或 docker-compose 环境变量提供，避免 Nacos 覆盖。
-> **不含 `spring.redis.*`**：Redis 配置由各模块 `application.yml` 中的环境变量占位符（`${REDIS_HOST:localhost}`）统一管理，通过 `.env` / `SPRING_REDIS_HOST` 注入，详情见 [Nacos 配置参考 > Redis 配置说明](nacos-config-reference.md#redis-配置说明)。
-
-### 配置加载链路
+项目采用**环境变量 + application.yml 本地配置**模式，不依赖外部配置中心：
 
 ```
-bootstrap.yml                     # 1. 启动时加载 —— 配置 Nacos 地址、应用名
-   └─→ Nacos (wealth-shared.yaml)  # 2. Nacos 远程配置 —— JWT + 链路追踪 + 监控暴露
-       └─→ application.yml          # 3. 本地配置 —— 端口、context-path、数据源
+.env（项目根目录，docker-compose 注入）
+  ├── wealth-gateway/.env（网关专用）
+  └── wealth-service/.env  （业务服务专用）
+         ↓
+application.yml（本地配置，引用 ${ENV_VAR} 占位符）
+         ↓
+application-prod.yml（生产环境配置覆盖）
 ```
 
-## bootstrap.yml（所有业务模块统一模式）
+### Nacos 配置中心（已禁用）
 
-所有 7 个模块的 `bootstrap.yml` 内容一致（仅 `application.name` 不同）：
+Nacos 服务端可保持运行（用于其他依赖），但当前所有模块的 Nacos 配置/注册均已关闭：
 
 ```yaml
 spring:
-  application:
-    name: wealth-{模块名}
   cloud:
     nacos:
-      discovery:
-        server-addr: localhost:8848
       config:
-        server-addr: localhost:8848
-        file-extension: yaml
-        shared-configs:
-          - data-id: wealth-shared.yaml
-            refresh: true
+        enabled: false
+      discovery:
+        enabled: false
 ```
 
-| 模块 | application.name |
-|------|-----------------|
-| gateway | wealth-gateway |
-| system | wealth-system |
-| user | wealth-user |
-| product | wealth-product |
-| trade | wealth-trade |
-| message | wealth-message |
-| search | wealth-search |
+## Spring 配置加载顺序
+
+```
+application.yml          # 1. 本地配置 —— 端口、数据源、Redis、ES
+  └─→ application-prod.yml  # 2. 生产环境覆盖（spring.profiles.active=prod）
+       └─→ .env 环境变量      # 3. 环境变量注入 ${VAR:default}
+```
+
+## JWT 配置
+
+通过环境变量注入，避免明文入 Git：
+
+```yaml
+jwt:
+  secret: ${JWT_SECRET}
+  expire: ${JWT_EXPIRE:604800000}
+```
+
+JWT 密钥值来自模块 `.env` 文件（已在 `.gitignore` 中排除）。
 
 ---
 
 # 三、基础设施容器
 
-服务器上运行的 Docker 容器状态见 [轻量化部署策略](server-lightweight-strategy.md)，以下为本地开发常用配置：
+| 服务 | 镜像 | 端口 | 必需 | 说明 |
+|------|------|:----:|:----:|------|
+| MySQL | mysql:8.0 | 3306 | 是 | 数据库 |
+| Redis | redis:latest | 6379 | 是 | 缓存 |
+| Nginx | nginx:latest | 80, 443 | 是 | 反向代理 |
+| Elasticsearch | elasticsearch:8.8.2 | 9200, 9300 | 否 | 搜索引擎（search 降级 MySQL 可关）|
+| Zipkin | openzipkin/zipkin:latest | 9411 | 否 | 链路追踪 |
+| Prometheus | prom/prometheus:latest | 9090 | 否 | 监控指标存储 |
+| Grafana | grafana/grafana:latest | 3001 | 否 | 监控仪表盘 |
 
-| 服务 | 镜像 | 端口 | 说明 |
-|------|------|------|------|
-| Nacos | nacos/nacos-server:v2.3.2 | 8848, 9848 | 必需 |
-| MySQL | mysql:8.0.37 | 3306 | 必需 |
-| Redis | redis:latest | 6379 | 必需 |
-| Nginx | nginx:latest | 80, 443 | 必需 |
-| Elasticsearch | elasticsearch:8.8.2 | 9200, 9300 | 按需（search 降级 MySQL 可关）|
-| RabbitMQ | rabbitmq:3.10-management | 5672, 15672 | 已停用（message 使用 DB 轮询）|
-| Zipkin | openzipkin/zipkin:latest | 9411 | 按需 |
-| Prometheus | prom/prometheus:latest | 9090 | 按需 |
-| Grafana | grafana/grafana:latest | 3001 | 按需 |
-| Sentinel | bladex/sentinel-dashboard:latest | 8858 | 按需 |
-| Seata | seataio/seata-server:2.0.0 | 7091, 8091 | 已停用（`seata.enabled=false`）|
+> Nacos、RabbitMQ、Seata、Sentinel 已停用或禁用。
 
 ---
 
-# 四、网关 application.yml 路由配置
+# 四、网关配置参考
+
+当前 `application.yml` 网关路由配置：
 
 ```yaml
 spring:
@@ -161,29 +148,55 @@ spring:
     gateway:
       routes:
         - id: wealth-system
-          uri: lb://wealth-system
+          uri: http://${SERVICE_HOST:localhost}:8081
           predicates:
             - Path=/system/**
         - id: wealth-user
-          uri: lb://wealth-user
+          uri: http://${SERVICE_HOST:localhost}:8081
           predicates:
             - Path=/user/**
         - id: wealth-product
-          uri: lb://wealth-product
+          uri: http://${SERVICE_HOST:localhost}:8081
           predicates:
-            - Path=/product/**,/account/**
+            - Path=/product/**
         - id: wealth-trade
-          uri: lb://wealth-trade
+          uri: http://${SERVICE_HOST:localhost}:8081
           predicates:
             - Path=/trade/**
         - id: wealth-message
-          uri: lb://wealth-message
+          uri: http://${SERVICE_HOST:localhost}:8081
           predicates:
             - Path=/message/**
         - id: wealth-search
-          uri: lb://wealth-search
+          uri: http://${SERVICE_HOST:localhost}:8081
           predicates:
             - Path=/search/**
 ```
 
-注：`/account/**` 路由指向 `wealth-product`，因 account 功能已合并到 product 模块。
+---
+
+# 五、部署架构
+
+```
+                              ┌──────────────┐
+                              │   Nginx 80   │
+                              │  (反向代理)   │
+                              └──────┬───────┘
+                                     │
+                              ┌──────▼───────┐
+                              │  Gateway     │
+                              │  (8080)      │
+                              └──────┬───────┘
+                                     │
+                              ┌──────▼───────┐
+                              │ wealth-serv. │
+                              │  (8081)      │
+                              └──────┬───────┘
+              ┌─────────┬────────────┼────────────┬──────────┐
+         ┌────▼───┐┌───▼────┐┌──────▼──────┐┌───▼────┐┌───▼─────┐
+         │ MySQL  ││ Redis  ││Elasticsearch││ Zipkin ││Prometheus│
+         │ (3306) ││ (6379) ││ (9200)      ││ (9411) ││ (9090)   │
+         └────────┘└────────┘└─────────────┘└────────┘└──────────┘
+```
+
+> 生产环境 Nginx 负责 SSL 终止，HTTP 请求转发至 Gateway 内部端口 8080。

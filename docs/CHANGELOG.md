@@ -5,6 +5,45 @@
 
 ---
 
+## v1.8.0 (2026-05-24)
+
+### 架构重构：微服务 → 单体聚合
+
+- **6 个业务微服务合并为 wealth-service**：将 wealth-system、wealth-user、wealth-product、wealth-trade、wealth-message、wealth-search 合并为统一的 wealth-service 模块（端口 8081），消除跨服务网络开销
+- **Gateway 路由简化**：从负载均衡（`lb://`）改为静态 HTTP 路由（`http://localhost:8081`），无需 Nacos 注册中心
+- **Nacos 配置中心禁用**：所有模块 `nacos.config.enabled=false`，配置体系简化为 本地 application.yml + 环境变量
+- **OpenFeign 移除**：跨模块调用替换为本地 contract 接口（`com.wealth.common.contract`），消除 Feign 动态代理开销
+- **bootstrap.yml 移除**：gateway 不再需要 bootstrap.yml，service 保留但不依赖 Nacos
+- **父 POM 精简**：从 9 模块减少到 3 模块
+
+### 依赖安全升级与清理
+
+- Spring Boot 3.3.5 → 3.3.13（Tomcat 10.1.31→10.1.37+, Jackson 2.17.2→2.17.3+）
+- Spring Cloud 2023.0.3 → 2023.0.6
+- Spring Cloud Alibaba 2023.0.1.2 → 2023.0.3.4（Nacos 2.3.2→2.4.3）
+- MyBatis-Plus 3.5.7 → 3.5.9（分页插件迁移至独立模块 mybatis-plus-jsqlparser）
+- Knife4j 4.4.0 → 4.5.0
+- Micrometer Tracing BOM 1.3.5 → 1.3.6
+- 移除无用依赖：RabbitMQ、OpenFeign、Loadbalancer
+- 消除 wealth-common 和 wealth-gateway 中的重复依赖声明
+
+### 配置规范化
+
+- **Redis 属性迁移**：全模块 `spring.redis.*` → `spring.data.redis.*`（Spring Boot 3.x 规范）
+- **Knife4j Java 配置**：替代已废弃的 YAML 配置方式（`knife4j.openapi.*`），新建 `OpenApiConfig.java`
+- **删除废弃文件**：`FeignConfig.java`（Feign 已移除）、`SwaggerConfig.java`（由 OpenApiConfig 替代）、`bootstrap.yml`（gateway）
+- **Gateway 配置修复**：补齐缺失的 `management` 配置段（端点暴露、链路追踪、Zipkin 地址）
+- **生产配置补齐**：wealth-service application-prod.yml 补充 Hikari 连接池、Elasticsearch 等基础设施配置
+- 各模块新增独立 `.env` 文件（`wealth-gateway/.env`、`wealth-service/.env`）
+
+### 工程清理
+
+- 删除构建产物（front/dist、front-user/dist、playwright-report、.vite/deps 等）
+- 删除错误生成的空目录（api-e2e 下 8 个路径损坏的空目录）
+- 删除已完成旧计划文档
+- 更新 `.gitignore` 补充 `front-user/test-results/` 等缺失规则
+- 全量文档重构：README、CLAUDE.md、architecture.md、Startup.md 同步单体聚合架构
+
 ## v1.7.2 (2026-05-23)
 
 ### 安全加固
