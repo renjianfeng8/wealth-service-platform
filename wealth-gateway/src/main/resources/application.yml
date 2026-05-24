@@ -1,8 +1,18 @@
 server:
   port: 8080
 
+# JWT 配置（注入到 JwtAuthGlobalFilter）
+jwt:
+  secret: ${JWT_SECRET}
+  expire: ${JWT_EXPIRE:604800000}
+
 spring:
   cloud:
+    nacos:
+      config:
+        enabled: false
+      discovery:
+        enabled: false
     gateway:
       default-filters:
         - "AddResponseHeader=Content-Security-Policy, default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; form-action 'self'; base-uri 'self'"
@@ -10,32 +20,32 @@ spring:
         - "AddResponseHeader=X-Frame-Options, DENY"
       routes:
         - id: wealth-system
-          uri: lb://wealth-system
+          uri: http://${SERVICE_HOST:localhost}:8081
           predicates:
             - Path=/system/**
 
         - id: wealth-user
-          uri: lb://wealth-user
+          uri: http://${SERVICE_HOST:localhost}:8081
           predicates:
             - Path=/user/**
 
         - id: wealth-product
-          uri: lb://wealth-product
+          uri: http://${SERVICE_HOST:localhost}:8081
           predicates:
             - Path=/product/**
 
         - id: wealth-trade
-          uri: lb://wealth-trade
+          uri: http://${SERVICE_HOST:localhost}:8081
           predicates:
             - Path=/trade/**
 
         - id: wealth-message
-          uri: lb://wealth-message
+          uri: http://${SERVICE_HOST:localhost}:8081
           predicates:
             - Path=/message/**
 
         - id: wealth-search
-          uri: lb://wealth-search
+          uri: http://${SERVICE_HOST:localhost}:8081
           predicates:
             - Path=/search/**
 
@@ -60,35 +70,29 @@ spring:
 
       sentinel:
         transport:
-          dashboard: localhost:8858
+          dashboard: ${SENTINEL_DASHBOARD:}
         eager: true
 
-# Knife4j 网关文档聚合
+# Knife4j 网关文档聚合（静态 URL 模式，无需 Nacos 服务发现）
 knife4j:
   gateway:
     enabled: true
     routes:
       - name: 系统权限
-        service-name: wealth-system
         url: /system/v3/api-docs
         order: 1
       - name: 用户服务
-        service-name: wealth-user
         url: /user/v3/api-docs
         order: 2
       - name: 产品行情（含自选）
-        service-name: wealth-product
         url: /product/v3/api-docs
         order: 3
       - name: 交易委托
-        service-name: wealth-trade
         url: /trade/v3/api-docs
         order: 5
       - name: 消息推送
-        service-name: wealth-message
         url: /message/v3/api-docs
         order: 6
       - name: 搜索服务
-        service-name: wealth-search
         url: /search/v3/api-docs
         order: 7
