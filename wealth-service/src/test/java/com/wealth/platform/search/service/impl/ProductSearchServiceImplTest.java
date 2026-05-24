@@ -1,7 +1,7 @@
 package com.wealth.platform.search.service.impl;
 
 import com.wealth.platform.search.entity.ProductDocument;
-import com.wealth.platform.search.mapper.WeaProductMapper;
+import com.wealth.platform.product.mapper.FinProductMapper;
 import com.wealth.platform.search.repository.ProductRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -28,7 +28,7 @@ class ProductSearchServiceImplTest {
     private ProductRepository productRepository;
 
     @Mock
-    private WeaProductMapper weaProductMapper;
+    private FinProductMapper weaProductMapper;
 
     private ProductSearchServiceImpl searchService;
 
