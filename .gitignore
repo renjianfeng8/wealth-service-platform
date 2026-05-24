@@ -38,6 +38,7 @@ front/node_modules/
 front-user/dist/
 front-user/node_modules/
 front-user/playwright-report/
+front-user/test-results/
 
 # Self-signed SSL certificates & PKCS12 keystores (regenerate via ssl/gen-cert.ps1)
 ssl/
@@ -92,3 +93,4 @@ scripts/
 
 # Python scripts in project root
 /*.py
+.claude/worktrees/

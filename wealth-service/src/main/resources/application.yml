@@ -23,16 +23,17 @@ spring:
       connection-timeout: 5000
       idle-timeout: 300000
       max-lifetime: 1200000
-  redis:
-    host: ${REDIS_HOST:localhost}
-    port: ${REDIS_PORT:6379}
-    password: ${REDIS_PASSWORD:}
-    timeout: 2000ms
-    lettuce:
-      pool:
-        max-active: 32
-        max-idle: 16
-        min-idle: 4
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      timeout: 2000ms
+      lettuce:
+        pool:
+          max-active: 32
+          max-idle: 16
+          min-idle: 4
   elasticsearch:
     uris: ${ES_URIS:http://localhost:9200}
     username: ${ES_USERNAME:elastic}
@@ -49,18 +50,6 @@ spring:
 mybatis-plus:
   configuration:
     map-underscore-to-camel-case: true
-
-springdoc:
-  api-docs:
-    enabled: true
-
-# Knife4j 各模块分组
-knife4j:
-  enable: true
-  openapi:
-    title: 理财服务平台 — 单体聚合接口
-    description: 原 6 个业务模块合并后的统一 API 文档
-    version: v1.7.3
 
 # ========== 业务调度与超时配置 ==========
 market:

@@ -1,0 +1,12 @@
+{
+  "name": "wealth-service-api-e2e",
+  "private": true,
+  "scripts": {
+    "test": "playwright test",
+    "test:chromium": "playwright test --project=chromium",
+    "test:report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.59.0"
+  }
+}

@@ -119,7 +119,14 @@
       "PowerShell(docker *)",
       "PowerShell(mvn *)",
       "PowerShell(python *)",
-      "Bash(npx tsc *)"
+      "Bash(npx tsc *)",
+      "WebSearch",
+      "Bash(Get-ChildItem *)",
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(Select-Object -Skip 1)",
+      "WebFetch(domain:mvnrepository.com)",
+      "Bash(grep -rn '\\\\${[A-Z_]\\\\+' wealth-gateway/src/main/resources/ wealth-service/src/main/resources/)",
+      "Bash(grep -oP '\\\\$\\\\{[A-Z_]+')"
     ]
   }
 }

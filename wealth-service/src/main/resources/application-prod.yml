@@ -1,0 +1,48 @@
+# ============================================================
+# 生产环境配置
+# ============================================================
+
+# JWT 配置（原 Nacos wealth-shared.yaml 内联，通过环境变量注入避免明文入 Git）
+jwt:
+  secret: ${JWT_SECRET}
+  expire: ${JWT_EXPIRE:604800000}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  tracing:
+    sampling:
+      probability: 0.1
+  zipkin:
+    tracing:
+      endpoint: http://localhost:9411/api/v2/spans
+
+spring:
+  datasource:
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 5000
+      max-lifetime: 600000
+      idle-timeout: 300000
+  data:
+    redis:
+      host: ${REDIS_HOST:redis}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      timeout: ${REDIS_TIMEOUT:2000ms}
+      lettuce:
+        pool:
+          max-active: ${REDIS_POOL_MAX_ACTIVE:16}
+          max-idle: ${REDIS_POOL_MAX_IDLE:8}
+          min-idle: ${REDIS_POOL_MIN_IDLE:2}
+  elasticsearch:
+    uris: ${ES_URIS:http://elasticsearch:9200}
+    connection-timeout: 10s
+    socket-timeout: 30s
+
+springdoc:
+  api-docs:
+    enabled: false

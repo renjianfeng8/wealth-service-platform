@@ -73,6 +73,19 @@ spring:
           dashboard: ${SENTINEL_DASHBOARD:}
         eager: true
 
+# Actuator 端点暴露（监控指标）
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  tracing:
+    sampling:
+      probability: 0.1
+  zipkin:
+    tracing:
+      endpoint: http://localhost:9411/api/v2/spans
+
 # Knife4j 网关文档聚合（静态 URL 模式，无需 Nacos 服务发现）
 knife4j:
   gateway:
@@ -89,10 +102,10 @@ knife4j:
         order: 3
       - name: 交易委托
         url: /trade/v3/api-docs
-        order: 5
+        order: 4
       - name: 消息推送
         url: /message/v3/api-docs
-        order: 6
+        order: 5
       - name: 搜索服务
         url: /search/v3/api-docs
-        order: 7
+        order: 6
