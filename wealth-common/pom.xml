@@ -19,12 +19,6 @@
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
-        <!-- OpenFeign -->
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-openfeign</artifactId>
-        </dependency>
-
         <!-- 璐熻浇鍧囪　鍣紙浠呮坊鍔犺繖涓€娈碉紝瑙ｅ喅 Feign 鎶ラ敊锛?-->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
