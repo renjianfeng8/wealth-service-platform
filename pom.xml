@@ -140,12 +140,7 @@
     <modules>
         <module>wealth-common</module>
         <module>wealth-gateway</module>
-        <module>wealth-system</module>
-        <module>wealth-user</module>
-        <module>wealth-product</module>
-        <module>wealth-trade</module>
-        <module>wealth-message</module>
-        <module>wealth-search</module>
+        <module>wealth-service</module>
     </modules>
 
     <build>
