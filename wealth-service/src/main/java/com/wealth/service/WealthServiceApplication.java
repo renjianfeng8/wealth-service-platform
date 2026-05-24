@@ -6,7 +6,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication(scanBasePackages = {
         "com.wealth.platform",
-        "com.wealth.user",
         "com.wealth.common",
         "com.wealth.service"
 })
@@ -16,7 +15,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
         "com.wealth.platform.trade.mapper",
         "com.wealth.platform.message.mapper",
         "com.wealth.platform.search.mapper",
-        "com.wealth.user.mapper"
+        "com.wealth.platform.user.mapper"
 })
 public class WealthServiceApplication {
 
