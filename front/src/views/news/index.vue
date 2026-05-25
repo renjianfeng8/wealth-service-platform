@@ -16,7 +16,7 @@
         <el-table-column prop="newsType" label="类型" width="80">
           <template #default="{ row }"><el-tag>{{ row.newsType===1?'财经':row.newsType===2?'公告':'其他' }}</el-tag></template>
         </el-table-column>
-        <el-table-column prop="source" label="来源" width="120" />
+        <el-table-column prop="source" label="来源" min-width="120" />
         <el-table-column prop="status" label="状态" width="70">
           <template #default="{ row }"><el-tag :type="statusTag(row.status)">{{ statusText(row.status) }}</el-tag></template>
         </el-table-column>

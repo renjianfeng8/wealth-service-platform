@@ -13,13 +13,13 @@
       <div style="margin-bottom:16px;"><el-button type="primary" @click="handleAdd">新增产品</el-button></div>
       <el-table :data="tableData" stripe v-loading="loading" border empty-text="暂无数据">
         <el-table-column prop="id" label="ID" width="60" />
-        <el-table-column prop="productName" label="产品名称" min-width="140" />
-        <el-table-column prop="productCode" label="编码" width="120" />
-        <el-table-column prop="productType" label="类型" width="80">
+        <el-table-column prop="productName" label="产品名称" min-width="160" />
+        <el-table-column prop="productCode" label="编码" min-width="120" />
+        <el-table-column prop="productType" label="类型" min-width="80">
           <template #default="{ row }"><el-tag>{{ productTypeText(row.productType) }}</el-tag></template>
         </el-table-column>
-        <el-table-column prop="price" label="价格" width="100" :formatter="(_r:any,_c:any,v:any)=>formatPrice(v)" />
-        <el-table-column prop="riseFallRate" label="涨跌幅" width="100">
+        <el-table-column prop="price" label="价格" min-width="100" :formatter="(_r:any,_c:any,v:any)=>formatPrice(v)" />
+        <el-table-column prop="riseFallRate" label="涨跌幅" min-width="100">
           <template #default="{ row }"><span :class="(row.riseFallRate||0)>=0?'fl-rise':'fl-fall'">{{ formatRate(row.riseFallRate) }}</span></template>
         </el-table-column>
         <el-table-column prop="status" label="状态" width="70">

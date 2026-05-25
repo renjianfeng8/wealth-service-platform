@@ -13,8 +13,8 @@
       <el-table :data="tableData" stripe v-loading="loading" border empty-text="暂无数据">
         <el-table-column prop="id" label="ID" width="60" />
         <el-table-column prop="username" label="用户名" min-width="120" />
-        <el-table-column prop="nickName" label="昵称" width="120" />
-        <el-table-column prop="email" label="邮箱" width="180" />
+        <el-table-column prop="nickName" label="昵称" min-width="120" />
+        <el-table-column prop="email" label="邮箱" min-width="180" />
         <el-table-column prop="status" label="状态" width="70">
           <template #default="{ row }"><el-tag :type="statusTag(row.status)">{{ statusText(row.status) }}</el-tag></template>
         </el-table-column>

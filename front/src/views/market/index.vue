@@ -11,13 +11,13 @@
       <div style="margin-bottom:16px;"><el-button type="primary" @click="handleAdd">新增行情</el-button></div>
       <el-table :data="tableData" stripe v-loading="loading" border empty-text="暂无数据">
         <el-table-column prop="id" label="ID" width="60" />
-        <el-table-column prop="productCode" label="产品编码" width="110" />
-        <el-table-column prop="currentPrice" label="当前价" width="100" :formatter="(_r:any,_c:any,v:any)=>formatPrice(v)" />
-        <el-table-column prop="openPrice" label="开盘价" width="100" :formatter="(_r:any,_c:any,v:any)=>formatPrice(v)" />
-        <el-table-column prop="closePrice" label="收盘价" width="100" :formatter="(_r:any,_c:any,v:any)=>formatPrice(v)" />
-        <el-table-column prop="highestPrice" label="最高价" width="100" :formatter="(_r:any,_c:any,v:any)=>formatPrice(v)" />
-        <el-table-column prop="lowestPrice" label="最低价" width="100" :formatter="(_r:any,_c:any,v:any)=>formatPrice(v)" />
-        <el-table-column prop="riseFallRate" label="涨跌幅" width="100">
+        <el-table-column prop="productCode" label="产品编码" min-width="120" />
+        <el-table-column prop="currentPrice" label="当前价" min-width="100" :formatter="(_r:any,_c:any,v:any)=>formatPrice(v)" />
+        <el-table-column prop="openPrice" label="开盘价" min-width="100" :formatter="(_r:any,_c:any,v:any)=>formatPrice(v)" />
+        <el-table-column prop="closePrice" label="收盘价" min-width="100" :formatter="(_r:any,_c:any,v:any)=>formatPrice(v)" />
+        <el-table-column prop="highestPrice" label="最高价" min-width="100" :formatter="(_r:any,_c:any,v:any)=>formatPrice(v)" />
+        <el-table-column prop="lowestPrice" label="最低价" min-width="100" :formatter="(_r:any,_c:any,v:any)=>formatPrice(v)" />
+        <el-table-column prop="riseFallRate" label="涨跌幅" min-width="100">
           <template #default="{ row }"><span :class="(row.riseFallRate||0)>=0?'fl-rise':'fl-fall'">{{ formatRate(row.riseFallRate) }}</span></template>
         </el-table-column>
         <el-table-column prop="marketTime" label="行情时间" width="160" :formatter="(_r:any,_c:any,v:any)=>formatDateTime(v)" />

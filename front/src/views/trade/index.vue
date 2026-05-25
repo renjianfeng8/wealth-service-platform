@@ -13,10 +13,10 @@
       <div style="margin-bottom:16px;"><el-button type="primary" @click="handleAdd">新增委托</el-button></div>
       <el-table :data="tableData" stripe v-loading="loading" border empty-text="暂无数据">
         <el-table-column prop="id" label="ID" width="60" />
-        <el-table-column prop="orderNo" label="订单号" width="160" />
-        <el-table-column prop="userId" label="用户ID" width="70" />
-        <el-table-column prop="productCode" label="产品编码" width="100" />
-        <el-table-column prop="tradeType" label="类型" width="70">
+        <el-table-column prop="orderNo" label="订单号" min-width="180" />
+        <el-table-column prop="userId" label="用户ID" min-width="80" />
+        <el-table-column prop="productCode" label="产品编码" min-width="120" />
+        <el-table-column prop="tradeType" label="类型" min-width="80">
           <template #default="{ row }"><el-tag :type="row.tradeType===1?'danger':'success'">{{ tradeTypeText(row.tradeType) }}</el-tag></template>
         </el-table-column>
         <el-table-column prop="entrustPrice" label="委托价" width="100" :formatter="(_r:any,_c:any,v:any)=>formatPrice(v)" />
