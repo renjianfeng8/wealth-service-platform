@@ -1,18 +1,37 @@
 <template>
-  <div class="sidebar">
-    <div class="sidebar-logo">
-      <span class="sidebar-logo-text">理财服务管理</span>
+  <div class="sidebar" :class="{ collapsed: isCollapsed }">
+    <div class="sidebar-logo" @click="router.push('/dashboard')">
+      <div class="logo-icon">
+        <el-icon :size="24"><TrendCharts /></el-icon>
+      </div>
+      <span v-show="!isCollapsed" class="logo-text">财富管理平台</span>
     </div>
+
     <el-menu
-        :default-active="activeMenu"
-        router
-        :collapse-transition="false"
-        class="sidebar-menu"
+      :default-active="activeMenu"
+      router
+      :collapse="isCollapsed"
+      :collapse-transition="false"
+      background-color="#1a365d"
+      text-color="#ffffffb3"
+      active-text-color="#ffffff"
     >
       <el-menu-item index="/dashboard">
-        <el-icon><Monitor /></el-icon>
-        <span>控制台</span>
+        <el-icon><Odometer /></el-icon>
+        <span>控制面板</span>
       </el-menu-item>
+
+      <el-sub-menu index="system">
+        <template #title>
+          <el-icon><Setting /></el-icon>
+          <span>系统管理</span>
+        </template>
+        <el-menu-item index="/system/admin">管理员管理</el-menu-item>
+        <el-menu-item index="/system/role">角色管理</el-menu-item>
+        <el-menu-item index="/system/resource">资源管理</el-menu-item>
+        <el-menu-item index="/system/admin-role">管理员角色关联</el-menu-item>
+        <el-menu-item index="/system/role-resource">角色资源关联</el-menu-item>
+      </el-sub-menu>
 
       <el-sub-menu index="user-mgmt">
         <template #title>
@@ -29,6 +48,7 @@
         </template>
         <el-menu-item index="/product">产品列表</el-menu-item>
         <el-menu-item index="/market">行情数据</el-menu-item>
+        <el-menu-item index="/favorite">用户自选</el-menu-item>
       </el-sub-menu>
 
       <el-sub-menu index="trade-mgmt">
@@ -36,13 +56,8 @@
           <el-icon><List /></el-icon>
           <span>交易管理</span>
         </template>
-        <el-menu-item index="/trade">委托单管理</el-menu-item>
+        <el-menu-item index="/trade">交易委托</el-menu-item>
       </el-sub-menu>
-
-      <el-menu-item index="/favorite">
-        <el-icon><Star /></el-icon>
-        <span>自选管理</span>
-      </el-menu-item>
 
       <el-sub-menu index="msg-mgmt">
         <template #title>
@@ -50,138 +65,153 @@
           <span>消息管理</span>
         </template>
         <el-menu-item index="/message">站内消息</el-menu-item>
-        <el-menu-item index="/news">资讯管理</el-menu-item>
-      </el-sub-menu>
-
-      <el-sub-menu index="system-mgmt">
-        <template #title>
-          <el-icon><Setting /></el-icon>
-          <span>系统管理</span>
-        </template>
-        <el-menu-item index="/system/admin">管理员</el-menu-item>
-        <el-menu-item index="/system/role">角色</el-menu-item>
-        <el-menu-item index="/system/resource">资源</el-menu-item>
+        <el-menu-item index="/news">财经资讯</el-menu-item>
       </el-sub-menu>
 
       <el-menu-item index="/search">
         <el-icon><Search /></el-icon>
-        <span>全文搜索</span>
+        <span>产品搜索</span>
       </el-menu-item>
     </el-menu>
+
+    <div class="sidebar-footer" v-show="!isCollapsed">
+      <div class="user-info">
+        <el-avatar :size="32" icon="UserFilled" />
+        <div class="user-detail">
+          <div class="user-name">{{ userStore.username || '管理员' }}</div>
+          <div class="user-role">超级管理员</div>
+        </div>
+      </div>
+      <el-button text size="small" class="logout-btn" @click="handleLogout">
+        <el-icon><SwitchButton /></el-icon>
+      </el-button>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
+import { useUserStore } from '@/store'
+import {
+  TrendCharts, Odometer, Setting, User, Goods, List,
+  Message, Search, SwitchButton, UserFilled,
+} from '@element-plus/icons-vue'
 
+defineProps<{ isCollapsed: boolean }>()
 const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
 const activeMenu = computed(() => route.path)
+
+function handleLogout() {
+  userStore.logout()
+  router.push('/login')
+}
 </script>
 
 <style scoped>
 .sidebar {
-  height: 100%;
+  width: var(--fl-sidebar-width);
+  height: 100vh;
+  background: var(--fl-sidebar-bg);
   display: flex;
   flex-direction: column;
-  /* 浅色背景（图片样式） */
-  background: #ffffff;
-  border-right: 1px solid #e5e6eb;
-  user-select: none;
+  transition: width 0.3s ease;
+  overflow: hidden;
+  flex-shrink: 0;
 }
-
+.sidebar.collapsed {
+  width: var(--fl-sidebar-collapsed-width);
+}
 .sidebar-logo {
-  height: 50px;
+  height: 56px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-bottom: 1px solid #e5e6eb;
+  gap: 8px;
+  cursor: pointer;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
   flex-shrink: 0;
 }
-
-.sidebar-logo-text {
-  font-size: 16px;
-  font-weight: 600;
-  color: #303133;
+.logo-icon {
+  color: #fff;
+  display: flex;
+  align-items: center;
 }
-
-/* 菜单整体 */
-:deep(.el-menu) {
+.logo-text {
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  white-space: nowrap;
+}
+.sidebar :deep(.el-menu) {
   border-right: none !important;
-  background: #ffffff !important;
+  flex: 1;
+  overflow-y: auto;
 }
-
-/* 一级菜单项 */
-:deep(.el-menu-item) {
-  color: #606266 !important;
+.sidebar :deep(.el-menu-item),
+.sidebar :deep(.el-sub-menu__title) {
   height: 44px;
   line-height: 44px;
   margin: 2px 8px;
-  border-radius: 4px !important;
-  transition: all 0.2s ease;
+  border-radius: 6px;
+  width: auto !important;
 }
-
-:deep(.el-menu-item .el-icon) {
-  font-size: 16px;
-  color: #606266 !important;
+.sidebar :deep(.el-menu-item:hover),
+.sidebar :deep(.el-sub-menu__title:hover) {
+  background: var(--fl-sidebar-hover-bg) !important;
 }
-
-/* hover 效果 */
-:deep(.el-menu-item:hover) {
-  background: #f5f7fa !important;
-  color: #303133 !important;
+.sidebar :deep(.el-menu-item.is-active) {
+  background: var(--fl-sidebar-active-bg) !important;
+  color: #fff !important;
 }
-
-/* 选中状态（蓝色高亮，和你图片一致） */
-:deep(.el-menu-item.is-active) {
-  background: #e8f3ff !important;
-  color: #1a6dff !important;
-  font-weight: 500;
+.sidebar :deep(.el-menu-item.is-active .el-icon) {
+  color: #fff !important;
 }
-
-:deep(.el-menu-item.is-active .el-icon) {
-  color: #1a6dff !important;
+.sidebar :deep(.el-sub-menu .el-menu) {
+  background: rgba(0,0,0,0.15) !important;
 }
-
-/* 子菜单标题 */
-:deep(.el-sub-menu__title) {
-  color: #606266 !important;
-  height: 44px;
-  line-height: 44px;
-  margin: 2px 8px;
-  border-radius: 4px !important;
-  transition: all 0.2s ease;
-}
-
-:deep(.el-sub-menu__title .el-icon) {
-  font-size: 16px;
-  color: #606266 !important;
-}
-
-:deep(.el-sub-menu__title:hover) {
-  background: #f5f7fa !important;
-  color: #303133 !important;
-}
-
-/* 子菜单展开箭头 */
-:deep(.el-sub-menu__icon-arrow) {
-  color: #c0c4cc !important;
-}
-
-/* 二级菜单 */
-:deep(.el-menu--inline) {
-  background: #fafafa !important;
-}
-
-:deep(.el-menu--inline .el-menu-item) {
+.sidebar :deep(.el-sub-menu .el-menu .el-menu-item) {
   padding-left: 48px !important;
   height: 38px;
   line-height: 38px;
-  font-size: 14px;
 }
-
-:deep(.el-menu--inline .el-menu-item.is-active) {
-  background: #e8f3ff !important;
-  color: #1a6dff !important;
+.sidebar-footer {
+  padding: 12px;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+.user-detail {
+  min-width: 0;
+}
+.user-name {
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.user-role {
+  color: #ffffff80;
+  font-size: 11px;
+}
+.logout-btn {
+  color: #ffffff80 !important;
+}
+.logout-btn:hover {
+  color: #fff !important;
 }
 </style>
