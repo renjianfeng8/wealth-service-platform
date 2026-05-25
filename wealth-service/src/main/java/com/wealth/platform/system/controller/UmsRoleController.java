@@ -52,10 +52,12 @@ public class UmsRoleController {
     @GetMapping("/page")
     public Result<IPage<UmsRoleVO>> page(
             @RequestParam(defaultValue = "1") Integer pageNum,
-            @RequestParam(defaultValue = "10") Integer pageSize) {
+            @RequestParam(defaultValue = "10") Integer pageSize,
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) Integer status) {
 
-        Page<UmsRole> page = new Page<>(pageNum, pageSize);
-        return Result.success(BeanConvertUtil.convertPage(umsRoleService.page(page), UmsRoleVO.class));
+        IPage<UmsRole> page = umsRoleService.pageWithFilter(pageNum, pageSize, name, status);
+        return Result.success(BeanConvertUtil.convertPage(page, UmsRoleVO.class));
     }
 
     @PostMapping

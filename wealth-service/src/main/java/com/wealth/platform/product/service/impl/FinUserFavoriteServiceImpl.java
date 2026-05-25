@@ -1,5 +1,7 @@
 package com.wealth.platform.product.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.wealth.common.utils.BeanConvertUtil;
@@ -10,6 +12,7 @@ import com.wealth.platform.product.service.FinUserFavoriteService;
 import com.wealth.platform.product.vo.FinUserFavoriteVO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -20,6 +23,20 @@ import java.util.stream.Collectors;
 @Service
 public class FinUserFavoriteServiceImpl extends ServiceImpl<FinUserFavoriteMapper, WeaUserFavorite>
         implements FinUserFavoriteService {
+
+    @Override
+    public IPage<WeaUserFavorite> pageWithFilter(Integer pageNum, Integer pageSize, Long userId, String productCode) {
+        Page<WeaUserFavorite> page = new Page<>(pageNum, pageSize);
+        LambdaQueryWrapper<WeaUserFavorite> wrapper = new LambdaQueryWrapper<>();
+        if (userId != null && userId > 0) {
+            wrapper.eq(WeaUserFavorite::getUserId, userId);
+        }
+        if (StringUtils.hasText(productCode)) {
+            wrapper.like(WeaUserFavorite::getProductCode, productCode);
+        }
+        wrapper.orderByDesc(WeaUserFavorite::getCreateTime);
+        return baseMapper.selectPage(page, wrapper);
+    }
 
     @Override
     public FinUserFavoriteVO getFavoriteById(Long id) {

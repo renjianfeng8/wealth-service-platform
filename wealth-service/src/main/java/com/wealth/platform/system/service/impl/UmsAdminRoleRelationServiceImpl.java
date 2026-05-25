@@ -1,11 +1,14 @@
 package com.wealth.platform.system.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.wealth.platform.system.entity.UmsAdminRoleRelation;
 import com.wealth.platform.system.mapper.UmsAdminRoleRelationMapper;
 import com.wealth.platform.system.service.UmsAdminRoleRelationService;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -14,6 +17,16 @@ import java.util.stream.Collectors;
 public class UmsAdminRoleRelationServiceImpl
         extends ServiceImpl<UmsAdminRoleRelationMapper, UmsAdminRoleRelation>
         implements UmsAdminRoleRelationService {
+
+    @Override
+    public IPage<UmsAdminRoleRelation> pageWithFilter(Integer pageNum, Integer pageSize, Long adminId) {
+        Page<UmsAdminRoleRelation> page = new Page<>(pageNum, pageSize);
+        LambdaQueryWrapper<UmsAdminRoleRelation> wrapper = new LambdaQueryWrapper<>();
+        if (adminId != null) {
+            wrapper.eq(UmsAdminRoleRelation::getAdminId, adminId);
+        }
+        return baseMapper.selectPage(page, wrapper);
+    }
 
     @Override
     public List<Long> getRoleIdByAdminId(Long adminId) {

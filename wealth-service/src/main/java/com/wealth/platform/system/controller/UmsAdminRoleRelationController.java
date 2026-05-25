@@ -52,9 +52,10 @@ public class UmsAdminRoleRelationController {
     @GetMapping("/page")
     public Result<IPage<UmsAdminRoleRelationVO>> page(
             @RequestParam(defaultValue = "1") Integer pageNum,
-            @RequestParam(defaultValue = "10") Integer pageSize) {
-        Page<UmsAdminRoleRelation> page = new Page<>(pageNum, pageSize);
-        return Result.success(BeanConvertUtil.convertPage(umsAdminRoleRelationService.page(page), UmsAdminRoleRelationVO.class));
+            @RequestParam(defaultValue = "10") Integer pageSize,
+            @RequestParam(required = false) Long adminId) {
+        IPage<UmsAdminRoleRelation> page = umsAdminRoleRelationService.pageWithFilter(pageNum, pageSize, adminId);
+        return Result.success(BeanConvertUtil.convertPage(page, UmsAdminRoleRelationVO.class));
     }
 
     @Operation(summary = "创建")

@@ -42,6 +42,9 @@ public class JwtAuthGlobalFilter implements GlobalFilter, Ordered {
             "/user/login",
             "/user/register",
             "/user/identify-login",
+            "/api/v1/product/wea-product/page",
+            "/api/v1/product/wea-market-data",
+            "/api/v1/message/wea-news/page",
     };
 
     /** JWT Cookie 名称（httpOnly，防 XSS 窃取） */

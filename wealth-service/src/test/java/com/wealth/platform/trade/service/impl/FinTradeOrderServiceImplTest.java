@@ -175,7 +175,7 @@ class FinTradeOrderServiceImplTest {
 
         when(tradeOrderMapper.selectPage(any(Page.class), any(LambdaQueryWrapper.class))).thenReturn(mockPage);
 
-        IPage<FinTradeOrderVO> result = tradeOrderService.pageOrders(page, 100L, 1);
+        IPage<FinTradeOrderVO> result = tradeOrderService.pageOrders(page, 100L, null, null, 1);
 
         assertEquals(1, result.getTotal());
         assertEquals(1, result.getRecords().size());
@@ -191,7 +191,7 @@ class FinTradeOrderServiceImplTest {
 
         when(tradeOrderMapper.selectPage(any(Page.class), any(LambdaQueryWrapper.class))).thenReturn(mockPage);
 
-        IPage<FinTradeOrderVO> result = tradeOrderService.pageOrders(page, null, null);
+        IPage<FinTradeOrderVO> result = tradeOrderService.pageOrders(page, null, null, null, null);
 
         assertEquals(3, result.getTotal());
     }

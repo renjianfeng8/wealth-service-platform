@@ -135,7 +135,7 @@ class FinProductServiceImplTest {
 
         when(finProductMapper.selectPage(any(Page.class), any(LambdaQueryWrapper.class))).thenReturn(mockPage);
 
-        IPage<FinProductVO> result = productService.pageProducts(page, 1);
+        IPage<FinProductVO> result = productService.pageProducts(page, null, null, 1);
 
         assertEquals(1, result.getTotal());
         assertEquals(1, result.getRecords().size());
@@ -151,7 +151,7 @@ class FinProductServiceImplTest {
 
         when(finProductMapper.selectPage(any(Page.class), any(LambdaQueryWrapper.class))).thenReturn(mockPage);
 
-        IPage<FinProductVO> result = productService.pageProducts(page, null);
+        IPage<FinProductVO> result = productService.pageProducts(page, null, null, null);
 
         assertEquals(2, result.getTotal());
         verify(finProductMapper).selectPage(any(Page.class), any(LambdaQueryWrapper.class));

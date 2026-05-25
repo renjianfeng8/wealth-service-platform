@@ -1,5 +1,6 @@
 package com.wealth.platform.product.service;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.wealth.platform.product.dto.FinMarketDataDTO;
 import com.wealth.platform.product.entity.WeaMarketData;
@@ -25,4 +26,7 @@ public interface FinMarketDataService extends IService<WeaMarketData> {
 
     // 删除
     boolean deleteMarketData(Long id);
+
+    // 分页查询（带产品代码筛选）
+    IPage<WeaMarketData> pageWithFilter(Integer pageNum, Integer pageSize, String productCode);
 }

@@ -94,12 +94,12 @@ async function fetchProducts() {
 }
 
 async function fetchMarketData() {
-  const res = await request.get('/product/wea-market-data/list')
+  const res = await request.get('/product/wea-market-data')
   marketData.value = res.data ?? []
 }
 
 async function fetchNews() {
-  const res = await request.get('/message/news/page', { params: { pageNum: 1, pageSize: 5 } })
+  const res = await request.get('/message/wea-news/page', { params: { pageNum: 1, pageSize: 5 } })
   news.value = res.data?.records ?? []
 }
 

@@ -1,5 +1,6 @@
 package com.wealth.platform.product.service;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.wealth.platform.product.dto.FinUserFavoriteDTO;
 import com.wealth.platform.product.entity.WeaUserFavorite;
@@ -11,6 +12,8 @@ import java.util.List;
  * 用户自选关注表业务层接口（从 wealth-account 迁移合并）
  */
 public interface FinUserFavoriteService extends IService<WeaUserFavorite> {
+
+    IPage<WeaUserFavorite> pageWithFilter(Integer pageNum, Integer pageSize, Long userId, String productCode);
 
     FinUserFavoriteVO getFavoriteById(Long id);
 

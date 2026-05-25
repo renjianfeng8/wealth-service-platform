@@ -73,9 +73,10 @@ public class MarketDataController {
     @GetMapping("/page")
     public Result<IPage<FinMarketDataVO>> page(
             @RequestParam(defaultValue = "1") Integer pageNum,
-            @RequestParam(defaultValue = "10") Integer pageSize) {
-        Page<WeaMarketData> page = new Page<>(pageNum, pageSize);
-        return Result.success(BeanConvertUtil.convertPage(finMarketDataService.page(page), FinMarketDataVO.class));
+            @RequestParam(defaultValue = "10") Integer pageSize,
+            @RequestParam(required = false) String productCode) {
+        IPage<WeaMarketData> page = finMarketDataService.pageWithFilter(pageNum, pageSize, productCode);
+        return Result.success(BeanConvertUtil.convertPage(page, FinMarketDataVO.class));
     }
 
     @Operation(summary = "创建行情数据")

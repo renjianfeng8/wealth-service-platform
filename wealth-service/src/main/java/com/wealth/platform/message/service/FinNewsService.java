@@ -17,7 +17,7 @@ public interface FinNewsService extends IService<WeaNews> {
 
     List<FinNewsVO> getNewsList();
 
-    IPage<FinNewsVO> pageNews(Page<WeaNews> page, Integer newsType);
+    IPage<FinNewsVO> pageNews(Page<WeaNews> page, String title, String source, Integer newsType);
 
     boolean createNews(FinNewsDTO dto);
 

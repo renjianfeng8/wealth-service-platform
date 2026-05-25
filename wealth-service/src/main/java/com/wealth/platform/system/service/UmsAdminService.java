@@ -1,5 +1,6 @@
 package com.wealth.platform.system.service;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.wealth.common.dto.LoginDTO;
 import com.wealth.common.utils.JwtUtil.TokenPair;
@@ -18,4 +19,7 @@ public interface UmsAdminService extends IService<UmsAdmin> {
 
     // 校验指定用户是否有权访问指定 URI
     boolean hasPermission(Long adminId, String uri);
+
+    // 分页条件查询
+    IPage<UmsAdmin> pageWithFilter(Integer pageNum, Integer pageSize, String username, Integer status);
 }

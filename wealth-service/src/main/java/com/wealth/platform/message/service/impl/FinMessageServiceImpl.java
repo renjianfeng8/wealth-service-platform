@@ -15,6 +15,7 @@ import com.wealth.platform.message.service.FinMessageService;
 import com.wealth.platform.message.vo.FinMessageVO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -59,21 +60,19 @@ public class FinMessageServiceImpl extends ServiceImpl<FinMessageMapper, WeaMess
     }
 
     @Override
-    public IPage<FinMessageVO> pageMessages(Page<WeaMessage> page, Long userId) {
+    public IPage<FinMessageVO> pageMessages(Page<WeaMessage> page, Long userId, String msgTitle, Integer msgType) {
         LambdaQueryWrapper<WeaMessage> wrapper = new LambdaQueryWrapper<>();
         if (userId != null) {
             wrapper.eq(WeaMessage::getUserId, userId);
         }
+        if (StringUtils.hasText(msgTitle)) {
+            wrapper.like(WeaMessage::getMsgTitle, msgTitle);
+        }
+        if (msgType != null) {
+            wrapper.eq(WeaMessage::getMsgType, msgType);
+        }
         wrapper.orderByDesc(WeaMessage::getCreateTime);
-
-        IPage<WeaMessage> entityPage = page(page, wrapper);
-        Page<FinMessageVO> voPage = new Page<>();
-        voPage.setCurrent(entityPage.getCurrent());
-        voPage.setSize(entityPage.getSize());
-        voPage.setTotal(entityPage.getTotal());
-        voPage.setPages(entityPage.getPages());
-        voPage.setRecords(BeanConvertUtil.convertList(entityPage.getRecords(), FinMessageVO.class));
-        return voPage;
+        return BeanConvertUtil.convertPage(baseMapper.selectPage(page, wrapper), FinMessageVO.class);
     }
 
     @Override

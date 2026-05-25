@@ -72,16 +72,19 @@ public class UmsResourceController {
      *
      * @param pageNum 页码
      * @param pageSize 每页条数
+     * @param name    资源名称（可选）
+     * @param url     资源路径（可选）
      * @return 分页结果
      */
     @Operation(summary = "分页查询后台资源列表")
     @GetMapping("/page")
     public Result<IPage<UmsResourceVO>> page(
             @RequestParam(defaultValue = "1") Integer pageNum,
-            @RequestParam(defaultValue = "10") Integer pageSize) {
-
-        Page<UmsResource> page = new Page<>(pageNum, pageSize);
-        return Result.success(BeanConvertUtil.convertPage(umsResourceService.page(page), UmsResourceVO.class));
+            @RequestParam(defaultValue = "10") Integer pageSize,
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String url) {
+        IPage<UmsResource> page = umsResourceService.pageWithFilter(pageNum, pageSize, name, url);
+        return Result.success(BeanConvertUtil.convertPage(page, UmsResourceVO.class));
     }
 
     /**

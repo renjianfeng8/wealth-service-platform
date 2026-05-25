@@ -121,6 +121,9 @@
 .search-card {
   margin-bottom: 0;
 }
+.search-card .el-form-item {
+  margin-bottom: 0;
+}
 
 /* ===== 滚动条 ===== */
 * { scrollbar-width: thin; scrollbar-color: var(--fl-border) transparent; }

@@ -1,5 +1,6 @@
 package com.wealth.platform.system.service;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.wealth.platform.system.entity.UmsAdminRoleRelation;
 import java.util.List;
@@ -11,5 +12,8 @@ public interface UmsAdminRoleRelationService extends IService<UmsAdminRoleRelati
 
     // 根据管理员id获取所有角色id
     List<Long> getRoleIdByAdminId(Long adminId);
+
+    // 分页条件查询
+    IPage<UmsAdminRoleRelation> pageWithFilter(Integer pageNum, Integer pageSize, Long adminId);
 }
 

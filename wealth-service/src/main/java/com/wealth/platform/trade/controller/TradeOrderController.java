@@ -51,9 +51,11 @@ public class TradeOrderController {
             @RequestParam(defaultValue = "1") Integer pageNum,
             @RequestParam(defaultValue = "10") Integer pageSize,
             @RequestParam(required = false) Long userId,
+            @RequestParam(required = false) String orderNo,
+            @RequestParam(required = false) String productCode,
             @RequestParam(required = false) Integer orderStatus) {
         Page<WeaTradeOrder> page = new Page<>(pageNum, pageSize);
-        return Result.success(finTradeOrderService.pageOrders(page, userId, orderStatus));
+        return Result.success(finTradeOrderService.pageOrders(page, userId, orderNo, productCode, orderStatus));
     }
 
     @Operation(summary = "创建交易委托单（支持幂等键防重）")

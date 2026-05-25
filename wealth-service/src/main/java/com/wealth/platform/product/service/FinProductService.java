@@ -17,7 +17,7 @@ public interface FinProductService extends IService<WeaProduct> {
 
     List<FinProductVO> getProductList();
 
-    IPage<FinProductVO> pageProducts(Page<WeaProduct> page, Integer productType);
+    IPage<FinProductVO> pageProducts(Page<WeaProduct> page, String productName, String productCode, Integer productType);
 
     boolean createProduct(FinProductDTO dto);
 

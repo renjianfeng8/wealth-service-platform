@@ -12,6 +12,7 @@ import com.wealth.platform.message.service.FinNewsService;
 import com.wealth.platform.message.vo.FinNewsVO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -47,21 +48,19 @@ public class FinNewsServiceImpl extends ServiceImpl<FinNewsMapper, WeaNews>
     }
 
     @Override
-    public IPage<FinNewsVO> pageNews(Page<WeaNews> page, Integer newsType) {
+    public IPage<FinNewsVO> pageNews(Page<WeaNews> page, String title, String source, Integer newsType) {
         LambdaQueryWrapper<WeaNews> wrapper = new LambdaQueryWrapper<>();
-        if (newsType != null && newsType > 0) {
+        if (StringUtils.hasText(title)) {
+            wrapper.like(WeaNews::getTitle, title);
+        }
+        if (StringUtils.hasText(source)) {
+            wrapper.like(WeaNews::getSource, source);
+        }
+        if (newsType != null) {
             wrapper.eq(WeaNews::getNewsType, newsType);
         }
-        wrapper.orderByDesc(WeaNews::getCreateTime);
-
-        IPage<WeaNews> entityPage = page(page, wrapper);
-        Page<FinNewsVO> voPage = new Page<>();
-        voPage.setCurrent(entityPage.getCurrent());
-        voPage.setSize(entityPage.getSize());
-        voPage.setTotal(entityPage.getTotal());
-        voPage.setPages(entityPage.getPages());
-        voPage.setRecords(BeanConvertUtil.convertList(entityPage.getRecords(), FinNewsVO.class));
-        return voPage;
+        wrapper.orderByDesc(WeaNews::getPublishTime);
+        return BeanConvertUtil.convertPage(baseMapper.selectPage(page, wrapper), FinNewsVO.class);
     }
 
     @Override

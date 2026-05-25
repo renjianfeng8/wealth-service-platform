@@ -52,9 +52,11 @@ public class ProductController {
     public Result<IPage<FinProductVO>> page(
             @RequestParam(defaultValue = "1") Integer pageNum,
             @RequestParam(defaultValue = "10") Integer pageSize,
+            @RequestParam(required = false) String productName,
+            @RequestParam(required = false) String productCode,
             @RequestParam(required = false) Integer productType) {
         Page<WeaProduct> page = new Page<>(pageNum, pageSize);
-        return Result.success(finProductService.pageProducts(page, productType));
+        return Result.success(finProductService.pageProducts(page, productName, productCode, productType));
     }
 
     @Operation(summary = "创建产品")

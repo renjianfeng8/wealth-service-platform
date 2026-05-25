@@ -124,6 +124,16 @@ function handleLogout() {
 .sidebar.collapsed {
   width: var(--fl-sidebar-collapsed-width);
 }
+.sidebar.collapsed :deep(.el-menu-item),
+.sidebar.collapsed :deep(.el-sub-menu__title) {
+  margin: 2px 0;
+  padding: 0 !important;
+  justify-content: center;
+}
+.sidebar.collapsed .logo-icon {
+  width: 100%;
+  justify-content: center;
+}
 .sidebar-logo {
   height: 56px;
   display: flex;

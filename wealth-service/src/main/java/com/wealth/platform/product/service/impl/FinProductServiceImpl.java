@@ -14,6 +14,7 @@ import com.wealth.common.exception.ServiceException;
 import com.wealth.common.utils.BeanConvertUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -58,21 +59,19 @@ public class FinProductServiceImpl extends ServiceImpl<FinProductMapper, WeaProd
     }
 
     @Override
-    public IPage<FinProductVO> pageProducts(Page<WeaProduct> page, Integer productType) {
+    public IPage<FinProductVO> pageProducts(Page<WeaProduct> page, String productName, String productCode, Integer productType) {
         LambdaQueryWrapper<WeaProduct> wrapper = new LambdaQueryWrapper<>();
-        if (productType != null && productType > 0) {
+        if (StringUtils.hasText(productName)) {
+            wrapper.like(WeaProduct::getProductName, productName);
+        }
+        if (StringUtils.hasText(productCode)) {
+            wrapper.like(WeaProduct::getProductCode, productCode);
+        }
+        if (productType != null) {
             wrapper.eq(WeaProduct::getProductType, productType);
         }
         wrapper.orderByAsc(WeaProduct::getSort);
-
-        IPage<WeaProduct> entityPage = page(page, wrapper);
-        Page<FinProductVO> voPage = new Page<>();
-        voPage.setCurrent(entityPage.getCurrent());
-        voPage.setSize(entityPage.getSize());
-        voPage.setTotal(entityPage.getTotal());
-        voPage.setPages(entityPage.getPages());
-        voPage.setRecords(BeanConvertUtil.convertList(entityPage.getRecords(), FinProductVO.class));
-        return voPage;
+        return BeanConvertUtil.convertPage(baseMapper.selectPage(page, wrapper), FinProductVO.class);
     }
 
     @Override

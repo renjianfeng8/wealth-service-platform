@@ -23,6 +23,7 @@ import com.wealth.platform.trade.vo.FinTradeOrderVO;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.UUID;
@@ -109,27 +110,22 @@ public class FinTradeOrderServiceImpl extends ServiceImpl<FinTradeOrderMapper, W
     }
 
     @Override
-    public IPage<FinTradeOrderVO> pageOrders(Page<WeaTradeOrder> page, Long userId, Integer orderStatus) {
+    public IPage<FinTradeOrderVO> pageOrders(Page<WeaTradeOrder> page, Long userId, String orderNo, String productCode, Integer orderStatus) {
         LambdaQueryWrapper<WeaTradeOrder> wrapper = new LambdaQueryWrapper<>();
         if (userId != null) {
             wrapper.eq(WeaTradeOrder::getUserId, userId);
         }
+        if (StringUtils.hasText(orderNo)) {
+            wrapper.like(WeaTradeOrder::getOrderNo, orderNo);
+        }
+        if (StringUtils.hasText(productCode)) {
+            wrapper.like(WeaTradeOrder::getProductCode, productCode);
+        }
         if (orderStatus != null) {
-            if (!OrderStatusEnum.isValidStatus(orderStatus)) {
-                throw new ServiceException(400, "无效的订单状态");
-            }
             wrapper.eq(WeaTradeOrder::getOrderStatus, orderStatus);
         }
         wrapper.orderByDesc(WeaTradeOrder::getCreateTime);
-
-        IPage<WeaTradeOrder> entityPage = page(page, wrapper);
-        Page<FinTradeOrderVO> voPage = new Page<>();
-        voPage.setCurrent(entityPage.getCurrent());
-        voPage.setSize(entityPage.getSize());
-        voPage.setTotal(entityPage.getTotal());
-        voPage.setPages(entityPage.getPages());
-        voPage.setRecords(BeanConvertUtil.convertList(entityPage.getRecords(), FinTradeOrderVO.class));
-        return voPage;
+        return BeanConvertUtil.convertPage(baseMapper.selectPage(page, wrapper), FinTradeOrderVO.class);
     }
 
     @Override

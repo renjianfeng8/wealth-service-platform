@@ -120,7 +120,7 @@ class FinNewsServiceImplTest {
 
         when(newsMapper.selectPage(any(Page.class), any(LambdaQueryWrapper.class))).thenReturn(mockPage);
 
-        IPage<FinNewsVO> result = newsService.pageNews(page, 1);
+        IPage<FinNewsVO> result = newsService.pageNews(page, null, null, 1);
 
         assertEquals(1, result.getTotal());
         assertEquals("测试资讯标题", result.getRecords().get(0).getTitle());
@@ -135,7 +135,7 @@ class FinNewsServiceImplTest {
 
         when(newsMapper.selectPage(any(Page.class), any(LambdaQueryWrapper.class))).thenReturn(mockPage);
 
-        IPage<FinNewsVO> result = newsService.pageNews(page, null);
+        IPage<FinNewsVO> result = newsService.pageNews(page, null, null, null);
 
         assertEquals(5, result.getTotal());
     }

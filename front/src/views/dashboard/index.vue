@@ -5,6 +5,11 @@
       <span>加载中...</span>
     </div>
 
+    <div v-if="loading" class="fl-loading">
+      <div class="fl-loading-spinner" />
+      <span>加载中...</span>
+    </div>
+
     <template v-else>
       <div class="fl-dashboard">
         <!-- Row 1: 核心数据卡片 -->
@@ -62,7 +67,22 @@
           </div>
         </div>
 
-        <!-- Row 2: 资产趋势 + 余额走势 -->
+        <!-- Row 2: 快捷入口 -->
+        <div class="fl-card">
+          <div class="fl-card-header">
+            <span class="fl-card-title">快捷入口</span>
+          </div>
+          <div class="fl-entry-grid">
+            <div v-for="e in entries" :key="e.label" class="fl-entry-item" @click="$router.push(e.path)">
+              <div class="fl-entry-icon" :style="{ background: e.bg }">
+                <el-icon :size="20"><component :is="e.icon" /></el-icon>
+              </div>
+              <span class="fl-entry-label">{{ e.label }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Row 3: 资产趋势 + 余额走势 -->
         <div class="fl-chart-row">
           <div class="fl-chart-col-main">
             <div class="fl-card">
@@ -100,7 +120,7 @@
           </div>
         </div>
 
-        <!-- Row 3: 产品涨跌卡片 -->
+        <!-- Row 4: 产品涨跌卡片 -->
         <div class="fl-mini-row">
           <div v-for="p in miniProducts" :key="p.productCode"
             :class="['fl-mini-card', (p.riseFallRate || 0) >= 0 ? 'fl-bdr-green' : 'fl-bdr-red']"
@@ -115,8 +135,8 @@
           </div>
         </div>
 
-        <!-- Row 4: K线图 + 行情列表 -->
-        <div class="fl-chart-row">
+        <!-- Row 5: K线图 + 行情列表 -->
+        <div class="fl-chart-row-kline">
           <div class="fl-chart-col-kline">
             <div class="fl-card">
               <div class="fl-card-header">
@@ -169,20 +189,6 @@
           </div>
         </div>
 
-        <!-- Row 5: 快捷入口 -->
-        <div class="fl-card">
-          <div class="fl-card-header">
-            <span class="fl-card-title">快捷入口</span>
-          </div>
-          <div class="fl-entry-grid">
-            <div v-for="e in entries" :key="e.label" class="fl-entry-item" @click="$router.push(e.path)">
-              <div class="fl-entry-icon" :style="{ background: e.bg }">
-                <el-icon :size="20"><component :is="e.icon" /></el-icon>
-              </div>
-              <span class="fl-entry-label">{{ e.label }}</span>
-            </div>
-          </div>
-        </div>
       </div>
     </template>
   </div>
@@ -594,7 +600,7 @@ async function fetchAll() {
   finally {
     loading.value = false
     await nextTick()
-    initAllCharts()
+    requestAnimationFrame(initAllCharts)
   }
 }
 
@@ -683,23 +689,33 @@ onUnmounted(disposeAllCharts)
   grid-template-columns: 2fr 1fr;
   gap: 14px;
 }
+
+/* K-line + Market list row — 固定右侧列表宽度 */
+.fl-chart-row-kline {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 14px;
+}
 .fl-chart-col-main,
-.fl-chart-col-side {
+.fl-chart-col-side,
+.fl-chart-col-kline,
+.fl-chart-col-list {
   display: flex;
   flex-direction: column;
 }
 .fl-chart-col-main .fl-card,
-.fl-chart-col-side .fl-card {
+.fl-chart-col-side .fl-card,
+.fl-chart-col-kline .fl-card {
   flex: 1;
   display: flex;
   flex-direction: column;
 }
 .fl-chart-box {
   flex: 1;
-  min-height: 200px;
+  min-height: 260px;
   width: 100%;
 }
-.fl-chart-kline { min-height: 380px; }
+.fl-chart-kline { min-height: 400px; }
 
 /* ---------- Time Filters ---------- */
 .fl-time-filters {
@@ -795,19 +811,10 @@ onUnmounted(disposeAllCharts)
 }
 
 /* ---------- K-line + List Row ---------- */
-.fl-chart-col-kline {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
 .fl-chart-col-kline .fl-card {
   flex: 1;
   display: flex;
   flex-direction: column;
-}
-.fl-chart-col-list {
-  width: 340px;
-  flex-shrink: 0;
 }
 .fl-card-list {
   display: flex;
@@ -823,7 +830,7 @@ onUnmounted(disposeAllCharts)
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 0;
+  padding: 10px 14px;
   border-bottom: 1px solid var(--fl-content-bg);
   transition: background 0.15s;
 }
@@ -896,8 +903,8 @@ onUnmounted(disposeAllCharts)
 
 /* ---------- Responsive ---------- */
 @media (max-width: 1024px) {
-  .fl-chart-row { grid-template-columns: 1fr; }
-  .fl-chart-col-list { width: 100%; }
+  .fl-chart-row,
+  .fl-chart-row-kline { grid-template-columns: 1fr; }
   .fl-stats-row { gap: 10px; }
 }
 @media (max-width: 768px) {

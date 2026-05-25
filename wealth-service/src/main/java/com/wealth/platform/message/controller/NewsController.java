@@ -49,9 +49,11 @@ public class NewsController {
     public Result<IPage<FinNewsVO>> page(
             @RequestParam(defaultValue = "1") Integer pageNum,
             @RequestParam(defaultValue = "10") Integer pageSize,
+            @RequestParam(required = false) String title,
+            @RequestParam(required = false) String source,
             @RequestParam(required = false) Integer newsType) {
         Page<WeaNews> page = new Page<>(pageNum, pageSize);
-        return Result.success(finNewsService.pageNews(page, newsType));
+        return Result.success(finNewsService.pageNews(page, title, source, newsType));
     }
 
     @Operation(summary = "创建财经资讯公告")

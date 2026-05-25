@@ -1,6 +1,7 @@
 package com.wealth.platform.product.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.wealth.platform.product.dto.FinMarketDataDTO;
@@ -10,6 +11,7 @@ import com.wealth.platform.product.service.FinMarketDataService;
 import com.wealth.platform.product.vo.FinMarketDataVO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import com.wealth.common.utils.BeanConvertUtil;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -60,5 +62,16 @@ public class FinMarketDataServiceImpl extends ServiceImpl<FinMarketDataMapper, W
     @Transactional(rollbackFor = Exception.class)
     public boolean deleteMarketData(Long id) {
         return removeById(id);
+    }
+
+    @Override
+    public IPage<WeaMarketData> pageWithFilter(Integer pageNum, Integer pageSize, String productCode) {
+        Page<WeaMarketData> page = new Page<>(pageNum, pageSize);
+        LambdaQueryWrapper<WeaMarketData> wrapper = new LambdaQueryWrapper<>();
+        if (StringUtils.hasText(productCode)) {
+            wrapper.like(WeaMarketData::getProductCode, productCode);
+        }
+        wrapper.orderByDesc(WeaMarketData::getMarketTime);
+        return baseMapper.selectPage(page, wrapper);
     }
 }

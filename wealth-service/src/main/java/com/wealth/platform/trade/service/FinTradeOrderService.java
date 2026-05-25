@@ -18,7 +18,7 @@ public interface FinTradeOrderService extends IService<WeaTradeOrder> {
 
     List<FinTradeOrderVO> getOrderList();
 
-    IPage<FinTradeOrderVO> pageOrders(Page<WeaTradeOrder> page, Long userId, Integer orderStatus);
+    IPage<FinTradeOrderVO> pageOrders(Page<WeaTradeOrder> page, Long userId, String orderNo, String productCode, Integer orderStatus);
 
     boolean createOrder(FinTradeOrderDTO dto);
 

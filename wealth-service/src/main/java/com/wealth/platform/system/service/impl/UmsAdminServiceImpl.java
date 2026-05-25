@@ -1,5 +1,8 @@
 package com.wealth.platform.system.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.wealth.common.exception.ServiceException;
 import com.wealth.common.dto.LoginDTO;
@@ -254,6 +257,20 @@ public class UmsAdminServiceImpl extends ServiceImpl<UmsAdminMapper, UmsAdmin> i
                 .stream()
                 .map(UmsResource::getUrl)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public IPage<UmsAdmin> pageWithFilter(Integer pageNum, Integer pageSize, String username, Integer status) {
+        Page<UmsAdmin> page = new Page<>(pageNum, pageSize);
+        LambdaQueryWrapper<UmsAdmin> wrapper = new LambdaQueryWrapper<>();
+        if (StringUtils.hasText(username)) {
+            wrapper.like(UmsAdmin::getUsername, username);
+        }
+        if (status != null) {
+            wrapper.eq(UmsAdmin::getStatus, status);
+        }
+        wrapper.orderByDesc(UmsAdmin::getCreateTime);
+        return baseMapper.selectPage(page, wrapper);
     }
 
     @Override

@@ -21,7 +21,7 @@
       <el-table :data="tableData" stripe v-loading="loading" border>
         <el-table-column prop="id" label="ID" width="200" />
         <el-table-column prop="productName" label="产品名称" min-width="160" />
-        <el-table-column prop="productCode" label="编码" width="120" />
+        <el-table-column prop="productCode" label="编码" min-width="120" />
         <el-table-column prop="productType" label="类型" width="80">
           <template #default="{ row }"><el-tag>{{ row.productType===1?'股票':row.productType===2?'基金':'其他' }}</el-tag></template>
         </el-table-column>

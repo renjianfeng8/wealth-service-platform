@@ -88,10 +88,11 @@ public class UmsAdminController {
     @Operation(summary = "分页查询")
     public Result<IPage<UmsAdminVO>> page(
             @RequestParam(defaultValue = "1") Integer pageNum,
-            @RequestParam(defaultValue = "10") Integer pageSize) {
-
-        Page<UmsAdmin> page = new Page<>(pageNum, pageSize);
-        return Result.success(BeanConvertUtil.convertPage(umsAdminService.page(page), UmsAdminVO.class));
+            @RequestParam(defaultValue = "10") Integer pageSize,
+            @RequestParam(required = false) String username,
+            @RequestParam(required = false) Integer status) {
+        IPage<UmsAdmin> page = umsAdminService.pageWithFilter(pageNum, pageSize, username, status);
+        return Result.success(BeanConvertUtil.convertPage(page, UmsAdminVO.class));
     }
 
     @PostMapping

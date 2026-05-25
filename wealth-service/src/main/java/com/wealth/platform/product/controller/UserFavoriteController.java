@@ -1,7 +1,6 @@
 package com.wealth.platform.product.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.wealth.common.audit.AntiReplay;
 import com.wealth.common.audit.AuditLog;
 import com.wealth.common.result.Result;
@@ -52,9 +51,11 @@ public class UserFavoriteController {
     @GetMapping("/page")
     public Result<IPage<FinUserFavoriteVO>> page(
             @RequestParam(defaultValue = "1") Integer pageNum,
-            @RequestParam(defaultValue = "10") Integer pageSize) {
-        Page<WeaUserFavorite> page = new Page<>(pageNum, pageSize);
-        return Result.success(BeanConvertUtil.convertPage(finUserFavoriteService.page(page), FinUserFavoriteVO.class));
+            @RequestParam(defaultValue = "10") Integer pageSize,
+            @RequestParam(required = false) Long userId,
+            @RequestParam(required = false) String productCode) {
+        IPage<WeaUserFavorite> page = finUserFavoriteService.pageWithFilter(pageNum, pageSize, userId, productCode);
+        return Result.success(BeanConvertUtil.convertPage(page, FinUserFavoriteVO.class));
     }
 
     @Operation(summary = "创建用户自选关注")

@@ -52,9 +52,10 @@ public class UmsRoleResourceRelationController {
     @GetMapping("/page")
     public Result<IPage<UmsRoleResourceRelationVO>> page(
             @RequestParam(defaultValue = "1") Integer pageNum,
-            @RequestParam(defaultValue = "10") Integer pageSize) {
-        Page<UmsRoleResourceRelation> page = new Page<>(pageNum, pageSize);
-        return Result.success(BeanConvertUtil.convertPage(umsRoleResourceRelationService.page(page), UmsRoleResourceRelationVO.class));
+            @RequestParam(defaultValue = "10") Integer pageSize,
+            @RequestParam(required = false) Long roleId) {
+        IPage<UmsRoleResourceRelation> page = umsRoleResourceRelationService.pageWithFilter(pageNum, pageSize, roleId);
+        return Result.success(BeanConvertUtil.convertPage(page, UmsRoleResourceRelationVO.class));
     }
 
     @Operation(summary = "创建")
