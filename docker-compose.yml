@@ -219,6 +219,27 @@ services:
     networks:
       - wealth-net
 
+  front-landing:
+    image: ghcr.io/renjianfeng8/wealth-service-platform/wealth-front-landing:latest
+    container_name: wealth-front-landing
+    mem_limit: 32m
+    memswap_limit: 48m
+    ports:
+      - "3003:80"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://localhost:80/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    restart: unless-stopped
+    logging:
+      options:
+        max-size: "50m"
+        max-file: "3"
+    networks:
+      - wealth-net
+
   mysql-backup:
     image: alpine:latest
     container_name: wealth-mysql-backup
