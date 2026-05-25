@@ -53,6 +53,27 @@ public class JwtUtil {
         return generateToken(username, accessExpire);
     }
 
+    /** 生成带 userType 的 Token */
+    public String generateToken(String username, String userType) {
+        return Jwts.builder()
+                .id(UUID.randomUUID().toString())
+                .subject(username)
+                .claim("userType", userType)
+                .expiration(new Date(System.currentTimeMillis() + accessExpire))
+                .signWith(getSigningKey())
+                .compact();
+    }
+
+    /** 从 Token 获取 userType */
+    public String getUserTypeFromToken(String token) {
+        Claims claims = Jwts.parser()
+                .verifyWith(getSigningKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+        return claims.get("userType", String.class);
+    }
+
     /** 生成 access_token（短时效） */
     public String generateAccessToken(String username) {
         return generateToken(username, accessExpire);

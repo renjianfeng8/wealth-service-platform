@@ -58,9 +58,11 @@ public class UserController {
     @Operation(summary = "分页查询用户")
     public Result<IPage<UserVO>> page(
             @RequestParam(defaultValue = "1") Integer pageNum,
-            @RequestParam(defaultValue = "10") Integer pageSize) {
-        Page<User> page = new Page<>(pageNum, pageSize);
-        return Result.success(BeanConvertUtil.convertPage(userService.page(page), UserVO.class));
+            @RequestParam(defaultValue = "10") Integer pageSize,
+            @RequestParam(required = false) String username,
+            @RequestParam(required = false) Integer status) {
+        IPage<User> page = userService.pageWithFilter(pageNum, pageSize, username, status);
+        return Result.success(BeanConvertUtil.convertPage(page, UserVO.class));
     }
 
     @PostMapping
@@ -127,6 +129,13 @@ public class UserController {
         cookie.setMaxAge(1800); // 30 分钟，与 access_token 有效期一致
         servletResponse.addCookie(cookie);
         return Result.success(loginVO);
+    }
+
+    @PostMapping("/identify-login")
+    @Operation(summary = "统一登录（自动识别用户类型）")
+    @AuditLog(module = "用户管理", operation = "统一登录")
+    public Result<LoginVO> identifyLogin(@Valid @RequestBody LoginDTO dto) {
+        return Result.success(userService.identifyLogin(dto));
     }
 
     @PostMapping("/resetPassword")

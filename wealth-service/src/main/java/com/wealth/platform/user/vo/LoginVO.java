@@ -16,4 +16,7 @@ public class LoginVO {
 
     @Schema(description = "用户昵称")
     private String nickname;
+
+    @Schema(description = "用户类型 admin/user")
+    private String userType;
 }
