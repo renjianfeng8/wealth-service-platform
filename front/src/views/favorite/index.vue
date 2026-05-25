@@ -12,8 +12,8 @@
       <div style="margin-bottom:16px;"><el-button type="primary" @click="handleAdd">新增自选</el-button></div>
       <el-table :data="tableData" stripe v-loading="loading" border empty-text="暂无数据">
         <el-table-column prop="id" label="ID" width="60" />
-        <el-table-column prop="userId" label="用户ID" width="70" />
-        <el-table-column prop="productCode" label="产品编码" width="120" />
+        <el-table-column prop="userId" label="用户ID" min-width="80" />
+        <el-table-column prop="productCode" label="产品编码" min-width="140" />
         <el-table-column prop="createTime" label="添加时间" width="160" :formatter="(_r:any,_c:any,v:any)=>formatDateTime(v)" />
         <el-table-column label="操作" width="180" fixed="right">
           <template #default="{ row }">
