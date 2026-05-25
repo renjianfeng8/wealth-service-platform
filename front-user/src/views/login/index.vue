@@ -75,11 +75,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useUserStore } from '@/store/index'
+import { ElMessage } from 'element-plus'
 import { User, Lock } from '@element-plus/icons-vue'
 import type { FormInstance, FormRules } from 'element-plus'
+import { setToken, setStoredUser } from '@/utils/auth'
 
 const router = useRouter()
 const route = useRoute()
@@ -113,6 +115,18 @@ async function handleLogin() {
     loading.value = false
   }
 }
+
+// ---- URL token auto-login (来自统一登录跳转) ----
+onMounted(() => {
+  const params = new URLSearchParams(window.location.search)
+  const token = params.get('token')
+  if (token) {
+    setToken(token)
+    setStoredUser({ username: '用户' })
+    ElMessage.success('登录成功')
+    router.push('/')
+  }
+})
 </script>
 
 <style scoped>

@@ -86,6 +86,7 @@ import { User, Lock, View, Hide } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
 import { useUserStore } from '@/store/index'
+import { setToken, setStoredUser } from '@/utils/auth'
 
 const route = useRoute()
 const router = useRouter()
@@ -268,6 +269,16 @@ onMounted(() => {
   updateEyeCenters()
   window.addEventListener('resize', updateEyeCenters)
   scheduleNextBlink()
+
+  // URL token auto-login（来自统一门户登录跳转）
+  const params = new URLSearchParams(window.location.search)
+  const token = params.get('token')
+  if (token) {
+    setToken(token)
+    setStoredUser({ username: '管理员' })
+    ElMessage.success('登录成功')
+    router.push('/')
+  }
 })
 
 onUnmounted(() => {

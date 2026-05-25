@@ -56,8 +56,9 @@ async function handleLogin() {
     // 整页跳转到对应 SPA
     // 开发环境不同端口，生产环境 nginx 同域路由
     const isDev = window.location.port === '3002'
-    const adminUrl = isDev ? 'http://localhost:3000' : '/admin/#/'
-    const userUrl = isDev ? 'http://localhost:3001' : '/user/#/'
+    const tokenParam = token ? `?token=${encodeURIComponent(token)}` : ''
+    const adminUrl = isDev ? `http://localhost:3000${tokenParam}` : '/admin/#/'
+    const userUrl = isDev ? `http://localhost:3001${tokenParam}` : '/user/#/'
     const redirectUrl = userType === 'admin' ? adminUrl : userUrl
     window.location.href = redirectUrl
   } catch {
