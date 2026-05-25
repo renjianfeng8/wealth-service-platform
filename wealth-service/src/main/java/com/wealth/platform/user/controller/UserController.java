@@ -134,15 +134,8 @@ public class UserController {
     @PostMapping("/identify-login")
     @Operation(summary = "统一登录（自动识别用户类型）")
     @AuditLog(module = "用户管理", operation = "统一登录")
-    public Result<LoginVO> identifyLogin(@Valid @RequestBody LoginDTO dto, HttpServletResponse servletResponse) {
+    public Result<LoginVO> identifyLogin(@Valid @RequestBody LoginDTO dto) {
         LoginVO loginVO = userService.identifyLogin(dto);
-        // 设置 httpOnly Cookie，使跳转后 SPA 能自动携带 token
-        Cookie cookie = new Cookie("wealth_token", loginVO.getToken());
-        cookie.setHttpOnly(true);
-        cookie.setSecure(true);
-        cookie.setPath("/");
-        cookie.setMaxAge(1800);
-        servletResponse.addCookie(cookie);
         return Result.success(loginVO);
     }
 

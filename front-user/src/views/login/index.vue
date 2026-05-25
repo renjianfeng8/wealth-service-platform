@@ -116,15 +116,22 @@ async function handleLogin() {
   }
 }
 
-// ---- URL token auto-login (来自统一登录跳转) ----
+// ---- URL token auto-login (来自统一登录跳转，仅处理一次) ----
 onMounted(() => {
   const params = new URLSearchParams(window.location.search)
   const token = params.get('token')
-  if (token) {
+  if (token && !userStore.isLoggedIn) {
     setToken(token)
     setStoredUser({ username: '用户' })
+    window.history.replaceState({}, '', window.location.pathname + window.location.hash)
     ElMessage.success('登录成功')
     router.push('/')
+    return
+  }
+
+  // 无 token 直接访问 → 跳转到统一登录页
+  if (!userStore.isLoggedIn) {
+    window.location.href = 'http://localhost:3002/login'
   }
 })
 </script>

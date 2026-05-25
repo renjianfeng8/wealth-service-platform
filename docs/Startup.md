@@ -6,6 +6,7 @@
 
 - **管理员后台**（front/）：后台管理系统，面向运营人员，管理用户、产品、权限等
 - **用户前台**（front-user/）：用户端门户，面向普通用户，提供行情查看、交易委托、自选管理等
+- **统一登录门户**（front-landing/）：前端统一入口，承载登录页，按角色自动跳转对应 SPA
 
 后端采用 Gateway + 业务服务两层架构，统一通过 Nginx / Gateway 对外提供服务。
 
@@ -175,9 +176,33 @@ npm run dev
 - Vite 代理：`/api` → `http://localhost:8080`（网关）
 - 登录账号：`zhangwei` / `123456`
 
+### 8.3 统一登录门户
+
+```bash
+cd front-landing
+npm install
+npm run dev
+```
+
+- 端口：**3002**
+- Vite 代理：`/api/v1` → `http://localhost:8081`（直连 wealth-service，不走网关）
+- 统一登录页包含角色表情动画、眼球追踪交互效果
+
 ---
 
-## 九、全链路验证
+## 九、统一登录流程
+
+```
+用户访问 http://localhost:3002/login
+  → 输入用户名密码
+  → POST /api/v1/user/identify-login（后端自动识别用户类型）
+  → 管理员 → 跳转 http://localhost:3000/admin/?token=xxx
+  → 普通用户 → 跳转 http://localhost:3001/user/?token=xxx
+  → 目标 SPA 登录页自动读取 token 完成登录
+  → URL 中 token 被清除，进入首页
+```
+
+> **注意**：front-landing 不持久化 token（纯内存存储），刷新页面即清零。退出登录后自动跳转回 `http://localhost:3002/login`。
 
 ### 9.1 登录接口
 
@@ -229,8 +254,9 @@ curl -s -H "Authorization: Bearer $TOKEN" \
 
 | 应用 | URL |
 |------|-----|
-| 管理员后台 | http://localhost:3000 |
-| 用户前台 | http://localhost:3001 |
+| 统一登录门户 | http://localhost:3002 |
+| 管理员后台 | http://localhost:3000/admin/ |
+| 用户前台 | http://localhost:3001/user/ |
 | Knife4j 文档 | http://localhost:8080/doc.html |
 
 ---
@@ -270,15 +296,16 @@ npx playwright test
 | **前端** | | |
 | 管理员后台 | **3000** | front/ |
 | 用户前台 | **3001** | front-user/ |
+| 统一登录门户 | **3002** | front-landing/ |
 
 ---
 
 ## 十二、测试账号
 
-| 身份 | 用户名 | 密码 | 所属表 | 登录端 |
-|------|--------|------|--------|--------|
-| 管理员 | admin | admin123 | ums_admin | 管理员后台（3000）|
-| 前台用户 | zhangwei | 123456 | sys_user | 用户前台（3001）|
+| 身份 | 用户名 | 密码 | 所属表 | 统一登录入口 |
+|------|--------|------|--------|------------|
+| 管理员 | admin | admin123 | ums_admin | http://localhost:3002 |
+| 前台用户 | zhangwei | 123456 | sys_user | http://localhost:3002 |
 
 ---
 
@@ -304,7 +331,7 @@ taskkill /PID <PID> /F
 
 ### 跨域问题
 
-网关已全局配置 CORS，允许 `localhost:3000`、`localhost:3001`、`localhost:5173`。如果遇到跨域错误，检查网关是否正常运行。
+网关已全局配置 CORS，允许 `localhost:3000`、`localhost:3001`、`localhost:3002`、`localhost:5173`。front-landing 的 Vite 代理直接对接 wealth-service（`:8081`）不走网关，如需直连测试也需要对应 CORS 配置。
 
 ---
 
@@ -325,6 +352,7 @@ wealth-service（后启动，所有业务域合一）
   ↓              ↓
 front/         front-user/
 (3000)         (3001)
-```
+
+> **说明**：`front-landing`（端口 3002）为统一登录门户，承载登录页，登录后自动跳转至对应 SPA。开发时可按需独立启动，生产环境通过 Nginx 直接 serve 静态文件。
 
 > 每次修改 `wealth-common` 后，必须重新执行 `mvn clean install -pl wealth-common -DskipTests`。

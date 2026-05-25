@@ -67,7 +67,7 @@ function goSearch() {
 
 function handleLogout() {
   userStore.logout()
-  router.push('/login')
+  window.location.href = 'http://localhost:3002/login'
 }
 </script>
 

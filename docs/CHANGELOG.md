@@ -5,6 +5,31 @@
 
 ---
 
+## v1.8.1 (2026-05-25)
+
+### 统一域名入口改造
+
+- **新增统一登录门户（front-landing/）**：独立 SPA（端口 3002），承载统一登录页，作为所有用户的访问入口，登录后按角色自动跳转对应 SPA
+- **双表统一登录接口**：`POST /user/identify-login` 自动识别用户类型（admin/user），返回 JWT token 和 userType
+- **URL token 跨 SPA 传递**：登录后通过 URL 查询参数（`?token=xxx`）将 JWT 传递给目标 SPA 完成自动登录，登录后立即清理 URL 参数
+- **登录页交互设计**：角色表情动画 + 眼球追踪 + 呼吸动画 + 密码显隐互动（闭眼/偷看表情），提升登录体验
+- **front-landing 纯内存存储**：token 仅存模块级变量，不持久化 localStorage，刷新页面即清零
+
+### 多 SPA 认证协调
+
+- **退出登录统一跳转**：管理后台和用户前台的退出操作均跳转至 `http://localhost:3002/login`，回到统一入口
+- **自动登录防循环**：SPA 登录页 `onMounted` 读取 URL token 后执行 `replaceState` 清除参数，防止退出后自动重新登录
+- **重定向路径修复**：landing 跳转 URL 补全基路径（`/admin/`、`/user/`），确保 Hash 路由正确加载
+
+### 文档治理
+
+- 删除已废弃文档：`stitch-ui-design-prompt.md`（已被统一入口设计取代）、`optimization-plan.md`（模块合并已完成）
+- 重命名 `incident-erconnection-closed.md` → `incident-connection-closed.md`（修复拼写错误）
+- 更新 `architecture.md`：新增前端三 SPA 架构说明、统一登录流程图、部署架构图更新
+- 更新 `Startup.md`：新增 front-landing 启动步骤、统一登录流程说明、端口表/账号表同步更新
+
+---
+
 ## v1.8.0 (2026-05-24)
 
 ### 架构重构：微服务 → 单体聚合

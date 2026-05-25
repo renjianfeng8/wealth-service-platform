@@ -1,24 +1,25 @@
-const TOKEN_KEY = 'wealth_token'
-const USER_KEY = 'wealth_user'
+// 内存存储，不持久化到 localStorage。
+// landing 页仅作为登录跳板，token 用完即弃，刷新页面后自动清零。
+let _token = ''
+let _user: { username: string; userType: string; nickname?: string } | null = null
 
 export function getToken(): string | null {
-  return localStorage.getItem(TOKEN_KEY)
+  return _token || null
 }
 
 export function setToken(token: string) {
-  localStorage.setItem(TOKEN_KEY, token)
+  _token = token
 }
 
 export function removeToken() {
-  localStorage.removeItem(TOKEN_KEY)
-  localStorage.removeItem(USER_KEY)
+  _token = ''
+  _user = null
 }
 
 export function setStoredUser(user: { username: string; userType: string; nickname?: string }) {
-  localStorage.setItem(USER_KEY, JSON.stringify(user))
+  _user = user
 }
 
 export function getStoredUser(): { username: string; userType: string; nickname?: string } | null {
-  const raw = localStorage.getItem(USER_KEY)
-  return raw ? JSON.parse(raw) : null
+  return _user
 }

@@ -125,7 +125,7 @@ const navItems = [
 function handleCommand(command: string) {
   if (command === 'logout') {
     userStore.logout()
-    router.push('/login')
+    window.location.href = 'http://localhost:3002/login'
   } else if (command === 'profile') {
     router.push('/profile')
   }

@@ -266,19 +266,28 @@ async function handleLogin() {
 
 // ---- Lifecycle ----
 onMounted(() => {
+  // URL token auto-login（来自统一门户登录跳转，仅处理一次）
+  const params = new URLSearchParams(window.location.search)
+  const token = params.get('token')
+  if (token && !userStore.isLoggedIn) {
+    setToken(token)
+    setStoredUser({ username: '管理员' })
+    // 清理 URL 中的 token 参数
+    window.history.replaceState({}, '', window.location.pathname + window.location.hash)
+    ElMessage.success('登录成功')
+    router.push('/')
+    return
+  }
+
+  // 无 token 直接访问管理后台 → 跳转到统一登录页
+  if (!userStore.isLoggedIn) {
+    window.location.href = 'http://localhost:3002/login'
+    return
+  }
+
   updateEyeCenters()
   window.addEventListener('resize', updateEyeCenters)
   scheduleNextBlink()
-
-  // URL token auto-login（来自统一门户登录跳转）
-  const params = new URLSearchParams(window.location.search)
-  const token = params.get('token')
-  if (token) {
-    setToken(token)
-    setStoredUser({ username: '管理员' })
-    ElMessage.success('登录成功')
-    router.push('/')
-  }
 })
 
 onUnmounted(() => {
