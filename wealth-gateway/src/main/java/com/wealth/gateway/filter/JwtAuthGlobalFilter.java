@@ -41,6 +41,7 @@ public class JwtAuthGlobalFilter implements GlobalFilter, Ordered {
             "/system/captcha",
             "/user/login",
             "/user/register",
+            "/user/identify-login",
     };
 
     /** JWT Cookie 名称（httpOnly，防 XSS 窃取） */

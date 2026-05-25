@@ -9,6 +9,7 @@ public class AuthConstant {
             "/system/captcha",
             "/user/login",
             "/user/register",
+            "/user/identify-login",
             "/product/wea-market-data/sse/**",
             "/actuator/**",
     };
