@@ -1,0 +1,157 @@
+:root {
+  --fl-sidebar-bg: #1a365d;
+  --fl-sidebar-text: #ffffffb3;
+  --fl-sidebar-active: #ffffff;
+  --fl-sidebar-active-bg: #2563eb;
+  --fl-sidebar-hover-bg: rgba(255,255,255,0.08);
+  --fl-sidebar-width: 220px;
+  --fl-sidebar-collapsed-width: 64px;
+
+  --fl-header-bg: #ffffff;
+  --fl-header-height: 56px;
+  --fl-header-border: #e4e7ed;
+
+  --fl-content-bg: #f0f2f5;
+  --fl-card-bg: #ffffff;
+  --fl-border: #e4e7ed;
+  --fl-border-light: #dcdfe6;
+
+  --fl-text: #303133;
+  --fl-text-secondary: #606266;
+  --fl-text-dim: #909399;
+  --fl-text-placeholder: #c0c4cc;
+
+  --fl-primary: #1a6dff;
+  --fl-primary-hover: #4a8aff;
+  --fl-primary-light: rgba(26, 109, 255, 0.08);
+
+  --fl-rise: #e74c3c;
+  --fl-fall: #27ae60;
+  --fl-rise-bg: rgba(231, 76, 60, 0.08);
+  --fl-fall-bg: rgba(39, 174, 96, 0.08);
+
+  --fl-radius: 10px;
+  --fl-radius-sm: 6px;
+  --fl-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  --fl-shadow-hover: 0 4px 20px rgba(0,0,0,0.10);
+}
+
+/* ===== 卡片 ===== */
+.fl-card {
+  background: var(--fl-card-bg);
+  border: 1px solid var(--fl-border);
+  border-radius: var(--fl-radius);
+  padding: 18px 20px;
+  transition: box-shadow 0.25s ease;
+}
+.fl-card:hover {
+  box-shadow: var(--fl-shadow-hover);
+}
+.fl-card-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--fl-text);
+}
+
+/* ===== 统计卡片 ===== */
+.fl-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+.fl-stat-card {
+  background: var(--fl-card-bg);
+  border: 1px solid var(--fl-border);
+  border-radius: var(--fl-radius);
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+.fl-stat-card:hover {
+  box-shadow: var(--fl-shadow-hover);
+  transform: translateY(-2px);
+}
+.fl-stat-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.fl-stat-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--fl-text);
+  line-height: 1.2;
+}
+.fl-stat-label {
+  font-size: 13px;
+  color: var(--fl-text-dim);
+  margin-bottom: 2px;
+}
+
+/* ===== 涨跌颜色 ===== */
+.fl-rise { color: var(--fl-rise); }
+.fl-fall { color: var(--fl-fall); }
+.fl-rise-bg { background: var(--fl-rise-bg); }
+.fl-fall-bg { background: var(--fl-fall-bg); }
+.fl-text-primary { color: var(--fl-primary); }
+
+/* ===== 分页 ===== */
+.pagination-wrap {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+/* ===== 页面标题 ===== */
+.page-header h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--fl-text);
+  margin: 0 0 16px 0;
+}
+
+/* ===== 搜索卡片 ===== */
+.search-card {
+  margin-bottom: 0;
+}
+
+/* ===== 滚动条 ===== */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #dcdfe6; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #c0c4cc; }
+
+/* ===== TagsView ===== */
+.tags-view-container {
+  background: #fff;
+  border-bottom: 1px solid var(--fl-border);
+  padding: 4px 8px 0;
+}
+.tags-view-container .el-tabs__header {
+  margin: 0;
+}
+.tags-view-container .el-tabs__nav-wrap::after {
+  height: 1px;
+}
+.tags-view-container .el-tabs__item {
+  height: 32px;
+  line-height: 32px;
+  font-size: 12px;
+  border: 1px solid var(--fl-border);
+  border-bottom: none;
+  border-radius: 4px 4px 0 0;
+  margin-right: 4px;
+  padding: 0 14px;
+}
+.tags-view-container .el-tabs__item.is-active {
+  background: var(--fl-content-bg);
+  border-bottom-color: var(--fl-content-bg);
+  color: var(--fl-primary);
+}
