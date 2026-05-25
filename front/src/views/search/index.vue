@@ -76,11 +76,11 @@ async function handleDelete(id: string) {
 
 .search-result-info {
   font-size: 14px;
-  color: var(--text-secondary);
+  color: var(--fl-text-secondary);
   margin-bottom: 16px;
   padding: 8px 12px;
-  background: var(--bg-table-stripe);
-  border-radius: var(--radius-sm);
-  border-left: 3px solid var(--primary);
+  background: var(--fl-content-bg);
+  border-radius: var(--fl-radius-sm);
+  border-left: 3px solid var(--fl-primary);
 }
 </style>

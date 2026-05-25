@@ -20,7 +20,7 @@
         </el-table-column>
         <el-table-column prop="price" label="价格" width="100" :formatter="(_r:any,_c:any,v:any)=>formatPrice(v)" />
         <el-table-column prop="riseFallRate" label="涨跌幅" width="100">
-          <template #default="{ row }"><span :style="{color: (row.riseFallRate||0)>=0?'#f56c6c':'#67c23a'}">{{ formatRate(row.riseFallRate) }}</span></template>
+          <template #default="{ row }"><span :class="(row.riseFallRate||0)>=0?'fl-rise':'fl-fall'">{{ formatRate(row.riseFallRate) }}</span></template>
         </el-table-column>
         <el-table-column prop="status" label="状态" width="70">
           <template #default="{ row }"><el-tag :type="statusTag(row.status)">{{ statusText(row.status) }}</el-tag></template>

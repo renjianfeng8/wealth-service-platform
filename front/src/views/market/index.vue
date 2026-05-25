@@ -18,7 +18,7 @@
         <el-table-column prop="highestPrice" label="最高价" width="100" :formatter="(_r:any,_c:any,v:any)=>formatPrice(v)" />
         <el-table-column prop="lowestPrice" label="最低价" width="100" :formatter="(_r:any,_c:any,v:any)=>formatPrice(v)" />
         <el-table-column prop="riseFallRate" label="涨跌幅" width="100">
-          <template #default="{ row }"><span :style="{color: (row.riseFallRate||0)>=0?'#f56c6c':'#67c23a'}">{{ formatRate(row.riseFallRate) }}</span></template>
+          <template #default="{ row }"><span :class="(row.riseFallRate||0)>=0?'fl-rise':'fl-fall'">{{ formatRate(row.riseFallRate) }}</span></template>
         </el-table-column>
         <el-table-column prop="marketTime" label="行情时间" width="160" :formatter="(_r:any,_c:any,v:any)=>formatDateTime(v)" />
         <el-table-column label="操作" width="180" fixed="right">

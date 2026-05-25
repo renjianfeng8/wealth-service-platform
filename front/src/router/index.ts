@@ -79,6 +79,16 @@ const routes: RouteRecordRaw[] = [
         meta: { title: '资讯管理', icon: 'Reading' },
       },
       {
+        path: 'system/admin-role',
+        component: () => import('@/views/system/adminRole/index.vue'),
+        meta: { title: '管理员角色关联', icon: 'Link' },
+      },
+      {
+        path: 'system/role-resource',
+        component: () => import('@/views/system/roleResource/index.vue'),
+        meta: { title: '角色资源关联', icon: 'Connection' },
+      },
+      {
         path: 'search',
         component: () => import('@/views/search/index.vue'),
         meta: { title: '搜索管理', icon: 'Search' },

@@ -198,7 +198,7 @@ import {
   Star, Reading, Search, Setting,
 } from '@element-plus/icons-vue'
 import type { WeaProduct } from '@/types'
-import '@/styles/light-theme.css'
+// Styles use global theme.css variables
 
 /* ============================================
    Types
@@ -604,7 +604,7 @@ onUnmounted(disposeAllCharts)
 
 <style scoped>
 /* ============================================
-   浅色理财服务仪表盘 — 样式模块化
+   仪表盘 — 仅布局和特有样式，通用样式见 theme.css
    ============================================ */
 
 .fl-dashboard {
@@ -623,50 +623,18 @@ onUnmounted(disposeAllCharts)
   justify-content: center;
   padding: 120px 0;
   gap: 16px;
-  color: #909399;
+  color: var(--fl-text-dim);
   font-size: 14px;
 }
 .fl-loading-spinner {
   width: 32px;
   height: 32px;
-  border: 3px solid #e4e7ed;
-  border-top-color: #1a6dff;
+  border: 3px solid var(--fl-border);
+  border-top-color: var(--fl-primary);
   border-radius: 50%;
   animation: fl-spin 0.8s linear infinite;
 }
 @keyframes fl-spin { to { transform: rotate(360deg); } }
-
-/* ---------- Cards ---------- */
-.fl-card {
-  background: #fff;
-  border: 1px solid #e4e7ed;
-  border-radius: 10px;
-  padding: 18px 20px;
-  transition: all 0.25s ease;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
-}
-.fl-card:hover {
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-}
-
-.fl-card-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-bottom: 14px;
-}
-.fl-card-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: #303133;
-}
-.fl-card-subtitle {
-  font-size: 11px;
-  color: #909399;
-  margin-top: 2px;
-}
 
 /* ---------- Stats Row ---------- */
 .fl-stats-row {
@@ -675,53 +643,10 @@ onUnmounted(disposeAllCharts)
   gap: 14px;
 }
 
-.fl-stat-card {
-  background: #fff;
-  border: 1px solid #e4e7ed;
-  border-radius: 10px;
-  padding: 20px;
-  display: flex;
-  align-items: flex-start;
-  gap: 16px;
-  transition: all 0.25s ease;
-  cursor: pointer;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
-}
-.fl-stat-card:hover {
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.10);
-  transform: translateY(-2px);
-}
-
-.fl-stat-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-.fl-icon-blue { background: rgba(26, 109, 255, 0.08); color: #1a6dff; }
+.fl-stat-body { flex: 1; min-width: 0; }
+.fl-icon-blue { background: var(--fl-primary-light); color: var(--fl-primary); }
 .fl-icon-yellow { background: rgba(245, 166, 35, 0.08); color: #f5a623; }
 .fl-icon-green { background: rgba(25, 190, 107, 0.08); color: #19be6b; }
-
-.fl-stat-body { flex: 1; min-width: 0; }
-.fl-stat-label {
-  font-size: 13px;
-  color: #909399;
-  margin-bottom: 4px;
-}
-.fl-stat-value {
-  font-size: 26px;
-  font-weight: 700;
-  color: #303133;
-  font-family: 'Courier New', monospace;
-  line-height: 1.2;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.fl-text-yellow { color: #f5a623; }
 
 .fl-stat-change {
   display: flex;
@@ -730,7 +655,27 @@ onUnmounted(disposeAllCharts)
   margin-top: 6px;
   font-size: 13px;
 }
-.fl-stat-sub { color: #c0c4cc; }
+.fl-stat-sub { color: var(--fl-text-placeholder); }
+
+.fl-text-yellow { color: #f5a623; }
+.fl-stat-value {
+  font-family: 'Courier New', monospace;
+}
+
+/* ---------- Card Header ---------- */
+.fl-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.fl-card-subtitle {
+  font-size: 11px;
+  color: var(--fl-text-dim);
+  margin-top: 2px;
+}
 
 /* ---------- Charts Row ---------- */
 .fl-chart-row {
@@ -764,8 +709,8 @@ onUnmounted(disposeAllCharts)
 }
 .fl-tm-btn {
   background: transparent;
-  border: 1px solid #dcdfe6;
-  color: #909399;
+  border: 1px solid var(--fl-border-light);
+  color: var(--fl-text-dim);
   padding: 3px 12px;
   border-radius: 5px;
   font-size: 12px;
@@ -774,12 +719,12 @@ onUnmounted(disposeAllCharts)
   font-family: inherit;
 }
 .fl-tm-btn:hover {
-  border-color: #1a6dff;
-  color: #1a6dff;
+  border-color: var(--fl-primary);
+  color: var(--fl-primary);
 }
 .fl-tm-btn.active {
-  background: #1a6dff;
-  border-color: #1a6dff;
+  background: var(--fl-primary);
+  border-color: var(--fl-primary);
   color: #fff;
 }
 
@@ -794,11 +739,11 @@ onUnmounted(disposeAllCharts)
   font-size: 16px;
   font-weight: 600;
   margin-right: 8px;
-  color: #303133;
+  color: var(--fl-text);
 }
 .fl-symbol-code {
   font-size: 12px;
-  color: #909399;
+  color: var(--fl-text-dim);
   font-weight: 400;
 }
 
@@ -814,23 +759,22 @@ onUnmounted(disposeAllCharts)
   gap: 10px;
 }
 .fl-mini-card {
-  background: #fff;
-  border: 1px solid #e4e7ed;
+  background: var(--fl-card-bg);
+  border: 1px solid var(--fl-border);
   border-radius: 8px;
   padding: 12px 10px;
   transition: all 0.2s ease;
   cursor: pointer;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
 }
 .fl-mini-card:hover {
-  box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+  box-shadow: var(--fl-shadow-hover);
   transform: translateY(-1px);
 }
 
 .fl-mc-name {
   font-size: 12px;
   font-weight: 600;
-  color: #303133;
+  color: var(--fl-text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -849,7 +793,6 @@ onUnmounted(disposeAllCharts)
   align-items: center;
   gap: 2px;
 }
-
 
 /* ---------- K-line + List Row ---------- */
 .fl-chart-col-kline {
@@ -881,7 +824,7 @@ onUnmounted(disposeAllCharts)
   align-items: center;
   justify-content: space-between;
   padding: 10px 0;
-  border-bottom: 1px solid #f0f2f5;
+  border-bottom: 1px solid var(--fl-content-bg);
   transition: background 0.15s;
 }
 .fl-list-row:last-child { border-bottom: none; }
@@ -895,17 +838,17 @@ onUnmounted(disposeAllCharts)
 .fl-list-name {
   font-size: 13px;
   font-weight: 600;
-  color: #303133;
+  color: var(--fl-text);
 }
 .fl-list-code {
   font-size: 10px;
-  color: #909399;
+  color: var(--fl-text-dim);
 }
 .fl-list-r { text-align: right; }
 .fl-list-price {
   font-size: 13px;
   font-weight: 600;
-  color: #303133;
+  color: var(--fl-text);
   font-family: 'Courier New', monospace;
 }
 .fl-list-chg {
@@ -915,7 +858,7 @@ onUnmounted(disposeAllCharts)
 }
 
 .fl-list-wrap::-webkit-scrollbar { width: 4px; }
-.fl-list-wrap::-webkit-scrollbar-thumb { background: #dcdfe6; border-radius: 2px; }
+.fl-list-wrap::-webkit-scrollbar-thumb { background: var(--fl-border-light); border-radius: 2px; }
 
 /* ---------- Entry Grid ---------- */
 .fl-entry-grid {
@@ -947,7 +890,7 @@ onUnmounted(disposeAllCharts)
 .fl-entry-item:hover .fl-entry-icon { transform: scale(1.08); }
 .fl-entry-label {
   font-size: 12px;
-  color: #606266;
+  color: var(--fl-text-secondary);
   white-space: nowrap;
 }
 
