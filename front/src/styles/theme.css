@@ -123,10 +123,11 @@
 }
 
 /* ===== 滚动条 ===== */
+* { scrollbar-width: thin; scrollbar-color: var(--fl-border) transparent; }
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #dcdfe6; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #c0c4cc; }
+::-webkit-scrollbar-thumb { background: var(--fl-border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--fl-text-placeholder); }
 
 /* ===== TagsView ===== */
 .tags-view-container {
