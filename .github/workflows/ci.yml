@@ -105,3 +105,4 @@ jobs:
           tags: |
             ghcr.io/renjianfeng8/wealth-service-platform/wealth-front:latest
             ghcr.io/renjianfeng8/wealth-service-platform/wealth-front:${{ github.sha }}
+
