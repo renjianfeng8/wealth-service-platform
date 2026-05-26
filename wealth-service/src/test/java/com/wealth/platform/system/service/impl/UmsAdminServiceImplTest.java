@@ -149,7 +149,7 @@ class UmsAdminServiceImplTest {
         verify(umsAdminMapper).insert(any(UmsAdmin.class));
     }
 
-@Test
+    @Test
     @DisplayName("根据资源ID获取URL列表-有数据")
     void getResourceUrlsByIds_WithData() {
         UmsResource res1 = new UmsResource();

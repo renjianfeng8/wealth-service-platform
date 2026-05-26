@@ -242,7 +242,7 @@ public class UmsAdminServiceImpl extends ServiceImpl<UmsAdminMapper, UmsAdmin> i
         return save(admin);
     }
 
-@Override
+    @Override
     public List<String> getResourceUrlsByIds(List<Long> resourceIds) {
         return resourceService.lambdaQuery()
                 .in(UmsResource::getId, resourceIds)
