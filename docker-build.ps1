@@ -4,14 +4,8 @@
 # ==============================================
 
 $modules = @(
-    @{Name="gateway"; Port=8080},
-    @{Name="system"; Port=8082},
-    @{Name="user"; Port=8083},
-    @{Name="product"; Port=8084},
-    @{Name="account"; Port=8086},
-    @{Name="trade"; Port=8085},
-    @{Name="message"; Port=8087},
-    @{Name="search"; Port=8089}
+    @{Name="gateway"; Port=8080; Dockerfile="wealth-gateway/Dockerfile"},
+    @{Name="service"; Port=8081; Dockerfile="wealth-service/Dockerfile"}
 )
 
 $rootDir = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -51,9 +45,9 @@ Write-Host "[Step 2/2] Building Docker images ..." -ForegroundColor Yellow
 foreach ($mod in $modules) {
     $name = $mod.Name
     $port = $mod.Port
+    $dockerfile = $mod.Dockerfile
     $imageName = "wealth-$name`:1.0.0"
     $buildDir = (Join-Path $rootDir "wealth-$name")
-    $dockerfile = (Join-Path $buildDir "Dockerfile")
 
     Write-Host ""
     Write-Host "  Building wealth-$name (port $port) ..." -ForegroundColor Yellow
