@@ -35,10 +35,6 @@ build/
 # Frontend build artifacts
 front/dist/
 front/node_modules/
-front-user/dist/
-front-user/node_modules/
-front-user/playwright-report/
-front-user/test-results/
 
 # Self-signed SSL certificates & PKCS12 keystores (regenerate via ssl/gen-cert.ps1)
 ssl/
@@ -56,8 +52,6 @@ logs/
 
 # Startup logs
 *.startup.log
-gateway.log
-system.log
 
 # Local scripts (developer-specific)
 start_claude.bat
@@ -66,10 +60,6 @@ start_claude.bat
 test-results/
 
 # E2E test artifacts
-api-e2e/node_modules/
-api-e2e/test-results/
-api-e2e/playwright-report/
-api-e2e-report/
 
 # Vite cache
 .vite/
