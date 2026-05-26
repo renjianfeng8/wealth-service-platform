@@ -1,287 +1,263 @@
-# 理财服务平台 — 启动指南
 
-## 项目简介
+# Wealth Service Platform — 启动指南
 
-理财服务平台（Wealth Service Platform），聚合架构，包含：
-
-- **管理员后台**（front/）：后台管理系统，面向运营人员，管理用户、产品、权限等
-- **用户前台**（front-user/）：用户端门户，面向普通用户，提供行情查看、交易委托、自选管理等
-- **统一登录门户**（front-landing/）：前端统一入口，承载登录页，按角色自动跳转对应 SPA
-
-后端采用 Gateway + 业务服务两层架构，统一通过 Nginx / Gateway 对外提供服务。
+> 面向开发者的本地环境搭建与启动手册。适用于 v1.8.0+（单体聚合架构）。
 
 ---
 
-## 一、技术栈
+## 目录
+
+- [技术栈](#技术栈)
+- [前置要求](#前置要求)
+- [基础设施启动](#基础设施启动)
+- [环境变量配置](#环境变量配置)
+- [数据库初始化](#数据库初始化)
+- [后端编译与启动](#后端编译与启动)
+- [前端启动](#前端启动)
+- [验证启动](#验证启动)
+- [端口对照表](#端口对照表)
+- [测试账号](#测试账号)
+- [常见问题排查](#常见问题排查)
+
+---
+
+## 技术栈
 
 | 层面 | 技术 | 版本 |
 |------|------|------|
-| 后端框架 | Spring Boot / Spring Cloud / Alibaba | 3.3.13 / 2023.0.6 / 2023.0.3.4 |
+| 基础框架 | Spring Boot | 3.3.13 |
+| 微服务组件 | Spring Cloud / Alibaba | 2023.0.6 / 2023.0.3.4 |
 | ORM | MyBatis-Plus | 3.5.9 |
-| 网关 | Spring Cloud Gateway | - |
 | 数据库 | MySQL | 8.0 |
-| 缓存 | Redis | 5.0+ |
-| 搜索引擎 | Elasticsearch | 8.8.2（可选，降级 MySQL LIKE）|
-| 前端（双端） | Vue 3 + Vite + Element Plus + Pinia + TypeScript | 3.5.13 / 6.3.1 / 2.9.7 / 2.3.1 / 5.7 |
-| E2E 测试 | Playwright | 1.59+ |
+| 缓存 | Redis | 5+ |
+| 搜索引擎 | Elasticsearch | 8.8.2（可选）|
+| 前端 | Vue 3 + Vite + Element Plus + Pinia + TypeScript | 3.5.13 / 6.3.1 / 2.9.7 / 2.3.1 / 5.7 |
+| API 文档 | Knife4j | 4.5.0 |
+| 认证 | JWT (jjwt) | 0.12.6 |
+| 限流熔断 | Sentinel | 1.8.8 |
+| 链路追踪 | Micrometer Tracing + Zipkin | 1.3.6 |
+| 监控 | Prometheus + Grafana | — |
 
 ---
 
-## 二、前置环境准备
+## 前置要求
 
-| 组件 | 版本要求 | 检查命令 |
-|------|---------|---------|
+| 组件 | 最低版本 | 检查命令 |
+|------|---------|----------|
 | JDK | 21+ | `java -version` |
 | Maven | 3.9+ | `mvn -version` |
-| Node.js | 18+ | `node -v` |
+| Node.js | 18+（推荐 20 LTS） | `node -v` |
 | Docker | 24.0+ | `docker --version` |
-| MySQL 客户端 | 8.0+ | `mysql --version` |
 
 ---
 
-## 三、中间件启动（Docker）
+## 基础设施启动
+
+项目依赖 MySQL、Redis、Nginx 三个必需中间件，推荐通过 Docker 运行：
 
 ```bash
 # 启动必需中间件
+docker start mysql redis nginx
+
+# 如使用 docker-compose
 docker compose up -d mysql redis nginx
-
-# 可选：Elasticsearch（搜索服务需要）
-docker compose up -d elasticsearch
-
-# 可选：链路追踪 + 监控
-docker compose up -d zipkin prometheus grafana
 ```
 
-### 中间件容器详情
+### 容器详情
 
 | 服务 | 端口 | 必需 | 说明 |
 |------|:----:|:----:|------|
-| MySQL | 3306 | 是 | 数据库 |
-| Redis | 6379 | 是 | 缓存 |
-| Nginx | 80 | 是 | 反向代理 |
-| Elasticsearch | 9200 / 9300 | 否 | 搜索引擎（降级 MySQL LIKE）|
-| Zipkin | 9411 | 否 | 链路追踪 |
-| Prometheus | 9090 | 否 | 监控指标采集 |
-| Grafana | 3001 | 否 | 监控可视化仪表盘 |
+| MySQL | 3306 | ✓ | 关系型数据库 |
+| Redis | 6379 | ✓ | 缓存、暴力破解锁定 |
+| Nginx | 80 | ✓ | 反向代理 |
+| Elasticsearch | 9200 | — | 全文检索（可选，降级 MySQL LIKE）|
+| Zipkin | 9411 | — | 链路追踪 |
+| Prometheus | 9090 | — | 监控指标采集 |
+| Grafana | 3001 | — | 监控可视化 |
 
-> Nacos、RabbitMQ、Seata、Sentinel 已停用，docker-compose.yml 中已移除对应服务块。
+> Nacos、RabbitMQ、Seata 已停用，对应配置也已清理。
 
 ---
 
-## 四、环境变量配置
+## 环境变量配置
 
-项目使用 `.env` 文件管理环境变量，各模块独立配置：
+项目使用 `.env` 文件管理敏感配置，需创建以下文件：
 
-```bash
-# 确保以下 .env 文件已创建并填入正确密码
-# 根目录 .env（MySQL/Redis/ES 密码）
-# wealth-gateway/.env（JWT 密钥、路由等）
-# wealth-service/.env（JWT 密钥、数据源、Redis、ES 等）
+```
+根目录 .env                  # MySQL/Redis/ES 密码
+wealth-gateway/.env          # JWT 密钥、路由配置
+wealth-service/.env          # JWT 密钥、数据源、Redis、ES 配置
 ```
 
 模板参考根目录 `.env.example`。
 
+关键变量：
+
+| 变量 | 说明 | 默认值 |
+|------|------|--------|
+| `JWT_SECRET` | JWT 签名密钥（≥32 字节） | — |
+| `MYSQL_ROOT_PASSWORD` | MySQL 密码 | — |
+| `REDIS_PASSWORD` | Redis 密码 | 空 |
+| `ES_URIS` | ES 连接地址 | `http://localhost:9200` |
+
 ---
 
-## 五、数据库初始化
+## 数据库初始化
 
 ```bash
 # 创建数据库
-mysql -u root -p"${MYSQL_ROOT_PASSWORD}" -e "CREATE DATABASE IF NOT EXISTS wealth DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+mysql -u root -p"${MYSQL_ROOT_PASSWORD}" -e \
+  "CREATE DATABASE IF NOT EXISTS wealth DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
 
 # 导入建表语句 + 测试数据
-mysql -u root -p"${MYSQL_ROOT_PASSWORD}" wealth < wealth-common/src/main/resources/sql/init.sql
+mysql -u root -p"${MYSQL_ROOT_PASSWORD}" wealth \
+  < wealth-common/src/main/resources/sql/init.sql
 ```
 
 ---
 
-## 六、编译项目
+## 后端编译与启动
 
-**编译顺序**：必须先编译 `wealth-common`，再编译其他模块。
+> **编译顺序**：必须先编译 `wealth-common`，再编译其他模块。
+
+### 编译
 
 ```bash
-# 1. 编译公共模块并安装到本地仓库（修改 common 后必须重新执行）
+# 1. 编译公共模块并安装到本地仓库
+# （修改 common 后必须重新执行此步）
 mvn clean install -pl wealth-common -DskipTests
 
 # 2. 全量编译
 mvn clean compile
 
-# 3. 打包
+# 3. 打包（产出 JAR）
 mvn clean package -DskipTests
 ```
 
-JAR 包路径：`wealth-service/target/wealth-service-1.0.0.jar`
+JAR 包路径：
+- `wealth-gateway/target/wealth-gateway-1.0.0.jar`
+- `wealth-service/target/wealth-service-1.0.0.jar`
 
----
-
-## 七、后端服务启动
-
-**启动顺序**：gateway → wealth-service
-
-### 7.1 启动网关
+### 启动（按顺序）
 
 ```bash
+# 1. 启动网关（端口 8080）
 mvn spring-boot:run -pl wealth-gateway
-# 或
-java -jar wealth-gateway/target/wealth-gateway-1.0.0.jar
-```
 
-- 端口：**8080**
-
-### 7.2 启动业务服务
-
-```bash
+# 2. 启动业务服务（端口 8081）
 mvn spring-boot:run -pl wealth-service
-# 或
-java -jar wealth-service/target/wealth-service-1.0.0.jar
 ```
 
-- 端口：**8081**
-- 所有业务域（system/user/product/trade/message/search）均在此服务
+所有业务域（system / user / product / trade / message / search）聚合在 `wealth-service` 中，无需分别启动。
 
-### 7.3 验证
+### 查看日志
 
 ```bash
-# 检查端口监听
-netstat -ano | findstr ':8080 :8081'
-
-# 检查启动日志（应看到 2 行 Started xxxApplication）
+# 确认服务启动成功
+# wealth-service 日志中搜索：
+#   HikariPool-1 - Start completed     ← 数据库连接成功
+#   Started WealthServiceApplication   ← 服务启动完成
 ```
 
 ---
 
-## 八、前端启动
+## 前端启动
 
-### 8.1 管理员后台
+前端已合并为单一 SPA 项目（`front/`），通过 History 模式路由分发用户端和管理端页面。
 
 ```bash
 cd front
+
+# 安装依赖
 npm install
-npm run dev
+
+# 启动开发服务器（端口 3004）
+npx vite
 ```
 
-- 端口：**3000**
-- Vite 代理：`/api` → `http://localhost:8080`（网关）
-- 登录账号：`admin` / `admin123`
+### 前端架构
 
-### 8.2 用户前台
-
-```bash
-cd front-user
-npm install
-npm run dev
+```
+front/
+├── src/
+│   ├── api/           # API 接口层（TypeScript）
+│   ├── layouts/       # 布局组件
+│   │   ├── UnifiedLayout.vue     # 顶部导航布局（用户端）
+│   │   └── AdminLayout.vue       # 侧栏导航布局（管理端）
+│   ├── views/         # 页面组件
+│   │   ├── home/      # 首页
+│   │   ├── auth/      # 登录 / 注册
+│   │   ├── user/      # 用户端页面（行情、交易、自选等）
+│   │   └── admin/     # 管理端页面（用户管理、产品管理、权限等）
+│   ├── router/        # 路由配置（History 模式）
+│   ├── store/         # Pinia 状态管理
+│   └── utils/         # 工具函数（auth、request 等）
 ```
 
-- 端口：**3001**
-- Vite 代理：`/api` → `http://localhost:8080`（网关）
-- 登录账号：`zhangwei` / `123456`
+### 路由结构
 
-### 8.3 统一登录门户
-
-```bash
-cd front-landing
-npm install
-npm run dev
-```
-
-- 端口：**3002**
-- Vite 代理：`/api/v1` → `http://localhost:8081`（直连 wealth-service，不走网关）
-- 统一登录页包含角色表情动画、眼球追踪交互效果
+| 路由 | 布局 | 权限 | 说明 |
+|------|------|------|------|
+| `/auth/login` | — | 公开 | 登录页 |
+| `/auth/register` | — | 公开 | 注册页 |
+| `/home` | UnifiedLayout | 公开 | 首页 |
+| `/products` | UnifiedLayout | 公开 | 产品列表 |
+| `/market/:code` | UnifiedLayout | 公开 | 行情详情 |
+| `/news` | UnifiedLayout | 公开 | 资讯列表 |
+| `/user/*` | UnifiedLayout | 用户 | 用户端页面 |
+| `/admin/*` | AdminLayout | 管理员 | 管理端页面 |
 
 ---
 
-## 九、统一登录流程
+## 验证启动
 
-```
-用户访问 http://localhost:3002/login
-  → 输入用户名密码
-  → POST /api/v1/user/identify-login（后端自动识别用户类型）
-  → 管理员 → 跳转 http://localhost:3000/admin/?token=xxx
-  → 普通用户 → 跳转 http://localhost:3001/user/?token=xxx
-  → 目标 SPA 登录页自动读取 token 完成登录
-  → URL 中 token 被清除，进入首页
-```
-
-> **注意**：front-landing 不持久化 token（纯内存存储），刷新页面即清零。退出登录后自动跳转回 `http://localhost:3002/login`。
-
-### 9.1 登录接口
+### 命令行验证
 
 ```bash
-# 管理员登录
+# 管理员登录测试
 curl -s -X POST "http://localhost:8080/system/umsAdmin/login" \
   -H "Content-Type: application/json" \
   -d '{"username":"admin","password":"admin123"}'
 
-# 用户登录
-curl -s -X POST "http://localhost:8080/user/login" \
-  -H "Content-Type: application/json" \
-  -d '{"username":"zhangwei","password":"123456"}'
+# 预期返回（HTTP 200 + JWT Token）：
+# {"code":200,"message":"success","data":{"accessToken":"eyJ...","refreshToken":"eyJ...","expireIn":604800000}}
 ```
 
-预期返回 `200` + JWT Token。
+### 页面访问
 
-### 9.2 业务接口测试
+| 页面 | URL |
+|------|-----|
+| 首页 | http://localhost:3004/home |
+| 登录页 | http://localhost:3004/auth/login |
+| 用户端 | http://localhost:3004/user/dashboard |
+| 管理端 | http://localhost:3004/admin/dashboard |
+| Knife4j 文档 | http://localhost:8080/doc.html |
+
+### 业务接口测试
 
 ```bash
-TOKEN="eyJhbGciOiJIUzUxMiJ9..."
+TOKEN="<从登录响应中获取的 accessToken>"
 
 # 管理员分页
 curl -s -H "Authorization: Bearer $TOKEN" \
-  "http://localhost:8080/system/umsAdmin/page?pageNum=1&pageSize=10"
+  "http://localhost:8080/system/umsAdmin/list?pageNum=1&pageSize=10"
 
 # 产品分页
 curl -s -H "Authorization: Bearer $TOKEN" \
   "http://localhost:8080/product/WeaProduct/page?pageNum=1&pageSize=10"
 
-# 行情数据
-curl -s -H "Authorization: Bearer $TOKEN" \
-  "http://localhost:8080/product/WeaMarketData/list?productCode=GOLD001"
-
-# 交易订单分页
+# 交易订单
 curl -s -H "Authorization: Bearer $TOKEN" \
   "http://localhost:8080/trade/WeaTradeOrder/page?pageNum=1&pageSize=10"
 
-# 新闻分页
-curl -s -H "Authorization: Bearer $TOKEN" \
-  "http://localhost:8080/message/WeaNews/page?pageNum=1&pageSize=10"
-
-# 搜索
+# 产品搜索
 curl -s -H "Authorization: Bearer $TOKEN" \
   "http://localhost:8080/search/product/search?keyword=黄金&page=1&size=10"
 ```
 
-### 9.3 浏览器访问
-
-| 应用 | URL |
-|------|-----|
-| 统一登录门户 | http://localhost:3002 |
-| 管理员后台 | http://localhost:3000/admin/ |
-| 用户前台 | http://localhost:3001/user/ |
-| Knife4j 文档 | http://localhost:8080/doc.html |
-
 ---
 
-## 十、E2E 测试
-
-### 10.1 用户前台 E2E
-
-```bash
-cd front-user
-npx playwright install chromium
-npm run test:e2e
-```
-
-### 10.2 API E2E
-
-```bash
-cd api-e2e
-npm install
-npx playwright test
-```
-
----
-
-## 十一、端口对照表
+## 端口对照表
 
 | 模块 | 端口 | 说明 |
 |------|:----:|------|
@@ -289,70 +265,75 @@ npx playwright test
 | MySQL | 3306 | 数据库 |
 | Redis | 6379 | 缓存 |
 | Nginx | 80 | 反向代理 |
-| Elasticsearch | 9200, 9300 | 搜索引擎（可选）|
+| Elasticsearch | 9200 / 9300 | 搜索引擎（可选）|
 | **后端** | | |
 | wealth-gateway | **8080** | 网关（统一入口）|
 | wealth-service | **8081** | 业务聚合服务 |
 | **前端** | | |
-| 管理员后台 | **3000** | front/ |
-| 用户前台 | **3001** | front-user/ |
-| 统一登录门户 | **3002** | front-landing/ |
+| Vite 开发服务器 | **3004** | 前端 SPA |
 
 ---
 
-## 十二、测试账号
+## 测试账号
 
-| 身份 | 用户名 | 密码 | 所属表 | 统一登录入口 |
-|------|--------|------|--------|------------|
-| 管理员 | admin | admin123 | ums_admin | http://localhost:3002 |
-| 前台用户 | zhangwei | 123456 | sys_user | http://localhost:3002 |
+| 身份 | 用户名 | 密码 | 登录入口 |
+|------|--------|------|----------|
+| 管理员 | admin | admin123 | `/auth/login`（自动识别为管理员）|
+| 前台用户 | zhangwei | 123456 | `/auth/login`（自动识别为用户）|
 
 ---
 
-## 十三、常见问题排查
+## 常见问题排查
+
+### 后端无法启动
+
+| 现象 | 原因 | 解决 |
+|------|------|------|
+| HikariPool 连接失败 | MySQL 未启动或密码错误 | 检查容器状态 + `.env` 中的 `MYSQL_ROOT_PASSWORD` |
+| Redis 连接拒绝 | Redis 未启动 | 检查容器状态 + `.env` 中的 `REDIS_HOST` |
+| 表不存在 | 未执行 `init.sql` | 确认已导入建表脚本 |
+| JWT 密钥异常 | `JWT_SECRET` 缺失或不足 32 字节 | 检查 `.env` 文件 |
+| 启动时 ClassNotFoundException | Common 未 install | 执行 `mvn clean install -pl wealth-common -DskipTests` |
+
+### 前端无法启动
+
+| 现象 | 原因 | 解决 |
+|------|------|------|
+| `npm install` 失败 | 网络或 Node 版本 | 检查 Node.js ≥ 18，尝试切换 npm 镜像源 |
+| 页面白屏 | 依赖或构建问题 | 删除 `node_modules` 和 `package-lock.json` 重试 |
+| API 请求 502 | 后端未启动 | 确认网关 (8080) 和 wealth-service (8081) 已启动 |
+| 登录后跳转异常 | 路由或认证状态异常 | 清除 sessionStorage 后刷新重试 |
 
 ### 端口占用
+
 ```bash
+# 查看端口占用
 netstat -ano | findstr ":8080"
+
+# 终止进程
 taskkill /PID <PID> /F
 ```
 
-### 后端启动失败
-
-1. **数据库连接失败** → 检查 MySQL 容器 + `.env` 中 `MYSQL_ROOT_PASSWORD` 是否正确
-2. **Redis 连接失败** → 检查 Redis 容器 + `.env` 中 `REDIS_HOST`/`REDIS_PASSWORD`
-3. **数据库表不存在** → 确认已执行 `init.sql`
-4. **JWT 密钥错误** → 确认 `wealth-gateway/.env` 和 `wealth-service/.env` 中的 `JWT_SECRET`
-
-### 前端启动失败
-
-1. **依赖安装失败** → 删除 `node_modules` 重新 `npm install`
-2. **代理 502** → 确认网关已启动（`:8080`）
-
 ### 跨域问题
 
-网关已全局配置 CORS，允许 `localhost:3000`、`localhost:3001`、`localhost:3002`、`localhost:5173`。front-landing 的 Vite 代理直接对接 wealth-service（`:8081`）不走网关，如需直连测试也需要对应 CORS 配置。
+网关已全局配置 CORS，允许 Vite 开发服务器（`localhost:3004`）及生产环境域名访问。如果跳过网关直接访问 `localhost:8081` 需要同时在 wealth-service 配置 CORS。
 
 ---
 
-## 十四、启动顺序
+## 启动顺序汇总
 
 ```
-基础设施中间件（Docker Compose）
-  mysql / redis / nginx
+Docker 容器
+  mysql → redis → nginx
   （可选：elasticsearch / zipkin / prometheus / grafana）
-         ↓
-wealth-common（Maven 依赖，必须先 mvn install）
-         ↓
-wealth-gateway（先启动）
-         ↓
-wealth-service（后启动，所有业务域合一）
-         ↓
-  ┌──────┴──────┐
-  ↓              ↓
-front/         front-user/
-(3000)         (3001)
+       ↓
+mvn install -pl wealth-common（必须先编译公共依赖）
+       ↓
+wealth-gateway（端口 8080，最先启动）
+       ↓
+wealth-service（端口 8081，所有业务域聚合）
+       ↓
+front/（端口 3004，Vite 开发服务器）
+```
 
-> **说明**：`front-landing`（端口 3002）为统一登录门户，承载登录页，登录后自动跳转至对应 SPA。开发时可按需独立启动，生产环境通过 Nginx 直接 serve 静态文件。
-
-> 每次修改 `wealth-common` 后，必须重新执行 `mvn clean install -pl wealth-common -DskipTests`。
+> 每次修改 `wealth-common` 后，必须重新执行 `mvn clean install -pl wealth-common -DskipTests` 才能被其他模块引用。
