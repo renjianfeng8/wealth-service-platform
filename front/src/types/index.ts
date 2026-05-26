@@ -156,3 +156,10 @@ export const PRODUCT_TYPE_OPTIONS: DictItem[] = [
   { label: '基金', value: 3 },
   { label: '股票', value: 4 },
 ]
+
+export const NEWS_TYPE_OPTIONS: DictItem[] = [
+  { label: '行业动态', value: 1 },
+  { label: '市场分析', value: 2 },
+  { label: '政策解读', value: 3 },
+  { label: '公司公告', value: 4 },
+]

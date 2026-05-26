@@ -2,6 +2,15 @@ import axios from 'axios'
 import { ElMessage } from 'element-plus'
 import { removeToken } from '@/utils/auth'
 
+const redirectLogin = () => {
+  const path = window.location.pathname
+  if (path.startsWith('/admin')) {
+    window.location.href = '/admin/login'
+  } else {
+    window.location.href = '/auth/login'
+  }
+}
+
 const request = axios.create({
   baseURL: '/api/v1',
   timeout: 30000,
@@ -23,7 +32,7 @@ request.interceptors.response.use(
     const res = response.data
     if (res.code === 401) {
       removeToken()
-      window.location.hash = '#/login'
+      redirectLogin()
       return Promise.reject(new Error(res.message || '未登录'))
     }
     if (res.code !== 200 && res.code !== 0 && res.code !== undefined) {
@@ -38,7 +47,7 @@ request.interceptors.response.use(
     const msg = data?.message || error.message || '网络错误'
     if (status === 401) {
       removeToken()
-      window.location.hash = '#/login'
+      redirectLogin()
     }
     ElMessage.error(msg)
     return Promise.reject(error)

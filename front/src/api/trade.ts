@@ -23,3 +23,7 @@ export function updateTradeOrder(id: number, data: any) {
 export function deleteTradeOrder(id: number) {
   return request.delete(`/trade/wea-trade-order/${id}`)
 }
+
+export function cancelTradeOrder(id: number) {
+  return request.put(`/trade/wea-trade-order/${id}`, { orderStatus: 2 })
+}

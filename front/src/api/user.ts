@@ -12,6 +12,9 @@ export function getUserById(id: number) {
   return request.get(`/user/${id}`)
 }
 
+/** getUserInfo 是 getUserById 的别名，兼容用户前台 profile 视图 */
+export { getUserById as getUserInfo }
+
 export function createUser(data: any) {
   return request.post('/user', data)
 }

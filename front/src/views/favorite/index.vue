@@ -1,81 +1,237 @@
 <template>
-  <div class="page">
-    <div class="page-header"><h3>自选管理</h3></div>
-    <el-card shadow="never" class="search-card">
-      <el-form :model="query" inline>
-        <el-form-item label="用户ID"><el-input-number v-model="query.userId" :min="0" clearable /></el-form-item>
-        <el-form-item label="产品编码"><el-input v-model="query.productCode" placeholder="搜索" clearable /></el-form-item>
-        <el-form-item><el-button type="primary" @click="handleSearch">查询</el-button><el-button @click="handleReset">重置</el-button></el-form-item>
-      </el-form>
-    </el-card>
-    <el-card shadow="never" style="margin-top:16px;">
-      <div style="margin-bottom:16px;"><el-button type="primary" @click="handleAdd">新增自选</el-button></div>
-      <el-table :data="tableData" stripe v-loading="loading" border empty-text="暂无数据">
-        <el-table-column prop="id" label="ID" width="60" />
-        <el-table-column prop="userId" label="用户ID" min-width="80" />
-        <el-table-column prop="productCode" label="产品编码" min-width="140" />
-        <el-table-column prop="createTime" label="添加时间" width="160" :formatter="(_r:any,_c:any,v:any)=>formatDateTime(v)" />
-        <el-table-column label="操作" width="180" fixed="right">
-          <template #default="{ row }">
-            <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
-            <el-popconfirm title="确定删除？" @confirm="handleDelete(row.id)"><template #reference><el-button type="danger" link>删除</el-button></template></el-popconfirm>
-          </template>
-        </el-table-column>
-      </el-table>
-      <div class="pagination-wrap">
-        <el-pagination v-model:current-page="query.pageNum" v-model:page-size="query.pageSize" :total="total" :page-sizes="[10,20,50]" layout="total, sizes, prev, pager, next" @size-change="handleSizeChange" @current-change="fetchData" />
+  <div class="favorite-page">
+    <div class="page-title">我的自选</div>
+
+    <el-card class="add-card" shadow="never">
+      <div class="add-bar">
+        <el-input
+          v-model="newProductCode"
+          placeholder="输入产品代码添加自选，如 GOLD001"
+          size="large"
+          class="add-input"
+          clearable
+        />
+        <el-button type="primary" size="large" :loading="adding" @click="handleAdd">
+          添加自选
+        </el-button>
       </div>
     </el-card>
-    <el-dialog v-model="dialogVisible" :title="isEdit?'编辑自选':'新增自选'" width="400px">
-      <el-form ref="formRef" :model="form" :rules="rules" label-width="90px">
-        <el-form-item label="用户ID" prop="userId"><el-input-number v-model="form.userId" style="width:100%" /></el-form-item>
-        <el-form-item label="产品编码" prop="productCode"><el-input v-model="form.productCode" /></el-form-item>
-      </el-form>
-      <template #footer><el-button @click="dialogVisible=false">取消</el-button><el-button type="primary" :loading="saving" @click="handleSave">保存</el-button></template>
-    </el-dialog>
+
+    <div v-if="loading" class="loading-wrap">
+      <el-skeleton :rows="3" animated />
+    </div>
+    <div v-else-if="favorites.length === 0" class="empty-wrap">
+      <el-empty description="暂无自选，请添加产品">
+        <el-button type="primary" @click="router.push('/product')">去产品中心</el-button>
+      </el-empty>
+    </div>
+    <div v-else class="fav-grid">
+      <el-row :gutter="20">
+        <el-col
+          v-for="item in favorites"
+          :key="item.id"
+          :xs="24"
+          :sm="12"
+          :lg="8"
+          class="fav-col"
+        >
+          <el-card class="fav-card" shadow="never">
+            <div class="fav-header">
+              <div class="fav-info">
+                <h3 class="fav-name">{{ item.productName || item.productCode }}</h3>
+                <span class="fav-code">{{ item.productCode }}</span>
+              </div>
+              <el-button
+                type="danger"
+                :icon="Delete"
+                circle
+                size="small"
+                text
+                @click="handleDelete(item)"
+              />
+            </div>
+            <div class="fav-price-section">
+              <div v-if="item.currentPrice != null" class="fav-price-row">
+                <span class="fav-price">{{ formatPrice(item.currentPrice) }}</span>
+                <span
+                  class="fav-change"
+                  :class="(item.riseFallRate || 0) >= 0 ? 'rise' : 'fall'"
+                >
+                  {{ formatRate(item.riseFallRate) }}
+                </span>
+              </div>
+              <span v-else class="no-price">暂无行情数据</span>
+            </div>
+            <div class="fav-footer">
+              <span class="fav-time">添加于 {{ formatDate(item.createTime) }}</span>
+              <el-button type="primary" size="small" @click="goTrade(item)">交易</el-button>
+            </div>
+          </el-card>
+        </el-col>
+      </el-row>
+    </div>
+
+    <div class="pagination-wrap">
+      <el-pagination
+        v-if="total > 0"
+        v-model:current-page="pageNum"
+        v-model:page-size="pageSize"
+        :total="total"
+        :page-sizes="[12, 24, 48]"
+        layout="total, sizes, prev, pager, next"
+        @current-change="fetchFavorites"
+        @size-change="fetchFavorites"
+      />
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue'
-import { ElMessage } from 'element-plus'
-import type { FormInstance, FormRules } from 'element-plus'
-import { getFavoritePage, createFavorite, updateFavorite, deleteFavorite } from '@/api/favorite'
-import { formatDateTime } from '@/utils/format'
+import { ref, onMounted, onUnmounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { useUserStore } from '@/store/index'
+import { getFavoritePage, createFavorite, deleteFavorite } from '@/api/favorite'
+import { getProductList } from '@/api/product'
+import { formatPrice, formatRate, formatDate } from '@/utils/format'
+import { Delete } from '@element-plus/icons-vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import type { WeaUserFavorite, WeaProduct, WeaMarketData } from '@/types'
+import { createMarketSSE, onMarketUpdate } from '@/utils/sse'
 
-const loading = ref(false); const saving = ref(false)
-const tableData = ref<any[]>([]); const total = ref(0)
-const dialogVisible = ref(false); const isEdit = ref(false)
-const formRef = ref<FormInstance>()
-const query = reactive({ pageNum: 1, pageSize: 10, userId: 0, productCode: '' })
-const form = reactive({ id: undefined, userId: undefined, productCode: '' })
-const rules: FormRules = { userId: [{ required: true, message: '必填' }], productCode: [{ required: true, message: '必填' }] }
+interface FavoriteItem extends WeaUserFavorite {
+  productName?: string
+  currentPrice?: number
+  riseFallRate?: number
+}
 
-async function fetchData() {
+const router = useRouter()
+const userStore = useUserStore()
+
+const favorites = ref<FavoriteItem[]>([])
+const loading = ref(false)
+const adding = ref(false)
+const total = ref(0)
+const pageNum = ref(1)
+const pageSize = ref(12)
+const newProductCode = ref('')
+let eventSource: EventSource | null = null
+
+async function enrichFavorites(records: WeaUserFavorite[]): Promise<FavoriteItem[]> {
+  let allProducts: WeaProduct[] = []
+  try {
+    const pr = await getProductList()
+    allProducts = (pr.data || []) as WeaProduct[]
+  } catch { /* ignore */ }
+
+  return records.map((fav) => {
+    const product = allProducts.find((p) => p.productCode === fav.productCode)
+    return {
+      ...fav,
+      productName: product?.productName || fav.productCode,
+    }
+  })
+}
+
+function handleMarketUpdate(data: WeaMarketData[]) {
+  const dataMap = new Map(data.map((d) => [d.productCode, d]))
+  favorites.value = favorites.value.map((fav) => {
+    const market = dataMap.get(fav.productCode)
+    return market
+      ? { ...fav, currentPrice: market.currentPrice, riseFallRate: market.riseFallRate }
+      : fav
+  })
+}
+
+async function fetchFavorites() {
   loading.value = true
   try {
-    const params: any = { pageNum: query.pageNum, pageSize: query.pageSize }
-    if (query.userId > 0) params.userId = query.userId; if (query.productCode) params.productCode = query.productCode
-    const res = await getFavoritePage(params)
-    tableData.value = res.data.records || []; total.value = res.data.total || 0
-  } finally { loading.value = false }
+    const res = await getFavoritePage({
+      pageNum: pageNum.value,
+      pageSize: pageSize.value,
+      userId: userStore.userId || undefined,
+    })
+    const records = (res.data?.records || []) as WeaUserFavorite[]
+    total.value = res.data?.total || 0
+    favorites.value = await enrichFavorites(records)
+  } catch {
+    favorites.value = []
+  } finally {
+    loading.value = false
+  }
 }
-function handleSearch() { query.pageNum = 1; fetchData() }
-function handleReset() { query.userId = 0; query.productCode = ''; handleSearch() }
-function handleSizeChange() { query.pageNum = 1; fetchData() }
-function handleAdd() { isEdit.value = false; Object.assign(form, { id: undefined, userId: undefined, productCode: '' }); dialogVisible.value = true }
-function handleEdit(row: any) { isEdit.value = true; Object.assign(form, row); dialogVisible.value = true }
-async function handleSave() {
-  const valid = await formRef.value?.validate().catch(() => false)
-  if (!valid) return; saving.value = true
+
+async function handleAdd() {
+  const code = newProductCode.value.trim()
+  if (!code) {
+    ElMessage.warning('请输入产品代码')
+    return
+  }
+  if (!userStore.userId) {
+    ElMessage.error('用户信息异常，请重新登录')
+    return
+  }
+  adding.value = true
   try {
-    isEdit.value ? await updateFavorite(form.id!, form) : await createFavorite(form)
-    ElMessage.success(isEdit.value ? '更新成功' : '创建成功'); dialogVisible.value = false; fetchData()
-  } finally { saving.value = false }
+    await createFavorite({ userId: userStore.userId, productCode: code })
+    ElMessage.success('添加成功')
+    newProductCode.value = ''
+    pageNum.value = 1
+    fetchFavorites()
+  } catch {
+    // handled
+  } finally {
+    adding.value = false
+  }
 }
-async function handleDelete(id: number) { try { await deleteFavorite(id); ElMessage.success('删除成功'); fetchData() } catch { /* handled by interceptor */ } }
-onMounted(fetchData)
+
+async function handleDelete(item: FavoriteItem) {
+  try {
+    await ElMessageBox.confirm('确定要删除该自选吗？', '确认', { type: 'warning' })
+    await deleteFavorite(item.id!)
+    ElMessage.success('已删除')
+    fetchFavorites()
+  } catch { /* cancelled */ }
+}
+
+function goTrade(item: FavoriteItem) {
+  router.push({ path: '/trade', query: { productCode: item.productCode } })
+}
+
+onMounted(() => {
+  if (userStore.userId) {
+    fetchFavorites()
+    eventSource = createMarketSSE()
+    onMarketUpdate(eventSource, handleMarketUpdate)
+  }
+})
+
+onUnmounted(() => {
+  eventSource?.close()
+  eventSource = null
+})
 </script>
+
 <style scoped>
-/* Global styles handle pagination-wrap and page-header */
+.favorite-page { max-width: 1200px; }
+.add-card { margin-bottom: 20px; }
+.add-bar { display: flex; gap: 12px; }
+.add-input { flex: 1; max-width: 360px; }
+.loading-wrap, .empty-wrap { padding: 60px 0; }
+.fav-col { margin-bottom: 20px; }
+.fav-card { transition: var(--transition); }
+.fav-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md) !important; }
+.fav-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px; }
+.fav-info { flex: 1; min-width: 0; }
+.fav-name { font-size: 16px; font-weight: 600; color: var(--text-primary); margin-bottom: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fav-code { font-size: 13px; color: var(--text-secondary); font-family: 'DIN Pro', monospace; }
+.fav-price-section { padding: 12px 0; border-top: 1px solid var(--border-color); }
+.fav-price-row { display: flex; align-items: baseline; gap: 12px; }
+.fav-price { font-size: 24px; font-weight: 700; color: var(--text-primary); font-family: 'DIN Pro', monospace; }
+.fav-change { font-size: 15px; font-weight: 600; }
+.fav-change.rise { color: var(--rise-color); }
+.fav-change.fall { color: var(--fall-color); }
+.no-price { font-size: 14px; color: var(--text-secondary); }
+.fav-footer { display: flex; align-items: center; justify-content: space-between; padding-top: 12px; border-top: 1px solid var(--border-color); }
+.fav-time { font-size: 12px; color: var(--text-placeholder); }
+.pagination-wrap { display: flex; justify-content: center; padding: 20px 0; }
 </style>

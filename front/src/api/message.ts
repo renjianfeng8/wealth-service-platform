@@ -49,3 +49,7 @@ export function updateNews(id: number, data: any) {
 export function deleteNews(id: number) {
   return request.delete(`/message/wea-news/${id}`)
 }
+
+export function readMessage(id: number) {
+  return request.put(`/message/wea-message/${id}`, { readFlag: 1 })
+}

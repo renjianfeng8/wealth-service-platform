@@ -1,101 +1,285 @@
 <template>
-  <div class="page">
-    <div class="page-header"><h3>交易委托管理</h3></div>
-    <el-card shadow="never" class="search-card">
-      <el-form :model="query" inline>
-        <el-form-item label="订单号"><el-input v-model="query.orderNo" placeholder="搜索" clearable /></el-form-item>
-        <el-form-item label="产品编码"><el-input v-model="query.productCode" placeholder="搜索" clearable /></el-form-item>
-        <el-form-item label="状态"><el-select v-model="query.orderStatus" clearable style="width:110px"><el-option v-for="d in ORDER_STATUS_OPTIONS" :key="d.value" :label="d.label" :value="d.value" /></el-select></el-form-item>
-        <el-form-item><el-button type="primary" @click="handleSearch">查询</el-button><el-button @click="handleReset">重置</el-button></el-form-item>
-      </el-form>
-    </el-card>
-    <el-card shadow="never" style="margin-top:16px;">
-      <div style="margin-bottom:16px;"><el-button type="primary" @click="handleAdd">新增委托</el-button></div>
-      <el-table :data="tableData" stripe v-loading="loading" border empty-text="暂无数据">
-        <el-table-column prop="id" label="ID" width="60" />
-        <el-table-column prop="orderNo" label="订单号" min-width="180" />
-        <el-table-column prop="userId" label="用户ID" min-width="80" />
-        <el-table-column prop="productCode" label="产品编码" min-width="120" />
-        <el-table-column prop="tradeType" label="类型" min-width="80">
-          <template #default="{ row }"><el-tag :type="row.tradeType===1?'danger':'success'">{{ tradeTypeText(row.tradeType) }}</el-tag></template>
-        </el-table-column>
-        <el-table-column prop="entrustPrice" label="委托价" width="100" :formatter="(_r:any,_c:any,v:any)=>formatPrice(v)" />
-        <el-table-column prop="entrustNum" label="数量" width="70" />
-        <el-table-column prop="orderStatus" label="状态" width="80">
-          <template #default="{ row }"><el-tag :type="orderStatusTag(row.orderStatus)">{{ orderStatusText(row.orderStatus) }}</el-tag></template>
-        </el-table-column>
-        <el-table-column prop="createTime" label="创建时间" width="160" :formatter="(_r:any,_c:any,v:any)=>formatDateTime(v)" />
-        <el-table-column label="操作" width="180" fixed="right">
-          <template #default="{ row }">
-            <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
-            <el-popconfirm title="确定删除？" @confirm="handleDelete(row.id)"><template #reference><el-button type="danger" link>删除</el-button></template></el-popconfirm>
+  <div class="trade-page">
+    <div class="page-title">交易委托</div>
+
+    <el-row :gutter="20">
+      <!-- 下单区 -->
+      <el-col :xs="24" :lg="8">
+        <el-card class="order-card" shadow="never">
+          <template #header>新委托单</template>
+          <el-form :model="orderForm" :rules="orderRules" ref="orderFormRef" label-width="80px">
+            <el-form-item label="产品代码" prop="productCode">
+              <el-input v-model="orderForm.productCode" placeholder="如 GOLD001" />
+            </el-form-item>
+            <el-form-item label="方向" prop="tradeType">
+              <el-radio-group v-model="orderForm.tradeType">
+                <el-radio-button :value="1">买入</el-radio-button>
+                <el-radio-button :value="2">卖出</el-radio-button>
+              </el-radio-group>
+            </el-form-item>
+            <el-form-item label="委托价" prop="entrustPrice">
+              <el-input-number
+                v-model="orderForm.entrustPrice"
+                :min="0.01"
+                :precision="2"
+                :step="0.1"
+                style="width: 100%"
+              />
+            </el-form-item>
+            <el-form-item label="数量" prop="entrustNum">
+              <el-input-number
+                v-model="orderForm.entrustNum"
+                :min="1"
+                :step="1"
+                style="width: 100%"
+              />
+            </el-form-item>
+            <el-form-item>
+              <el-button type="primary" size="large" :loading="submitting" @click="handleSubmit" style="width:100%">
+                {{ submitting ? '提交中...' : '提交委托' }}
+              </el-button>
+            </el-form-item>
+          </el-form>
+        </el-card>
+      </el-col>
+
+      <!-- 委托单列表 -->
+      <el-col :xs="24" :lg="16">
+        <el-card class="order-list-card" shadow="never">
+          <template #header>
+            <div class="card-header">
+              <span>我的委托单</span>
+              <div class="header-filters">
+                <el-select v-model="statusFilter" placeholder="状态" clearable size="small" style="width:110px" @change="fetchOrders">
+                  <el-option label="全部" :value="undefined" />
+                  <el-option v-for="opt in ORDER_STATUS_OPTIONS" :key="opt.value" :label="opt.label" :value="opt.value" />
+                </el-select>
+                <el-button size="small" :icon="Refresh" @click="fetchOrders" :loading="refreshing" />
+              </div>
+            </div>
           </template>
-        </el-table-column>
-      </el-table>
-      <div class="pagination-wrap">
-        <el-pagination v-model:current-page="query.pageNum" v-model:page-size="query.pageSize" :total="total" :page-sizes="[10,20,50]" layout="total, sizes, prev, pager, next" @size-change="handleSizeChange" @current-change="fetchData" />
-      </div>
-    </el-card>
-    <el-dialog v-model="dialogVisible" :title="isEdit?'编辑委托':'新增委托'" width="550px">
-      <el-form ref="formRef" :model="form" :rules="rules" label-width="90px">
-        <el-row :gutter="20">
-          <el-col :span="12"><el-form-item label="用户ID" prop="userId"><el-input-number v-model="form.userId" style="width:100%" /></el-form-item></el-col>
-          <el-col :span="12"><el-form-item label="产品编码" prop="productCode"><el-input v-model="form.productCode" /></el-form-item></el-col>
-        </el-row>
-        <el-row :gutter="20">
-          <el-col :span="12"><el-form-item label="交易类型" prop="tradeType"><el-select v-model="form.tradeType" style="width:100%"><el-option label="买入" :value="1" /><el-option label="卖出" :value="2" /></el-select></el-form-item></el-col>
-          <el-col :span="12"><el-form-item label="委托价" prop="entrustPrice"><el-input-number v-model="form.entrustPrice" :precision="2" style="width:100%" /></el-form-item></el-col>
-        </el-row>
-        <el-form-item label="委托数量" prop="entrustNum"><el-input-number v-model="form.entrustNum" style="width:100%" /></el-form-item>
-      </el-form>
-      <template #footer><el-button @click="dialogVisible=false">取消</el-button><el-button type="primary" :loading="saving" @click="handleSave">保存</el-button></template>
-    </el-dialog>
+
+          <el-table :data="orders" stripe v-loading="loading" empty-text="暂无委托单">
+            <el-table-column type="index" label="#" width="50" />
+            <el-table-column prop="orderNo" label="单号" width="160">
+              <template #default="{ row }">
+                <span class="order-no">{{ row.orderNo }}</span>
+              </template>
+            </el-table-column>
+            <el-table-column prop="productCode" label="产品" width="100" />
+            <el-table-column label="方向" width="70">
+              <template #default="{ row }">
+                <el-tag :type="row.tradeType === 1 ? 'danger' : 'success'" size="small" effect="plain">
+                  {{ tradeTypeText(row.tradeType) }}
+                </el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column label="委托价" width="100" align="right">
+              <template #default="{ row }">{{ formatPrice(row.entrustPrice) }}</template>
+            </el-table-column>
+            <el-table-column label="数量" width="70" align="right">
+              <template #default="{ row }">{{ row.entrustNum }}</template>
+            </el-table-column>
+            <el-table-column label="状态" width="90" align="center">
+              <template #default="{ row }">
+                <el-tag :type="orderStatusTag(row.orderStatus)" size="small">
+                  {{ orderStatusText(row.orderStatus) }}
+                </el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column label="时间" width="160">
+              <template #default="{ row }">{{ formatDateTime(row.createTime) }}</template>
+            </el-table-column>
+            <el-table-column label="操作" width="80" fixed="right">
+              <template #default="{ row }">
+                <el-button
+                  v-if="row.orderStatus === 0"
+                  text
+                  type="danger"
+                  size="small"
+                  @click="handleCancel(row)"
+                >
+                  撤销
+                </el-button>
+                <span v-else class="text-muted">-</span>
+              </template>
+            </el-table-column>
+          </el-table>
+
+          <div class="pagination-wrap">
+            <el-pagination
+              v-if="orderTotal > 0"
+              v-model:current-page="orderPageNum"
+              v-model:page-size="orderPageSize"
+              :total="orderTotal"
+              :page-sizes="[10, 20, 50]"
+              layout="total, sizes, prev, pager, next"
+              @current-change="fetchOrders"
+              @size-change="fetchOrders"
+            />
+          </div>
+        </el-card>
+      </el-col>
+    </el-row>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue'
-import { ElMessage } from 'element-plus'
-import type { FormInstance, FormRules } from 'element-plus'
-import { getTradeOrderPage, createTradeOrder, updateTradeOrder, deleteTradeOrder } from '@/api/trade'
-import { formatDateTime, formatPrice, tradeTypeText, orderStatusTag, orderStatusText } from '@/utils/format'
+import { ref, reactive, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
+import { useUserStore } from '@/store/index'
+import { getTradeOrderPage, createTradeOrder, cancelTradeOrder } from '@/api/trade'
 import { ORDER_STATUS_OPTIONS } from '@/types'
+import { formatPrice, formatDateTime, tradeTypeText, orderStatusText, orderStatusTag } from '@/utils/format'
+import { Refresh } from '@element-plus/icons-vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import type { FormInstance, FormRules } from 'element-plus'
+import type { WeaTradeOrder } from '@/types'
 
-const loading = ref(false); const saving = ref(false)
-const tableData = ref<any[]>([]); const total = ref(0)
-const dialogVisible = ref(false); const isEdit = ref(false)
-const formRef = ref<FormInstance>()
-const query = reactive({ pageNum: 1, pageSize: 10, orderNo: '', productCode: '', orderStatus: '' })
-const form = reactive({ id: undefined, userId: undefined, productCode: '', tradeType: 1, entrustPrice: 0, entrustNum: 0 })
-const rules: FormRules = { userId: [{ required: true, message: '必填' }], productCode: [{ required: true, message: '必填' }], entrustPrice: [{ required: true, message: '必填' }], entrustNum: [{ required: true, message: '必填' }] }
+const route = useRoute()
+const userStore = useUserStore()
 
-async function fetchData() {
+// 订单表单
+const orderFormRef = ref<FormInstance>()
+const submitting = ref(false)
+const orderForm = reactive({
+  productCode: '',
+  tradeType: 1,
+  entrustPrice: 100,
+  entrustNum: 1,
+})
+
+const orderRules: FormRules = {
+  productCode: [{ required: true, message: '请输入产品代码', trigger: 'blur' }],
+  tradeType: [{ required: true, message: '请选择方向', trigger: 'change' }],
+  entrustPrice: [{ required: true, message: '请输入委托价', trigger: 'blur' }],
+  entrustNum: [{ required: true, message: '请输入数量', trigger: 'blur' }],
+}
+
+// 订单列表
+const orders = ref<WeaTradeOrder[]>([])
+const loading = ref(false)
+const refreshing = ref(false)
+const orderTotal = ref(0)
+const orderPageNum = ref(1)
+const orderPageSize = ref(10)
+const statusFilter = ref<number | undefined>(undefined)
+
+async function handleSubmit() {
+  const valid = await orderFormRef.value?.validate().catch(() => false)
+  if (!valid) return
+  if (!userStore.userId) {
+    ElMessage.error('用户信息异常，请重新登录')
+    return
+  }
+  submitting.value = true
+  try {
+    const idempotentKey = crypto.randomUUID()
+    await createTradeOrder({
+      userId: userStore.userId,
+      productCode: orderForm.productCode,
+      tradeType: orderForm.tradeType,
+      entrustPrice: orderForm.entrustPrice,
+      entrustNum: orderForm.entrustNum,
+      idempotentKey,
+    })
+    ElMessage.success('委托提交成功')
+    orderForm.productCode = ''
+    orderForm.tradeType = 1
+    orderForm.entrustPrice = 100
+    orderForm.entrustNum = 1
+    fetchOrders()
+  } catch {
+    // handled
+  } finally {
+    submitting.value = false
+  }
+}
+
+async function fetchOrders() {
   loading.value = true
   try {
-    const params: any = { pageNum: query.pageNum, pageSize: query.pageSize }
-    if (query.orderNo) params.orderNo = query.orderNo
-    if (query.productCode) params.productCode = query.productCode
-    if (query.orderStatus !== '') params.orderStatus = query.orderStatus
+    const params: any = {
+      pageNum: orderPageNum.value,
+      pageSize: orderPageSize.value,
+      userId: userStore.userId || undefined,
+    }
+    if (statusFilter.value !== undefined) params.orderStatus = statusFilter.value
     const res = await getTradeOrderPage(params)
-    tableData.value = res.data.records || []; total.value = res.data.total || 0
-  } finally { loading.value = false }
+    orders.value = (res.data?.records || []) as WeaTradeOrder[]
+    orderTotal.value = res.data?.total || 0
+  } catch {
+    orders.value = []
+  } finally {
+    loading.value = false
+  }
 }
-function handleSearch() { query.pageNum = 1; fetchData() }
-function handleReset() { query.orderNo = ''; query.productCode = ''; query.orderStatus = ''; handleSearch() }
-function handleSizeChange() { query.pageNum = 1; fetchData() }
-function handleAdd() { isEdit.value = false; Object.assign(form, { id: undefined, userId: undefined, productCode: '', tradeType: 1, entrustPrice: 0, entrustNum: 0 }); dialogVisible.value = true }
-function handleEdit(row: any) { isEdit.value = true; Object.assign(form, row); dialogVisible.value = true }
-async function handleSave() {
-  const valid = await formRef.value?.validate().catch(() => false)
-  if (!valid) return; saving.value = true
+
+async function handleCancel(order: WeaTradeOrder) {
   try {
-    isEdit.value ? await updateTradeOrder(form.id!, form) : await createTradeOrder({ ...form, idempotentKey: crypto.randomUUID() })
-    ElMessage.success(isEdit.value ? '更新成功' : '创建成功'); dialogVisible.value = false; fetchData()
-  } finally { saving.value = false }
+    await ElMessageBox.confirm('确定要撤销该委托单吗？', '确认', { type: 'warning' })
+    await cancelTradeOrder(order.id!)
+    ElMessage.success('已撤销')
+    fetchOrders()
+  } catch { /* cancelled */ }
 }
-async function handleDelete(id: number) { try { await deleteTradeOrder(id); ElMessage.success('删除成功'); fetchData() } catch { /* handled by interceptor */ } }
-onMounted(fetchData)
+
+onMounted(() => {
+  // 从产品中心带过来的产品代码
+  if (route.query.productCode) {
+    orderForm.productCode = route.query.productCode as string
+  }
+  if (userStore.userId) fetchOrders()
+})
 </script>
+
 <style scoped>
-/* Global styles handle pagination-wrap and page-header */
+.trade-page {
+  max-width: 1200px;
+}
+
+.order-card {
+  margin-bottom: 20px;
+}
+
+.order-list-card {
+  margin-bottom: 20px;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.header-filters {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.order-no {
+  font-family: 'DIN Pro', monospace;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.text-muted {
+  color: var(--text-placeholder);
+  font-size: 13px;
+}
+
+.pagination-wrap {
+  margin-top: 16px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+@media (max-width: 768px) {
+  .card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+}
 </style>

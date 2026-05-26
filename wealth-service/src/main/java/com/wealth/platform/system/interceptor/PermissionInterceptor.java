@@ -1,5 +1,6 @@
 package com.wealth.platform.system.interceptor;
 
+import com.wealth.common.constants.AuthConstant;
 import com.wealth.common.utils.JwtUtil;
 import com.wealth.common.utils.RedisUtil;
 import com.wealth.platform.system.entity.UmsAdmin;

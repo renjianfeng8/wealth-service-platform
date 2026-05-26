@@ -1,95 +1,222 @@
 <template>
-  <div class="page">
-    <div class="page-header"><h3>资讯管理</h3></div>
-    <el-card shadow="never" class="search-card">
-      <el-form :model="query" inline>
-        <el-form-item label="标题"><el-input v-model="query.title" placeholder="搜索" clearable /></el-form-item>
-        <el-form-item label="来源"><el-input v-model="query.source" placeholder="搜索" clearable /></el-form-item>
-        <el-form-item><el-button type="primary" @click="handleSearch">查询</el-button><el-button @click="handleReset">重置</el-button></el-form-item>
-      </el-form>
+  <div class="news-page">
+    <div class="page-title">财经资讯</div>
+
+    <!-- 分类 -->
+    <el-card class="filter-card" shadow="never">
+      <el-radio-group v-model="filterType" @change="handleFilter">
+        <el-radio-button :value="0">全部</el-radio-button>
+        <el-radio-button v-for="opt in NEWS_TYPE_OPTIONS" :key="opt.value" :value="opt.value">
+          {{ opt.label }}
+        </el-radio-button>
+      </el-radio-group>
     </el-card>
-    <el-card shadow="never" style="margin-top:16px;">
-      <div style="margin-bottom:16px;"><el-button type="primary" @click="handleAdd">新增资讯</el-button></div>
-      <el-table :data="tableData" stripe v-loading="loading" border empty-text="暂无数据">
-        <el-table-column prop="id" label="ID" width="60" />
-        <el-table-column prop="title" label="标题" min-width="160" show-overflow-tooltip />
-        <el-table-column prop="newsType" label="类型" width="80">
-          <template #default="{ row }"><el-tag>{{ row.newsType===1?'财经':row.newsType===2?'公告':'其他' }}</el-tag></template>
-        </el-table-column>
-        <el-table-column prop="source" label="来源" min-width="120" />
-        <el-table-column prop="status" label="状态" width="70">
-          <template #default="{ row }"><el-tag :type="statusTag(row.status)">{{ statusText(row.status) }}</el-tag></template>
-        </el-table-column>
-        <el-table-column prop="publishTime" label="发布时间" width="160" :formatter="(_r:any,_c:any,v:any)=>formatDateTime(v)" />
-        <el-table-column label="操作" width="180" fixed="right">
-          <template #default="{ row }">
-            <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
-            <el-popconfirm title="确定删除？" @confirm="handleDelete(row.id)"><template #reference><el-button type="danger" link>删除</el-button></template></el-popconfirm>
-          </template>
-        </el-table-column>
-      </el-table>
-      <div class="pagination-wrap">
-        <el-pagination v-model:current-page="query.pageNum" v-model:page-size="query.pageSize" :total="total" :page-sizes="[10,20,50]" layout="total, sizes, prev, pager, next" @size-change="handleSizeChange" @current-change="fetchData" />
+
+    <!-- 列表 -->
+    <div v-if="loading" class="loading-wrap">
+      <el-skeleton :rows="5" animated />
+    </div>
+    <div v-else-if="newsList.length === 0" class="empty-wrap">
+      <el-empty description="暂无资讯" />
+    </div>
+    <div v-else class="news-list">
+      <div
+        v-for="item in newsList"
+        :key="item.id"
+        class="news-item"
+        @click="showDetail(item)"
+      >
+        <el-card class="news-card" shadow="never">
+          <div class="news-content">
+            <div class="news-header">
+              <el-tag size="small" effect="plain">
+                {{ newsTypeText(item.newsType) }}
+              </el-tag>
+              <el-tag v-if="item.source" size="small" type="info" effect="plain">
+                {{ item.source }}
+              </el-tag>
+            </div>
+            <h3 class="news-title">{{ item.title }}</h3>
+            <p class="news-summary">{{ truncate(item.content, 150) }}</p>
+            <div class="news-footer">
+              <span class="news-time">{{ formatDateTime(item.publishTime) }}</span>
+              <span class="news-read-more">阅读全文 →</span>
+            </div>
+          </div>
+        </el-card>
       </div>
-    </el-card>
-    <el-dialog v-model="dialogVisible" :title="isEdit?'编辑资讯':'新增资讯'" width="600px">
-      <el-form ref="formRef" :model="form" :rules="rules" label-width="90px">
-        <el-row :gutter="20">
-          <el-col :span="16"><el-form-item label="标题" prop="title"><el-input v-model="form.title" /></el-form-item></el-col>
-          <el-col :span="8"><el-form-item label="类型"><el-select v-model="form.newsType" style="width:100%"><el-option label="财经" :value="1" /><el-option label="公告" :value="2" /><el-option label="其他" :value="3" /></el-select></el-form-item></el-col>
-        </el-row>
-        <el-row :gutter="20">
-          <el-col :span="12"><el-form-item label="来源"><el-input v-model="form.source" /></el-form-item></el-col>
-          <el-col :span="12"><el-form-item label="状态"><el-radio-group v-model="form.status"><el-radio :value="1">发布</el-radio><el-radio :value="0">草稿</el-radio></el-radio-group></el-form-item></el-col>
-        </el-row>
-        <el-form-item label="内容" prop="content"><el-input v-model="form.content" type="textarea" :rows="4" /></el-form-item>
-        <el-form-item label="发布时间"><el-date-picker v-model="form.publishTime" type="datetime" style="width:100%" value-format="YYYY-MM-DDTHH:mm:ss" /></el-form-item>
-      </el-form>
-      <template #footer><el-button @click="dialogVisible=false">取消</el-button><el-button type="primary" :loading="saving" @click="handleSave">保存</el-button></template>
+    </div>
+
+    <!-- 分页 -->
+    <div class="pagination-wrap">
+      <el-pagination
+        v-if="total > 0"
+        v-model:current-page="pageNum"
+        v-model:page-size="pageSize"
+        :total="total"
+        :page-sizes="[10, 20, 50]"
+        layout="total, sizes, prev, pager, next"
+        @current-change="fetchNews"
+        @size-change="fetchNews"
+      />
+    </div>
+
+    <!-- 详情弹窗 -->
+    <el-dialog v-model="detailVisible" :title="detailItem?.title" width="700" destroy-on-close>
+      <div class="detail-meta">
+        <el-tag size="small" effect="plain">{{ newsTypeText(detailItem?.newsType) }}</el-tag>
+        <span v-if="detailItem?.source" class="detail-source">来源：{{ detailItem.source }}</span>
+        <span class="detail-time">{{ formatDateTime(detailItem?.publishTime) }}</span>
+      </div>
+      <div class="detail-content">{{ detailItem?.content }}</div>
     </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue'
-import { ElMessage } from 'element-plus'
-import type { FormInstance, FormRules } from 'element-plus'
-import { getNewsPage, createNews, updateNews, deleteNews } from '@/api/message'
-import { formatDateTime, statusTag, statusText } from '@/utils/format'
+import { ref, onMounted } from 'vue'
+import { getNewsPage } from '@/api/message'
+import { NEWS_TYPE_OPTIONS } from '@/types'
+import { formatDateTime, newsTypeText } from '@/utils/format'
+import type { WeaNews } from '@/types'
 
-const loading = ref(false); const saving = ref(false)
-const tableData = ref<any[]>([]); const total = ref(0)
-const dialogVisible = ref(false); const isEdit = ref(false)
-const formRef = ref<FormInstance>()
-const query = reactive({ pageNum: 1, pageSize: 10, title: '', source: '' })
-const form = reactive({ id: undefined, title: '', content: '', newsType: 1, source: '', status: 1, publishTime: '' })
-const rules: FormRules = { title: [{ required: true, message: '必填' }] }
+const newsList = ref<WeaNews[]>([])
+const loading = ref(false)
+const total = ref(0)
+const pageNum = ref(1)
+const pageSize = ref(10)
+const filterType = ref(0)
+const detailVisible = ref(false)
+const detailItem = ref<WeaNews | null>(null)
 
-async function fetchData() {
+function truncate(text: string | undefined, len: number): string {
+  if (!text) return ''
+  return text.length > len ? text.substring(0, len) + '...' : text
+}
+
+async function fetchNews() {
   loading.value = true
   try {
-    const params: any = { pageNum: query.pageNum, pageSize: query.pageSize }
-    if (query.title) params.title = query.title; if (query.source) params.source = query.source
+    const params: any = { pageNum: pageNum.value, pageSize: pageSize.value }
+    if (filterType.value) params.newsType = filterType.value
     const res = await getNewsPage(params)
-    tableData.value = res.data.records || []; total.value = res.data.total || 0
-  } finally { loading.value = false }
+    newsList.value = (res.data?.records || []) as WeaNews[]
+    total.value = res.data?.total || 0
+  } catch {
+    newsList.value = []
+  } finally {
+    loading.value = false
+  }
 }
-function handleSearch() { query.pageNum = 1; fetchData() }
-function handleReset() { query.title = ''; query.source = ''; handleSearch() }
-function handleSizeChange() { query.pageNum = 1; fetchData() }
-function handleAdd() { isEdit.value = false; Object.assign(form, { id: undefined, title: '', content: '', newsType: 1, source: '', status: 1, publishTime: '' }); dialogVisible.value = true }
-function handleEdit(row: any) { isEdit.value = true; Object.assign(form, row); dialogVisible.value = true }
-async function handleSave() {
-  const valid = await formRef.value?.validate().catch(() => false)
-  if (!valid) return; saving.value = true
-  try {
-    isEdit.value ? await updateNews(form.id!, form) : await createNews(form)
-    ElMessage.success(isEdit.value ? '更新成功' : '创建成功'); dialogVisible.value = false; fetchData()
-  } finally { saving.value = false }
+
+function handleFilter() {
+  pageNum.value = 1
+  fetchNews()
 }
-async function handleDelete(id: number) { try { await deleteNews(id); ElMessage.success('删除成功'); fetchData() } catch { /* handled by interceptor */ } }
-onMounted(fetchData)
+
+function showDetail(item: WeaNews) {
+  detailItem.value = item
+  detailVisible.value = true
+}
+
+onMounted(fetchNews)
 </script>
+
 <style scoped>
-/* Global styles handle pagination-wrap and page-header */
+.news-page { max-width: 1200px; }
+.filter-card { margin-bottom: 20px; }
+.loading-wrap, .empty-wrap { padding: 60px 0; }
+
+.news-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.news-card {
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.news-card:hover {
+  transform: translateX(4px);
+  box-shadow: var(--shadow-md) !important;
+}
+
+.news-content {
+  padding: 4px 0;
+}
+
+.news-header {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.news-title {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+.news-summary {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 12px;
+}
+
+.news-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.news-time {
+  font-size: 13px;
+  color: var(--text-placeholder);
+}
+
+.news-read-more {
+  font-size: 13px;
+  color: var(--primary);
+  font-weight: 500;
+}
+
+/* 详情 */
+.detail-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.detail-source {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.detail-time {
+  font-size: 13px;
+  color: var(--text-placeholder);
+  margin-left: auto;
+}
+
+.detail-content {
+  font-size: 15px;
+  color: var(--text-regular);
+  line-height: 1.8;
+  white-space: pre-wrap;
+}
+
+.pagination-wrap {
+  display: flex;
+  justify-content: center;
+  padding: 20px 0;
+}
 </style>

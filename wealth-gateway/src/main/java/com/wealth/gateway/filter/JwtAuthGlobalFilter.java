@@ -35,7 +35,7 @@ public class JwtAuthGlobalFilter implements GlobalFilter, Ordered {
 
     private final AntPathMatcher pathMatcher = new AntPathMatcher();
 
-    /** 无需认证的白名单路径（Swagger/Knife4j 路径已移除，需登录后访问） */
+    /** 无需认证的白名单路径 */
     private static final String[] PERMIT_ALL_URLS = {
             "/system/umsAdmin/login",
             "/system/captcha",
@@ -45,6 +45,16 @@ public class JwtAuthGlobalFilter implements GlobalFilter, Ordered {
             "/api/v1/product/wea-product/page",
             "/api/v1/product/wea-market-data",
             "/api/v1/message/wea-news/page",
+            /* Knife4j / Swagger 文档路径 */
+            "/doc.html",
+            "/webjars/**",
+            "/v3/api-docs/**",
+            "/system/v3/api-docs",
+            "/user/v3/api-docs",
+            "/product/v3/api-docs",
+            "/trade/v3/api-docs",
+            "/message/v3/api-docs",
+            "/search/v3/api-docs",
     };
 
     /** JWT Cookie 名称（httpOnly，防 XSS 窃取） */
