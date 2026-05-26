@@ -9,7 +9,7 @@ wealth-service-platform 是一个基于 Spring Cloud Alibaba 微服务架构的�
 - **前端**: Vue 3.5.13 + Vite 6.3.1 + Element Plus 2.9.7 + TypeScript 5.7
 - **中间件**: MySQL 8 + Redis 5 + RabbitMQ 3.10 + ElasticSearch 8.8.2 + Nacos 2.3.2
 - **网关**: Spring Cloud Gateway（端口 8080）
-完整模块架构参见 [docs/architecture.md](docs/architecture.md)。
+完整模块架构参见 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)。
 ## 开发环境准备
 | 工具 | 版本要求 | 说明 |
 |------|---------|------|
@@ -30,7 +30,7 @@ wealth-service-platform 是一个基于 Spring Cloud Alibaba 微服务架构的�
 | ElasticSearch | elasticsearch:8.8.2 | 9200 |
 | Nginx | nginx:latest | 80 |
 
-> 完整容器列表详见 [docs/architecture.md](docs/architecture.md#基础设施-docker-容器)。
+> 完整容器列表详见 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#基础设施-docker-容器)。
 ## 本地开发流程
 ### 1. 拉取代码
 
@@ -54,7 +54,7 @@ mysql -u root -p Wealth < wealth-common/src/main/resources/sql/init.sql
 
 ### 4. 配置 Nacos
 
-访问 Nacos 控制台 `http://localhost:8848`，在 DEFAULT_GROUP 下创建共享配置 `wealth-shared.yaml`，内容包含 JWT 密钥和数据库源配置。详细配置内容参见 [docs/architecture.md](docs/architecture.md#nacos-配置中心docker-nacosnacos-serverv232)。
+访问 Nacos 控制台 `http://localhost:8848`，在 DEFAULT_GROUP 下创建共享配置 `wealth-shared.yaml`，内容包含 JWT 密钥和数据库源配置。详细配置内容参见 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#nacos-配置中心docker-nacosnacos-serverv232)。
 ### 5. 编译项目
 
 首次编译（或修改了 wealth-common 后）需要先安装公共模块：
@@ -95,7 +95,7 @@ npx vite
 ## 代码规范
 
 完整开发规范（包结构、Entity 继承、接口格式、命名规范、异常处理、数据库规范等）详见 [CLAUDE.md](CLAUDE.md)。  
-数据库表结构详见 [docs/database-schema.md](docs/database-schema.md)。
+数据库表结构详见 [docs/DATABASE-SCHEMA.md](docs/DATABASE-SCHEMA.md)。
 ## 提交规范
 
 Git 提交须遵循 [Conventional Commits](https://www.conventionalcommits.org/) 规范，格式为 `<type>(<scope>): <description>`。  
@@ -151,7 +151,7 @@ Closes #123
 
 发现 Bug 或有改进建议时：
 
-1. **优先查阅** [Bug.md](docs/Bug.md) — 确认是否为已知问题，查看已有的修复方案和排查要点
+1. **优先查阅** [Bug.md](docs/BUG.md) — 确认是否为已知问题，查看已有的修复方案和排查要点
 2. **提交 Issue** — 若为新问题，请附上：
    - 复现步骤
    - 期望行为与实际行为

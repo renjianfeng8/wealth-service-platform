@@ -3,9 +3,9 @@
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 **相关文档：**
-- [模块架构与配置体系](docs/architecture.md) — 跨模块开发时引用
-- [数据库表结构与字段](docs/database-schema.md) — 写实体类时引用
-- [Bug 记录](docs/Bug.md) — 排查已知问题
+- [模块架构与配置体系](docs/ARCHITECTURE.md) — 跨模块开发时引用
+- [数据库表结构与字段](docs/DATABASE-SCHEMA.md) — 写实体类时引用
+- [Bug 记录](docs/BUG.md) — 排查已知问题
 
 # 理财服务平台开发规范（自动遵守）
 
@@ -15,7 +15,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 数据库：wealth（utf8mb4）
 
-环境版本、基础设施类说明等引用式内容见 [docs/architecture.md](docs/architecture.md)。
+环境版本、基础设施类说明等引用式内容见 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)。
 
 # 一、代码结构规范（强制）
 
@@ -61,7 +61,7 @@ public class MyBatisPlusConfig {
 
 各业务域无需重复配置，引入 wealth-common 依赖后自动生效。
 
-> **实体类规范（BaseEntity 继承、字段映射规则）见 [数据库表结构与字段](docs/database-schema.md#三baseentity-继承规范)**
+> **实体类规范（BaseEntity 继承、字段映射规则）见 [数据库表结构与字段](docs/DATABASE-SCHEMA.md#三baseentity-继承规范)**
 
 # 三、接口统一返回格式
 
@@ -116,9 +116,9 @@ public class MyBatisPlusConfig {
 
 # 六、AI 生成规则
 
-1. 必须严格按照 [数据库表结构与字段](docs/database-schema.md) 中的表结构生成 Entity（继承 BaseEntity）、Mapper、Service、Controller、Vo、Dto
+1. 必须严格按照 [数据库表结构与字段](docs/DATABASE-SCHEMA.md) 中的表结构生成 Entity（继承 BaseEntity）、Mapper、Service、Controller、Vo、Dto
 2. 必须使用 MyBatis-Plus
-3. Entity 必须继承 BaseEntity，按照 [数据库表结构与字段 > BaseEntity 继承规范](docs/database-schema.md#三baseentity-继承规范) 处理字段覆盖
+3. Entity 必须继承 BaseEntity，按照 [数据库表结构与字段 > BaseEntity 继承规范](docs/DATABASE-SCHEMA.md#三baseentity-继承规范) 处理字段覆盖
 4. 必须自动填充 create_time、update_time
 5. 接口必须遵循 RESTful 规范
 6. 必须加 Swagger 注解
@@ -300,7 +300,7 @@ if (count > 0) {
 
 # 十一、项目健康检查规则（强制遵守）
 
-**每次执行项目健康检查、错误扫描、启动异常排查时，必须优先查阅 [Bug.md](docs/Bug.md) 中的已知问题记录。**
+**每次执行项目健康检查、错误扫描、启动异常排查时，必须优先查阅 [Bug.md](docs/BUG.md) 中的已知问题记录。**
 
 ## 配置修改审批原则
 

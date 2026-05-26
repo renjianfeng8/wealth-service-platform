@@ -229,7 +229,7 @@ com.wealth.platform.{domain}
 
 ## 环境搭建
 
-详见 [Startup.md](docs/Startup.md)。
+详见 [Startup.md](docs/STARTUP.md)。
 
 ---
 
@@ -353,5 +353,5 @@ public class SomeService {
 ---
 
 > 详细开发规范见 [CLAUDE.md](CLAUDE.md)
-> 数据库设计详见 [database-schema.md](docs/database-schema.md)
+> 数据库设计详见 [database-schema.md](docs/DATABASE-SCHEMA.md)
 > 变更记录详见 [CHANGELOG.md](docs/CHANGELOG.md)
