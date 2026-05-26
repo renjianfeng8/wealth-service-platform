@@ -242,14 +242,7 @@ public class UmsAdminServiceImpl extends ServiceImpl<UmsAdminMapper, UmsAdmin> i
         return save(admin);
     }
 
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public Boolean updateAdmin(UmsAdmin admin) {
-        admin.setPassword(null);
-        return updateById(admin);
-    }
-
-    @Override
+@Override
     public List<String> getResourceUrlsByIds(List<Long> resourceIds) {
         return resourceService.lambdaQuery()
                 .in(UmsResource::getId, resourceIds)

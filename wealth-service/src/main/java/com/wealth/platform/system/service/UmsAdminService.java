@@ -12,8 +12,6 @@ public interface UmsAdminService extends IService<UmsAdmin> {
     TokenPair login(LoginDTO dto);
     TokenPair refreshToken(String refreshToken);
     Boolean createAdmin(UmsAdmin admin);
-    Boolean updateAdmin(UmsAdmin admin);
-
     // 权限查询
     List<String> getResourceUrlsByIds(List<Long> resourceIds);
 

@@ -149,23 +149,7 @@ class UmsAdminServiceImplTest {
         verify(umsAdminMapper).insert(any(UmsAdmin.class));
     }
 
-    @Test
-    @DisplayName("更新管理员成功-密码被置空不更新")
-    void updateAdmin_Success_PasswordCleared() {
-        UmsAdmin admin = new UmsAdmin();
-        admin.setId(1L);
-        admin.setEmail("new@email.com");
-
-        when(umsAdminMapper.updateById(any(UmsAdmin.class))).thenReturn(1);
-
-        Boolean result = adminService.updateAdmin(admin);
-
-        assertTrue(result);
-        assertNull(admin.getPassword());
-        verify(umsAdminMapper).updateById(any(UmsAdmin.class));
-    }
-
-    @Test
+@Test
     @DisplayName("根据资源ID获取URL列表-有数据")
     void getResourceUrlsByIds_WithData() {
         UmsResource res1 = new UmsResource();
