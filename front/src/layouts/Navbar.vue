@@ -49,7 +49,7 @@ import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '@/store'
 import {
-  Fold, Expand, Search, Bell, UserFilled,
+  Fold, Expand, Search, Bell,
   ArrowDown, User, SwitchButton,
 } from '@element-plus/icons-vue'
 

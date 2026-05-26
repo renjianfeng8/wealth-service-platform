@@ -22,7 +22,7 @@
     </div>
     <div v-else-if="favorites.length === 0" class="empty-wrap">
       <el-empty description="暂无自选，请添加产品">
-        <el-button type="primary" @click="router.push('/product')">去产品中心</el-button>
+        <el-button type="primary" @click="router.push('/products')">去产品中心</el-button>
       </el-empty>
     </div>
     <div v-else class="fav-grid">
@@ -194,7 +194,7 @@ async function handleDelete(item: FavoriteItem) {
 }
 
 function goTrade(item: FavoriteItem) {
-  router.push({ path: '/trade', query: { productCode: item.productCode } })
+  router.push({ path: '/user/trade', query: { productCode: item.productCode } })
 }
 
 onMounted(() => {

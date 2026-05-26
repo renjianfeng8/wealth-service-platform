@@ -161,7 +161,7 @@ import {
   Money, Notebook, Message, UserFilled,
   ArrowDown, SwitchButton, MoreFilled, Close,
   Setting, Odometer, Avatar, Connection,
-  User, Goods, List, Reading, Message as MessageIcon,
+  User, Goods, List, Reading,
   Search, Edit, TrendCharts,
 } from '@element-plus/icons-vue'
 

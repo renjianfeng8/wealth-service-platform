@@ -8,7 +8,7 @@ import org.springframework.data.elasticsearch.repository.ElasticsearchRepository
 
 public interface ProductRepository extends ElasticsearchRepository<ProductDocument, Long> {
 
-    // 鍏ㄦ枃妫€绱細浜у搧鍚嶇О锛圛K鍒嗚瘝鍣ㄤ腑鏂囨绱級+ 浜у搧缂栫爜鍖归厤
+    // 全文检索：产品名称（IK分词器中文搜索）+ 产品编码匹配
     @Query("{\"bool\": {\"should\": [{\"match\": {\"productName\": {\"query\": \"?0\", \"analyzer\": \"ik_smart\"}}}, {\"term\": {\"productCode\": {\"value\": \"?0\"}}}]}}")
     Page<ProductDocument> searchByKeyword(String keyword, Pageable pageable);
 }

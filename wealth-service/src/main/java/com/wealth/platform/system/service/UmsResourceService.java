@@ -9,7 +9,7 @@ import java.util.List;
  * 后台资源表业务层接口。
  */
 public interface UmsResourceService extends IService<UmsResource> {
-    // 在UmsResourceService 加
+    /** 根据资源ID列表获取对应的URL列表 */
     List<String> getUrlByResourceIds(List<Long> resourceIds);
 
     // 分页条件查询

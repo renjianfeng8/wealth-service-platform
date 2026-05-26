@@ -14,7 +14,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
         "com.wealth.platform.product.mapper",
         "com.wealth.platform.trade.mapper",
         "com.wealth.platform.message.mapper",
-        "com.wealth.platform.search.mapper",
         "com.wealth.platform.user.mapper"
 })
 public class WealthServiceApplication {

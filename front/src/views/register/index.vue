@@ -74,7 +74,7 @@
 
         <div class="register-footer">
           <span class="register-hint">已有账户？</span>
-          <router-link to="/login" class="login-link">立即登录</router-link>
+          <router-link to="/auth/login" class="login-link">立即登录</router-link>
         </div>
       </el-card>
     </div>

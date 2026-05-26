@@ -20,14 +20,14 @@ public class MyBatisPlusMetaObjectHandler implements MetaObjectHandler {
 
     @Override
     public void insertFill(MetaObject metaObject) {
-        // 浠呭湪瀹炰綋瀛楁瀛樺湪涓旈厤缃簡 @TableField(fill=...) 鏃剁敓鏁?
+        // 仅在实体字段存在且配置了 @TableField(fill=...) 时生效
         this.setFieldValByName("createTime", LocalDateTime.now(), metaObject);
         this.setFieldValByName("updateTime", LocalDateTime.now(), metaObject);
     }
 
     @Override
     public void updateFill(MetaObject metaObject) {
-        // 浠呭湪瀹炰綋瀛楁瀛樺湪涓旈厤缃簡 @TableField(fill=...) 鏃剁敓鏁?
+        // 仅在实体字段存在且配置了 @TableField(fill=...) 时生效
         this.setFieldValByName("updateTime", LocalDateTime.now(), metaObject);
     }
 }

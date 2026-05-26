@@ -5,11 +5,6 @@
       <span>加载中...</span>
     </div>
 
-    <div v-if="loading" class="fl-loading">
-      <div class="fl-loading-spinner" />
-      <span>加载中...</span>
-    </div>
-
     <template v-else>
       <div class="fl-dashboard">
         <!-- Row 1: 核心数据卡片 -->
@@ -201,7 +196,7 @@ import { getProductList } from '@/api/product'
 import { formatPrice, formatRate } from '@/utils/format'
 import {
   User, Goods, DataLine, List, Message,
-  Star, Reading, Search, Setting,
+  Star, Search, Setting,
 } from '@element-plus/icons-vue'
 import type { WeaProduct } from '@/types'
 // Styles use global theme.css variables
@@ -580,14 +575,14 @@ function disposeAllCharts() {
 watch(symbolSel, () => nextTick(updateKlineChart))
 
 const entries = [
-  { label: '用户管理', path: '/user', icon: User, bg: '#1a6dff' },
-  { label: '产品管理', path: '/product', icon: Goods, bg: '#19be6b' },
-  { label: '行情数据', path: '/market', icon: DataLine, bg: '#f5a623' },
-  { label: '交易管理', path: '/trade', icon: List, bg: '#ed4014' },
-  { label: '自选管理', path: '/favorite', icon: Star, bg: '#d29922' },
-  { label: '消息管理', path: '/message', icon: Message, bg: '#00b894' },
-  { label: '管理员', path: '/system/admin', icon: Setting, bg: '#8b5cf6' },
-  { label: 'ES 搜索', path: '/search', icon: Search, bg: '#1a6dff' },
+  { label: '用户管理', path: '/admin/user', icon: User, bg: '#1a6dff' },
+  { label: '产品管理', path: '/admin/product', icon: Goods, bg: '#19be6b' },
+  { label: '行情数据', path: '/admin/market', icon: DataLine, bg: '#f5a623' },
+  { label: '交易管理', path: '/admin/trade', icon: List, bg: '#ed4014' },
+  { label: '自选管理', path: '/admin/favorite', icon: Star, bg: '#d29922' },
+  { label: '消息管理', path: '/admin/message', icon: Message, bg: '#00b894' },
+  { label: '管理员', path: '/admin/system/admin', icon: Setting, bg: '#8b5cf6' },
+  { label: 'ES 搜索', path: '/admin/search', icon: Search, bg: '#1a6dff' },
 ]
 
 async function fetchAll() {

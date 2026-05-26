@@ -29,9 +29,6 @@ public class UmsResourceServiceImpl extends ServiceImpl<UmsResourceMapper, UmsRe
         return baseMapper.selectPage(page, wrapper);
     }
 
-    // UmsResourceServiceImpl 实现
-
-    // UmsResourceServiceImpl 实现
     @Override
     public List<String> getUrlByResourceIds(List<Long> resourceIds) {
         if (resourceIds == null || resourceIds.isEmpty()) {

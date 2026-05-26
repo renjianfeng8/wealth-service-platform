@@ -95,7 +95,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '@/store'
 import {
   TrendCharts, Odometer, Setting, User, Goods, List,
-  Message, Search, SwitchButton, UserFilled,
+  Message, Search, SwitchButton,
 } from '@element-plus/icons-vue'
 
 defineProps<{ isCollapsed: boolean }>()
