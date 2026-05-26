@@ -83,4 +83,10 @@ scripts/
 
 # Python scripts in project root
 /*.py
+
+# Claude Code - local settings (per-developer)
 .claude/worktrees/
+.claude/settings.local.json
+
+# Old UI prototype
+UI.html
