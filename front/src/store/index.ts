@@ -19,6 +19,11 @@ export const useUserStore = defineStore('user', {
     isAdmin: (state) => state.role === 'admin',
   },
   actions: {
+    /**
+     * 管理员登录，设置登录状态、角色为 admin 并存储用户信息
+     * @param username - 管理员用户名
+     * @param password - 管理员密码
+     */
     async login(username: string, password: string) {
       const res = await loginApi({ username, password })
       setToken('true')
@@ -28,6 +33,11 @@ export const useUserStore = defineStore('user', {
       this.username = username
       this.role = 'admin'
     },
+    /**
+     * 普通用户登录，设置登录状态、角色为 user 并存储用户信息
+     * @param username - 用户名
+     * @param password - 密码
+     */
     async userLogin(username: string, password: string) {
       const res = await userLogin({ username, password })
       const { userId } = res.data
@@ -43,12 +53,19 @@ export const useUserStore = defineStore('user', {
       this.avatar = avatar
       this.role = 'user'
     },
+    /**
+     * 更新当前登录用户的个人信息
+     * @param info - 用户信息（userId、nickname、avatar）
+     */
     setUserInfo(info: { userId: number; nickname: string; avatar: string }) {
       this.userId = info.userId
       this.nickname = info.nickname
       this.avatar = info.avatar
       setStoredUser({ username: this.username, ...info })
     },
+    /**
+     * 登出，清除所有登录状态、用户信息和角色
+     */
     logout() {
       this.token = ''
       this.username = ''
