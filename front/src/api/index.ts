@@ -1,14 +1,11 @@
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
 import { removeToken } from '@/utils/auth'
+import router from '@/router'
 
 const redirectLogin = () => {
-  const path = window.location.pathname
-  if (path.startsWith('/admin')) {
-    window.location.href = '/admin/login'
-  } else {
-    window.location.href = '/auth/login'
-  }
+  const loginPath = window.location.pathname.startsWith('/admin') ? '/admin/login' : '/auth/login'
+  router.replace(loginPath)
 }
 
 const request = axios.create({
