@@ -78,8 +78,7 @@ import { ElMessage } from 'element-plus'
 import { User, Lock, TrendCharts } from '@element-plus/icons-vue'
 import type { FormInstance, FormRules } from 'element-plus'
 import { setToken, setStoredUser } from '@/utils/auth'
-import { userLogin as userLoginApi } from '@/api/user'
-import { loginApi } from '@/api/system'
+import { identifyLogin } from '@/api/user'
 
 const router = useRouter()
 const route = useRoute()
@@ -104,48 +103,33 @@ async function handleLogin() {
 
   loading.value = true
   try {
-    // 先尝试用户登录
-    try {
-      const res = await userLoginApi({ username: form.username, password: form.password })
-      if (res.data) {
-        // 用户登录成功
-        const { userId } = res.data
-        const nickname = res.data.nickname || ''
-        const avatar = res.data.avatar || ''
-        sessionStorage.setItem('wealth_logged_in', 'true')
-        sessionStorage.setItem('wealth_role', 'user')
-        setStoredUser({ username: form.username, userId, nickname, avatar })
-        userStore.setUserInfo({ userId, nickname, avatar })
-        userStore.token = 'true'
-        userStore.username = form.username
-        userStore.role = 'user'
-        ElMessage.success('登录成功')
-        const redirect = (route.query.redirect as string) || '/user/dashboard'
-        router.push(redirect)
-        return
-      }
-    } catch {
-      // 用户登录失败，继续尝试管理员登录
-    }
+    const res = await identifyLogin({ username: form.username, password: form.password })
+    const { userId, nickname, userType } = res.data || {}
+    sessionStorage.setItem('wealth_logged_in', 'true')
+    sessionStorage.setItem('wealth_role', userType)
+    userStore.token = 'true'
+    userStore.username = form.username
 
-    // 再尝试管理员登录
-    try {
-      await loginApi({ username: form.username, password: form.password })
-      sessionStorage.setItem('wealth_logged_in', 'true')
-      sessionStorage.setItem('wealth_role', 'admin')
+    if (userType === 'admin') {
       setStoredUser({ username: form.username })
-      userStore.token = 'true'
-      userStore.username = form.username
-      userStore.userId = 0
-      userStore.nickname = ''
-      userStore.avatar = ''
       userStore.role = 'admin'
       ElMessage.success('登录成功')
-      const adminRedirect = (route.query.redirect as string) || '/admin/dashboard'
-      router.push(adminRedirect)
-    } catch {
-      // 两种登录都失败，错误已由拦截器展示
+      const redirect = (route.query.redirect as string) || '/admin/dashboard'
+      router.push(redirect)
+    } else {
+      const avatar = ''
+      setStoredUser({ username: form.username, userId, nickname, avatar })
+      userStore.setUserInfo({ userId, nickname, avatar })
+      userStore.userId = userId
+      userStore.nickname = nickname || ''
+      userStore.avatar = avatar
+      userStore.role = 'user'
+      ElMessage.success('登录成功')
+      const redirect = (route.query.redirect as string) || '/user/dashboard'
+      router.push(redirect)
     }
+  } catch {
+    // 错误已由拦截器展示
   } finally {
     loading.value = false
   }
