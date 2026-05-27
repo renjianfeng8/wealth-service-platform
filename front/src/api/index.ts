@@ -4,7 +4,7 @@ import { removeToken } from '@/utils/auth'
 import router from '@/router'
 
 const redirectLogin = () => {
-  const loginPath = window.location.pathname.startsWith('/admin') ? '/admin/login' : '/auth/login'
+  const loginPath = '/auth/login'
   router.replace(loginPath)
 }
 

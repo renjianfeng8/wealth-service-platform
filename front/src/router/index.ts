@@ -1,5 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
+import NProgress from 'nprogress'
+import 'nprogress/nprogress.css'
 
 declare module 'vue-router' {
   interface RouteMeta {
@@ -64,10 +66,8 @@ const routes: RouteRecordRaw[] = [
     ],
   },
 
-  // ==================== 独立页面 ====================
-  { path: '/admin/login', component: () => import('@/views/admin/login/index.vue'), meta: { title: '管理员登录' } },
-
-  // 404 — 未知路由显示错误页面
+  // ==================== 错误页面 ====================
+  { path: '/403', name: 'Forbidden', component: () => import('@/views/error/Forbidden.vue'), meta: { title: '权限不足' } },
   { path: '/:pathMatch(.*)*', name: 'NotFound', component: () => import('@/views/error/NotFound.vue') },
 ]
 
@@ -76,8 +76,12 @@ const router = createRouter({
   routes,
 })
 
+// NProgress 配置：关闭转圈，只保留顶部进度条
+NProgress.configure({ showSpinner: false })
+
 // 导航守卫 — 认证 + 角色校验 + 动态标题
 router.beforeEach((to, _from) => {
+  NProgress.start()
   // 动态更新页面标题
   const title = to.meta.title as string
   if (title) {
@@ -92,13 +96,13 @@ router.beforeEach((to, _from) => {
   // 检查登录状态
   const loggedIn = sessionStorage.getItem('wealth_logged_in') === 'true'
   if (!loggedIn) {
-    const loginPath = to.path.startsWith('/admin/') ? '/admin/login' : '/auth/login'
+    const loginPath = '/auth/login'
     // 使用 replace 避免回退时陷入登录页死循环
     return { path: loginPath, query: { redirect: to.fullPath }, replace: true }
   }
 
   // 已登录访问登录页 → 跳转对应首页
-  if (to.path === '/auth/login' || to.path === '/admin/login') {
+  if (to.path === '/auth/login') {
     const role = sessionStorage.getItem('wealth_role')
     return role === 'admin' ? '/admin/dashboard' : '/home'
   }
@@ -107,11 +111,15 @@ router.beforeEach((to, _from) => {
   if (to.meta.requiresAdmin) {
     const role = sessionStorage.getItem('wealth_role')
     if (role !== 'admin') {
-      return '/home'
+      return { path: '/403', query: { redirect: to.fullPath }, replace: true }
     }
   }
 
   return true
+})
+
+router.afterEach(() => {
+  NProgress.done()
 })
 
 export default router

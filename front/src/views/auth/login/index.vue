@@ -18,7 +18,7 @@
       </div>
 
       <el-card class="login-card" :shadow="'never'">
-        <h2 class="login-title">用户登录</h2>
+        <h2 class="login-title">登录</h2>
         <p class="login-subtitle">欢迎回来，请登录您的账户</p>
 
         <el-form
@@ -125,7 +125,9 @@ async function handleLogin() {
       userStore.avatar = avatar
       userStore.role = 'user'
       ElMessage.success('登录成功')
-      const redirect = (route.query.redirect as string) || '/user/dashboard'
+      // 普通用户不允许跳转到管理后台，回退到用户仪表盘
+      const raw = route.query.redirect as string
+      const redirect = (raw && !raw.startsWith('/admin/')) ? raw : '/user/dashboard'
       router.push(redirect)
     }
   } catch {

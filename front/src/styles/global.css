@@ -87,6 +87,18 @@ a {
 .fall-text { color: var(--fall-color); font-weight: 600; }
 
 /* ====================================
+   NProgress 顶部进度条
+   ==================================== */
+#nprogress .bar {
+  background: var(--primary) !important;
+  height: 3px !important;
+}
+
+#nprogress .peg {
+  box-shadow: 0 0 10px var(--primary), 0 0 5px var(--primary) !important;
+}
+
+/* ====================================
    Element Plus 覆盖
    ==================================== */
 .el-card {
@@ -178,14 +190,10 @@ a {
   font-weight: 500;
 }
 
-.el-input__inner {
-  border-radius: 6px;
-  transition: var(--transition-fast);
-}
-
-.el-input__inner:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 2px rgba(26, 109, 255, 0.15);
+.el-input {
+  --el-input-border-radius: 6px;
+  --el-input-focus-border-color: var(--primary);
+  --el-input-hover-border-color: var(--primary);
 }
 
 .el-pagination {

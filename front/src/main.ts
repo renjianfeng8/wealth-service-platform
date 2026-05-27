@@ -11,6 +11,11 @@ import router from './router'
 
 const app = createApp(App)
 
+// 全局错误处理 — 捕获组件树外的未处理异常
+app.config.errorHandler = (err, _instance, info) => {
+  console.error('[GlobalError]', err, info)
+}
+
 app.use(createPinia())
 app.use(router)
 app.use(ElementPlus, { locale: zhCn })
