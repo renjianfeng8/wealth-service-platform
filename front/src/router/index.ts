@@ -67,8 +67,8 @@ const routes: RouteRecordRaw[] = [
   // ==================== 独立页面 ====================
   { path: '/admin/login', component: () => import('@/views/admin/login/index.vue'), meta: { title: '管理员登录' } },
 
-  // 404
-  { path: '/:pathMatch(.*)*', redirect: '/home' },
+  // 404 — 未知路由显示错误页面
+  { path: '/:pathMatch(.*)*', name: 'NotFound', component: () => import('@/views/error/NotFound.vue') },
 ]
 
 const router = createRouter({
