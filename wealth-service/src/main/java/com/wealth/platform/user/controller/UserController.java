@@ -8,6 +8,9 @@ import com.wealth.common.dto.LoginDTO;
 import com.wealth.common.result.Result;
 import com.wealth.common.result.ResultCode;
 import com.wealth.common.utils.BeanConvertUtil;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
+import org.springframework.http.ResponseEntity;
 import com.wealth.platform.user.dto.UserDTO;
 import com.wealth.platform.user.entity.User;
 import com.wealth.platform.user.service.UserService;
@@ -15,8 +18,6 @@ import com.wealth.platform.user.vo.UserVO;
 import com.wealth.platform.user.vo.LoginVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import org.springframework.validation.annotation.Validated;
@@ -119,31 +120,33 @@ public class UserController {
     @PostMapping("/login")
     @Operation(summary = "用户登录")
     @AuditLog(module = "用户管理", operation = "用户登录")
-    public Result<LoginVO> login(@Valid @RequestBody LoginDTO dto, HttpServletResponse servletResponse) {
+    public ResponseEntity<Result<LoginVO>> login(@Valid @RequestBody LoginDTO dto) {
         LoginVO loginVO = userService.login(dto);
-        // 设置 httpOnly Cookie（防 XSS 窃取 JWT）
-        Cookie cookie = new Cookie("wealth_token", loginVO.getToken());
-        cookie.setHttpOnly(true);
-        cookie.setSecure(true);
-        cookie.setPath("/");
-        cookie.setMaxAge(1800); // 30 分钟，与 access_token 有效期一致
-        servletResponse.addCookie(cookie);
-        return Result.success(loginVO);
+        ResponseCookie cookie = ResponseCookie.from("wealth_token", loginVO.getToken())
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(1800)
+                .build();
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .body(Result.success(loginVO));
     }
 
     @PostMapping("/identify-login")
     @Operation(summary = "统一登录（自动识别用户类型）")
     @AuditLog(module = "用户管理", operation = "统一登录")
-    public Result<LoginVO> identifyLogin(@Valid @RequestBody LoginDTO dto, HttpServletResponse servletResponse) {
+    public ResponseEntity<Result<LoginVO>> identifyLogin(@Valid @RequestBody LoginDTO dto) {
         LoginVO loginVO = userService.identifyLogin(dto);
-        // 设置 httpOnly Cookie（防 XSS 窃取 JWT）
-        Cookie cookie = new Cookie("wealth_token", loginVO.getToken());
-        cookie.setHttpOnly(true);
-        cookie.setSecure(true);
-        cookie.setPath("/");
-        cookie.setMaxAge(1800);
-        servletResponse.addCookie(cookie);
-        return Result.success(loginVO);
+        ResponseCookie cookie = ResponseCookie.from("wealth_token", loginVO.getToken())
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(1800)
+                .build();
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .body(Result.success(loginVO));
     }
 
     @PostMapping("/resetPassword")
