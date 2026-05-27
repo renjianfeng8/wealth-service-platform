@@ -168,7 +168,7 @@ function showDetail(item: WeaProduct) {
 function goTrade(item: WeaProduct | null) {
   if (!item) return
   detailVisible.value = false
-  router.push({ path: '/trade', query: { productCode: item.productCode } })
+  router.push({ path: '/user/trade', query: { productCode: item.productCode } })
 }
 
 onMounted(fetchProducts)
