@@ -77,7 +77,7 @@ const router = createRouter({
 })
 
 // 导航守卫 — 认证 + 角色校验 + 动态标题
-router.beforeEach((to, _from, next) => {
+router.beforeEach((to, _from) => {
   // 动态更新页面标题
   const title = to.meta.title as string
   if (title) {
@@ -86,35 +86,32 @@ router.beforeEach((to, _from, next) => {
 
   // 不需要认证的路由直接放行
   if (!to.meta.requiresAuth) {
-    next()
-    return
+    return true
   }
 
   // 检查登录状态
   const loggedIn = sessionStorage.getItem('wealth_logged_in') === 'true'
   if (!loggedIn) {
     const loginPath = to.path.startsWith('/admin/') ? '/admin/login' : '/auth/login'
-    next({ path: loginPath, query: { redirect: to.fullPath } })
-    return
+    // 使用 replace 避免回退时陷入登录页死循环
+    return { path: loginPath, query: { redirect: to.fullPath }, replace: true }
   }
 
   // 已登录访问登录页 → 跳转对应首页
   if (to.path === '/auth/login' || to.path === '/admin/login') {
     const role = sessionStorage.getItem('wealth_role')
-    next(role === 'admin' ? '/admin/dashboard' : '/home')
-    return
+    return role === 'admin' ? '/admin/dashboard' : '/home'
   }
 
   // 检查管理员权限
   if (to.meta.requiresAdmin) {
     const role = sessionStorage.getItem('wealth_role')
     if (role !== 'admin') {
-      next('/home')
-      return
+      return '/home'
     }
   }
 
-  next()
+  return true
 })
 
 export default router
