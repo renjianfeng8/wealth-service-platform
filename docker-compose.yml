@@ -25,6 +25,7 @@ services:
     volumes:
       - mysql-data:/var/lib/mysql
       - ./wealth-common/src/main/resources/sql/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./wealth-common/src/main/resources/sql/test-data.sql:/docker-entrypoint-initdb.d/test-data.sql
       - ./mysql/conf.d/binlog.cnf:/etc/mysql/conf.d/binlog.cnf:ro
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
