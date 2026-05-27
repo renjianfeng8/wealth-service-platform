@@ -1,13 +1,19 @@
 <template>
   <div class="not-found">
+    <!-- 浮动问号装饰 -->
+    <div class="not-found-shapes">
+      <div class="q q-1">?</div>
+      <div class="q q-2">?</div>
+      <div class="q q-3">?</div>
+      <div class="q q-4">?</div>
+    </div>
+
     <div class="not-found-content">
-      <!-- 装饰 SVG：断环 -->
-      <div class="not-found-ring">
-        <svg viewBox="0 0 120 120" width="120" height="120">
-          <circle cx="60" cy="60" r="48" fill="none" stroke="#e5e5ea" stroke-width="6" />
-          <path d="M 60 12 A 48 48 0 1 1 30 105" fill="none" stroke="#1a6dff" stroke-width="6" stroke-linecap="round" />
-        </svg>
+      <!-- Logo -->
+      <div class="not-found-brand">
+        <el-icon :size="48" class="brand-icon"><TrendCharts /></el-icon>
       </div>
+      <div class="brand-text">理财服务平台</div>
 
       <!-- 404 渐变文字 -->
       <h1 class="not-found-code">404</h1>
@@ -29,6 +35,7 @@
 
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
+import { TrendCharts } from '@element-plus/icons-vue'
 
 const router = useRouter()
 
@@ -48,22 +55,88 @@ const goBack = () => {
   align-items: center;
   justify-content: center;
   background-color: #f5f7fa;
+  position: relative;
+  overflow: hidden;
 }
 
+/* ===== 浮动问号 ===== */
+.not-found-shapes {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.q {
+  position: absolute;
+  font-weight: 800;
+  opacity: 0.06;
+  font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+}
+
+.q-1 {
+  font-size: 120px;
+  color: #1a6dff;
+  top: 10%;
+  left: 8%;
+  animation: float 8s ease-in-out infinite;
+}
+
+.q-2 {
+  font-size: 80px;
+  color: #34c759;
+  bottom: 15%;
+  right: 10%;
+  animation: float 10s ease-in-out infinite reverse;
+}
+
+.q-3 {
+  font-size: 60px;
+  color: #ff9500;
+  top: 50%;
+  right: 5%;
+  animation: float 12s ease-in-out infinite 2s;
+}
+
+.q-4 {
+  font-size: 100px;
+  color: #ff3b30;
+  top: 20%;
+  right: 25%;
+  animation: float 9s ease-in-out infinite 1s reverse;
+}
+
+@keyframes float {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(30px, -30px) scale(1.05); }
+}
+
+/* ===== 品牌 Logo ===== */
+.not-found-brand {
+  margin-bottom: 8px;
+}
+
+.brand-icon {
+  color: #1a6dff;
+}
+
+.brand-text {
+  font-size: 18px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #1a6dff 0%, #0a4dcc 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 32px;
+  display: block;
+}
+
+/* ===== 内容区域 ===== */
 .not-found-content {
   text-align: center;
   padding: 40px 24px;
-}
-
-/* 装饰环 */
-.not-found-ring {
-  margin-bottom: 24px;
-  animation: ring-rotate 3s ease-in-out infinite;
-}
-
-@keyframes ring-rotate {
-  0%, 100% { transform: rotate(0deg); }
-  50% { transform: rotate(15deg); }
+  position: relative;
+  z-index: 1;
 }
 
 /* 404 数字 */
@@ -113,5 +186,10 @@ const goBack = () => {
     flex-direction: column;
     align-items: center;
   }
+
+  .q-1 { font-size: 80px; }
+  .q-2 { font-size: 50px; }
+  .q-3 { font-size: 40px; }
+  .q-4 { font-size: 60px; }
 }
 </style>
