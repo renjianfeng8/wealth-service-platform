@@ -2,7 +2,7 @@
   <ErrorBoundary>
     <router-view v-slot="{ Component }">
       <transition name="page-fade" mode="out-in">
-        <component :is="Component" :key="$route.path" />
+        <component :is="Component" :key="$route.meta.group || $route.path" />
       </transition>
     </router-view>
   </ErrorBoundary>
