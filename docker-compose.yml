@@ -9,7 +9,7 @@ services:
     memswap_limit: 768m
     oom_score_adj: -800
     ports:
-      - "3307:3306"
+      - "127.0.0.1:3307:3306"
     command:
       - "--binlog-expire-logs-seconds=604800"
       - "--max-binlog-size=104857600"
