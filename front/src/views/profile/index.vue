@@ -5,48 +5,81 @@
     <el-row :gutter="20">
       <el-col :xs="24" :lg="8">
         <el-card class="profile-card" shadow="never">
-          <div class="profile-header">
-            <el-avatar :size="72" :icon="UserFilled" class="profile-avatar" />
-            <h2 class="profile-name">{{ userInfo.nickname || userInfo.username }}</h2>
-            <p class="profile-username">@{{ userInfo.username }}</p>
-          </div>
-          <el-divider />
-          <div class="profile-stats">
-            <div class="stat-item">
-              <span class="stat-num">{{ statFavorites }}</span>
-              <span class="stat-lbl">自选</span>
-            </div>
-            <div class="stat-item">
-              <span class="stat-num">{{ statOrders }}</span>
-              <span class="stat-lbl">委托单</span>
-            </div>
-            <div class="stat-item">
-              <span class="stat-num">{{ statMessages }}</span>
-              <span class="stat-lbl">消息</span>
-            </div>
-          </div>
+          <el-skeleton animated :loading="loading">
+            <template #template>
+              <div class="profile-skeleton">
+                <div class="skeleton-avatar-wrap">
+                  <el-skeleton-item variant="circle" style="width: 72px; height: 72px; margin: 0 auto;" />
+                </div>
+                <el-skeleton-item variant="text" style="width: 50%; height: 20px; margin: 16px auto 4px;" />
+                <el-skeleton-item variant="text" style="width: 35%; height: 14px; margin: 0 auto;" />
+                <el-skeleton-item variant="text" style="width: 100%; height: 1px; margin: 16px 0;" />
+                <div class="skeleton-stats">
+                  <div v-for="i in 3" :key="i" class="skeleton-stat-item">
+                    <el-skeleton-item variant="text" style="width: 28px; height: 22px; margin: 0 auto;" />
+                    <el-skeleton-item variant="text" style="width: 28px; height: 13px; margin: 4px auto 0;" />
+                  </div>
+                </div>
+              </div>
+            </template>
+            <template #default>
+              <div class="profile-header">
+                <el-avatar :size="72" :icon="UserFilled" class="profile-avatar" />
+                <h2 class="profile-name">{{ userInfo.nickname || userInfo.username }}</h2>
+                <p class="profile-username">@{{ userInfo.username }}</p>
+              </div>
+              <el-divider />
+              <div class="profile-stats">
+                <div class="stat-item">
+                  <span class="stat-num">{{ statFavorites }}</span>
+                  <span class="stat-lbl">自选</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-num">{{ statOrders }}</span>
+                  <span class="stat-lbl">委托单</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-num">{{ statMessages }}</span>
+                  <span class="stat-lbl">消息</span>
+                </div>
+              </div>
+            </template>
+          </el-skeleton>
         </el-card>
       </el-col>
 
       <el-col :xs="24" :lg="16">
         <el-card class="info-card" shadow="never">
           <template #header>个人信息</template>
-          <el-form :model="userInfo" label-width="80px" size="large">
-            <el-form-item label="用户名">
-              <el-input v-model="userInfo.username" disabled />
-            </el-form-item>
-            <el-form-item label="昵称">
-              <el-input v-model="userInfo.nickname" placeholder="设置昵称" />
-            </el-form-item>
-            <el-form-item label="手机号">
-              <el-input v-model="userInfo.phone" placeholder="绑定手机号" />
-            </el-form-item>
-            <el-form-item>
-              <el-button type="primary" :loading="saving" @click="handleSave">
-                {{ saving ? '保存中...' : '保存修改' }}
-              </el-button>
-            </el-form-item>
-          </el-form>
+          <el-skeleton animated :loading="loading">
+            <template #template>
+              <div class="form-skeleton">
+                <div v-for="i in 3" :key="i" class="form-skeleton-row">
+                  <el-skeleton-item variant="text" style="width: 60px; height: 14px;" />
+                  <el-skeleton-item variant="text" style="width: 100%; height: 32px;" />
+                </div>
+                <el-skeleton-item variant="button" style="width: 100px; height: 36px; margin-top: 8px;" />
+              </div>
+            </template>
+            <template #default>
+              <el-form :model="userInfo" label-width="80px" size="large">
+                <el-form-item label="用户名">
+                  <el-input v-model="userInfo.username" disabled />
+                </el-form-item>
+                <el-form-item label="昵称">
+                  <el-input v-model="userInfo.nickname" placeholder="设置昵称" />
+                </el-form-item>
+                <el-form-item label="手机号">
+                  <el-input v-model="userInfo.phone" placeholder="绑定手机号" />
+                </el-form-item>
+                <el-form-item>
+                  <el-button type="primary" :loading="saving" @click="handleSave">
+                    {{ saving ? '保存中...' : '保存修改' }}
+                  </el-button>
+                </el-form-item>
+              </el-form>
+            </template>
+          </el-skeleton>
         </el-card>
 
         <el-card class="security-card" shadow="never" style="margin-top: 20px">
@@ -95,6 +128,7 @@ import type { FormInstance, FormRules } from 'element-plus'
 const userStore = useUserStore()
 
 const saving = ref(false)
+const loading = ref(true)
 const resetting = ref(false)
 const showPasswordDialog = ref(false)
 
@@ -202,9 +236,9 @@ async function handleResetPassword() {
   }
 }
 
-onMounted(() => {
-  fetchProfile()
-  fetchStats()
+onMounted(async () => {
+  await Promise.all([fetchProfile(), fetchStats()])
+  loading.value = false
 })
 </script>
 
@@ -289,5 +323,34 @@ onMounted(() => {
 /* 密码弹窗 */
 :deep(.el-dialog__body) {
   padding: 24px;
+}
+
+/* Skeleton */
+.profile-skeleton {
+  text-align: center;
+  padding: 20px 0 8px;
+}
+.skeleton-avatar-wrap {
+  display: flex;
+  justify-content: center;
+}
+.skeleton-stats {
+  display: flex;
+  justify-content: space-around;
+  padding: 8px 0;
+}
+.skeleton-stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.form-skeleton {
+  padding: 8px 0;
+}
+.form-skeleton-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
 }
 </style>

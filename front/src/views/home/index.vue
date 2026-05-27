@@ -47,13 +47,38 @@
         <h2 class="section-title">实时行情</h2>
         <el-button text type="primary" @click="router.push('/market')">查看更多</el-button>
       </div>
-      <el-row :gutter="16">
-        <el-col :xs="12" :sm="6" v-for="item in marketItems" :key="item.name">
+      <!-- 骨架屏 -->
+      <el-row :gutter="16" v-if="loading">
+        <el-col :xs="12" :sm="6" v-for="i in 4" :key="i">
           <el-card shadow="never" class="market-card">
-            <div class="market-name">{{ item.name }}</div>
-            <div class="market-price">{{ item.price }}</div>
-            <div class="market-change" :class="item.change >= 0 ? 'rise' : 'fall'">
-              {{ item.change >= 0 ? '+' : '' }}{{ item.change }}%
+            <el-skeleton animated :loading="true">
+              <template #template>
+                <div class="skeleton-market">
+                  <el-skeleton-item variant="text" style="width: 40%; height: 14px; margin: 0 auto 12px;" />
+                  <el-skeleton-item variant="text" style="width: 65%; height: 24px; margin: 0 auto 8px;" />
+                  <el-skeleton-item variant="text" style="width: 45%; height: 16px; margin: 0 auto;" />
+                </div>
+              </template>
+            </el-skeleton>
+          </el-card>
+        </el-col>
+      </el-row>
+
+      <!-- 空状态 -->
+      <el-row :gutter="16" v-else-if="marketList.length === 0">
+        <el-col :span="24">
+          <el-empty description="暂无行情数据" />
+        </el-col>
+      </el-row>
+
+      <!-- 行情卡片 -->
+      <el-row :gutter="16" v-else>
+        <el-col :xs="12" :sm="6" v-for="item in marketList" :key="item.productCode">
+          <el-card shadow="never" class="market-card">
+            <div class="market-name">{{ item.productCode }}</div>
+            <div class="market-price">{{ formatPrice(item.currentPrice) }}</div>
+            <div class="market-change" :class="(item.riseFallRate || 0) >= 0 ? 'rise' : 'fall'">
+              {{ formatRate(item.riseFallRate) }}
             </div>
           </el-card>
         </el-col>
@@ -63,12 +88,19 @@
 </template>
 
 <script setup lang="ts">
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/store/index'
 import { TrendCharts, Coin, DataLine, Star } from '@element-plus/icons-vue'
+import { getMarketDataList } from '@/api/product'
+import { formatPrice, formatRate } from '@/utils/format'
+import type { WeaMarketData } from '@/types'
 
 const router = useRouter()
 const userStore = useUserStore()
+
+const loading = ref(false)
+const marketList = ref<WeaMarketData[]>([])
 
 const features = [
   {
@@ -97,12 +129,19 @@ const features = [
   },
 ]
 
-const marketItems = [
-  { name: '沪深300', price: '3,892.45', change: 1.28 },
-  { name: '上证指数', price: '3,156.78', change: 0.86 },
-  { name: '创业板指', price: '2,234.56', change: -0.42 },
-  { name: '科创50', price: '1,567.89', change: 2.15 },
-]
+async function fetchMarketData() {
+  loading.value = true
+  try {
+    const res = await getMarketDataList()
+    marketList.value = (res.data || []) as WeaMarketData[]
+  } catch {
+    marketList.value = []
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(fetchMarketData)
 </script>
 
 <style scoped>
@@ -273,6 +312,12 @@ const marketItems = [
 
 .market-change.rise { color: var(--rise-color); }
 .market-change.fall { color: var(--fall-color); }
+
+/* Skeleton */
+.skeleton-market {
+  text-align: center;
+  padding: 12px 0;
+}
 
 @media (max-width: 768px) {
   .hero-visual {

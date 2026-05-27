@@ -43,6 +43,7 @@ public class SystemWebConfig implements WebMvcConfigurer {
                         "/system/umsAdmin/refresh",
                         "/system/umsAdmin/checkPermission",
                         "/system/captcha",
+                        "/system/dashboard/**",
                         "/error",
                         "/actuator/**",
                         /* Knife4j / Swagger 文档路径 */

@@ -6,6 +6,8 @@ server:
     max-connections: 8192
 
 spring:
+  config:
+    import: optional:file:.env
   cloud:
     nacos:
       config:
@@ -46,6 +48,12 @@ spring:
         core-size: 4
         max-size: 8
         queue-capacity: 100
+
+# JWT 配置（密钥来自 .env 或环境变量）
+jwt:
+  secret: ${JWT_SECRET}
+  access-expire: 1800000
+  refresh-expire: 604800000
 
 mybatis-plus:
   configuration:

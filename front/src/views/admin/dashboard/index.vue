@@ -15,12 +15,12 @@
             </div>
             <div class="fl-stat-body">
               <div class="fl-stat-label">资产总值 (估算)</div>
-              <div class="fl-stat-value">¥{{ formatNumber(totalAsset) }}</div>
+              <div class="fl-stat-value">¥{{ formatNumber(overview.totalAsset) }}</div>
               <div class="fl-stat-change">
-                <span :class="assetChange >= 0 ? 'fl-rise' : 'fl-fall'">
-                  <svg v-if="assetChange >= 0" width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M7 14l5-5 5 5z"/></svg>
+                <span :class="overview.assetChange >= 0 ? 'fl-rise' : 'fl-fall'">
+                  <svg v-if="overview.assetChange >= 0" width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M7 14l5-5 5 5z"/></svg>
                   <svg v-else width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg>
-                  {{ Math.abs(assetChange).toFixed(2) }}%
+                  {{ Math.abs(overview.assetChange).toFixed(2) }}%
                 </span>
                 <span class="fl-stat-sub">过去24小时</span>
               </div>
@@ -32,12 +32,12 @@
             </div>
             <div class="fl-stat-body">
               <div class="fl-stat-label">账户余额</div>
-              <div class="fl-stat-value fl-text-yellow">¥{{ formatNumber(balanceValue) }}</div>
+              <div class="fl-stat-value fl-text-yellow">¥{{ formatNumber(overview.balanceValue) }}</div>
               <div class="fl-stat-change">
-                <span :class="balanceChange >= 0 ? 'fl-rise' : 'fl-fall'">
-                  <svg v-if="balanceChange >= 0" width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M7 14l5-5 5 5z"/></svg>
+                <span :class="overview.balanceChange >= 0 ? 'fl-rise' : 'fl-fall'">
+                  <svg v-if="overview.balanceChange >= 0" width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M7 14l5-5 5 5z"/></svg>
                   <svg v-else width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg>
-                  {{ Math.abs(balanceChange).toFixed(2) }}%
+                  {{ Math.abs(overview.balanceChange).toFixed(2) }}%
                 </span>
                 <span class="fl-stat-sub">本期变化</span>
               </div>
@@ -49,12 +49,12 @@
             </div>
             <div class="fl-stat-body">
               <div class="fl-stat-label">今日收益</div>
-              <div class="fl-stat-value" :class="dailyIncome >= 0 ? 'fl-text-green' : 'fl-text-red'">¥{{ formatNumber(dailyIncome) }}</div>
+              <div class="fl-stat-value" :class="overview.dailyIncome >= 0 ? 'fl-text-green' : 'fl-text-red'">¥{{ formatNumber(overview.dailyIncome) }}</div>
               <div class="fl-stat-change">
-                <span :class="dailyIncome >= 0 ? 'fl-rise' : 'fl-fall'">
-                  <svg v-if="dailyIncome >= 0" width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M7 14l5-5 5 5z"/></svg>
+                <span :class="overview.dailyIncome >= 0 ? 'fl-rise' : 'fl-fall'">
+                  <svg v-if="overview.dailyIncome >= 0" width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M7 14l5-5 5 5z"/></svg>
                   <svg v-else width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg>
-                  {{ Math.abs(dailyIncomeRate).toFixed(2) }}%
+                  {{ Math.abs(overview.dailyIncomeRate).toFixed(2) }}%
                 </span>
                 <span class="fl-stat-sub">日收益率</span>
               </div>
@@ -89,7 +89,7 @@
                 <div class="fl-time-filters">
                   <button v-for="t in timeRanges" :key="t.key"
                     :class="['fl-tm-btn', { active: tmActive === t.key }]"
-                    @click="tmActive = t.key; updateAssetChart()"
+                    @click="tmActive = t.key; onTmChange()"
                   >{{ t.label }}</button>
                 </div>
               </div>
@@ -106,7 +106,7 @@
                 <div class="fl-time-filters">
                   <button v-for="t in balanceRanges" :key="t.key"
                     :class="['fl-tm-btn', { active: balActive === t.key }]"
-                    @click="balActive = t.key; updateBalanceChart()"
+                    @click="balActive = t.key; onBalChange()"
                   >{{ t.label }}</button>
                 </div>
               </div>
@@ -149,7 +149,7 @@
                   <div class="fl-time-filters">
                     <button v-for="t in klineRanges" :key="t.key"
                       :class="['fl-tm-btn', { active: klineActive === t.key }]"
-                      @click="klineActive = t.key; updateKlineChart()"
+                      @click="klineActive = t.key; onKlineChange()"
                     >{{ t.label }}</button>
                   </div>
                 </div>
@@ -193,6 +193,8 @@
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import * as echarts from 'echarts'
 import { getProductList } from '@/api/product'
+import { getDashboardOverview, getDashboardTrend, getDashboardKline } from '@/api/dashboard'
+import type { DashboardOverview, Candle } from '@/api/dashboard'
 import { formatPrice, formatRate } from '@/utils/format'
 import {
   User, Goods, DataLine, List, Message,
@@ -201,16 +203,18 @@ import {
 import type { WeaProduct } from '@/types'
 // Styles use global theme.css variables
 
-/* ============================================
-   Types
-   ============================================ */
-interface CandleData { time: string; open: number; close: number; high: number; low: number; volume: number }
 
 /* ============================================
    State
    ============================================ */
 const loading = ref(true)
 const products = ref<WeaProduct[]>([])
+const overview = ref<DashboardOverview>({
+  totalAsset: 0, assetChange: 0, balanceValue: 0,
+  balanceChange: 0, dailyIncome: 0, dailyIncomeRate: 0,
+})
+const trendData = ref<{ series: { date: string; assetValue: number; balanceValue: number; income: number }[] } | null>(null)
+const klineData = ref<Candle[]>([])
 const assetChartRef = ref<HTMLDivElement>()
 const balanceChartRef = ref<HTMLDivElement>()
 const klineChartRef = ref<HTMLDivElement>()
@@ -223,46 +227,26 @@ const observers: ResizeObserver[] = []
 /* ============================================
    Time Ranges
    ============================================ */
-const tmActive = ref('1D')
+const tmActive = ref('7D')
 const timeRanges = [
-  { key: '30m', label: '30m' },
-  { key: '1H', label: '1H' },
-  { key: '4H', label: '4H' },
-  { key: '1D', label: '1D' },
+  { key: '7D', label: '7D' },
+  { key: '30D', label: '30D' },
 ]
-const balActive = ref('1D')
+const balActive = ref('7D')
 const balanceRanges = [
-  { key: '30m', label: '30m' },
-  { key: '1H', label: '1H' },
-  { key: '4H', label: '4H' },
-  { key: '1D', label: '1D' },
+  { key: '7D', label: '7D' },
+  { key: '30D', label: '30D' },
 ]
 const klineActive = ref('1D')
 const klineRanges = [
-  { key: '30m', label: '30m' },
-  { key: '1H', label: '1H' },
-  { key: '4H', label: '4H' },
   { key: '1D', label: '1D' },
+  { key: '1W', label: '1W' },
+  { key: '1M', label: '1M' },
 ]
 
 /* ============================================
    Computed
    ============================================ */
-const totalAsset = computed(() => {
-  if (!products.value.length) return 0
-  return products.value.reduce((s, p) => s + (p.price || 0) * (Math.floor(Math.random() * 100 + 20)), 0)
-})
-const assetChange = computed(() => (Math.random() - 0.35) * 10)
-const balanceValue = computed(() => {
-  if (!products.value.length) return 0
-  return products.value.reduce((s, p) => s + (p.price || 0) * Math.floor(Math.random() * 30 + 5), 0)
-})
-const balanceChange = computed(() => (Math.random() - 0.4) * 6)
-const dailyIncome = computed(() => {
-  if (!products.value.length) return 0
-  return products.value.reduce((s, p) => s + (p.price || 0) * (Math.random() - 0.45) * 0.5, 0)
-})
-const dailyIncomeRate = computed(() => (Math.random() - 0.35) * 4)
 
 const topProds = computed(() => products.value.slice(0, 6))
 const miniProducts = computed(() => products.value.slice(0, 12))
@@ -284,43 +268,6 @@ function formatNumber(v: number): string {
   return v.toFixed(2)
 }
 
-/* ============================================
-   Mock data generators
-   ============================================ */
-function generateTrendData(base: number, count: number, volatility: number, drift: number): number[] {
-  const data: number[] = []
-  let v = base * 0.86
-  for (let i = 0; i < count; i++) {
-    v += (Math.random() - 0.46) * base * volatility
-    v *= drift >= 0 ? 1.0035 : 0.997
-    data.push(v)
-  }
-  return data
-}
-
-function generateCandleData(basePrice: number, count: number): CandleData[] {
-  const data: CandleData[] = []
-  let p = basePrice * 0.92
-  const now = Date.now()
-  for (let i = count - 1; i >= 0; i--) {
-    const o = p
-    const c = o + (Math.random() - 0.48) * basePrice * 0.03
-    const h = Math.max(o, c) + Math.random() * basePrice * 0.01
-    const l = Math.min(o, c) - Math.random() * basePrice * 0.01
-    const v = Math.floor(Math.random() * 5000 + 1000)
-    const t = new Date(now - i * 3600000)
-    data.push({
-      time: `${String(t.getHours()).padStart(2, '0')}:${String(t.getMinutes()).padStart(2, '0')}`,
-      open: Number(o.toFixed(2)),
-      close: Number(c.toFixed(2)),
-      high: Number(h.toFixed(2)),
-      low: Number(l.toFixed(2)),
-      volume: v,
-    })
-    p = c
-  }
-  return data
-}
 
 /* ============================================
    ECharts — Light Axis Theme
@@ -346,24 +293,16 @@ function createChart(dom: HTMLDivElement): echarts.ECharts {
    Asset Trend Chart
    ============================================ */
 function buildAssetOption(): echarts.EChartsOption {
-  const count = tmActive.value === '30m' ? 48 : tmActive.value === '1H' ? 24 : tmActive.value === '4H' ? 30 : 24
-  const data = generateTrendData(totalAsset.value, count, 0.018, assetChange.value)
+  const data = trendData.value?.series?.map(s => s.assetValue) ?? []
+  const times = trendData.value?.series?.map(s => s.date) ?? []
+  if (!data.length) return {}
   const isUp = data[data.length - 1] >= data[0]
   const color = isUp ? '#19be6b' : '#1a6dff'
-
-  const now = Date.now()
-  const interval = tmActive.value === '30m' ? 1800000 : tmActive.value === '1H' ? 3600000 : tmActive.value === '4H' ? 14400000 : 3600000
-  const times: string[] = Array.from({ length: count }, (_, i) => {
-    const t = new Date(now - (count - 1 - i) * interval)
-    return `${String(t.getHours()).padStart(2, '0')}:${String(t.getMinutes()).padStart(2, '0')}`
-  })
-
   return {
     tooltip: {
       trigger: 'axis',
       backgroundColor: 'rgba(255,255,255,0.96)',
-      borderColor: '#e4e7ed',
-      borderWidth: 1,
+      borderColor: '#e4e7ed', borderWidth: 1,
       textStyle: { color: '#303133', fontSize: 12 },
       formatter: (params: any) => {
         const p = params[0]
@@ -372,35 +311,9 @@ function buildAssetOption(): echarts.EChartsOption {
       },
     },
     grid: { left: 50, right: 16, top: 10, bottom: 24 },
-    xAxis: {
-      type: 'category',
-      data: times,
-      boundaryGap: false,
-      ...lightAxis(),
-      axisLabel: { color: '#909399', fontSize: 10, interval: Math.floor(count / 6) },
-    },
-    yAxis: {
-      type: 'value',
-      ...lightAxis(),
-      axisLabel: {
-        color: '#909399', fontSize: 10,
-        formatter: (v: number) => v >= 10000 ? `${(v / 10000).toFixed(0)}万` : v.toFixed(0),
-      },
-      splitNumber: 4,
-    },
-    series: [{
-      type: 'line',
-      smooth: true,
-      symbol: 'none',
-      lineStyle: { color, width: 2 },
-      areaStyle: {
-        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-          { offset: 0, color: isUp ? 'rgba(25,190,107,0.15)' : 'rgba(26,109,255,0.12)' },
-          { offset: 1, color: isUp ? 'rgba(25,190,107,0)' : 'rgba(26,109,255,0)' },
-        ]),
-      },
-      data,
-    }],
+    xAxis: { type: 'category', data: times, boundaryGap: false, ...lightAxis(), axisLabel: { color: '#909399', fontSize: 10, interval: Math.floor(data.length / 6) } },
+    yAxis: { type: 'value', ...lightAxis(), axisLabel: { color: '#909399', fontSize: 10, formatter: (v: number) => v >= 10000 ? `${(v / 10000).toFixed(0)}万` : v.toFixed(0) }, splitNumber: 4 },
+    series: [{ type: 'line', smooth: true, symbol: 'none', lineStyle: { color, width: 2 }, areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: isUp ? 'rgba(25,190,107,0.15)' : 'rgba(26,109,255,0.12)' }, { offset: 1, color: isUp ? 'rgba(25,190,107,0)' : 'rgba(26,109,255,0)' }]) }, data }],
   }
 }
 
@@ -408,21 +321,14 @@ function buildAssetOption(): echarts.EChartsOption {
    Balance Chart
    ============================================ */
 function buildBalanceOption(): echarts.EChartsOption {
-  const count = balActive.value === '30m' ? 30 : balActive.value === '1H' ? 20 : balActive.value === '4H' ? 24 : 16
-  const data = generateTrendData(balanceValue.value, count, 0.015, balanceChange.value)
-
-  const now = Date.now()
-  const times: string[] = Array.from({ length: count }, (_, i) => {
-    const t = new Date(now - (count - 1 - i) * 3600000)
-    return `${String(t.getHours()).padStart(2, '0')}:${String(t.getMinutes()).padStart(2, '0')}`
-  })
-
+  const data = trendData.value?.series?.map(s => s.balanceValue) ?? []
+  const times = trendData.value?.series?.map(s => s.date) ?? []
+  if (!data.length) return {}
   return {
     tooltip: {
       trigger: 'axis',
       backgroundColor: 'rgba(255,255,255,0.96)',
-      borderColor: '#e4e7ed',
-      borderWidth: 1,
+      borderColor: '#e4e7ed', borderWidth: 1,
       textStyle: { color: '#303133', fontSize: 12 },
       formatter: (params: any) => {
         const p = params[0]
@@ -431,35 +337,9 @@ function buildBalanceOption(): echarts.EChartsOption {
       },
     },
     grid: { left: 50, right: 16, top: 10, bottom: 24 },
-    xAxis: {
-      type: 'category',
-      data: times,
-      boundaryGap: false,
-      ...lightAxis(),
-      axisLabel: { color: '#909399', fontSize: 10, interval: Math.floor(count / 4) },
-    },
-    yAxis: {
-      type: 'value',
-      ...lightAxis(),
-      axisLabel: {
-        color: '#909399', fontSize: 10,
-        formatter: (v: number) => v >= 10000 ? `${(v / 10000).toFixed(0)}万` : v.toFixed(0),
-      },
-      splitNumber: 3,
-    },
-    series: [{
-      type: 'line',
-      smooth: true,
-      symbol: 'none',
-      lineStyle: { color: '#f5a623', width: 2 },
-      areaStyle: {
-        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-          { offset: 0, color: 'rgba(245,166,35,0.12)' },
-          { offset: 1, color: 'rgba(245,166,35,0)' },
-        ]),
-      },
-      data,
-    }],
+    xAxis: { type: 'category', data: times, boundaryGap: false, ...lightAxis(), axisLabel: { color: '#909399', fontSize: 10, interval: Math.floor(data.length / 4) } },
+    yAxis: { type: 'value', ...lightAxis(), axisLabel: { color: '#909399', fontSize: 10, formatter: (v: number) => v >= 10000 ? `${(v / 10000).toFixed(0)}万` : v.toFixed(0) }, splitNumber: 3 },
+    series: [{ type: 'line', smooth: true, symbol: 'none', lineStyle: { color: '#f5a623', width: 2 }, areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: 'rgba(245,166,35,0.12)' }, { offset: 1, color: 'rgba(245,166,35,0)' }]) }, data }],
   }
 }
 
@@ -467,30 +347,25 @@ function buildBalanceOption(): echarts.EChartsOption {
    K-line Chart
    ============================================ */
 function buildKlineOption(): echarts.EChartsOption {
-  const bp = curSym.value?.price || 100
-  const count = klineActive.value === '30m' ? 30 : klineActive.value === '1H' ? 24 : klineActive.value === '4H' ? 24 : 20
-  const data = generateCandleData(bp, count)
+  const data = klineData.value
+  if (!data.length) return {}
   const ohlc = data.map(d => [d.open, d.close, d.low, d.high])
   const times = data.map(d => d.time)
-
   const ma5 = data.map((_, i, arr) => {
     if (i < 4) return '-'
     return (arr.slice(i - 4, i + 1).reduce((s, d) => s + d.close, 0) / 5).toFixed(2)
   })
-
   return {
     tooltip: {
       trigger: 'axis',
       backgroundColor: 'rgba(255,255,255,0.96)',
-      borderColor: '#e4e7ed',
-      borderWidth: 1,
+      borderColor: '#e4e7ed', borderWidth: 1,
       textStyle: { color: '#303133', fontSize: 12 },
       formatter: (params: any) => {
         const idx = params[0].dataIndex
         const d = data[idx]
         const c = d.close >= d.open ? '#19be6b' : '#ed4014'
-        return `
-          <div style="font-size:12px;color:#909399;margin-bottom:6px">${d.time}</div>
+        return `<div style="font-size:12px;color:#909399;margin-bottom:6px">${d.time}</div>
           <div style="display:flex;justify-content:space-between;gap:16px;margin:2px 0;font-size:12px">
             <span style="color:#909399">开盘</span><span style="color:#303133;font-weight:500">${d.open.toFixed(2)}</span>
           </div>
@@ -509,35 +384,12 @@ function buildKlineOption(): echarts.EChartsOption {
       },
     },
     grid: { left: 50, right: 16, top: 12, bottom: 28 },
-    xAxis: {
-      type: 'category',
-      data: times,
-      ...lightAxis(),
-      axisLabel: { color: '#909399', fontSize: 10, interval: Math.floor(count / 6) },
-    },
-    yAxis: {
-      type: 'value',
-      scale: true,
-      ...lightAxis(),
-      axisLabel: { color: '#909399', fontSize: 10 },
-      splitNumber: 4,
-    },
+    xAxis: { type: 'category', data: times, ...lightAxis(), axisLabel: { color: '#909399', fontSize: 10, interval: Math.floor(times.length / 6) } },
+    yAxis: { type: 'value', scale: true, ...lightAxis(), axisLabel: { color: '#909399', fontSize: 10 }, splitNumber: 4 },
     dataZoom: [{ type: 'inside', start: 0, end: 100 }],
     series: [
-      {
-        type: 'candlestick',
-        name: 'K线',
-        data: ohlc,
-        itemStyle: { color: '#19be6b', color0: '#ed4014', borderColor: '#19be6b', borderColor0: '#ed4014' },
-      },
-      {
-        type: 'line',
-        name: 'MA5',
-        data: ma5,
-        smooth: true,
-        symbol: 'none',
-        lineStyle: { color: '#f5a623', width: 1.5, opacity: 0.7 },
-      },
+      { type: 'candlestick', name: 'K线', data: ohlc, itemStyle: { color: '#19be6b', color0: '#ed4014', borderColor: '#19be6b', borderColor0: '#ed4014' } },
+      { type: 'line', name: 'MA5', data: ma5, smooth: true, symbol: 'none', lineStyle: { color: '#f5a623', width: 1.5, opacity: 0.7 } },
     ],
   }
 }
@@ -545,6 +397,21 @@ function buildKlineOption(): echarts.EChartsOption {
 function updateAssetChart() { assetChart?.setOption(buildAssetOption(), true) }
 function updateBalanceChart() { balanceChart?.setOption(buildBalanceOption(), true) }
 function updateKlineChart() { klineChart?.setOption(buildKlineOption(), true) }
+
+async function onTmChange() {
+  await fetchTrend(tmActive.value)
+  updateAssetChart()
+}
+async function onBalChange() {
+  await fetchTrend(balActive.value)
+  updateBalanceChart()
+}
+async function onKlineChange() {
+  if (symbolSel.value) {
+    await fetchKline(symbolSel.value, klineActive.value)
+    updateKlineChart()
+  }
+}
 
 function initAllCharts() {
   if (assetChartRef.value) {
@@ -572,7 +439,12 @@ function disposeAllCharts() {
   klineChart = null
 }
 
-watch(symbolSel, () => nextTick(updateKlineChart))
+watch(symbolSel, (code) => {
+  if (code) {
+    fetchKline(code)
+    nextTick(() => updateKlineChart())
+  }
+})
 
 const entries = [
   { label: '用户管理', path: '/admin/user', icon: User, bg: '#1a6dff' },
@@ -585,12 +457,43 @@ const entries = [
   { label: 'ES 搜索', path: '/admin/search', icon: Search, bg: '#1a6dff' },
 ]
 
-async function fetchAll() {
+async function fetchOverview() {
+  try {
+    const res = await getDashboardOverview()
+    if (res.data) overview.value = res.data
+  } catch { /* ignore */ }
+}
+
+async function fetchTrend(period: string = '7D') {
+  try {
+    const res = await getDashboardTrend(period)
+    if (res.data) trendData.value = res.data
+  } catch { /* ignore */ }
+}
+
+async function fetchKline(code: string, period: string = '1D') {
+  try {
+    const res = await getDashboardKline(code, period)
+    if (res.data?.candles) klineData.value = res.data.candles
+  } catch { /* ignore */ }
+}
+
+async function fetchData() {
   loading.value = true
   try {
-    const res = await getProductList()
-    products.value = (res.data || []) as WeaProduct[]
-    if (products.value.length && !symbolSel.value) symbolSel.value = products.value[0].productCode
+    await Promise.all([
+      getProductList().then(res => {
+        products.value = (res.data || []) as WeaProduct[]
+      }),
+      fetchOverview(),
+      fetchTrend(),
+    ])
+    if (products.value.length && !symbolSel.value) {
+      symbolSel.value = products.value[0].productCode
+    }
+    if (symbolSel.value) {
+      await fetchKline(symbolSel.value)
+    }
   } catch { /* ignore */ }
   finally {
     loading.value = false
@@ -599,7 +502,7 @@ async function fetchAll() {
   }
 }
 
-onMounted(fetchAll)
+onMounted(fetchData)
 onUnmounted(disposeAllCharts)
 </script>
 

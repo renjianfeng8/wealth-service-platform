@@ -183,7 +183,6 @@ const publicNavItems = [
 
 // 登录后导航项
 const authNavItems = [
-  { path: '/user/dashboard', title: '个人中心', icon: StarFilled },
   { path: '/user/trade', title: '交易委托', icon: Money },
   { path: '/user/favorite', title: '我的自选', icon: StarFilled },
   { path: '/user/message', title: '消息中心', icon: Message },
