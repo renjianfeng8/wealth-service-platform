@@ -47,7 +47,6 @@ public class UmsAdminController {
 
         ResponseCookie cookie = ResponseCookie.from("wealth_token", tokenPair.accessToken())
                 .httpOnly(true)
-                .secure(true)
                 .path("/")
                 .maxAge(tokenPair.expiresIn() / 1000)
                 .build();

@@ -124,7 +124,6 @@ public class UserController {
         LoginVO loginVO = userService.login(dto);
         ResponseCookie cookie = ResponseCookie.from("wealth_token", loginVO.getToken())
                 .httpOnly(true)
-                .secure(true)
                 .path("/")
                 .maxAge(1800)
                 .build();
@@ -140,7 +139,6 @@ public class UserController {
         LoginVO loginVO = userService.identifyLogin(dto);
         ResponseCookie cookie = ResponseCookie.from("wealth_token", loginVO.getToken())
                 .httpOnly(true)
-                .secure(true)
                 .path("/")
                 .maxAge(1800)
                 .build();
