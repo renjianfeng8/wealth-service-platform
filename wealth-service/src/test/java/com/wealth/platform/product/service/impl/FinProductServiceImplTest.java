@@ -2,6 +2,7 @@ package com.wealth.platform.product.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.wealth.platform.product.dto.FinProductDTO;
 import com.wealth.platform.product.entity.WeaProduct;
@@ -35,7 +36,7 @@ class FinProductServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        productService = new FinProductServiceImpl();
+        productService = spy(new FinProductServiceImpl());
         ReflectionTestUtils.setField(productService, "baseMapper", finProductMapper);
 
         mockProduct = new WeaProduct();
@@ -102,11 +103,17 @@ class FinProductServiceImplTest {
 
     @Test
     @DisplayName("创建产品成功")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     void createProduct_Success() {
         FinProductDTO dto = new FinProductDTO();
         dto.setProductName("新产品");
         dto.setProductCode("P003");
         dto.setPrice(new BigDecimal("200.00"));
+
+        LambdaQueryChainWrapper<WeaProduct> qc = mock(LambdaQueryChainWrapper.class);
+        when(qc.eq(any(), any())).thenReturn(qc);
+        when(qc.count()).thenReturn(0L);
+        doReturn(qc).when(productService).lambdaQuery();
 
         doReturn(1).when(finProductMapper).insert(any(WeaProduct.class));
 
@@ -128,7 +135,7 @@ class FinProductServiceImplTest {
 
         when(finProductMapper.selectPage(any(Page.class), any(LambdaQueryWrapper.class))).thenReturn(mockPage);
 
-        IPage<FinProductVO> result = productService.pageProducts(page, null, null, 1);
+        IPage<FinProductVO> result = productService.pageProducts(page, null, null, 1, null, null);
 
         assertEquals(1, result.getTotal());
         assertEquals(1, result.getRecords().size());
@@ -144,7 +151,7 @@ class FinProductServiceImplTest {
 
         when(finProductMapper.selectPage(any(Page.class), any(LambdaQueryWrapper.class))).thenReturn(mockPage);
 
-        IPage<FinProductVO> result = productService.pageProducts(page, null, null, null);
+        IPage<FinProductVO> result = productService.pageProducts(page, null, null, null, null, null);
 
         assertEquals(2, result.getTotal());
         verify(finProductMapper).selectPage(any(Page.class), any(LambdaQueryWrapper.class));

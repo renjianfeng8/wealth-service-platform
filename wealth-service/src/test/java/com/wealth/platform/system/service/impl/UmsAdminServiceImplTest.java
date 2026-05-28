@@ -134,10 +134,16 @@ class UmsAdminServiceImplTest {
 
     @Test
     @DisplayName("创建管理员成功")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     void createAdmin_Success() {
         UmsAdmin admin = new UmsAdmin();
         admin.setUsername("newadmin");
         admin.setPassword("rawPassword");
+
+        LambdaQueryChainWrapper<UmsAdmin> qc = mock(LambdaQueryChainWrapper.class);
+        when(qc.eq(any(), any())).thenReturn(qc);
+        when(qc.count()).thenReturn(0L);
+        doReturn(qc).when(adminService).lambdaQuery();
 
         when(passwordEncoder.encode("rawPassword")).thenReturn("encodedPassword");
         doReturn(1).when(umsAdminMapper).insert(any(UmsAdmin.class));

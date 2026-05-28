@@ -3,12 +3,12 @@ package com.wealth.platform.system.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.wealth.platform.product.entity.WeaMarketData;
 import com.wealth.platform.product.mapper.FinMarketDataMapper;
-import com.wealth.platform.product.service.FinMarketDataService;
 import com.wealth.platform.system.service.DashboardService;
 import com.wealth.platform.system.vo.DashboardKlineVO;
 import com.wealth.platform.system.vo.DashboardOverviewVO;
 import com.wealth.platform.system.vo.DashboardTrendVO;
 import com.wealth.platform.trade.entity.WeaTradeOrder;
+import com.wealth.platform.trade.mapper.FinTradeOrderMapper;
 import com.wealth.platform.trade.service.FinTradeOrderService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,40 +32,28 @@ public class DashboardServiceImpl implements DashboardService {
     private static final DateTimeFormatter KLINE_TIME_FMT = DateTimeFormatter.ofPattern("MM-dd HH:mm");
 
     private final FinMarketDataMapper finMarketDataMapper;
-    private final FinMarketDataService finMarketDataService;
+    private final FinTradeOrderMapper finTradeOrderMapper;
     private final FinTradeOrderService finTradeOrderService;
 
     @Override
     public DashboardOverviewVO getOverview() {
         DashboardOverviewVO vo = new DashboardOverviewVO();
 
-        // 1. totalAsset = SUM(price * volume) from wea_market_data
-        List<WeaMarketData> marketList = finMarketDataService.list();
-        BigDecimal totalAsset = marketList.stream()
-                .map(m -> {
-                    BigDecimal price = m.getCurrentPrice() != null ? m.getCurrentPrice() : BigDecimal.ZERO;
-                    return price.multiply(ESTIMATED_VOLUME);
-                })
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        // 1. totalAsset = SUM(price) * ESTIMATED_VOLUME（聚合查询，避免全表扫描 OOM）
+        BigDecimal totalPrice = finMarketDataMapper.sumPrice();
+        BigDecimal totalAsset = totalPrice.multiply(ESTIMATED_VOLUME);
         vo.setTotalAsset(totalAsset);
 
-        // 2. assetChange based on latest two market_time records
-        if (marketList.size() >= 2) {
-            List<WeaMarketData> sorted = marketList.stream()
-                    .filter(m -> m.getMarketTime() != null)
-                    .sorted(Comparator.comparing(WeaMarketData::getMarketTime).reversed())
-                    .collect(Collectors.toList());
-            if (sorted.size() >= 2) {
-                BigDecimal latest = sorted.get(0).getCurrentPrice() != null ? sorted.get(0).getCurrentPrice() : BigDecimal.ZERO;
-                BigDecimal prev = sorted.get(1).getCurrentPrice() != null ? sorted.get(1).getCurrentPrice() : BigDecimal.ZERO;
-                if (prev.compareTo(BigDecimal.ZERO) > 0) {
-                    BigDecimal change = latest.subtract(prev)
-                            .multiply(BigDecimal.valueOf(100))
-                            .divide(prev, 2, RoundingMode.HALF_UP);
-                    vo.setAssetChange(change);
-                } else {
-                    vo.setAssetChange(BigDecimal.ZERO);
-                }
+        // 2. assetChange based on latest two price records
+        List<BigDecimal> latestPrices = finMarketDataMapper.findLatestTwoPrices();
+        if (latestPrices.size() >= 2) {
+            BigDecimal latest = latestPrices.get(0) != null ? latestPrices.get(0) : BigDecimal.ZERO;
+            BigDecimal prev = latestPrices.get(1) != null ? latestPrices.get(1) : BigDecimal.ZERO;
+            if (prev.compareTo(BigDecimal.ZERO) > 0) {
+                BigDecimal change = latest.subtract(prev)
+                        .multiply(BigDecimal.valueOf(100))
+                        .divide(prev, 2, RoundingMode.HALF_UP);
+                vo.setAssetChange(change);
             } else {
                 vo.setAssetChange(BigDecimal.ZERO);
             }
@@ -73,34 +61,18 @@ public class DashboardServiceImpl implements DashboardService {
             vo.setAssetChange(BigDecimal.ZERO);
         }
 
-        // 3. balanceValue = SUM(entrust_price * entrust_num) from completed orders
-        List<WeaTradeOrder> completedOrders = finTradeOrderService.lambdaQuery()
-                .eq(WeaTradeOrder::getOrderStatus, 2)
-                .list();
-        BigDecimal balanceValue = completedOrders.stream()
-                .map(o -> o.getEntrustPrice() != null && o.getEntrustNum() != null
-                        ? o.getEntrustPrice().multiply(BigDecimal.valueOf(o.getEntrustNum()))
-                        : BigDecimal.ZERO)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        // 3. balanceValue = SUM(order_price * order_quantity) from completed orders
+        BigDecimal balanceValue = finTradeOrderMapper.sumCompletedAmount();
         vo.setBalanceValue(balanceValue);
 
-        // 4. balanceChange
-        if (completedOrders.size() >= 4) {
-            List<WeaTradeOrder> sortedOrders = completedOrders.stream()
-                    .filter(o -> o.getCreateTime() != null)
-                    .sorted(Comparator.comparing(WeaTradeOrder::getCreateTime))
-                    .collect(Collectors.toList());
-            int mid = sortedOrders.size() / 2;
-            BigDecimal firstHalf = sortedOrders.subList(0, mid).stream()
-                    .map(o -> o.getEntrustPrice() != null && o.getEntrustNum() != null
-                            ? o.getEntrustPrice().multiply(BigDecimal.valueOf(o.getEntrustNum()))
-                            : BigDecimal.ZERO)
-                    .reduce(BigDecimal.ZERO, BigDecimal::add);
-            BigDecimal secondHalf = sortedOrders.subList(mid, sortedOrders.size()).stream()
-                    .map(o -> o.getEntrustPrice() != null && o.getEntrustNum() != null
-                            ? o.getEntrustPrice().multiply(BigDecimal.valueOf(o.getEntrustNum()))
-                            : BigDecimal.ZERO)
-                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+        // 4. balanceChange: compare first half vs second half of completed orders
+        long completedCount = finTradeOrderService.lambdaQuery()
+                .eq(WeaTradeOrder::getOrderStatus, 2)
+                .count();
+        if (completedCount >= 4) {
+            int halfSize = (int) (completedCount / 2);
+            BigDecimal firstHalf = finTradeOrderMapper.sumFirstHalf(halfSize);
+            BigDecimal secondHalf = finTradeOrderMapper.sumLastHalf(halfSize);
             if (firstHalf.compareTo(BigDecimal.ZERO) > 0) {
                 BigDecimal change = secondHalf.subtract(firstHalf)
                         .multiply(BigDecimal.valueOf(100))
@@ -113,14 +85,8 @@ public class DashboardServiceImpl implements DashboardService {
             vo.setBalanceChange(BigDecimal.ZERO);
         }
 
-        // 5. dailyIncome = SUM(entrust_price * entrust_num) from today's completed orders
-        LocalDate today = LocalDate.now();
-        BigDecimal dailyIncome = completedOrders.stream()
-                .filter(o -> o.getCreateTime() != null && o.getCreateTime().toLocalDate().equals(today))
-                .map(o -> o.getEntrustPrice() != null && o.getEntrustNum() != null
-                        ? o.getEntrustPrice().multiply(BigDecimal.valueOf(o.getEntrustNum()))
-                        : BigDecimal.ZERO)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        // 5. dailyIncome = today's completed order amount (聚合查询)
+        BigDecimal dailyIncome = finTradeOrderMapper.sumTodayCompletedAmount();
         vo.setDailyIncome(dailyIncome);
 
         // 6. dailyIncomeRate
@@ -154,12 +120,8 @@ public class DashboardServiceImpl implements DashboardService {
                 .filter(o -> o.getCreateTime() != null)
                 .collect(Collectors.groupingBy(o -> o.getCreateTime().toLocalDate()));
 
-        // 资产趋势用相对指数（起始100），按日收益率累乘，避免纵坐标过大掩盖波动
-        List<WeaMarketData> marketList = finMarketDataService.list();
-        BigDecimal baseTotalAsset = marketList.stream()
-                .filter(m -> m.getCurrentPrice() != null)
-                .map(m -> m.getCurrentPrice().multiply(ESTIMATED_VOLUME))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        // 资产趋势基值：聚合查询代替全表扫描
+        BigDecimal baseTotalAsset = finMarketDataMapper.sumPrice().multiply(ESTIMATED_VOLUME);
 
         DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         BigDecimal assetIndex = BigDecimal.valueOf(100);

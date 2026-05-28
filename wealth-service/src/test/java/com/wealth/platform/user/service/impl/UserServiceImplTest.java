@@ -73,10 +73,16 @@ class UserServiceImplTest {
 
     @Test
     @DisplayName("注册成功")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     void register_Success() {
         User user = new User();
         user.setUsername("newuser");
         user.setPassword("rawPassword");
+
+        LambdaQueryChainWrapper<User> qc = mock(LambdaQueryChainWrapper.class);
+        when(qc.eq(any(), any())).thenReturn(qc);
+        when(qc.count()).thenReturn(0L);
+        doReturn(qc).when(userService).lambdaQuery();
 
         when(passwordEncoder.encode("rawPassword")).thenReturn("encodedPassword");
         doReturn(1).when(userMapper).insert(any(User.class));
@@ -194,30 +200,33 @@ class UserServiceImplTest {
         user.setId(1L);
         user.setPassword("newPassword");
 
+        when(userMapper.selectById(1L)).thenReturn(mockUser);
+        when(passwordEncoder.matches("oldPassword", "encodedPassword")).thenReturn(true);
         when(passwordEncoder.encode("newPassword")).thenReturn("encodedNewPassword");
 
-        Boolean result = userService.resetPassword(user);
+        Boolean result = userService.resetPassword(user, "oldPassword");
 
         assertTrue(result);
         verify(uc).update();
     }
 
     @Test
-    @DisplayName("重置密码失败-ID为空")
-    void resetPassword_NullId() {
+    @DisplayName("重置密码失败-无旧密码")
+    void resetPassword_NullOldPassword() {
         User user = new User();
+        user.setId(1L);
         user.setPassword("newPassword");
 
-        assertThrows(ServiceException.class, () -> userService.resetPassword(user));
+        assertThrows(ServiceException.class, () -> userService.resetPassword(user, ""));
     }
 
     @Test
-    @DisplayName("重置密码失败-密码为空")
+    @DisplayName("重置密码失败-新密码为空")
     void resetPassword_EmptyPassword() {
         User user = new User();
         user.setId(1L);
         user.setPassword("");
 
-        assertThrows(ServiceException.class, () -> userService.resetPassword(user));
+        assertThrows(ServiceException.class, () -> userService.resetPassword(user, "oldPassword"));
     }
 }

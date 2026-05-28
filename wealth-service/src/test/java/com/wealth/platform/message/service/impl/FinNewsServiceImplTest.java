@@ -2,6 +2,7 @@ package com.wealth.platform.message.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.wealth.platform.message.dto.FinNewsDTO;
 import com.wealth.platform.message.entity.WeaNews;
@@ -33,7 +34,7 @@ class FinNewsServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        newsService = new FinNewsServiceImpl();
+        newsService = spy(new FinNewsServiceImpl());
         ReflectionTestUtils.setField(newsService, "baseMapper", newsMapper);
 
         mockNews = new WeaNews();
@@ -93,11 +94,17 @@ class FinNewsServiceImplTest {
 
     @Test
     @DisplayName("创建资讯成功")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     void createNews_Success() {
         FinNewsDTO dto = new FinNewsDTO();
         dto.setTitle("新资讯");
         dto.setContent("新资讯内容");
         dto.setNewsType(2);
+
+        LambdaQueryChainWrapper<WeaNews> qc = mock(LambdaQueryChainWrapper.class);
+        when(qc.eq(any(), any())).thenReturn(qc);
+        when(qc.count()).thenReturn(0L);
+        doReturn(qc).when(newsService).lambdaQuery();
 
         doReturn(1).when(newsMapper).insert(any(WeaNews.class));
 
