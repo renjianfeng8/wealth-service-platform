@@ -30,7 +30,7 @@
         <el-pagination v-model:current-page="query.pageNum" v-model:page-size="query.pageSize" :total="total" :page-sizes="[10,20,50]" layout="total, sizes, prev, pager, next" @size-change="handleSizeChange" @current-change="fetchData" />
       </div>
     </el-card>
-    <el-dialog v-model="dialogVisible" title="添加关联" width="450px">
+    <el-dialog v-model="dialogVisible" title="添加关联" width="450px" :before-close="handleDialogClose">
       <el-form ref="formRef" :model="form" :rules="rules" label-width="90px">
         <el-form-item label="管理员" prop="adminId"><el-select v-model="form.adminId" filterable style="width:100%" placeholder="选择管理员"><el-option v-for="a in adminList" :key="a.id" :label="a.nickName || a.username" :value="a.id" /></el-select></el-form-item>
         <el-form-item label="角色" prop="roleId"><el-select v-model="form.roleId" filterable style="width:100%" placeholder="选择角色"><el-option v-for="r in roleList" :key="r.id" :label="r.name" :value="r.id" /></el-select></el-form-item>
@@ -42,7 +42,7 @@
 
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
 import { getAdminRoleRelationPage, createAdminRoleRelation, deleteAdminRoleRelation, getAdminList, getRoleList } from '@/api/system'
 import { formatDateTime } from '@/utils/format'
@@ -65,11 +65,15 @@ function getAdminName(id: number) { return adminMap.get(id) || `ID:${id}` }
 function getRoleName(id: number) { return roleMap.get(id) || `ID:${id}` }
 
 async function loadSelectData() {
-  const [adminRes, roleRes] = await Promise.all([getAdminList(), getRoleList()])
-  adminList.value = adminRes.data || []
-  roleList.value = roleRes.data || []
-  adminList.value.forEach((a: any) => adminMap.set(a.id, a.nickName || a.username))
-  roleList.value.forEach((r: any) => roleMap.set(r.id, r.name))
+  try {
+    const [adminRes, roleRes] = await Promise.all([getAdminList(), getRoleList()])
+    adminList.value = adminRes.data || []
+    roleList.value = roleRes.data || []
+    adminList.value.forEach((a: any) => adminMap.set(a.id, a.nickName || a.username))
+    roleList.value.forEach((r: any) => roleMap.set(r.id, r.name))
+  } catch {
+    // 错误由全局拦截器展示
+  }
 }
 
 async function fetchData() {
@@ -94,6 +98,13 @@ async function handleSave() {
   } finally { saving.value = false }
 }
 async function handleDelete(id: number) { try { await deleteAdminRoleRelation(id); ElMessage.success('已解除关联'); fetchData() } catch { /* handled by interceptor */ } }
+async function handleDialogClose(done: () => void) {
+  if (form.adminId === undefined && form.roleId === undefined) return done()
+  try {
+    await ElMessageBox.confirm('有关联信息未保存，确定关闭吗？', '离开确认', { type: 'warning' })
+    done()
+  } catch { /* 取消关闭 */ }
+}
 
 onMounted(async () => { await loadSelectData(); fetchData() })
 </script>

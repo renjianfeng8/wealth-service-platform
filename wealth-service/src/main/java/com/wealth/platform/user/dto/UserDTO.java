@@ -39,4 +39,7 @@ public class UserDTO {
     @Max(value = 1, message = "状态值不能大于1")
     @Schema(description = "状态 0禁用 1正常")
     private Integer status;
+
+    @Schema(description = "旧密码（重置密码时用于身份验证）")
+    private String oldPassword;
 }

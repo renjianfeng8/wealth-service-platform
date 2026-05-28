@@ -2,7 +2,7 @@
   <div class="page">
     <div class="page-header"><h3>站内消息</h3></div>
     <el-card shadow="never" class="search-card">
-      <el-form :model="query" inline>
+      <el-form :model="query" inline @submit.prevent="handleSearch">
         <el-form-item label="标题"><el-input v-model="query.msgTitle" placeholder="搜索" clearable /></el-form-item>
         <el-form-item label="类型"><el-select v-model="query.msgType" clearable style="width:120px"><el-option v-for="d in MSG_TYPE_OPTIONS" :key="d.value" :label="d.label" :value="d.value" /></el-select></el-form-item>
         <el-form-item><el-button type="primary" @click="handleSearch">查询</el-button><el-button @click="handleReset">重置</el-button></el-form-item>

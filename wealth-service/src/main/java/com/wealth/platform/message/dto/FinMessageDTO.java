@@ -23,4 +23,7 @@ public class FinMessageDTO {
     @NotBlank(message = "消息内容不能为空")
     @Schema(description = "消息内容")
     private String msgContent;
+
+    @Schema(description = "已读标识 0未读 1已读")
+    private Integer readFlag;
 }

@@ -238,6 +238,10 @@ public class UmsAdminServiceImpl extends ServiceImpl<UmsAdminMapper, UmsAdmin> i
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean createAdmin(UmsAdmin admin) {
+        long count = lambdaQuery().eq(UmsAdmin::getUsername, admin.getUsername()).count();
+        if (count > 0) {
+            throw new ServiceException(400, "管理员用户名已存在");
+        }
         admin.setPassword(passwordEncoder.encode(admin.getPassword()));
         return save(admin);
     }
@@ -264,6 +268,20 @@ public class UmsAdminServiceImpl extends ServiceImpl<UmsAdminMapper, UmsAdmin> i
         }
         wrapper.orderByDesc(UmsAdmin::getCreateTime);
         return baseMapper.selectPage(page, wrapper);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean resetPassword(Long id, String oldPassword, String newPassword) {
+        UmsAdmin admin = getById(id);
+        if (admin == null) {
+            throw new ServiceException(404, "管理员不存在");
+        }
+        if (!passwordEncoder.matches(oldPassword, admin.getPassword())) {
+            throw new ServiceException(400, "原密码错误");
+        }
+        admin.setPassword(passwordEncoder.encode(newPassword));
+        return updateById(admin);
     }
 
     @Override

@@ -23,9 +23,8 @@ public class UmsRole extends BaseEntity {
 
     private Integer status;
 
+    @TableField(exist = false)
     private Integer sort;
 
-    /** ums_role 表无 update_time 列 */
-    @TableField(exist = false)
     private LocalDateTime updateTime;
 }

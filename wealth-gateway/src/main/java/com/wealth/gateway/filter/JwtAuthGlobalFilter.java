@@ -42,9 +42,10 @@ public class JwtAuthGlobalFilter implements GlobalFilter, Ordered {
             "/user/login",
             "/user/register",
             "/user/identify-login",
-            "/api/v1/product/wea-product/page",
-            "/api/v1/product/wea-market-data",
-            "/api/v1/message/wea-news/page",
+            "/product/wea-product/page",
+            "/product/wea-market-data",
+            "/product/wea-market-data/sse/**",
+            "/message/wea-news/page",
             /* Knife4j / Swagger 文档路径 */
             "/doc.html",
             "/webjars/**",

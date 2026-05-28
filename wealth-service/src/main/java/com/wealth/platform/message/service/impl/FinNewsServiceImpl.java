@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.wealth.common.exception.ServiceException;
 import com.wealth.common.utils.BeanConvertUtil;
 import com.wealth.platform.message.dto.FinNewsDTO;
 import com.wealth.platform.message.entity.WeaNews;
@@ -43,6 +44,10 @@ public class FinNewsServiceImpl extends ServiceImpl<FinNewsMapper, WeaNews>
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean createNews(FinNewsDTO dto) {
+        long count = lambdaQuery().eq(WeaNews::getTitle, dto.getTitle()).count();
+        if (count > 0) {
+            throw new ServiceException(400, "资讯标题已存在");
+        }
         WeaNews entity = BeanConvertUtil.convert(dto, WeaNews.class);
         return save(entity);
     }

@@ -30,7 +30,7 @@
         <el-pagination v-model:current-page="query.pageNum" v-model:page-size="query.pageSize" :total="total" :page-sizes="[10,20,50]" layout="total, sizes, prev, pager, next" @size-change="handleSizeChange" @current-change="fetchData" />
       </div>
     </el-card>
-    <el-dialog v-model="dialogVisible" title="添加关联" width="450px">
+    <el-dialog v-model="dialogVisible" title="添加关联" width="450px" :before-close="handleDialogClose">
       <el-form ref="formRef" :model="form" :rules="rules" label-width="90px">
         <el-form-item label="角色" prop="roleId"><el-select v-model="form.roleId" filterable style="width:100%" placeholder="选择角色"><el-option v-for="r in roleList" :key="r.id" :label="r.name" :value="r.id" /></el-select></el-form-item>
         <el-form-item label="资源" prop="resourceId"><el-select v-model="form.resourceId" filterable style="width:100%" placeholder="选择资源"><el-option v-for="r in resourceList" :key="r.id" :label="r.name" :value="r.id" /></el-select></el-form-item>
@@ -42,7 +42,7 @@
 
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
 import { getRoleResourceRelationPage, createRoleResourceRelation, deleteRoleResourceRelation, getRoleList, getResourceList } from '@/api/system'
 import { formatDateTime } from '@/utils/format'
@@ -65,11 +65,15 @@ function getRoleName(id: number) { return roleMap.get(id) || `ID:${id}` }
 function getResourceName(id: number) { return resourceMap.get(id) || `ID:${id}` }
 
 async function loadSelectData() {
-  const [roleRes, resourceRes] = await Promise.all([getRoleList(), getResourceList()])
-  roleList.value = roleRes.data || []
-  resourceList.value = resourceRes.data || []
-  roleList.value.forEach((r: any) => roleMap.set(r.id, r.name))
-  resourceList.value.forEach((r: any) => resourceMap.set(r.id, r.name))
+  try {
+    const [roleRes, resourceRes] = await Promise.all([getRoleList(), getResourceList()])
+    roleList.value = roleRes.data || []
+    resourceList.value = resourceRes.data || []
+    roleList.value.forEach((r: any) => roleMap.set(r.id, r.name))
+    resourceList.value.forEach((r: any) => resourceMap.set(r.id, r.name))
+  } catch {
+    // 错误由全局拦截器展示
+  }
 }
 
 async function fetchData() {
@@ -94,6 +98,13 @@ async function handleSave() {
   } finally { saving.value = false }
 }
 async function handleDelete(id: number) { try { await deleteRoleResourceRelation(id); ElMessage.success('已解除关联'); fetchData() } catch { /* handled by interceptor */ } }
+async function handleDialogClose(done: () => void) {
+  if (form.roleId === undefined && form.resourceId === undefined) return done()
+  try {
+    await ElMessageBox.confirm('有关联信息未保存，确定关闭吗？', '离开确认', { type: 'warning' })
+    done()
+  } catch { /* 取消关闭 */ }
+}
 
 onMounted(async () => { await loadSelectData(); fetchData() })
 </script>

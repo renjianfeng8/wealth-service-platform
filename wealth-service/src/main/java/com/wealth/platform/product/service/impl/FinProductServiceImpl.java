@@ -8,7 +8,6 @@ import com.wealth.platform.product.dto.FinProductDTO;
 import com.wealth.platform.product.entity.WeaProduct;
 import com.wealth.platform.product.mapper.FinProductMapper;
 import com.wealth.platform.product.service.FinProductService;
-import com.wealth.platform.product.service.ProductSyncService;
 import com.wealth.platform.product.vo.FinProductVO;
 import com.wealth.common.exception.ServiceException;
 import com.wealth.common.utils.BeanConvertUtil;
@@ -21,12 +20,6 @@ import java.util.stream.Collectors;
 @Service
 public class FinProductServiceImpl extends ServiceImpl<FinProductMapper, WeaProduct>
         implements FinProductService {
-
-    private final ProductSyncService productSyncService;
-
-    public FinProductServiceImpl(ProductSyncService productSyncService) {
-        this.productSyncService = productSyncService;
-    }
 
     @Override
     public FinProductVO getProductById(Long id) {
@@ -50,27 +43,41 @@ public class FinProductServiceImpl extends ServiceImpl<FinProductMapper, WeaProd
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean createProduct(FinProductDTO dto) {
-        WeaProduct entity = BeanConvertUtil.convert(dto, WeaProduct.class);
-        boolean saved = save(entity);
-        if (saved) {
-            productSyncService.syncSingleToES(entity);
+        long count = lambdaQuery().eq(WeaProduct::getProductCode, dto.getProductCode()).count();
+        if (count > 0) {
+            throw new ServiceException(400, "产品编码已存在");
         }
-        return saved;
+        WeaProduct entity = BeanConvertUtil.convert(dto, WeaProduct.class);
+        return save(entity);
     }
 
     @Override
-    public IPage<FinProductVO> pageProducts(Page<WeaProduct> page, String productName, String productCode, Integer productType) {
+    public IPage<FinProductVO> pageProducts(Page<WeaProduct> page, String productName, String productCode, Integer productType, String orderBy, String orderDir) {
         LambdaQueryWrapper<WeaProduct> wrapper = new LambdaQueryWrapper<>();
-        if (StringUtils.hasText(productName)) {
-            wrapper.like(WeaProduct::getProductName, productName);
-        }
-        if (StringUtils.hasText(productCode)) {
-            wrapper.like(WeaProduct::getProductCode, productCode);
+        if (StringUtils.hasText(productName) || StringUtils.hasText(productCode)) {
+            wrapper.and(w -> {
+                if (StringUtils.hasText(productName)) {
+                    w.like(WeaProduct::getProductName, productName);
+                }
+                if (StringUtils.hasText(productCode)) {
+                    if (StringUtils.hasText(productName)) {
+                        w.or();
+                    }
+                    w.like(WeaProduct::getProductCode, productCode);
+                }
+            });
         }
         if (productType != null) {
             wrapper.eq(WeaProduct::getProductType, productType);
         }
-        wrapper.orderByAsc(WeaProduct::getSort);
+        // Dynamic sorting
+        if ("price".equals(orderBy)) {
+            wrapper.orderBy(true, !"desc".equals(orderDir), WeaProduct::getPrice);
+        } else if ("riseFallRate".equals(orderBy)) {
+            wrapper.orderBy(true, !"desc".equals(orderDir), WeaProduct::getRiseFallRate);
+        } else {
+            wrapper.orderByAsc(WeaProduct::getSort);
+        }
         return BeanConvertUtil.convertPage(baseMapper.selectPage(page, wrapper), FinProductVO.class);
     }
 
@@ -83,20 +90,12 @@ public class FinProductServiceImpl extends ServiceImpl<FinProductMapper, WeaProd
         }
         BeanConvertUtil.copyNonNullProperties(dto, entity);
         entity.setId(id);
-        boolean updated = updateById(entity);
-        if (updated) {
-            productSyncService.syncSingleToES(entity);
-        }
-        return updated;
+        return updateById(entity);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean deleteProduct(Long id) {
-        boolean removed = removeById(id);
-        if (removed) {
-            productSyncService.deleteFromES(id);
-        }
-        return removed;
+        return removeById(id);
     }
 }

@@ -1,6 +1,12 @@
 <template>
   <div class="favorite-page">
-    <div class="page-title">我的自选</div>
+    <div class="page-title">
+      我的自选
+      <span class="sse-status" :class="sseConnected ? 'connected' : 'disconnected'">
+        <span class="sse-dot"></span>
+        {{ sseConnected ? '实时已连接' : '实时已断开' }}
+      </span>
+    </div>
 
     <el-card class="add-card" shadow="never">
       <div class="add-bar">
@@ -114,6 +120,7 @@ const total = ref(0)
 const pageNum = ref(1)
 const pageSize = ref(12)
 const newProductCode = ref('')
+const sseConnected = ref(false)
 let eventSource: EventSource | null = null
 
 async function enrichFavorites(records: WeaUserFavorite[]): Promise<FavoriteItem[]> {
@@ -200,7 +207,7 @@ function goTrade(item: FavoriteItem) {
 onMounted(() => {
   if (userStore.userId) {
     fetchFavorites()
-    eventSource = createMarketSSE()
+    eventSource = createMarketSSE((connected) => sseConnected.value = connected)
     onMarketUpdate(eventSource, handleMarketUpdate)
   }
 })
@@ -234,4 +241,35 @@ onUnmounted(() => {
 .fav-footer { display: flex; align-items: center; justify-content: space-between; padding-top: 12px; border-top: 1px solid var(--border-color); }
 .fav-time { font-size: 12px; color: var(--text-placeholder); }
 .pagination-wrap { display: flex; justify-content: center; padding: 20px 0; }
+
+.sse-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  padding: 2px 10px;
+  border-radius: 12px;
+  margin-left: 12px;
+  vertical-align: middle;
+}
+.sse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.sse-status.connected {
+  color: #67c23a;
+  background: rgba(103, 194, 58, 0.1);
+}
+.sse-status.connected .sse-dot {
+  background: #67c23a;
+}
+.sse-status.disconnected {
+  color: #f56c6c;
+  background: rgba(245, 108, 108, 0.1);
+}
+.sse-status.disconnected .sse-dot {
+  background: #f56c6c;
+}
 </style>

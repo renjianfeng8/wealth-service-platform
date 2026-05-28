@@ -17,7 +17,7 @@ public interface FinMessageService extends IService<WeaMessage> {
 
     List<FinMessageVO> getMessageList();
 
-    IPage<FinMessageVO> pageMessages(Page<WeaMessage> page, Long userId, String msgTitle, Integer msgType);
+    IPage<FinMessageVO> pageMessages(Page<WeaMessage> page, Long userId, String msgTitle, Integer msgType, Integer readFlag);
 
     boolean createMessage(FinMessageDTO dto);
 

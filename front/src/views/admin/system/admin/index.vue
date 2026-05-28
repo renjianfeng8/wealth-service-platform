@@ -2,7 +2,7 @@
   <div class="page">
     <div class="page-header"><h3>管理员管理</h3></div>
     <el-card shadow="never" class="search-card">
-      <el-form :model="query" inline>
+      <el-form :model="query" inline @submit.prevent="handleSearch">
         <el-form-item label="用户名"><el-input v-model="query.username" placeholder="搜索" clearable /></el-form-item>
         <el-form-item label="状态"><el-select v-model="query.status" clearable style="width:120px"><el-option label="正常" :value="1" /><el-option label="禁用" :value="0" /></el-select></el-form-item>
         <el-form-item><el-button type="primary" @click="handleSearch">查询</el-button><el-button @click="handleReset">重置</el-button></el-form-item>

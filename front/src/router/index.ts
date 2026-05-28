@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
 import NProgress from 'nprogress'
 import 'nprogress/nprogress.css'
+import { useUserStore } from '@/store'
 
 declare module 'vue-router' {
   interface RouteMeta {
@@ -14,7 +15,7 @@ declare module 'vue-router' {
 }
 
 const routes: RouteRecordRaw[] = [
-  // ==================== 公共路由（UnifiedLayout，无需登录） ====================
+  // ==================== 公共路由（UserLayout，无需登录） ====================
   {
     path: '/',
     component: () => import('@/layouts/UserLayout.vue'),
@@ -29,7 +30,7 @@ const routes: RouteRecordRaw[] = [
     ],
   },
 
-  // ==================== 用户路由（UnifiedLayout，需登录） ====================
+  // ==================== 用户路由（UserLayout，需登录） ====================
   {
     path: '/user',
     component: () => import('@/layouts/UserLayout.vue'),
@@ -51,6 +52,7 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true, requiresAdmin: true },
     children: [
       { path: 'dashboard',      component: () => import('@/views/admin/dashboard/index.vue'),   meta: { title: '控制台', icon: 'Monitor', group: 'dashboard' } },
+      { path: 'profile',        component: () => import('@/views/admin/profile/index.vue'),     meta: { title: '个人信息', icon: 'User', group: 'profile' } },
       { path: 'user',           component: () => import('@/views/admin/user/index.vue'),         meta: { title: '用户管理', icon: 'User', group: 'user' } },
       { path: 'system/admin',   component: () => import('@/views/admin/system/admin/index.vue'), meta: { title: '管理员管理', icon: 'Setting', group: 'system' } },
       { path: 'system/role',    component: () => import('@/views/admin/system/role/index.vue'),  meta: { title: '角色管理', icon: 'Avatar', group: 'system' } },
@@ -89,31 +91,28 @@ router.beforeEach((to, _from) => {
     document.title = `${title} | 理财服务平台`
   }
 
+  const userStore = useUserStore()
+
+  // 已登录用户访问登录页 → 跳转对应首页
+  if (to.path === '/auth/login' && userStore.isLoggedIn) {
+    return userStore.isAdmin ? '/admin/dashboard' : '/home'
+  }
+
   // 不需要认证的路由直接放行
   if (!to.meta.requiresAuth) {
     return true
   }
 
   // 检查登录状态
-  const loggedIn = sessionStorage.getItem('wealth_logged_in') === 'true'
-  if (!loggedIn) {
+  if (!userStore.isLoggedIn) {
     const loginPath = '/auth/login'
     // 使用 replace 避免回退时陷入登录页死循环
     return { path: loginPath, query: { redirect: to.fullPath }, replace: true }
   }
 
-  // 已登录访问登录页 → 跳转对应首页
-  if (to.path === '/auth/login') {
-    const role = sessionStorage.getItem('wealth_role')
-    return role === 'admin' ? '/admin/dashboard' : '/home'
-  }
-
   // 检查管理员权限
-  if (to.meta.requiresAdmin) {
-    const role = sessionStorage.getItem('wealth_role')
-    if (role !== 'admin') {
-      return { path: '/403', query: { redirect: to.fullPath }, replace: true }
-    }
+  if (to.meta.requiresAdmin && !userStore.isAdmin) {
+    return { path: '/403', query: { redirect: to.fullPath }, replace: true }
   }
 
   return true

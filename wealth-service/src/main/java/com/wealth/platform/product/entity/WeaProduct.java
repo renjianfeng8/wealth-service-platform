@@ -29,15 +29,15 @@ public class WeaProduct extends BaseEntity {
     @TableField("price")
     private BigDecimal price;
 
-    @TableField("rise_fall")
+    @TableField(exist = false)
     private BigDecimal riseFall;
 
-    @TableField("rise_fall_rate")
+    @TableField(exist = false)
     private BigDecimal riseFallRate;
 
     @TableField("status")
     private Integer status;
 
-    @TableField("sort")
+    @TableField(exist = false)
     private Integer sort;
 }

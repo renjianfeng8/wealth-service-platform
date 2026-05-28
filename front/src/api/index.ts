@@ -1,6 +1,6 @@
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
-import { removeToken } from '@/utils/auth'
+import { useUserStore } from '@/store'
 import router from '@/router'
 
 const redirectLogin = () => {
@@ -28,7 +28,7 @@ request.interceptors.response.use(
   (response) => {
     const res = response.data
     if (res.code === 401) {
-      removeToken()
+      useUserStore().logout()
       redirectLogin()
       return Promise.reject(new Error(res.message || '未登录'))
     }
@@ -43,7 +43,7 @@ request.interceptors.response.use(
     const data = error.response?.data
     const msg = data?.message || error.message || '网络错误'
     if (status === 401) {
-      removeToken()
+      useUserStore().logout()
       redirectLogin()
     }
     ElMessage.error(msg)

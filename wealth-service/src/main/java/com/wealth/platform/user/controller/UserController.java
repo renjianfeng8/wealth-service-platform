@@ -11,6 +11,7 @@ import com.wealth.common.utils.BeanConvertUtil;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import com.wealth.platform.user.dto.ResetPasswordDTO;
 import com.wealth.platform.user.dto.UserDTO;
 import com.wealth.platform.user.entity.User;
 import com.wealth.platform.user.service.UserService;
@@ -151,8 +152,11 @@ public class UserController {
     @Operation(summary = "重置密码")
     @AuditLog(module = "用户管理", operation = "重置密码")
     @AntiReplay
-    public Result<Boolean> resetPassword(@Valid @RequestBody UserDTO dto) {
-        User user = BeanConvertUtil.convert(dto, User.class);
-        return Result.success(userService.resetPassword(user));
+    public Result<Boolean> resetPassword(@Valid @RequestBody ResetPasswordDTO dto) {
+        String oldPassword = dto.getOldPassword();
+        User user = new User();
+        user.setId(dto.getId());
+        user.setPassword(dto.getPassword());
+        return Result.success(userService.resetPassword(user, oldPassword));
     }
 }

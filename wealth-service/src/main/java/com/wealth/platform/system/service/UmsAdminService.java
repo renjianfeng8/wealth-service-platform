@@ -20,4 +20,7 @@ public interface UmsAdminService extends IService<UmsAdmin> {
 
     // 分页条件查询
     IPage<UmsAdmin> pageWithFilter(Integer pageNum, Integer pageSize, String username, Integer status);
+
+    // 重置密码
+    Boolean resetPassword(Long id, String oldPassword, String newPassword);
 }

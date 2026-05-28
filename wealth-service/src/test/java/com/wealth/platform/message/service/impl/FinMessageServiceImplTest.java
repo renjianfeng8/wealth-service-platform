@@ -111,7 +111,7 @@ class FinMessageServiceImplTest {
 
         when(messageMapper.selectPage(any(Page.class), any(LambdaQueryWrapper.class))).thenReturn(mockPage);
 
-        IPage<FinMessageVO> result = messageService.pageMessages(page, 100L, null, null);
+        IPage<FinMessageVO> result = messageService.pageMessages(page, 100L, null, null, null);
 
         assertEquals(1, result.getTotal());
         assertEquals("测试消息标题", result.getRecords().get(0).getMsgTitle());
@@ -126,7 +126,7 @@ class FinMessageServiceImplTest {
 
         when(messageMapper.selectPage(any(Page.class), any(LambdaQueryWrapper.class))).thenReturn(mockPage);
 
-        IPage<FinMessageVO> result = messageService.pageMessages(page, null, null, null);
+        IPage<FinMessageVO> result = messageService.pageMessages(page, null, null, null, null);
 
         assertEquals(3, result.getTotal());
     }

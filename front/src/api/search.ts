@@ -1,37 +1,34 @@
+/**
+ * ES 搜索服务已下线（模块合并时删除）。
+ * 搜索功能请使用产品 API (@/api/product)：
+ *   - getProductPage() — 分页查询产品
+ *   - getProductList() — 产品列表
+ *
+ * 管理端搜索页 (/admin/search) 已改用 getProductPage。
+ */
+
 import request from './index'
 
-/**
- * ES 搜索产品
- * @param params - 搜索参数（keyword 必填，可选 page、size）
- * @returns 搜索结果
- */
-export function searchProduct(params: { keyword: string; page?: number; size?: number }) {
-  return request.get('/search/product/search', { params })
+/** @deprecated ES 搜索已下线 */
+export function searchProduct(_params: { keyword: string; page?: number; size?: number }) {
+  console.warn('[search.ts] ES 搜索已下线，请使用 product API 代替')
+  return Promise.reject(new Error('ES 搜索已下线'))
 }
 
-/**
- * 保存产品文档到 ES
- * @param data - 产品文档数据
- * @returns 保存结果
- */
-export function saveProductDocument(data: any) {
-  return request.post('/search/product', data)
+/** @deprecated ES 索引已删除 */
+export function saveProductDocument(_data: any) {
+  console.warn('[search.ts] ES 索引已删除，请使用 product API 代替')
+  return Promise.reject(new Error('ES 索引已删除'))
 }
 
-/**
- * 根据 ID 查询 ES 产品文档
- * @param id - 文档 ID
- * @returns 产品文档信息
- */
-export function getProductDocumentById(id: string) {
-  return request.get(`/search/product/${id}`)
+/** @deprecated ES 索引已删除 */
+export function getProductDocumentById(_id: string) {
+  console.warn('[search.ts] ES 索引已删除，请使用 product API 代替')
+  return Promise.reject(new Error('ES 索引已删除'))
 }
 
-/**
- * 删除 ES 产品文档
- * @param id - 文档 ID
- * @returns 删除结果
- */
-export function deleteProductDocument(id: string) {
-  return request.delete(`/search/product/${id}`)
+/** @deprecated ES 索引已删除 */
+export function deleteProductDocument(_id: string) {
+  console.warn('[search.ts] ES 索引已删除，请使用 product API 代替')
+  return Promise.reject(new Error('ES 索引已删除'))
 }

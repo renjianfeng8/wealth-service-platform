@@ -2,7 +2,7 @@
   <div class="page">
     <div class="page-header"><h3>交易委托管理</h3></div>
     <el-card shadow="never" class="search-card">
-      <el-form :model="query" inline>
+      <el-form :model="query" inline @submit.prevent="handleSearch">
         <el-form-item label="订单号"><el-input v-model="query.orderNo" placeholder="搜索" clearable /></el-form-item>
         <el-form-item label="产品编码"><el-input v-model="query.productCode" placeholder="搜索" clearable /></el-form-item>
         <el-form-item label="状态"><el-select v-model="query.orderStatus" clearable style="width:110px"><el-option v-for="d in ORDER_STATUS_OPTIONS" :key="d.value" :label="d.label" :value="d.value" /></el-select></el-form-item>
@@ -36,7 +36,7 @@
         <el-pagination v-model:current-page="query.pageNum" v-model:page-size="query.pageSize" :total="total" :page-sizes="[10,20,50]" layout="total, sizes, prev, pager, next" @size-change="handleSizeChange" @current-change="fetchData" />
       </div>
     </el-card>
-    <el-dialog v-model="dialogVisible" :title="isEdit?'编辑委托':'新增委托'" width="550px">
+    <el-dialog v-model="dialogVisible" :title="isEdit?'编辑委托':'新增委托'" width="550px" :before-close="handleDialogClose">
       <el-form ref="formRef" :model="form" :rules="rules" label-width="90px">
         <el-row :gutter="20">
           <el-col :span="12"><el-form-item label="用户ID" prop="userId"><el-input-number v-model="form.userId" style="width:100%" /></el-form-item></el-col>
@@ -55,8 +55,9 @@
 
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
+import { useFormGuard } from '@/composables/useFormGuard'
 import { getTradeOrderPage, createTradeOrder, updateTradeOrder, deleteTradeOrder } from '@/api/trade'
 import { formatDateTime, formatPrice, tradeTypeText, orderStatusTag, orderStatusText } from '@/utils/format'
 import { ORDER_STATUS_OPTIONS } from '@/types'
@@ -67,6 +68,7 @@ const dialogVisible = ref(false); const isEdit = ref(false)
 const formRef = ref<FormInstance>()
 const query = reactive({ pageNum: 1, pageSize: 10, orderNo: '', productCode: '', orderStatus: '' })
 const form = reactive({ id: undefined, userId: undefined, productCode: '', tradeType: 1, entrustPrice: 0, entrustNum: 0 })
+const { isDirty, reset } = useFormGuard(form)
 const rules: FormRules = { userId: [{ required: true, message: '必填' }], productCode: [{ required: true, message: '必填' }], entrustPrice: [{ required: true, message: '必填' }], entrustNum: [{ required: true, message: '必填' }] }
 
 async function fetchData() {
@@ -83,14 +85,21 @@ async function fetchData() {
 function handleSearch() { query.pageNum = 1; fetchData() }
 function handleReset() { query.orderNo = ''; query.productCode = ''; query.orderStatus = ''; handleSearch() }
 function handleSizeChange() { query.pageNum = 1; fetchData() }
-function handleAdd() { isEdit.value = false; Object.assign(form, { id: undefined, userId: undefined, productCode: '', tradeType: 1, entrustPrice: 0, entrustNum: 0 }); dialogVisible.value = true }
-function handleEdit(row: any) { isEdit.value = true; Object.assign(form, row); dialogVisible.value = true }
+function handleAdd() { isEdit.value = false; Object.assign(form, { id: undefined, userId: undefined, productCode: '', tradeType: 1, entrustPrice: 0, entrustNum: 0 }); reset(); dialogVisible.value = true }
+function handleEdit(row: any) { isEdit.value = true; Object.assign(form, row); reset(); dialogVisible.value = true }
+async function handleDialogClose(done: () => void) {
+  if (!isDirty()) return done()
+  try {
+    await ElMessageBox.confirm('有未保存的更改，确定关闭吗？', '离开确认', { type: 'warning' })
+    done()
+  } catch { /* 取消关闭 */ }
+}
 async function handleSave() {
   const valid = await formRef.value?.validate().catch(() => false)
   if (!valid) return; saving.value = true
   try {
     isEdit.value ? await updateTradeOrder(form.id!, form) : await createTradeOrder({ ...form, idempotentKey: crypto.randomUUID() })
-    ElMessage.success(isEdit.value ? '更新成功' : '创建成功'); dialogVisible.value = false; fetchData()
+    ElMessage.success(isEdit.value ? '更新成功' : '创建成功'); reset(); dialogVisible.value = false; fetchData()
   } finally { saving.value = false }
 }
 async function handleDelete(id: number) { try { await deleteTradeOrder(id); ElMessage.success('删除成功'); fetchData() } catch { /* handled by interceptor */ } }

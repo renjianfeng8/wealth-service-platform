@@ -237,7 +237,7 @@ const balanceRanges = [
   { key: '7D', label: '7D' },
   { key: '30D', label: '30D' },
 ]
-const klineActive = ref('1D')
+const klineActive = ref('1M')
 const klineRanges = [
   { key: '1D', label: '1D' },
   { key: '1W', label: '1W' },
@@ -352,8 +352,8 @@ function buildKlineOption(): echarts.EChartsOption {
   const ohlc = data.map(d => [d.open, d.close, d.low, d.high])
   const times = data.map(d => d.time)
   const ma5 = data.map((_, i, arr) => {
-    if (i < 4) return '-'
-    return (arr.slice(i - 4, i + 1).reduce((s, d) => s + d.close, 0) / 5).toFixed(2)
+    const len = Math.min(5, i + 1)
+    return (arr.slice(i + 1 - len, i + 1).reduce((s, d) => s + d.close, 0) / len).toFixed(2)
   })
   return {
     tooltip: {
@@ -471,7 +471,7 @@ async function fetchTrend(period: string = '7D') {
   } catch { /* ignore */ }
 }
 
-async function fetchKline(code: string, period: string = '1D') {
+async function fetchKline(code: string, period: string = '1M') {
   try {
     const res = await getDashboardKline(code, period)
     if (res.data?.candles) klineData.value = res.data.candles

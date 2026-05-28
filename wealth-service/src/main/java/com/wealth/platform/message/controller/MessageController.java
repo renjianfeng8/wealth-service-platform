@@ -51,9 +51,10 @@ public class MessageController {
             @RequestParam(defaultValue = "10") Integer pageSize,
             @RequestParam(required = false) Long userId,
             @RequestParam(required = false) String msgTitle,
-            @RequestParam(required = false) Integer msgType) {
+            @RequestParam(required = false) Integer msgType,
+            @RequestParam(required = false) Integer readFlag) {
         Page<WeaMessage> page = new Page<>(pageNum, pageSize);
-        return Result.success(finMessageService.pageMessages(page, userId, msgTitle, msgType));
+        return Result.success(finMessageService.pageMessages(page, userId, msgTitle, msgType, readFlag));
     }
 
     @Operation(summary = "创建站内消息推送")

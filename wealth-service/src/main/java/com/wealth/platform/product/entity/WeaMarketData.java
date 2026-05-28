@@ -21,31 +21,29 @@ public class WeaMarketData extends BaseEntity {
     @TableField("product_code")
     private String productCode;
 
-    @TableField("current_price")
+    @TableField("price")
     private BigDecimal currentPrice;
 
     @TableField("open_price")
     private BigDecimal openPrice;
 
-    @TableField("close_price")
+    @TableField("pre_close_price")
     private BigDecimal closePrice;
 
-    @TableField("highest_price")
+    @TableField("high_price")
     private BigDecimal highestPrice;
 
-    @TableField("lowest_price")
+    @TableField("low_price")
     private BigDecimal lowestPrice;
 
-    @TableField("rise_fall")
+    @TableField(exist = false)
     private BigDecimal riseFall;
 
-    @TableField("rise_fall_rate")
+    @TableField(exist = false)
     private BigDecimal riseFallRate;
 
-    @TableField("market_time")
+    @TableField(exist = false)
     private LocalDateTime marketTime;
 
-    /** 行情表无 update_time 列 */
-    @TableField(exist = false)
     private LocalDateTime updateTime;
 }

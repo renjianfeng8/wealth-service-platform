@@ -1,6 +1,12 @@
 <template>
   <div class="market-page">
-    <div class="page-title">实时行情</div>
+    <div class="page-title">
+      实时行情
+      <span class="sse-status" :class="sseConnected ? 'connected' : 'disconnected'">
+        <span class="sse-dot"></span>
+        {{ sseConnected ? '实时已连接' : '实时已断开' }}
+      </span>
+    </div>
 
     <el-card class="market-table-card" shadow="never">
       <template #header>
@@ -12,7 +18,13 @@
         </div>
       </template>
 
-      <el-table :data="marketList" stripe v-loading="loading" empty-text="暂无行情数据">
+      <el-result v-if="hasError" icon="error" title="加载失败" sub-title="数据获取异常，请重试">
+        <template #extra>
+          <el-button type="primary" @click="fetchData">重试</el-button>
+        </template>
+      </el-result>
+      <template v-else>
+        <el-table :data="marketList" stripe v-loading="loading" empty-text="暂无行情数据">
         <el-table-column type="index" label="#" width="60" />
         <el-table-column prop="productCode" label="产品代码" width="120">
           <template #default="{ row }">
@@ -76,6 +88,7 @@
           @size-change="fetchData"
         />
       </div>
+        </template>
     </el-card>
   </div>
 </template>
@@ -91,18 +104,22 @@ import { createMarketSSE, onMarketUpdate } from '@/utils/sse'
 const marketList = ref<WeaMarketData[]>([])
 const loading = ref(false)
 const refreshing = ref(false)
+const hasError = ref(false)
 const total = ref(0)
 const pageNum = ref(1)
 const pageSize = ref(20)
+const sseConnected = ref(false)
 let eventSource: EventSource | null = null
 
 async function fetchData() {
+  hasError.value = false
   loading.value = true
   try {
     const res = await getMarketDataPage({ pageNum: pageNum.value, pageSize: pageSize.value })
     marketList.value = (res.data?.records || []) as WeaMarketData[]
     total.value = res.data?.total || 0
   } catch {
+    hasError.value = true
     marketList.value = []
   } finally {
     loading.value = false
@@ -125,7 +142,7 @@ function handleMarketUpdate(data: WeaMarketData[]) {
 
 onMounted(() => {
   fetchData()
-  eventSource = createMarketSSE()
+  eventSource = createMarketSSE((connected) => sseConnected.value = connected)
   onMarketUpdate(eventSource, handleMarketUpdate)
 })
 
@@ -182,5 +199,36 @@ onUnmounted(() => {
   margin-top: 16px;
   display: flex;
   justify-content: flex-end;
+}
+
+.sse-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  padding: 2px 10px;
+  border-radius: 12px;
+  margin-left: 12px;
+  vertical-align: middle;
+}
+.sse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.sse-status.connected {
+  color: #67c23a;
+  background: rgba(103, 194, 58, 0.1);
+}
+.sse-status.connected .sse-dot {
+  background: #67c23a;
+}
+.sse-status.disconnected {
+  color: #f56c6c;
+  background: rgba(245, 108, 108, 0.1);
+}
+.sse-status.disconnected .sse-dot {
+  background: #f56c6c;
 }
 </style>

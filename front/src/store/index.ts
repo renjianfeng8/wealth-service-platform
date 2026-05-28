@@ -1,9 +1,14 @@
 import { defineStore } from 'pinia'
 import { getToken, setToken, removeToken, setStoredUser, getStoredUser } from '@/utils/auth'
-import { loginApi } from '@/api/system'
-import { userLogin } from '@/api/user'
+import { useAppStore } from '@/store/app'
 
-const ROLE_KEY = 'wealth_role'
+export interface LoginInfo {
+  username: string
+  userId: number
+  nickname?: string
+  avatar?: string
+  role: 'admin' | 'user'
+}
 
 export const useUserStore = defineStore('user', {
   state: () => ({
@@ -12,7 +17,7 @@ export const useUserStore = defineStore('user', {
     userId: getStoredUser()?.userId || 0,
     nickname: getStoredUser()?.nickname || '',
     avatar: getStoredUser()?.avatar || '',
-    role: (sessionStorage.getItem(ROLE_KEY) as 'admin' | 'user' | null) || null,
+    role: (sessionStorage.getItem('wealth_role') as 'admin' | 'user' | null) || null,
   }),
   getters: {
     isLoggedIn: (state) => !!state.token,
@@ -20,38 +25,20 @@ export const useUserStore = defineStore('user', {
   },
   actions: {
     /**
-     * 管理员登录，设置登录状态、角色为 admin 并存储用户信息
-     * @param username - 管理员用户名
-     * @param password - 管理员密码
+     * 设置登录状态（由登录页面调用 identifyLogin 后传入结果）
+     * @param info - 用户信息及角色
      */
-    async login(username: string, password: string) {
-      const res = await loginApi({ username, password })
+    setLoginInfo(info: LoginInfo) {
+      const { username, userId, nickname, avatar, role } = info
       setToken('true')
-      sessionStorage.setItem(ROLE_KEY, 'admin')
-      setStoredUser({ username })
-      this.token = 'true'
-      this.username = username
-      this.role = 'admin'
-    },
-    /**
-     * 普通用户登录，设置登录状态、角色为 user 并存储用户信息
-     * @param username - 用户名
-     * @param password - 密码
-     */
-    async userLogin(username: string, password: string) {
-      const res = await userLogin({ username, password })
-      const { userId } = res.data
-      const nickname = res.data.nickname || ''
-      const avatar = res.data.avatar || ''
-      setToken('true')
-      sessionStorage.setItem(ROLE_KEY, 'user')
+      sessionStorage.setItem('wealth_role', role)
       setStoredUser({ username, userId, nickname, avatar })
       this.token = 'true'
       this.username = username
       this.userId = userId
-      this.nickname = nickname
-      this.avatar = avatar
-      this.role = 'user'
+      this.nickname = nickname || ''
+      this.avatar = avatar || ''
+      this.role = role
     },
     /**
      * 更新当前登录用户的个人信息
@@ -73,8 +60,14 @@ export const useUserStore = defineStore('user', {
       this.nickname = ''
       this.avatar = ''
       this.role = null
-      sessionStorage.removeItem(ROLE_KEY)
       removeToken()
+      // 清理缓存的标签页状态
+      try {
+        const appStore = useAppStore()
+        appStore.closeAllViews()
+      } catch {
+        // appStore 可能尚未初始化
+      }
     },
   },
 })

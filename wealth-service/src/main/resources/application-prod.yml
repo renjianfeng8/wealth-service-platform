@@ -38,10 +38,6 @@ spring:
           max-active: ${REDIS_POOL_MAX_ACTIVE:16}
           max-idle: ${REDIS_POOL_MAX_IDLE:8}
           min-idle: ${REDIS_POOL_MIN_IDLE:2}
-  elasticsearch:
-    uris: ${ES_URIS:http://elasticsearch:9200}
-    connection-timeout: 10s
-    socket-timeout: 30s
 
 springdoc:
   api-docs:

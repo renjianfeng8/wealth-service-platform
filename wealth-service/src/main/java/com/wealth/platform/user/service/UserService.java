@@ -18,7 +18,7 @@ public interface UserService extends IService<User> {
     LoginVO identifyLogin(LoginDTO dto);
 
     // 重置密码
-    Boolean resetPassword(User user);
+    Boolean resetPassword(User user, String oldPassword);
 
     // 分页条件查询
     IPage<User> pageWithFilter(Integer pageNum, Integer pageSize, String username, Integer status);

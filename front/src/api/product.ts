@@ -5,7 +5,7 @@ import request from './index'
  * @param params - 查询参数（pageNum、pageSize 必填，可选 productName、productCode、productType）
  * @returns 分页结果包含产品列表
  */
-export function getProductPage(params: { pageNum: number; pageSize: number; productName?: string; productCode?: string; productType?: number }) {
+export function getProductPage(params: { pageNum: number; pageSize: number; productName?: string; productCode?: string; productType?: number; orderBy?: string; orderDir?: string }) {
   return request.get('/product/wea-product/page', { params })
 }
 

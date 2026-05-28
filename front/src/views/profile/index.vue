@@ -96,8 +96,11 @@
     </el-row>
 
     <!-- 修改密码 -->
-    <el-dialog v-model="showPasswordDialog" title="修改密码" width="420" destroy-on-close>
+    <el-dialog v-model="showPasswordDialog" title="修改密码" width="420" destroy-on-close :before-close="handlePasswordDialogClose">
       <el-form :model="passwordForm" :rules="passwordRules" ref="passwordFormRef" label-width="80px">
+        <el-form-item label="当前密码" prop="oldPassword">
+          <el-input v-model="passwordForm.oldPassword" type="password" show-password placeholder="请输入当前密码" />
+        </el-form-item>
         <el-form-item label="新密码" prop="password">
           <el-input v-model="passwordForm.password" type="password" show-password placeholder="请输入新密码" />
         </el-form-item>
@@ -148,6 +151,7 @@ const statMessages = ref(0)
 // 密码表单
 const passwordFormRef = ref<FormInstance>()
 const passwordForm = reactive({
+  oldPassword: '',
   password: '',
   confirmPassword: '',
 })
@@ -155,6 +159,9 @@ const passwordForm = reactive({
 const { isDirty, reset } = useFormGuard(userInfo)
 
 const passwordRules: FormRules = {
+  oldPassword: [
+    { required: true, message: '请输入当前密码', trigger: 'blur' },
+  ],
   password: [
     { required: true, message: '请输入新密码', trigger: 'blur' },
     { min: 6, message: '密码至少6位', trigger: 'blur' },
@@ -244,9 +251,14 @@ async function handleResetPassword() {
   if (!valid) return
   resetting.value = true
   try {
-    await resetPassword({ username: userInfo.username, password: passwordForm.password })
+    await resetPassword({
+      id: userStore.userId,
+      oldPassword: passwordForm.oldPassword,
+      password: passwordForm.password,
+    })
     ElMessage.success('密码修改成功')
     showPasswordDialog.value = false
+    passwordForm.oldPassword = ''
     passwordForm.password = ''
     passwordForm.confirmPassword = ''
   } catch {
@@ -254,6 +266,14 @@ async function handleResetPassword() {
   } finally {
     resetting.value = false
   }
+}
+
+async function handlePasswordDialogClose(done: () => void) {
+  if (!passwordForm.oldPassword && !passwordForm.password && !passwordForm.confirmPassword) return done()
+  try {
+    await ElMessageBox.confirm('密码信息未保存，确定关闭吗？', '离开确认', { type: 'warning' })
+    done()
+  } catch { /* 取消关闭 */ }
 }
 
 onMounted(async () => {

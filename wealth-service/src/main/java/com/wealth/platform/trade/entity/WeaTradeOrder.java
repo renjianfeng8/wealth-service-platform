@@ -17,7 +17,8 @@ import java.math.BigDecimal;
 @TableName("wea_trade_order")
 public class WeaTradeOrder extends BaseEntity {
 
-    @TableField(value = "order_no")
+    /** 数据库无 order_no 列 */
+    @TableField(exist = false)
     private String orderNo;
 
     @TableField(value = "user_id")
@@ -26,27 +27,24 @@ public class WeaTradeOrder extends BaseEntity {
     @TableField(value = "product_code")
     private String productCode;
 
-    @TableField(value = "trade_type")
+    @TableField("order_type")
     private Integer tradeType;
 
-    @TableField(value = "entrust_price")
+    @TableField("order_price")
     private BigDecimal entrustPrice;
 
-    @TableField(value = "entrust_num")
+    @TableField("order_quantity")
     private Integer entrustNum;
 
     @TableField(value = "order_status")
     private Integer orderStatus;
 
-    /** 数据库中暂无此字段，保留实体兼容 */
-    @TableField(exist = false)
+    @TableField("deal_price")
     private BigDecimal dealPrice;
 
-    /** 数据库中暂无此字段，保留实体兼容 */
-    @TableField(exist = false)
+    @TableField("deal_quantity")
     private BigDecimal dealQuantity;
 
-    /** 数据库中暂无此字段，保留实体兼容 */
-    @TableField(exist = false)
+    @TableField("deal_amount")
     private BigDecimal dealAmount;
 }

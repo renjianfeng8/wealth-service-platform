@@ -4,13 +4,11 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.wealth.common.audit.AntiReplay;
 import com.wealth.common.audit.AuditLog;
-import com.wealth.common.dto.ProductSyncDTO;
 import com.wealth.common.result.Result;
 import com.wealth.common.result.ResultCode;
 import com.wealth.platform.product.dto.FinProductDTO;
 import com.wealth.platform.product.entity.WeaProduct;
 import com.wealth.platform.product.service.FinProductService;
-import com.wealth.platform.product.service.ProductSyncService;
 import com.wealth.platform.product.vo.FinProductVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -29,7 +27,6 @@ import java.util.List;
 public class ProductController {
 
     private final FinProductService finProductService;
-    private final ProductSyncService productSyncService;
 
     @Operation(summary = "根据ID查询产品")
     @GetMapping("/{id}")
@@ -54,9 +51,11 @@ public class ProductController {
             @RequestParam(defaultValue = "10") Integer pageSize,
             @RequestParam(required = false) String productName,
             @RequestParam(required = false) String productCode,
-            @RequestParam(required = false) Integer productType) {
+            @RequestParam(required = false) Integer productType,
+            @RequestParam(required = false) String orderBy,
+            @RequestParam(required = false) String orderDir) {
         Page<WeaProduct> page = new Page<>(pageNum, pageSize);
-        return Result.success(finProductService.pageProducts(page, productName, productCode, productType));
+        return Result.success(finProductService.pageProducts(page, productName, productCode, productType, orderBy, orderDir));
     }
 
     @Operation(summary = "创建产品")
@@ -83,10 +82,4 @@ public class ProductController {
         return Result.success(finProductService.deleteProduct(id));
     }
 
-    @Operation(summary = "手动同步产品数据到 ES")
-    @PostMapping("/syncES")
-    @AuditLog(module = "产品管理", operation = "同步产品到ES")
-    public Result<List<ProductSyncDTO>> syncToES() {
-        return Result.success(productSyncService.syncAllToES());
-    }
 }

@@ -10,6 +10,7 @@ import com.wealth.common.audit.AuditLog;
 import com.wealth.common.utils.BeanConvertUtil;
 import com.wealth.common.utils.JwtUtil.TokenPair;
 import com.wealth.platform.system.dto.UmsAdminDTO;
+import com.wealth.platform.system.dto.UmsAdminResetPasswordDTO;
 import com.wealth.platform.system.entity.UmsAdmin;
 import com.wealth.platform.system.service.UmsAdminService;
 import com.wealth.platform.system.vo.UmsAdminVO;
@@ -150,5 +151,13 @@ public class UmsAdminController {
             return Result.success(false);
         }
         return Result.success(umsAdminService.hasPermission(admin.getId(), uri));
+    }
+
+    @PostMapping("/resetPassword")
+    @Operation(summary = "重置密码")
+    @AuditLog(module = "系统管理", operation = "重置密码")
+    @AntiReplay
+    public Result<Boolean> resetPassword(@Valid @RequestBody UmsAdminResetPasswordDTO dto) {
+        return Result.success(umsAdminService.resetPassword(dto.getId(), dto.getOldPassword(), dto.getPassword()));
     }
 }

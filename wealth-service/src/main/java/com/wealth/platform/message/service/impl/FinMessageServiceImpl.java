@@ -60,7 +60,7 @@ public class FinMessageServiceImpl extends ServiceImpl<FinMessageMapper, WeaMess
     }
 
     @Override
-    public IPage<FinMessageVO> pageMessages(Page<WeaMessage> page, Long userId, String msgTitle, Integer msgType) {
+    public IPage<FinMessageVO> pageMessages(Page<WeaMessage> page, Long userId, String msgTitle, Integer msgType, Integer readFlag) {
         LambdaQueryWrapper<WeaMessage> wrapper = new LambdaQueryWrapper<>();
         if (userId != null) {
             wrapper.eq(WeaMessage::getUserId, userId);
@@ -70,6 +70,9 @@ public class FinMessageServiceImpl extends ServiceImpl<FinMessageMapper, WeaMess
         }
         if (msgType != null) {
             wrapper.eq(WeaMessage::getMsgType, msgType);
+        }
+        if (readFlag != null) {
+            wrapper.eq(WeaMessage::getReadFlag, readFlag);
         }
         wrapper.orderByDesc(WeaMessage::getCreateTime);
         return BeanConvertUtil.convertPage(baseMapper.selectPage(page, wrapper), FinMessageVO.class);

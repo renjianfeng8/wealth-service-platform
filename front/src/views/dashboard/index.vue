@@ -2,6 +2,12 @@
   <div class="dashboard">
     <div class="page-title">首页概览</div>
 
+    <el-result v-if="hasError" icon="error" title="加载失败" sub-title="数据获取异常，请重试">
+      <template #extra>
+        <el-button type="primary" @click="fetchProducts">重试</el-button>
+      </template>
+    </el-result>
+    <template v-else>
     <!-- 市场概况 -->
     <el-row :gutter="20" class="dashboard-section">
       <el-col :xs="24" :sm="12" :lg="6" v-for="stat in marketStats" :key="stat.label">
@@ -76,6 +82,7 @@
         </el-table-column>
       </el-table>
     </el-card>
+    </template>
   </div>
 </template>
 
@@ -93,6 +100,7 @@ import type { WeaProduct } from '@/types'
 
 const router = useRouter()
 const loading = ref(false)
+const hasError = ref(false)
 const products = ref<WeaProduct[]>([])
 
 const hotProducts = computed(() => products.value.slice(0, 8))
@@ -114,11 +122,13 @@ const quickActions = [
 ]
 
 async function fetchProducts() {
+  hasError.value = false
   loading.value = true
   try {
     const res = await getProductList()
     products.value = (res.data || []) as WeaProduct[]
   } catch {
+    hasError.value = true
     products.value = []
   } finally {
     loading.value = false

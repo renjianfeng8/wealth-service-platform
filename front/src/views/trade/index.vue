@@ -2,6 +2,39 @@
   <div class="trade-page">
     <div class="page-title">交易委托</div>
 
+    <!-- 下单确认弹窗 -->
+    <el-dialog v-model="confirmVisible" title="确认下单" width="420" destroy-on-close>
+      <div class="confirm-body">
+        <div class="confirm-row">
+          <span class="confirm-label">交易类型</span>
+          <el-tag :type="confirmData.tradeType === 1 ? 'danger' : 'success'" size="small" effect="plain">
+            {{ confirmData.tradeType === 1 ? '买入' : '卖出' }}
+          </el-tag>
+        </div>
+        <div class="confirm-row">
+          <span class="confirm-label">产品代码</span>
+          <span class="confirm-value">{{ confirmData.productCode }}</span>
+        </div>
+        <div class="confirm-row">
+          <span class="confirm-label">委托价格</span>
+          <span class="confirm-value price">{{ formatPrice(confirmData.entrustPrice) }}</span>
+        </div>
+        <div class="confirm-row">
+          <span class="confirm-label">委托数量</span>
+          <span class="confirm-value">{{ confirmData.entrustNum }}</span>
+        </div>
+        <el-divider />
+        <div class="confirm-row total-row">
+          <span class="confirm-label">委托金额</span>
+          <span class="confirm-value total">{{ (confirmData.entrustPrice * confirmData.entrustNum).toFixed(2) }}</span>
+        </div>
+      </div>
+      <template #footer>
+        <el-button @click="confirmVisible = false">取消</el-button>
+        <el-button type="primary" :loading="submitting" @click="doSubmit">确定下单</el-button>
+      </template>
+    </el-dialog>
+
     <el-row :gutter="20">
       <!-- 下单区 -->
       <el-col :xs="24" :lg="8">
@@ -142,6 +175,13 @@ const userStore = useUserStore()
 // 订单表单
 const orderFormRef = ref<FormInstance>()
 const submitting = ref(false)
+const confirmVisible = ref(false)
+const confirmData = reactive({
+  productCode: '',
+  tradeType: 1,
+  entrustPrice: 0,
+  entrustNum: 0,
+})
 const orderForm = reactive({
   productCode: '',
   tradeType: 1,
@@ -172,6 +212,16 @@ async function handleSubmit() {
     ElMessage.error('用户信息异常，请重新登录')
     return
   }
+  // 打开下单确认弹窗
+  confirmData.productCode = orderForm.productCode
+  confirmData.tradeType = orderForm.tradeType
+  confirmData.entrustPrice = orderForm.entrustPrice
+  confirmData.entrustNum = orderForm.entrustNum
+  confirmVisible.value = true
+}
+
+async function doSubmit() {
+  confirmVisible.value = false
   submitting.value = true
   try {
     const idempotentKey = crypto.randomUUID()
@@ -273,6 +323,43 @@ onMounted(() => {
   margin-top: 16px;
   display: flex;
   justify-content: flex-end;
+}
+
+/* 确认弹窗 */
+.confirm-body {
+  padding: 8px 0;
+}
+.confirm-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+}
+.confirm-label {
+  font-size: 14px;
+  color: var(--el-text-color-secondary);
+}
+.confirm-value {
+  font-size: 14px;
+  color: var(--el-text-color-primary);
+  font-weight: 500;
+}
+.confirm-value.price {
+  font-family: 'DIN Pro', monospace;
+  font-size: 15px;
+}
+.total-row {
+  padding: 4px 0;
+}
+.total-row .confirm-label {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--el-text-color-primary);
+}
+.confirm-value.total {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--el-color-danger);
 }
 
 @media (max-width: 768px) {

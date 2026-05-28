@@ -2,7 +2,7 @@
   <div class="page">
     <div class="page-header"><h3>产品管理</h3></div>
     <el-card shadow="never" class="search-card">
-      <el-form :model="query" inline>
+      <el-form :model="query" inline @submit.prevent="handleSearch">
         <el-form-item label="产品名称"><el-input v-model="query.productName" placeholder="搜索" clearable /></el-form-item>
         <el-form-item label="产品编码"><el-input v-model="query.productCode" placeholder="搜索" clearable /></el-form-item>
         <el-form-item label="类型"><el-select v-model="query.productType" clearable style="width:120px"><el-option v-for="d in PRODUCT_TYPE_OPTIONS" :key="d.value" :label="d.label" :value="d.value" /></el-select></el-form-item>

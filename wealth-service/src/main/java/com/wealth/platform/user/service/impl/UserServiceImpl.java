@@ -37,6 +37,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (!StringUtils.hasText(user.getUsername()) || !StringUtils.hasText(user.getPassword())) {
             throw new ServiceException(400, "用户名/密码不能为空");
         }
+        long count = lambdaQuery().eq(User::getUsername, user.getUsername()).count();
+        if (count > 0) {
+            throw new ServiceException(400, "用户名已存在");
+        }
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         return this.save(user);
     }
@@ -124,12 +128,35 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Boolean resetPassword(User user) {
-        if (user.getId() == null || !StringUtils.hasText(user.getPassword())) {
-            throw new ServiceException(400, "用户ID/新密码不能为空");
+    public Boolean resetPassword(User user, String oldPassword) {
+        if (!StringUtils.hasText(user.getPassword())) {
+            throw new ServiceException(400, "新密码不能为空");
         }
+        if (!StringUtils.hasText(oldPassword)) {
+            throw new ServiceException(400, "旧密码不能为空");
+        }
+
+        // 通过 username 查找用户（如果 id 为空），支持前端只传 username 的场景
+        User dbUser;
+        if (user.getId() != null) {
+            dbUser = getById(user.getId());
+        } else if (StringUtils.hasText(user.getUsername())) {
+            dbUser = lambdaQuery().eq(User::getUsername, user.getUsername()).one();
+        } else {
+            throw new ServiceException(400, "用户标识不能为空");
+        }
+
+        if (dbUser == null) {
+            throw new ServiceException(404, "用户不存在");
+        }
+
+        // 验证旧密码
+        if (!passwordEncoder.matches(oldPassword, dbUser.getPassword())) {
+            throw new ServiceException(400, "旧密码不正确");
+        }
+
         return this.lambdaUpdate()
-                .eq(User::getId, user.getId())
+                .eq(User::getId, dbUser.getId())
                 .set(User::getPassword, passwordEncoder.encode(user.getPassword()))
                 .update();
     }

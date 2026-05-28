@@ -16,6 +16,13 @@
     <div v-if="loading" class="loading-wrap">
       <el-skeleton :rows="5" animated />
     </div>
+    <div v-else-if="hasError" class="empty-wrap">
+      <el-result icon="error" title="加载失败" sub-title="数据获取异常，请重试">
+        <template #extra>
+          <el-button type="primary" @click="fetchNews">重试</el-button>
+        </template>
+      </el-result>
+    </div>
     <div v-else-if="newsList.length === 0" class="empty-wrap">
       <el-empty description="暂无资讯" />
     </div>
@@ -82,6 +89,7 @@ import type { WeaNews } from '@/types'
 
 const newsList = ref<WeaNews[]>([])
 const loading = ref(false)
+const hasError = ref(false)
 const total = ref(0)
 const pageNum = ref(1)
 const pageSize = ref(10)
@@ -95,6 +103,7 @@ function truncate(text: string | undefined, len: number): string {
 }
 
 async function fetchNews() {
+  hasError.value = false
   loading.value = true
   try {
     const params: any = { pageNum: pageNum.value, pageSize: pageSize.value }
@@ -103,6 +112,7 @@ async function fetchNews() {
     newsList.value = (res.data?.records || []) as WeaNews[]
     total.value = res.data?.total || 0
   } catch {
+    hasError.value = true
     newsList.value = []
   } finally {
     loading.value = false

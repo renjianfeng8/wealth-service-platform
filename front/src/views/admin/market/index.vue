@@ -1,8 +1,14 @@
 <template>
   <div class="page">
-    <div class="page-header"><h3>行情数据</h3></div>
+    <div class="page-header">
+      <h3>行情数据</h3>
+      <span class="sse-status" :class="sseConnected ? 'connected' : 'disconnected'">
+        <span class="sse-dot"></span>
+        {{ sseConnected ? '实时已连接' : '实时已断开' }}
+      </span>
+    </div>
     <el-card shadow="never" class="search-card">
-      <el-form :model="query" inline>
+      <el-form :model="query" inline @submit.prevent="handleSearch">
         <el-form-item label="产品编码"><el-input v-model="query.productCode" placeholder="搜索" clearable /></el-form-item>
         <el-form-item><el-button type="primary" @click="handleSearch">查询</el-button><el-button @click="handleReset">重置</el-button></el-form-item>
       </el-form>
@@ -32,7 +38,7 @@
         <el-pagination v-model:current-page="query.pageNum" v-model:page-size="query.pageSize" :total="total" :page-sizes="[10,20,50]" layout="total, sizes, prev, pager, next" @size-change="handleSizeChange" @current-change="fetchData" />
       </div>
     </el-card>
-    <el-dialog v-model="dialogVisible" :title="isEdit?'编辑行情':'新增行情'" width="600px">
+    <el-dialog v-model="dialogVisible" :title="isEdit?'编辑行情':'新增行情'" width="600px" :before-close="handleDialogClose">
       <el-form ref="formRef" :model="form" :rules="rules" label-width="90px">
         <el-row :gutter="20">
           <el-col :span="12"><el-form-item label="产品编码" prop="productCode"><el-input v-model="form.productCode" /></el-form-item></el-col>
@@ -59,8 +65,9 @@
 
 <script setup lang="ts">
 import { onMounted, onUnmounted, reactive, ref } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
+import { useFormGuard } from '@/composables/useFormGuard'
 import { getMarketDataPage, createMarketData, updateMarketData, deleteMarketData } from '@/api/product'
 import { formatDateTime, formatPrice, formatRate } from '@/utils/format'
 import type { WeaMarketData } from '@/types'
@@ -72,7 +79,9 @@ const dialogVisible = ref(false); const isEdit = ref(false)
 const formRef = ref<FormInstance>()
 const query = reactive({ pageNum: 1, pageSize: 10, productCode: '' })
 const form = reactive({ id: undefined, productCode: '', currentPrice: 0, openPrice: 0, closePrice: 0, highestPrice: 0, lowestPrice: 0, riseFall: 0, riseFallRate: 0, marketTime: '' })
+const { isDirty, reset } = useFormGuard(form)
 const rules: FormRules = { productCode: [{ required: true, message: '必填' }] }
+const sseConnected = ref(false)
 let eventSource: EventSource | null = null
 
 async function fetchData() {
@@ -87,14 +96,21 @@ async function fetchData() {
 function handleSearch() { query.pageNum = 1; fetchData() }
 function handleReset() { query.productCode = ''; handleSearch() }
 function handleSizeChange() { query.pageNum = 1; fetchData() }
-function handleAdd() { isEdit.value = false; Object.assign(form, { id: undefined, productCode: '', currentPrice: 0, openPrice: 0, closePrice: 0, highestPrice: 0, lowestPrice: 0, riseFall: 0, riseFallRate: 0, marketTime: '' }); dialogVisible.value = true }
-function handleEdit(row: any) { isEdit.value = true; Object.assign(form, row); dialogVisible.value = true }
+function handleAdd() { isEdit.value = false; Object.assign(form, { id: undefined, productCode: '', currentPrice: 0, openPrice: 0, closePrice: 0, highestPrice: 0, lowestPrice: 0, riseFall: 0, riseFallRate: 0, marketTime: '' }); reset(); dialogVisible.value = true }
+function handleEdit(row: any) { isEdit.value = true; Object.assign(form, row); reset(); dialogVisible.value = true }
+async function handleDialogClose(done: () => void) {
+  if (!isDirty()) return done()
+  try {
+    await ElMessageBox.confirm('有未保存的更改，确定关闭吗？', '离开确认', { type: 'warning' })
+    done()
+  } catch { /* 取消关闭 */ }
+}
 async function handleSave() {
   const valid = await formRef.value?.validate().catch(() => false)
   if (!valid) return; saving.value = true
   try {
     isEdit.value ? await updateMarketData(form.id!, form) : await createMarketData(form)
-    ElMessage.success(isEdit.value ? '更新成功' : '创建成功'); dialogVisible.value = false; fetchData()
+    ElMessage.success(isEdit.value ? '更新成功' : '创建成功'); reset(); dialogVisible.value = false; fetchData()
   } finally { saving.value = false }
 }
 async function handleDelete(id: number) { try { await deleteMarketData(id); ElMessage.success('删除成功'); fetchData() } catch { /* handled by interceptor */ } }
@@ -109,7 +125,7 @@ function handleMarketUpdate(data: WeaMarketData[]) {
 
 onMounted(() => {
   fetchData()
-  eventSource = createMarketSSE()
+  eventSource = createMarketSSE((connected) => sseConnected.value = connected)
   onMarketUpdate(eventSource, handleMarketUpdate)
 })
 
@@ -119,5 +135,34 @@ onUnmounted(() => {
 })
 </script>
 <style scoped>
+.sse-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  padding: 2px 10px;
+  border-radius: 12px;
+  margin-left: 12px;
+}
+.sse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.sse-status.connected {
+  color: #67c23a;
+  background: rgba(103, 194, 58, 0.1);
+}
+.sse-status.connected .sse-dot {
+  background: #67c23a;
+}
+.sse-status.disconnected {
+  color: #f56c6c;
+  background: rgba(245, 108, 108, 0.1);
+}
+.sse-status.disconnected .sse-dot {
+  background: #f56c6c;
+}
 /* Global styles handle pagination-wrap and page-header */
 </style>

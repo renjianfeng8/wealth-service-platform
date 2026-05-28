@@ -64,6 +64,15 @@ export function deleteAdmin(id: number) {
 }
 
 /**
+ * 重置管理员密码
+ * @param data - { id, oldPassword, password }
+ * @returns 重置结果
+ */
+export function resetAdminPassword(data: { id: number; oldPassword: string; password: string }) {
+  return request.post('/system/umsAdmin/resetPassword', data)
+}
+
+/**
  * 分页查询角色列表
  * @param params - 查询参数（pageNum、pageSize）
  * @returns 分页结果包含角色列表

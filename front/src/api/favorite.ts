@@ -11,10 +11,11 @@ export function getFavoritePage(params: any) {
 
 /**
  * 查询所有用户自选列表
+ * @param params - 查询参数（可选 userId）
  * @returns 用户自选列表
  */
-export function getFavoriteList() {
-  return request.get('/product/wea-user-favorite')
+export function getFavoriteList(params?: { userId?: number }) {
+  return request.get('/product/wea-user-favorite', { params })
 }
 
 /**

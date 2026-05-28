@@ -2,7 +2,7 @@
   <div class="page">
     <div class="page-header"><h3>资讯管理</h3></div>
     <el-card shadow="never" class="search-card">
-      <el-form :model="query" inline>
+      <el-form :model="query" inline @submit.prevent="handleSearch">
         <el-form-item label="标题"><el-input v-model="query.title" placeholder="搜索" clearable /></el-form-item>
         <el-form-item label="来源"><el-input v-model="query.source" placeholder="搜索" clearable /></el-form-item>
         <el-form-item><el-button type="primary" @click="handleSearch">查询</el-button><el-button @click="handleReset">重置</el-button></el-form-item>

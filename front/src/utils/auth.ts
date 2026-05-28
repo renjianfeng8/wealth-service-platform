@@ -1,5 +1,6 @@
 const LOGIN_KEY = 'wealth_logged_in'
 const USER_KEY = 'wealth_user'
+const ROLE_KEY = 'wealth_role'
 
 /**
  * 返回登录状态标记（true/false）。JWT 已由后端写入 httpOnly Cookie，
@@ -24,6 +25,7 @@ export function setToken(_token: string) {
 export function removeToken() {
   sessionStorage.removeItem(LOGIN_KEY)
   sessionStorage.removeItem(USER_KEY)
+  sessionStorage.removeItem(ROLE_KEY)
 }
 
 /**

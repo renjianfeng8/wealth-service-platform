@@ -5,9 +5,9 @@
     </div>
 
     <el-card shadow="never" class="search-card">
-      <el-form :model="query" inline>
+      <el-form :model="query" inline @submit.prevent="handleSearch">
         <el-form-item label="用户名">
-          <el-input v-model="query.username" placeholder="用户名" clearable />
+          <el-input v-model="query.username" placeholder="搜索" clearable />
         </el-form-item>
         <el-form-item label="状态">
           <el-select v-model="query.status" placeholder="状态" clearable style="width:120px">

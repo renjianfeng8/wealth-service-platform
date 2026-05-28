@@ -8,6 +8,7 @@
           <span>站内消息</span>
           <div class="header-stats">
             <span class="unread-badge">未读: {{ unreadCount }}</span>
+            <el-button v-if="unreadCount > 0" text type="primary" size="small" @click="handleMarkAllRead">全部已读</el-button>
           </div>
         </div>
       </template>
@@ -71,6 +72,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/store/index'
 import { getMessagePage, readMessage } from '@/api/message'
 import { formatDateTime, formatRelativeTime, msgTypeText } from '@/utils/format'
@@ -124,6 +126,18 @@ async function handleRead(item: WeaMessage) {
   }
 }
 
+async function handleMarkAllRead() {
+  const unreadIds = messages.value.filter(m => m.readFlag !== 1 && m.id).map(m => m.id as number)
+  if (unreadIds.length === 0) return
+  try {
+    await Promise.all(unreadIds.map(id => readMessage(id)))
+    messages.value.forEach(m => { m.readFlag = 1 })
+    ElMessage.success('已全部标为已读')
+  } catch {
+    // handled globally
+  }
+}
+
 onMounted(() => {
   if (userStore.userId) fetchMessages()
 })
@@ -138,6 +152,12 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+
+.header-stats {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .unread-badge {

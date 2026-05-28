@@ -77,7 +77,6 @@ import { useUserStore } from '@/store/index'
 import { ElMessage } from 'element-plus'
 import { User, Lock, TrendCharts } from '@element-plus/icons-vue'
 import type { FormInstance, FormRules } from 'element-plus'
-import { setToken, setStoredUser } from '@/utils/auth'
 import { identifyLogin } from '@/api/user'
 
 const router = useRouter()
@@ -105,25 +104,17 @@ async function handleLogin() {
   try {
     const res = await identifyLogin({ username: form.username, password: form.password })
     const { userId, nickname, userType } = res.data || {}
-    sessionStorage.setItem('wealth_logged_in', 'true')
-    sessionStorage.setItem('wealth_role', userType)
-    userStore.token = 'true'
-    userStore.username = form.username
-
+    userStore.setLoginInfo({
+      username: form.username,
+      userId: userId || 0,
+      nickname: nickname || '',
+      role: userType === 'admin' ? 'admin' : 'user',
+    })
     if (userType === 'admin') {
-      setStoredUser({ username: form.username })
-      userStore.role = 'admin'
       ElMessage.success('登录成功')
       const redirect = (route.query.redirect as string) || '/admin/dashboard'
       router.push(redirect)
     } else {
-      const avatar = ''
-      setStoredUser({ username: form.username, userId, nickname, avatar })
-      userStore.setUserInfo({ userId, nickname, avatar })
-      userStore.userId = userId
-      userStore.nickname = nickname || ''
-      userStore.avatar = avatar
-      userStore.role = 'user'
       ElMessage.success('登录成功')
       // 普通用户不允许跳转到管理后台，回退到用户仪表盘
       const raw = route.query.redirect as string
@@ -142,9 +133,11 @@ onMounted(() => {
   const params = new URLSearchParams(window.location.search)
   const token = params.get('token')
   if (token && !userStore.isLoggedIn) {
-    setToken(token)
-    sessionStorage.setItem('wealth_role', 'user')
-    setStoredUser({ username: '用户' })
+    userStore.setLoginInfo({
+      username: '用户',
+      userId: 0,
+      role: 'user',
+    })
     window.history.replaceState({}, '', window.location.pathname)
     ElMessage.success('登录成功')
     router.push('/user/dashboard')

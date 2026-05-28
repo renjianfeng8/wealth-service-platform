@@ -34,12 +34,6 @@ spring:
           max-active: 32
           max-idle: 16
           min-idle: 4
-  elasticsearch:
-    uris: ${ES_URIS:http://localhost:9200}
-    username: ${ES_USERNAME:elastic}
-    password: ${ES_PASSWORD:}
-    connection-timeout: 10s
-    socket-timeout: 30s
   task:
     execution:
       pool:
