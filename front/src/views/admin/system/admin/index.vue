@@ -30,7 +30,7 @@
         <el-pagination v-model:current-page="query.pageNum" v-model:page-size="query.pageSize" :total="total" :page-sizes="[10,20,50]" layout="total, sizes, prev, pager, next" @size-change="handleSizeChange" @current-change="fetchData" />
       </div>
     </el-card>
-    <el-dialog v-model="dialogVisible" :title="isEdit?'编辑管理员':'新增管理员'" width="500px">
+    <el-dialog v-model="dialogVisible" :title="isEdit?'编辑管理员':'新增管理员'" width="500px" :before-close="handleDialogClose">
       <el-form ref="formRef" :model="form" :rules="rules" label-width="80px">
         <el-form-item label="用户名" prop="username"><el-input v-model="form.username" /></el-form-item>
         <el-form-item label="密码" prop="password"><el-input v-model="form.password" type="password" show-password /></el-form-item>
@@ -45,8 +45,9 @@
 
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
+import { useFormGuard } from '@/composables/useFormGuard'
 import { getAdminPage, createAdmin, updateAdmin, deleteAdmin } from '@/api/system'
 import { formatDateTime, statusTag, statusText } from '@/utils/format'
 
@@ -56,6 +57,7 @@ const dialogVisible = ref(false); const isEdit = ref(false)
 const formRef = ref<FormInstance>()
 const query = reactive({ pageNum: 1, pageSize: 10, username: '', status: '' })
 const form = reactive({ id: undefined, username: '', password: '', nickName: '', email: '', status: 1 })
+const { isDirty, reset } = useFormGuard(form)
 const validateEmail = (_rule: any, value: string, callback: any) => {
   if (value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) { callback(new Error('邮箱格式不正确')) } else { callback() }
 }
@@ -81,14 +83,22 @@ async function fetchData() {
 function handleSearch() { query.pageNum = 1; fetchData() }
 function handleReset() { query.username = ''; query.status = ''; handleSearch() }
 function handleSizeChange() { query.pageNum = 1; fetchData() }
-function handleAdd() { isEdit.value = false; Object.assign(form, { id: undefined, username: '', password: '', nickName: '', email: '', status: 1 }); dialogVisible.value = true }
-function handleEdit(row: any) { isEdit.value = true; Object.assign(form, row); form.password = ''; dialogVisible.value = true }
+function handleAdd() { isEdit.value = false; Object.assign(form, { id: undefined, username: '', password: '', nickName: '', email: '', status: 1 }); reset(); dialogVisible.value = true }
+function handleEdit(row: any) { isEdit.value = true; Object.assign(form, row); form.password = ''; reset(); dialogVisible.value = true }
+async function handleDialogClose(done: () => void) {
+  if (!isDirty()) return done()
+  try {
+    await ElMessageBox.confirm('有未保存的更改，确定关闭吗？', '离开确认', { type: 'warning' })
+    done()
+  } catch { /* 取消关闭 */ }
+}
+
 async function handleSave() {
   const valid = await formRef.value?.validate().catch(() => false)
   if (!valid) return; saving.value = true
   try {
     isEdit.value ? await updateAdmin(form.id!, form) : await createAdmin(form)
-    ElMessage.success(isEdit.value ? '更新成功' : '创建成功'); dialogVisible.value = false; fetchData()
+    ElMessage.success(isEdit.value ? '更新成功' : '创建成功'); reset(); dialogVisible.value = false; fetchData()
   } finally { saving.value = false }
 }
 async function handleDelete(id: number) { try { await deleteAdmin(id); ElMessage.success('删除成功'); fetchData() } catch { /* handled by interceptor */ } }

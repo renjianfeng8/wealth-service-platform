@@ -61,7 +61,7 @@
       </div>
     </el-card>
 
-    <el-dialog v-model="dialogVisible" :title="isEdit ? '编辑用户' : '新增用户'" width="500px">
+    <el-dialog v-model="dialogVisible" :title="isEdit ? '编辑用户' : '新增用户'" width="500px" :before-close="handleDialogClose">
       <el-form ref="formRef" :model="form" :rules="rules" label-width="80px">
         <el-form-item label="用户名" prop="username">
           <el-input v-model="form.username" />
@@ -92,8 +92,9 @@
 
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
+import { useFormGuard } from '@/composables/useFormGuard'
 import { getUserPage, createUser, updateUser, deleteUser } from '@/api/user'
 import { formatDateTime, statusTag, statusText } from '@/utils/format'
 
@@ -108,6 +109,7 @@ const formRef = ref<FormInstance>()
 
 const query = reactive({ pageNum: 1, pageSize: 10, username: '', status: '' })
 const form = reactive({ id: undefined, username: '', password: '', nickname: '', phone: '', status: 1 })
+const { isDirty, reset } = useFormGuard(form)
 const validatePhone = (_rule: any, value: string, callback: any) => {
   if (value && !/^1\d{10}$/.test(value)) { callback(new Error('手机号格式不正确')) } else { callback() }
 }
@@ -136,8 +138,16 @@ async function fetchData() {
 function handleSearch() { query.pageNum = 1; fetchData() }
 function handleReset() { query.username = ''; query.status = ''; handleSearch() }
 function handleSizeChange() { query.pageNum = 1; fetchData() }
-function handleAdd() { isEdit.value = false; form.id = undefined; form.username = ''; form.password = ''; form.nickname = ''; form.phone = ''; form.status = 1; dialogVisible.value = true }
-function handleEdit(row: any) { isEdit.value = true; Object.assign(form, row); form.password = ''; dialogVisible.value = true }
+function handleAdd() { isEdit.value = false; form.id = undefined; form.username = ''; form.password = ''; form.nickname = ''; form.phone = ''; form.status = 1; reset(); dialogVisible.value = true }
+function handleEdit(row: any) { isEdit.value = true; Object.assign(form, row); form.password = ''; reset(); dialogVisible.value = true }
+
+async function handleDialogClose(done: () => void) {
+  if (!isDirty()) return done()
+  try {
+    await ElMessageBox.confirm('有未保存的更改，确定关闭吗？', '离开确认', { type: 'warning' })
+    done()
+  } catch { /* 取消关闭 */ }
+}
 
 async function handleSave() {
   const valid = await formRef.value?.validate().catch(() => false)
@@ -147,9 +157,11 @@ async function handleSave() {
     if (isEdit.value) {
       await updateUser(form.id!, form)
       ElMessage.success('更新成功')
+      reset()
     } else {
       await createUser(form)
       ElMessage.success('创建成功')
+      reset()
     }
     dialogVisible.value = false
     fetchData()

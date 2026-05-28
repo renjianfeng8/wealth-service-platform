@@ -30,7 +30,7 @@
         <el-pagination v-model:current-page="query.pageNum" v-model:page-size="query.pageSize" :total="total" :page-sizes="[10,20,50]" layout="total, sizes, prev, pager, next" @size-change="handleSizeChange" @current-change="fetchData" />
       </div>
     </el-card>
-    <el-dialog v-model="dialogVisible" :title="isEdit?'编辑角色':'新增角色'" width="500px">
+    <el-dialog v-model="dialogVisible" :title="isEdit?'编辑角色':'新增角色'" width="500px" :before-close="handleDialogClose">
       <el-form ref="formRef" :model="form" :rules="rules" label-width="80px">
         <el-form-item label="角色名" prop="name"><el-input v-model="form.name" /></el-form-item>
         <el-form-item label="描述"><el-input v-model="form.description" type="textarea" :rows="2" /></el-form-item>
@@ -46,8 +46,9 @@
 
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
+import { useFormGuard } from '@/composables/useFormGuard'
 import { getRolePage, createRole, updateRole, deleteRole } from '@/api/system'
 import { formatDateTime, statusTag, statusText } from '@/utils/format'
 
@@ -57,6 +58,7 @@ const dialogVisible = ref(false); const isEdit = ref(false)
 const formRef = ref<FormInstance>()
 const query = reactive({ pageNum: 1, pageSize: 10, name: '', status: '' })
 const form = reactive({ id: undefined, name: '', description: '', sort: 0, status: 1 })
+const { isDirty, reset } = useFormGuard(form)
 const rules: FormRules = { name: [{ required: true, message: '必填' }] }
 
 async function fetchData() {
@@ -71,14 +73,22 @@ async function fetchData() {
 function handleSearch() { query.pageNum = 1; fetchData() }
 function handleReset() { query.name = ''; query.status = ''; handleSearch() }
 function handleSizeChange() { query.pageNum = 1; fetchData() }
-function handleAdd() { isEdit.value = false; Object.assign(form, { id: undefined, name: '', description: '', sort: 0, status: 1 }); dialogVisible.value = true }
-function handleEdit(row: any) { isEdit.value = true; Object.assign(form, row); dialogVisible.value = true }
+function handleAdd() { isEdit.value = false; Object.assign(form, { id: undefined, name: '', description: '', sort: 0, status: 1 }); reset(); dialogVisible.value = true }
+function handleEdit(row: any) { isEdit.value = true; Object.assign(form, row); reset(); dialogVisible.value = true }
+async function handleDialogClose(done: () => void) {
+  if (!isDirty()) return done()
+  try {
+    await ElMessageBox.confirm('有未保存的更改，确定关闭吗？', '离开确认', { type: 'warning' })
+    done()
+  } catch { /* 取消关闭 */ }
+}
+
 async function handleSave() {
   const valid = await formRef.value?.validate().catch(() => false)
   if (!valid) return; saving.value = true
   try {
     isEdit.value ? await updateRole(form.id!, form) : await createRole(form)
-    ElMessage.success(isEdit.value ? '更新成功' : '创建成功'); dialogVisible.value = false; fetchData()
+    ElMessage.success(isEdit.value ? '更新成功' : '创建成功'); reset(); dialogVisible.value = false; fetchData()
   } finally { saving.value = false }
 }
 async function handleDelete(id: number) { try { await deleteRole(id); ElMessage.success('删除成功'); fetchData() } catch { /* handled by interceptor */ } }

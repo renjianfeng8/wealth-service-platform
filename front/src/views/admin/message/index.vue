@@ -32,7 +32,7 @@
         <el-pagination v-model:current-page="query.pageNum" v-model:page-size="query.pageSize" :total="total" :page-sizes="[10,20,50]" layout="total, sizes, prev, pager, next" @size-change="handleSizeChange" @current-change="fetchData" />
       </div>
     </el-card>
-    <el-dialog v-model="dialogVisible" :title="isEdit?'编辑消息':'发送消息'" width="550px">
+    <el-dialog v-model="dialogVisible" :title="isEdit?'编辑消息':'发送消息'" width="550px" :before-close="handleDialogClose">
       <el-form ref="formRef" :model="form" :rules="rules" label-width="90px">
         <el-row :gutter="20">
           <el-col :span="12"><el-form-item label="用户ID"><el-input-number v-model="form.userId" style="width:100%" /></el-form-item></el-col>
@@ -48,8 +48,9 @@
 
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
+import { useFormGuard } from '@/composables/useFormGuard'
 import { getMessagePage, createMessage, updateMessage, deleteMessage } from '@/api/message'
 import { formatDateTime } from '@/utils/format'
 import { MSG_TYPE_OPTIONS } from '@/types'
@@ -60,6 +61,7 @@ const dialogVisible = ref(false); const isEdit = ref(false)
 const formRef = ref<FormInstance>()
 const query = reactive({ pageNum: 1, pageSize: 10, msgTitle: '', msgType: '' })
 const form = reactive({ id: undefined, userId: undefined, msgType: 1, msgTitle: '', msgContent: '' })
+const { isDirty, reset } = useFormGuard(form)
 const rules: FormRules = { msgTitle: [{ required: true, message: '必填' }], msgContent: [{ required: true, message: '必填' }] }
 
 async function fetchData() {
@@ -75,14 +77,22 @@ async function fetchData() {
 function handleSearch() { query.pageNum = 1; fetchData() }
 function handleReset() { query.msgTitle = ''; query.msgType = ''; handleSearch() }
 function handleSizeChange() { query.pageNum = 1; fetchData() }
-function handleAdd() { isEdit.value = false; Object.assign(form, { id: undefined, userId: undefined, msgType: 1, msgTitle: '', msgContent: '' }); dialogVisible.value = true }
-function handleEdit(row: any) { isEdit.value = true; Object.assign(form, row); dialogVisible.value = true }
+function handleAdd() { isEdit.value = false; Object.assign(form, { id: undefined, userId: undefined, msgType: 1, msgTitle: '', msgContent: '' }); reset(); dialogVisible.value = true }
+function handleEdit(row: any) { isEdit.value = true; Object.assign(form, row); reset(); dialogVisible.value = true }
+async function handleDialogClose(done: () => void) {
+  if (!isDirty()) return done()
+  try {
+    await ElMessageBox.confirm('有未保存的更改，确定关闭吗？', '离开确认', { type: 'warning' })
+    done()
+  } catch { /* 取消关闭 */ }
+}
+
 async function handleSave() {
   const valid = await formRef.value?.validate().catch(() => false)
   if (!valid) return; saving.value = true
   try {
     isEdit.value ? await updateMessage(form.id!, form) : await createMessage(form)
-    ElMessage.success(isEdit.value ? '更新成功' : '发送成功'); dialogVisible.value = false; fetchData()
+    ElMessage.success(isEdit.value ? '更新成功' : '发送成功'); reset(); dialogVisible.value = false; fetchData()
   } finally { saving.value = false }
 }
 async function handleDelete(id: number) { try { await deleteMessage(id); ElMessage.success('删除成功'); fetchData() } catch { /* handled by interceptor */ } }
