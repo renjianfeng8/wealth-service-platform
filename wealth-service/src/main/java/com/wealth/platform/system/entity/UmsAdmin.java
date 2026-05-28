@@ -23,15 +23,12 @@ public class UmsAdmin extends BaseEntity {
 
     private String email;
 
-    @TableField("nickname")
     private String nickName;
 
     private Integer status;
 
-    @TableField(exist = false)
     private String avatar;
 
-    @TableField(exist = false)
     private LocalDateTime loginTime;
 
     /** ums_admin 表无 update_time 列 */

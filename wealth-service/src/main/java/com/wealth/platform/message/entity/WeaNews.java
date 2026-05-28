@@ -26,14 +26,16 @@ public class WeaNews extends BaseEntity {
     @TableField(value = "news_type")
     private Integer newsType;
 
-    @TableField("author")
+    @TableField(value = "source")
     private String source;
 
-    @TableField(exist = false)
+    @TableField(value = "status")
     private Integer status;
 
-    @TableField(exist = false)
+    @TableField(value = "publish_time")
     private LocalDateTime publishTime;
 
+    /** 资讯表无 update_time 列 */
+    @TableField(exist = false)
     private LocalDateTime updateTime;
 }

@@ -23,8 +23,6 @@ public class User extends BaseEntity {
 
     private String phone;
 
-    /** 系统用户表无 avatar 列 */
-    @TableField(exist = false)
     private String avatar;
 
     private Integer status;

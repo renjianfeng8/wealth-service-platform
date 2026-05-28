@@ -26,8 +26,10 @@ public class UmsResource extends BaseEntity {
     @TableField("description")
     private String description;
 
-    @TableField("category")
+    @TableField("category_id")
     private Long categoryId;
 
+    /** ums_resource 表无 update_time 列 */
+    @TableField(exist = false)
     private LocalDateTime updateTime;
 }

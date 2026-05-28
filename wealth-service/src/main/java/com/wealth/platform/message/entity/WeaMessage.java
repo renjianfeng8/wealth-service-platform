@@ -20,17 +20,19 @@ public class WeaMessage extends BaseEntity {
     @TableField(value = "user_id")
     private Long userId;
 
-    @TableField("message_type")
+    @TableField(value = "msg_type")
     private Integer msgType;
 
-    @TableField("title")
+    @TableField(value = "msg_title")
     private String msgTitle;
 
-    @TableField("content")
+    @TableField(value = "msg_content")
     private String msgContent;
 
-    @TableField("is_read")
+    @TableField(value = "read_flag")
     private Integer readFlag;
 
+    /** 消息表无 update_time 列 */
+    @TableField(exist = false)
     private LocalDateTime updateTime;
 }

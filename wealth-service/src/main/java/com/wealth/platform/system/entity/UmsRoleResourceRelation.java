@@ -23,6 +23,10 @@ public class UmsRoleResourceRelation extends BaseEntity {
     @TableField(value = "resource_id")
     private Long resourceId;
 
+    /** 关联表无 create_time 列 */
+    @TableField(exist = false)
+    private LocalDateTime createTime;
+
     /** 关联表无 update_time 列 */
     @TableField(exist = false)
     private LocalDateTime updateTime;
