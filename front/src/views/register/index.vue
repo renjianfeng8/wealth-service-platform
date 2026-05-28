@@ -82,12 +82,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, reactive, onMounted, onUnmounted } from 'vue'
+import { useRouter, onBeforeRouteLeave } from 'vue-router'
 import { registerUser } from '@/api/user'
 import { User, Lock, TrendCharts } from '@element-plus/icons-vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
+import { useFormGuard } from '@/composables/useFormGuard'
 
 const router = useRouter()
 
@@ -98,6 +99,32 @@ const form = reactive({
   username: '',
   password: '',
   confirmPassword: '',
+})
+
+const { isDirty, reset } = useFormGuard(form)
+
+const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+  if (isDirty()) {
+    e.preventDefault()
+    e.returnValue = ''
+  }
+}
+
+onBeforeRouteLeave((to, from, next) => {
+  if (!isDirty()) return next()
+  ElMessageBox.confirm('有未保存的更改，确定离开吗？', '离开确认', {
+    confirmButtonText: '离开',
+    cancelButtonText: '取消',
+    type: 'warning',
+  }).then(() => next()).catch(() => next(false))
+})
+
+onMounted(() => {
+  window.addEventListener('beforeunload', handleBeforeUnload)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('beforeunload', handleBeforeUnload)
 })
 
 const rules: FormRules = {
@@ -123,6 +150,7 @@ async function handleRegister() {
   try {
     await registerUser({ username: form.username, password: form.password })
     ElMessage.success('注册成功，请登录')
+    reset()
     router.push('/auth/login')
   } catch {
     // error already handled by interceptor
