@@ -114,6 +114,7 @@
       </div>
       <template #footer>
         <el-button @click="detailVisible = false">关闭</el-button>
+        <el-button :icon="Star" :disabled="detailItem?.status !== 1" @click="handleFavorite(detailItem)">收藏</el-button>
         <el-button type="primary" :disabled="detailItem?.status !== 1" @click="goTrade(detailItem)">去交易</el-button>
       </template>
     </el-dialog>
@@ -123,13 +124,17 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useUserStore } from '@/store/index'
 import { getProductPage } from '@/api/product'
+import { createFavorite } from '@/api/favorite'
 import { PRODUCT_TYPE_OPTIONS } from '@/types'
 import { formatPrice, formatRate, productTypeText } from '@/utils/format'
-import { CaretTop, CaretBottom } from '@element-plus/icons-vue'
+import { CaretTop, CaretBottom, Star } from '@element-plus/icons-vue'
+import { ElMessage } from 'element-plus'
 import type { WeaProduct } from '@/types'
 
 const router = useRouter()
+const userStore = useUserStore()
 
 const products = ref<WeaProduct[]>([])
 const loading = ref(false)
@@ -169,6 +174,20 @@ function goTrade(item: WeaProduct | null) {
   if (!item) return
   detailVisible.value = false
   router.push({ path: '/user/trade', query: { productCode: item.productCode } })
+}
+
+async function handleFavorite(item: WeaProduct | null) {
+  if (!item) return
+  if (!userStore.userId) {
+    ElMessage.warning('请先登录')
+    return
+  }
+  try {
+    await createFavorite({ userId: userStore.userId, productCode: item.productCode })
+    ElMessage.success('已添加自选')
+  } catch {
+    // handled globally
+  }
 }
 
 onMounted(fetchProducts)
