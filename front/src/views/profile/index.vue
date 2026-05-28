@@ -114,7 +114,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, onUnmounted } from 'vue'
 import { useUserStore } from '@/store/index'
 import { getUserInfo, updateUser } from '@/api/user'
 import { resetPassword } from '@/api/user'
@@ -126,7 +126,6 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
 import { useFormGuard } from '@/composables/useFormGuard'
 import { onBeforeRouteLeave } from 'vue-router'
-import { onUnmounted } from 'vue'
 
 const userStore = useUserStore()
 
@@ -181,13 +180,11 @@ onBeforeRouteLeave((to, from, next) => {
   }).then(() => next()).catch(() => next(false))
 })
 
-onMounted(() => {
-  const handler = (e: BeforeUnloadEvent) => {
-    if (isDirty()) { e.preventDefault(); e.returnValue = '' }
-  }
-  window.addEventListener('beforeunload', handler)
-})
-onUnmounted(() => window.removeEventListener('beforeunload', handler))
+const beforeUnloadHandler = (e: BeforeUnloadEvent) => {
+  if (isDirty()) { e.preventDefault(); e.returnValue = '' }
+}
+onMounted(() => window.addEventListener('beforeunload', beforeUnloadHandler))
+onUnmounted(() => window.removeEventListener('beforeunload', beforeUnloadHandler))
 
 async function fetchProfile() {
   // 使用 store 数据作为兜底
@@ -261,6 +258,7 @@ async function handleResetPassword() {
 
 onMounted(async () => {
   await Promise.all([fetchProfile(), fetchStats()])
+  reset()
   loading.value = false
 })
 </script>
