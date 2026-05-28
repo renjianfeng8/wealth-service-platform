@@ -1,8 +1,8 @@
 
 # 数据库表结构与字段
 
-> 写实体类时引用 — 表结构、字段、BaseEntity 继承规则。
-> 完整建表 SQL 见 `wealth-common/src/main/resources/sql/init.sql`。
+> BaseEntity 继承规则、表结构速查。
+> **⚠️ 字段列名以 [init.sql](../wealth-common/src/main/resources/sql/init.sql) 为准，本文档为衍生参考。二者不一致时以 init.sql 为准。**
 
 ---
 

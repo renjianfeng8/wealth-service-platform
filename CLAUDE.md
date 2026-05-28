@@ -4,7 +4,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **相关文档：**
 - [模块架构与配置体系](docs/ARCHITECTURE.md) — 跨模块开发时引用
-- [数据库表结构与字段](docs/DATABASE-SCHEMA.md) — 写实体类时引用
+- [数据库表结构与字段](docs/DATABASE-SCHEMA.md) — 表结构概述、BaseEntity 继承规则（字段以 init.sql 为准）
+- [完整建表 SQL](wealth-common/src/main/resources/sql/init.sql) — **表结构唯一真理，写 Entity 时以此为准**
 - [Bug 记录](docs/BUG.md) — 排查已知问题
 
 # 理财服务平台开发规范（自动遵守）
@@ -116,7 +117,7 @@ public class MyBatisPlusConfig {
 
 # 六、AI 生成规则
 
-1. 必须严格按照 [数据库表结构与字段](docs/DATABASE-SCHEMA.md) 中的表结构生成 Entity（继承 BaseEntity）、Mapper、Service、Controller、Vo、Dto
+1. 必须严格按照 [init.sql](wealth-common/src/main/resources/sql/init.sql) 中的列名生成 Entity 字段映射（`@TableField("列名")`），**列名以 init.sql 为准**，不对 DATABASE-SCHEMA.md 中的列名做任何信任
 2. 必须使用 MyBatis-Plus
 3. Entity 必须继承 BaseEntity，按照 [数据库表结构与字段 > BaseEntity 继承规范](docs/DATABASE-SCHEMA.md#三baseentity-继承规范) 处理字段覆盖
 4. 必须自动填充 create_time、update_time
@@ -349,6 +350,7 @@ JWT 密钥通过 `.env` 或环境变量注入。JwtUtil 在 @PostConstruct 中�
 - [ ] 所有 `application.yml` 使用 `spring.data.redis.*` 而非 `spring.redis.*`
 - [ ] 业务异常使用 `ServiceException(code, message)` 而非 RuntimeException
 - [ ] 链路追踪配置使用 `management.zipkin.tracing.endpoint` 而非 `zipkin.base-url`
+- [ ] Entity 字段映射与 init.sql 逐列核对：`@TableField("列名")` 必须与建表语句的列名完全一致，不信任 DATABASE-SCHEMA.md
 
 # 十二、Git 提交规范（强制遵守）
 
