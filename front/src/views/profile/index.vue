@@ -122,8 +122,11 @@ import { getFavoritePage } from '@/api/favorite'
 import { getTradeOrderPage } from '@/api/trade'
 import { getMessagePage } from '@/api/message'
 import { UserFilled } from '@element-plus/icons-vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
+import { useFormGuard } from '@/composables/useFormGuard'
+import { onBeforeRouteLeave } from 'vue-router'
+import { onUnmounted } from 'vue'
 
 const userStore = useUserStore()
 
@@ -150,6 +153,8 @@ const passwordForm = reactive({
   confirmPassword: '',
 })
 
+const { isDirty, reset } = useFormGuard(userInfo)
+
 const passwordRules: FormRules = {
   password: [
     { required: true, message: '请输入新密码', trigger: 'blur' },
@@ -166,6 +171,23 @@ const passwordRules: FormRules = {
     },
   ],
 }
+
+onBeforeRouteLeave((to, from, next) => {
+  if (!isDirty()) return next()
+  ElMessageBox.confirm('有未保存的更改，确定离开吗？', '离开确认', {
+    confirmButtonText: '离开',
+    cancelButtonText: '取消',
+    type: 'warning',
+  }).then(() => next()).catch(() => next(false))
+})
+
+onMounted(() => {
+  const handler = (e: BeforeUnloadEvent) => {
+    if (isDirty()) { e.preventDefault(); e.returnValue = '' }
+  }
+  window.addEventListener('beforeunload', handler)
+})
+onUnmounted(() => window.removeEventListener('beforeunload', handler))
 
 async function fetchProfile() {
   // 使用 store 数据作为兜底
@@ -212,6 +234,7 @@ async function handleSave() {
       avatar: '',
     })
     ElMessage.success('保存成功')
+    reset()
   } catch {
     // handled
   } finally {
