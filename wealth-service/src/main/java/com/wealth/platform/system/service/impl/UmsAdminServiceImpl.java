@@ -49,6 +49,8 @@ public class UmsAdminServiceImpl extends ServiceImpl<UmsAdminMapper, UmsAdmin> i
     private static final String KEY_LOGIN_LOCKED = "login:locked:";
     private static final String KEY_CAPTCHA = "captcha:";
     private static final String KEY_REFRESH_JTI = "refresh:jti:";
+    private static final String KEY_REFRESH_COMPROMISED = "refresh:compromised:";
+    private static final String KEY_PERMISSION_CACHE = "permission:urls:";
 
     private final JwtUtil jwtUtil;
     private final UmsResourceService resourceService;
@@ -141,7 +143,18 @@ public class UmsAdminServiceImpl extends ServiceImpl<UmsAdminMapper, UmsAdmin> i
             throw new ServiceException(401, "refreshToken 无效或已过期");
         }
 
-        // 2. 检查是否已吊销（Redis 中是否存在），Redis 不可用时要求重新登录
+        // 2. 检查该用户是否被标记为"疑似被盗"，Redis 不可用时跳过检查
+        try {
+            Boolean compromised = redisUtil.hasKey(KEY_REFRESH_COMPROMISED + username);
+            if (Boolean.TRUE.equals(compromised)) {
+                log.warn("用户 {} 的 refresh_token 疑似被盗，已禁止所有 refresh 操作", username);
+                throw new ServiceException(401, "账户存在安全风险，请重新登录");
+            }
+        } catch (RedisConnectionFailureException e) {
+            log.warn("Redis 不可用，跳过被盗检测: {}", e.getMessage());
+        }
+
+        // 3. 检查是否已吊销（Redis 中是否存在），Redis 不可用时要求重新登录
         Boolean exists;
         try {
             exists = redisUtil.hasKey(KEY_REFRESH_JTI + jti);
@@ -150,17 +163,25 @@ public class UmsAdminServiceImpl extends ServiceImpl<UmsAdminMapper, UmsAdmin> i
             throw new ServiceException(401, "认证服务暂时不可用，请重新登录");
         }
         if (Boolean.FALSE.equals(exists)) {
+            // 已被轮换过的 refresh_token 再次被使用 → 疑似被盗
+            // 标记该用户，禁用该用户所有 refresh_token
+            log.warn("检测到已轮换的 refresh_token 被再次使用，用户 {} 疑似被盗", username);
+            try {
+                redisUtil.set(KEY_REFRESH_COMPROMISED + username, "1", 7, TimeUnit.DAYS);
+            } catch (RedisConnectionFailureException e) {
+                log.warn("Redis 不可用，无法标记被盗状态: {}", e.getMessage());
+            }
             throw new ServiceException(401, "refreshToken 已吊销，请重新登录");
         }
 
-        // 3. 吊销旧 refresh_token（一次性使用，防重放）
+        // 4. 吊销旧 refresh_token（一次性使用，防重放）
         try {
             redisUtil.delete(KEY_REFRESH_JTI + jti);
         } catch (RedisConnectionFailureException e) {
             log.warn("Redis 不可用，跳过旧 refresh_token 删除: {}", e.getMessage());
         }
 
-        // 4. 生成新的 token 对
+        // 5. 生成新的 token 对
         TokenPair pair = jwtUtil.generateTokenPair(username);
         String newJti = jwtUtil.getTokenIdFromToken(pair.refreshToken());
         try {
@@ -168,7 +189,41 @@ public class UmsAdminServiceImpl extends ServiceImpl<UmsAdminMapper, UmsAdmin> i
         } catch (RedisConnectionFailureException e) {
             log.warn("Redis 不可用，新 refresh_token 未持久化: {}", e.getMessage());
         }
+
+        // 6. 登录成功则清除该用户被盗标记（如有）
+        try {
+            redisUtil.delete(KEY_REFRESH_COMPROMISED + username);
+        } catch (RedisConnectionFailureException e) {
+            log.warn("Redis 不可用，无法清除被盗标记: {}", e.getMessage());
+        }
+
         return pair;
+    }
+
+    /**
+     * 退出登录：吊销当前用户的 refresh_token。
+     */
+    @Override
+    public void logout(String username) {
+        // 清除被盗标记，让下一次 refresh 能正常使用
+        try {
+            redisUtil.delete(KEY_REFRESH_COMPROMISED + username);
+        } catch (RedisConnectionFailureException e) {
+            log.warn("Redis 不可用，跳过退出登录处理: {}", e.getMessage());
+        }
+    }
+
+    /**
+     * 清除指定管理员的权限缓存，下次请求重新从数据库加载。
+     */
+    @Override
+    public void clearPermissionCache(Long adminId) {
+        try {
+            redisUtil.delete(KEY_PERMISSION_CACHE + adminId);
+            log.info("已清除管理员 {} 的权限缓存", adminId);
+        } catch (RedisConnectionFailureException e) {
+            log.warn("Redis 不可用，无法清除权限缓存: {}", e.getMessage());
+        }
     }
 
     /**

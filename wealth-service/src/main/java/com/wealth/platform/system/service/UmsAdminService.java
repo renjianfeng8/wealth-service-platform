@@ -23,4 +23,10 @@ public interface UmsAdminService extends IService<UmsAdmin> {
 
     // 重置密码
     Boolean resetPassword(Long id, String oldPassword, String newPassword);
+
+    // 退出登录（吊销 refresh_token）
+    void logout(String username);
+
+    // 清除指定管理员的权限缓存
+    void clearPermissionCache(Long adminId);
 }

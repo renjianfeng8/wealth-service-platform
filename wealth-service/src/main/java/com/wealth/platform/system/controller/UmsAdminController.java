@@ -153,6 +153,19 @@ public class UmsAdminController {
         return Result.success(umsAdminService.hasPermission(admin.getId(), uri));
     }
 
+    @PostMapping("/logout")
+    @Operation(summary = "退出登录（吊销当前 refresh_token）")
+    public Result<Void> logout(@RequestHeader("Authorization") String authHeader) {
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String refreshToken = authHeader.substring(7);
+            if (jwtUtil.validateToken(refreshToken)) {
+                String username = jwtUtil.getUsernameFromToken(refreshToken);
+                umsAdminService.logout(username);
+            }
+        }
+        return Result.success(null);
+    }
+
     @PostMapping("/resetPassword")
     @Operation(summary = "重置密码")
     @AuditLog(module = "系统管理", operation = "重置密码")

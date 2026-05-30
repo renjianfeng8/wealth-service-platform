@@ -34,4 +34,12 @@ public class UmsAdminRoleRelationServiceImpl
         List<UmsAdminRoleRelation> list = list(wrapper);
         return list.stream().map(UmsAdminRoleRelation::getRoleId).collect(Collectors.toList());
     }
+
+    @Override
+    public List<Long> getAdminIdByRoleId(Long roleId) {
+        LambdaQueryWrapper<UmsAdminRoleRelation> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(UmsAdminRoleRelation::getRoleId, roleId);
+        List<UmsAdminRoleRelation> list = list(wrapper);
+        return list.stream().map(UmsAdminRoleRelation::getAdminId).distinct().collect(Collectors.toList());
+    }
 }

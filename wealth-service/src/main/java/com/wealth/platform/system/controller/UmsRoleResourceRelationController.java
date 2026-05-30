@@ -9,6 +9,8 @@ import com.wealth.common.result.ResultCode;
 import com.wealth.common.utils.BeanConvertUtil;
 import com.wealth.platform.system.dto.UmsRoleResourceRelationDTO;
 import com.wealth.platform.system.entity.UmsRoleResourceRelation;
+import com.wealth.platform.system.service.UmsAdminRoleRelationService;
+import com.wealth.platform.system.service.UmsAdminService;
 import com.wealth.platform.system.service.UmsRoleResourceRelationService;
 import com.wealth.platform.system.vo.UmsRoleResourceRelationVO;
 import io.swagger.v3.oas.annotations.Operation;
@@ -26,9 +28,15 @@ import java.util.List;
 public class UmsRoleResourceRelationController {
 
     private final UmsRoleResourceRelationService umsRoleResourceRelationService;
+    private final UmsAdminService umsAdminService;
+    private final UmsAdminRoleRelationService umsAdminRoleRelationService;
 
-    public UmsRoleResourceRelationController(UmsRoleResourceRelationService umsRoleResourceRelationService) {
+    public UmsRoleResourceRelationController(UmsRoleResourceRelationService umsRoleResourceRelationService,
+                                             UmsAdminService umsAdminService,
+                                             UmsAdminRoleRelationService umsAdminRoleRelationService) {
         this.umsRoleResourceRelationService = umsRoleResourceRelationService;
+        this.umsAdminService = umsAdminService;
+        this.umsAdminRoleRelationService = umsAdminRoleRelationService;
     }
 
     @Operation(summary = "根据ID查询")
@@ -64,7 +72,9 @@ public class UmsRoleResourceRelationController {
     @AntiReplay
     public Result<Boolean> create(@Valid @RequestBody UmsRoleResourceRelationDTO dto) {
         UmsRoleResourceRelation relation = BeanConvertUtil.convert(dto, UmsRoleResourceRelation.class);
-        return Result.success(umsRoleResourceRelationService.save(relation));
+        boolean saved = umsRoleResourceRelationService.save(relation);
+        clearCacheByRoleId(dto.getRoleId());
+        return Result.success(saved);
     }
 
     @Operation(summary = "更新")
@@ -78,7 +88,13 @@ public class UmsRoleResourceRelationController {
         }
         BeanConvertUtil.copyNonNullProperties(dto, existing);
         existing.setId(id);
-        return Result.success(umsRoleResourceRelationService.updateById(existing));
+        boolean updated = umsRoleResourceRelationService.updateById(existing);
+        // 清除新旧角色的权限缓存
+        clearCacheByRoleId(existing.getRoleId());
+        if (dto.getRoleId() != null && !dto.getRoleId().equals(existing.getRoleId())) {
+            clearCacheByRoleId(dto.getRoleId());
+        }
+        return Result.success(updated);
     }
 
     @Operation(summary = "删除")
@@ -90,6 +106,17 @@ public class UmsRoleResourceRelationController {
         if (existing == null) {
             return Result.error(ResultCode.NOT_FOUND);
         }
-        return Result.success(umsRoleResourceRelationService.removeById(id));
+        boolean removed = umsRoleResourceRelationService.removeById(id);
+        clearCacheByRoleId(existing.getRoleId());
+        return Result.success(removed);
+    }
+
+    /** 清除拥有指定角色的所有管理员的权限缓存 */
+    private void clearCacheByRoleId(Long roleId) {
+        if (roleId == null) return;
+        List<Long> adminIds = umsAdminRoleRelationService.getAdminIdByRoleId(roleId);
+        for (Long adminId : adminIds) {
+            umsAdminService.clearPermissionCache(adminId);
+        }
     }
 }

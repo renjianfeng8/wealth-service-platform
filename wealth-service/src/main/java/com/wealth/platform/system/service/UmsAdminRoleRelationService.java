@@ -13,6 +13,9 @@ public interface UmsAdminRoleRelationService extends IService<UmsAdminRoleRelati
     // 根据管理员id获取所有角色id
     List<Long> getRoleIdByAdminId(Long adminId);
 
+    // 根据角色id获取所有管理员id（用于缓存失效）
+    List<Long> getAdminIdByRoleId(Long roleId);
+
     // 分页条件查询
     IPage<UmsAdminRoleRelation> pageWithFilter(Integer pageNum, Integer pageSize, Long adminId);
 }
