@@ -88,5 +88,8 @@ scripts/
 .claude/worktrees/
 .claude/settings.local.json
 
+# Personal files
+JIANLI.md
+
 # Old UI prototype
 UI.html
