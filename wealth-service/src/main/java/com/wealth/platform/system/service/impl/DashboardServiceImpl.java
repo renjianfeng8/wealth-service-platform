@@ -37,12 +37,12 @@ public class DashboardServiceImpl implements DashboardService {
         DashboardOverviewVO vo = new DashboardOverviewVO();
 
         // 1. totalAsset = SUM(price) * ESTIMATED_VOLUME（聚合查询，避免全表扫描 OOM）
-        BigDecimal totalPrice = marketDataProvider.sumPrice();
+        BigDecimal totalPrice = zeroIfNull(marketDataProvider.sumPrice());
         BigDecimal totalAsset = totalPrice.multiply(ESTIMATED_VOLUME);
         vo.setTotalAsset(totalAsset);
 
         // 2. assetChange based on latest two price records
-        List<BigDecimal> latestPrices = marketDataProvider.findLatestTwoPrices();
+        List<BigDecimal> latestPrices = safeList(marketDataProvider.findLatestTwoPrices());
         if (latestPrices.size() >= 2) {
             BigDecimal latest = latestPrices.get(0) != null ? latestPrices.get(0) : BigDecimal.ZERO;
             BigDecimal prev = latestPrices.get(1) != null ? latestPrices.get(1) : BigDecimal.ZERO;
@@ -59,15 +59,15 @@ public class DashboardServiceImpl implements DashboardService {
         }
 
         // 3. balanceValue = SUM(order_price * order_quantity) from completed orders
-        BigDecimal balanceValue = tradeOrderProvider.sumCompletedAmount();
+        BigDecimal balanceValue = zeroIfNull(tradeOrderProvider.sumCompletedAmount());
         vo.setBalanceValue(balanceValue);
 
         // 4. balanceChange: compare first half vs second half of completed orders
         long completedCount = tradeOrderProvider.countCompletedOrders();
         if (completedCount >= 4) {
             int halfSize = (int) (completedCount / 2);
-            BigDecimal firstHalf = tradeOrderProvider.sumFirstHalf(halfSize);
-            BigDecimal secondHalf = tradeOrderProvider.sumLastHalf(halfSize);
+            BigDecimal firstHalf = zeroIfNull(tradeOrderProvider.sumFirstHalf(halfSize));
+            BigDecimal secondHalf = zeroIfNull(tradeOrderProvider.sumLastHalf(halfSize));
             if (firstHalf.compareTo(BigDecimal.ZERO) > 0) {
                 BigDecimal change = secondHalf.subtract(firstHalf)
                         .multiply(BigDecimal.valueOf(100))
@@ -81,7 +81,7 @@ public class DashboardServiceImpl implements DashboardService {
         }
 
         // 5. dailyIncome = today's completed order amount (聚合查询)
-        BigDecimal dailyIncome = tradeOrderProvider.sumTodayCompletedAmount();
+        BigDecimal dailyIncome = zeroIfNull(tradeOrderProvider.sumTodayCompletedAmount());
         vo.setDailyIncome(dailyIncome);
 
         // 6. dailyIncomeRate
@@ -105,17 +105,17 @@ public class DashboardServiceImpl implements DashboardService {
         LocalDate endDate = LocalDate.now();
         LocalDate startDate = endDate.minusDays(days - 1);
 
-        List<DashboardTradeOrderDTO> orders = tradeOrderProvider.findCompletedOrders(
+        List<DashboardTradeOrderDTO> orders = safeList(tradeOrderProvider.findCompletedOrders(
                 startDate.atStartOfDay(),
                 endDate.atTime(23, 59, 59)
-        );
+        ));
 
         Map<LocalDate, List<DashboardTradeOrderDTO>> orderByDate = orders.stream()
                 .filter(o -> o.getCreateTime() != null)
                 .collect(Collectors.groupingBy(o -> o.getCreateTime().toLocalDate()));
 
         // 资产趋势基值：聚合查询代替全表扫描
-        BigDecimal baseTotalAsset = marketDataProvider.sumPrice().multiply(ESTIMATED_VOLUME);
+        BigDecimal baseTotalAsset = zeroIfNull(marketDataProvider.sumPrice()).multiply(ESTIMATED_VOLUME);
 
         DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         BigDecimal assetIndex = BigDecimal.valueOf(100);
@@ -163,10 +163,13 @@ public class DashboardServiceImpl implements DashboardService {
             default:    startTime = endTime.minusDays(1);    break; // 1D
         }
 
-        List<DashboardMarketDataDTO> records = marketDataProvider.findCandles(productCode, startTime, endTime);
+        List<DashboardMarketDataDTO> records = safeList(marketDataProvider.findCandles(productCode, startTime, endTime));
 
         List<DashboardKlineVO.Candle> candles = new ArrayList<>();
         for (DashboardMarketDataDTO m : records) {
+            if (m == null) {
+                continue;
+            }
             DashboardKlineVO.Candle c = new DashboardKlineVO.Candle();
             c.setTime(m.getMarketTime() != null ? m.getMarketTime().format(KLINE_TIME_FMT) : "");
             c.setOpen(m.getOpenPrice() != null ? m.getOpenPrice() : BigDecimal.ZERO);
@@ -179,5 +182,13 @@ public class DashboardServiceImpl implements DashboardService {
 
         vo.setCandles(candles);
         return vo;
+    }
+
+    private BigDecimal zeroIfNull(BigDecimal value) {
+        return value != null ? value : BigDecimal.ZERO;
+    }
+
+    private <T> List<T> safeList(List<T> list) {
+        return list != null ? list : Collections.emptyList();
     }
 }

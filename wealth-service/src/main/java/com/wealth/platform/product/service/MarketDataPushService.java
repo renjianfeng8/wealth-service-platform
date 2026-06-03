@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -66,15 +65,13 @@ public class MarketDataPushService {
     public void broadcastMarketUpdate(List<MarketDataVO> marketDataList) {
         if (emitters.isEmpty()) return;
 
-        Iterator<SseEmitter> it = emitters.iterator();
-        while (it.hasNext()) {
-            SseEmitter emitter = it.next();
+        for (SseEmitter emitter : emitters) {
             try {
                 emitter.send(SseEmitter.event()
                         .name("market-update")
                         .data(marketDataList));
             } catch (IOException e) {
-                it.remove();
+                emitters.remove(emitter);
                 log.warn("SSE 推送失败，已移除连接: {}", e.getMessage());
                 try {
                     emitter.completeWithError(e);

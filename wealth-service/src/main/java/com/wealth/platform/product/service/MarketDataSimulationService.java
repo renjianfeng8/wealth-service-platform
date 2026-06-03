@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
@@ -49,7 +50,8 @@ public class MarketDataSimulationService {
     }
 
     private void loadMarketData() {
-        cachedMarketData = marketDataMapper.selectList(null);
+        List<WeaMarketData> records = marketDataMapper.selectList(null);
+        cachedMarketData = records != null ? records : Collections.emptyList();
     }
 
     /**
@@ -58,6 +60,9 @@ public class MarketDataSimulationService {
      */
     @Scheduled(fixedDelayString = "${market.simulation.interval:2000}")
     public void simulateMarketTick() {
+        if (cachedMarketData == null) {
+            loadMarketData();
+        }
         if (cachedMarketData.isEmpty()) return;
 
         // 1. 事务内更新数据库（通过代理调用以触发 @Transactional）
@@ -74,8 +79,18 @@ public class MarketDataSimulationService {
 
     @Transactional(rollbackFor = Exception.class)
     public void simulateTickDb() {
+        if (cachedMarketData == null || cachedMarketData.isEmpty()) {
+            return;
+        }
         for (WeaMarketData data : cachedMarketData) {
-            BigDecimal oldPrice = data.getCurrentPrice();
+            if (data == null) {
+                continue;
+            }
+            BigDecimal oldPrice = defaultPrice(data.getCurrentPrice(), data.getClosePrice());
+            BigDecimal closePrice = defaultPrice(data.getClosePrice(), oldPrice);
+            BigDecimal highestPrice = defaultPrice(data.getHighestPrice(), oldPrice);
+            BigDecimal lowestPrice = defaultPrice(data.getLowestPrice(), oldPrice);
+
             // 高斯随机游走，波动幅度约 0.2%
             double changeFactor = random.nextGaussian() * 0.002;
             BigDecimal newPrice = oldPrice.multiply(BigDecimal.valueOf(1 + changeFactor))
@@ -87,13 +102,13 @@ public class MarketDataSimulationService {
             }
 
             data.setCurrentPrice(newPrice);
-            data.setRiseFall(newPrice.subtract(data.getClosePrice()));
-            data.setRiseFallRate(data.getClosePrice().compareTo(BigDecimal.ZERO) > 0
-                    ? data.getRiseFall().divide(data.getClosePrice(), 6, RoundingMode.HALF_UP)
+            data.setRiseFall(newPrice.subtract(closePrice));
+            data.setRiseFallRate(closePrice.compareTo(BigDecimal.ZERO) > 0
+                    ? data.getRiseFall().divide(closePrice, 6, RoundingMode.HALF_UP)
                     : BigDecimal.ZERO);
             data.setMarketTime(LocalDateTime.now());
-            data.setHighestPrice(newPrice.compareTo(data.getHighestPrice()) > 0 ? newPrice : data.getHighestPrice());
-            data.setLowestPrice(newPrice.compareTo(data.getLowestPrice()) < 0 ? newPrice : data.getLowestPrice());
+            data.setHighestPrice(newPrice.compareTo(highestPrice) > 0 ? newPrice : highestPrice);
+            data.setLowestPrice(newPrice.compareTo(lowestPrice) < 0 ? newPrice : lowestPrice);
 
             marketDataMapper.updateById(data);
         }
@@ -101,6 +116,16 @@ public class MarketDataSimulationService {
 
     /** 返回当前缓存的全部行情数据（全量快照） */
     public List<MarketDataVO> getAllMarketData() {
+        if (cachedMarketData == null) {
+            loadMarketData();
+        }
         return BeanConvertUtil.convertList(cachedMarketData, MarketDataVO.class);
+    }
+
+    private BigDecimal defaultPrice(BigDecimal value, BigDecimal fallback) {
+        if (value != null) {
+            return value;
+        }
+        return fallback != null ? fallback : BigDecimal.ZERO;
     }
 }
