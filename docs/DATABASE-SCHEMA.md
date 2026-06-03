@@ -27,13 +27,15 @@
 | `ums_resource` | 资源表 |
 | `ums_admin_role_relation` | 管理员角色关联表 |
 | `ums_role_resource_relation` | 角色资源关联表 |
-| `wea_user_favorite` | 自选表（且无 del_flag） |
+| `wea_user_favorite` | 自选表 |
+| `audit_log` | 审计日志表（非业务表） |
 
 ### 无 del_flag 列的表
 
 | 表 | 说明 |
 |----|------|
 | `wea_user_favorite` | 物理删除 |
+| `audit_log` | 审计日志表（非业务表） |
 
 ---
 
@@ -283,6 +285,58 @@ CREATE TABLE ums_role_resource_relation (
 > **注意**：本表无 `create_time` 和 `update_time` 列，Entity 中 `createTime` 和 `updateTime` 必须标注 `@TableField(exist = false)`。
 
 **Entity**: `UmsRoleResourceRelation` — 继承 BaseEntity，覆盖 `createTime` 和 `updateTime` 为 `exist = false`。
+
+### 13. 审计日志表（audit_log）
+
+> 非业务表，由 `@AuditLog` 注解自动记录，无对应 Entity。
+
+```sql
+CREATE TABLE audit_log (
+    id          BIGINT       NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+    user_id     BIGINT       DEFAULT NULL            COMMENT '用户ID',
+    username    VARCHAR(100) DEFAULT NULL            COMMENT '用户名',
+    module      VARCHAR(100) DEFAULT NULL            COMMENT '模块名',
+    operation   VARCHAR(200) DEFAULT NULL            COMMENT '操作描述',
+    method_name VARCHAR(200) DEFAULT NULL            COMMENT '请求方法',
+    request_url VARCHAR(255) DEFAULT NULL            COMMENT '请求URL',
+    http_method VARCHAR(10)  DEFAULT NULL            COMMENT 'HTTP方法',
+    params      TEXT         DEFAULT NULL            COMMENT '请求参数(JSON)',
+    result      TEXT         DEFAULT NULL            COMMENT '响应结果(JSON)',
+    ip          VARCHAR(50)  DEFAULT NULL            COMMENT '客户端IP',
+    duration    BIGINT       DEFAULT NULL            COMMENT '执行耗时(ms)',
+    status      TINYINT      DEFAULT '1'             COMMENT '状态 1成功 0失败',
+    error_msg   VARCHAR(1000) DEFAULT NULL           COMMENT '错误信息',
+    create_time DATETIME     DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    PRIMARY KEY (id),
+    KEY idx_user (user_id),
+    KEY idx_module (module),
+    KEY idx_create_time (create_time)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='操作审计日志表';
+```
+
+> **注意**：本表无 `update_time` 和 `del_flag` 列，无对应 Entity，通过 AOP 切面直接 JDBC 写入。
+
+### 14. Seata AT 回滚日志表（undo_log）
+
+> 非业务表，Seata AT 模式框架用表，无对应 Entity。
+
+```sql
+CREATE TABLE undo_log (
+    id            BIGINT       NOT NULL AUTO_INCREMENT COMMENT '主键',
+    branch_id     BIGINT       NOT NULL                COMMENT '分支事务ID',
+    xid           VARCHAR(128) NOT NULL                COMMENT '全局事务ID',
+    context       VARCHAR(128) NOT NULL                COMMENT '上下文',
+    rollback_info LONGBLOB     NOT NULL                COMMENT '回滚日志',
+    log_status    INT          NOT NULL                COMMENT '状态 0正常 1已回滚',
+    log_created   DATETIME     NOT NULL                COMMENT '创建时间',
+    log_modified  DATETIME     NOT NULL                COMMENT '修改时间',
+    ext           VARCHAR(100) DEFAULT NULL            COMMENT '扩展',
+    PRIMARY KEY (id),
+    UNIQUE KEY ux_undo_log (xid, branch_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Seata AT 模式回滚日志表';
+```
+
+> **注意**：Seata 已停用，此表保留仅用于兼容旧数据。无 `del_flag`、`create_time`、`update_time` 列，无对应 Entity。
 
 ---
 
