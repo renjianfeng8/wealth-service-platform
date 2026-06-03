@@ -63,6 +63,8 @@ test-results/
 
 # Vite cache
 .vite/
+front/vite-dev.pid
+front/start-vite-dev.bat
 
 # Seata server config (not project source code)
 seata-config/
