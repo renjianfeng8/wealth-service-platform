@@ -50,7 +50,7 @@ public class MarketDataSimulationService {
     }
 
     private void loadMarketData() {
-        List<WeaMarketData> records = marketDataMapper.selectList(null);
+        List<WeaMarketData> records = marketDataMapper.findSimulationData();
         cachedMarketData = records != null ? records : Collections.emptyList();
     }
 

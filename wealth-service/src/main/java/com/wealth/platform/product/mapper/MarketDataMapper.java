@@ -21,5 +21,9 @@ public interface MarketDataMapper extends BaseMapper<WeaMarketData> {
     /** 查询最近两条有价格记录的行情数据（用于计算资产变化率） */
     @Select("SELECT current_price FROM wea_market_data WHERE current_price IS NOT NULL ORDER BY create_time DESC LIMIT 2")
     List<BigDecimal> findLatestTwoPrices();
+
+    /** 查询用于行情模拟和 SSE 快照的全量行情数据。 */
+    @Select("SELECT * FROM wea_market_data")
+    List<WeaMarketData> findSimulationData();
 }
 
