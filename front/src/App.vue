@@ -2,14 +2,22 @@
   <ErrorBoundary>
     <router-view v-slot="{ Component }">
       <transition name="page-fade" mode="out-in">
-        <component :is="Component" :key="$route.meta.group || $route.path" />
+        <Suspense>
+          <component :is="Component" :key="$route.meta.group || $route.path" />
+          <template #fallback>
+            <PageLoading />
+          </template>
+        </Suspense>
       </transition>
     </router-view>
+    <FloatingActions />
   </ErrorBoundary>
 </template>
 
 <script setup lang="ts">
 import ErrorBoundary from '@/components/ErrorBoundary.vue'
+import FloatingActions from '@/components/FloatingActions.vue'
+import PageLoading from '@/components/PageLoading.vue'
 </script>
 
 <style>

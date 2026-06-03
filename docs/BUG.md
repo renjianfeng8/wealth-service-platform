@@ -16,7 +16,7 @@
 
 #### 现象
 
-所有 Controller 的 `GET` 无参 `list()` 端点未提供 `pageNum`/`pageSize` 参数，内部通过 MyBatis-Plus `.last("LIMIT 1000")` 限制最大返回行数。前端只能拿到前 1000 条，无法翻页。
+所有 Controller 的 `GET` 无参 `list()` 端点未提供 `pageNum`/`pageSize` 参数，内部通过 MyBatis-Plus `page(new Page<>(1, 1000))` 限制最大返回行数。前端只能拿到前 1000 条，无法翻页。
 
 #### 涉及文件（12 个）
 
@@ -32,22 +32,23 @@
 
 ---
 
+## 已修复
+
 ### Bug-015: UserController.deleteBatch 缺少 @Valid 注解
 
 **日期**: 2026-05-23
+**状态**: 已修复（当前代码已为 `@Valid @NotEmpty @RequestBody`）
 **模块**: wealth-service（user 域）
 **影响**: 违反 CLAUDE.md 规范，`@RequestBody` 无 `@Valid`
 
 **文件**: `UserController.java:99`
 ```java
-public Result<Boolean> deleteBatch(@RequestBody List<Long> ids) {
+public Result<Boolean> deleteBatch(@Valid @NotEmpty(message = "ID列表不能为空") @RequestBody List<Long> ids) {
 ```
 
-`List<Long>` 为简单类型，无 Bean Validation 注解，实际无校验遗漏风险，但不符合规范一致性要求。
+`List<Long>` 已补齐 `@Valid` 与 `@NotEmpty`，符合当前规范一致性要求。
 
 ---
-
-## 已修复
 
 ### Bug-016: UmsAdminServiceImpl.updateAdmin 存在死代码
 

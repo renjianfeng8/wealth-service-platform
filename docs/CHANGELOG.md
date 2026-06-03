@@ -11,7 +11,7 @@
 ### 文档全面重写
 
 - **README 重写**：Badge 工具栏、核心特性、架构演进、技术栈分类、快速开始、部署指引等，对标热门 GitHub 项目风格
-- **STARTUP 重写**：适配单一 SPA 架构（端口 3004），History 模式路由表，更新验证流程与排查表
+- **STARTUP 重写**：适配单一 SPA 架构（端口 3000），History 模式路由表，更新验证流程与排查表
 - **ARCHITECTURE 重写**：移除三 SPA 描述、front-landing 登录流程，更新为 single SPA + History 模式认证流程
 - **CONTRIBUTING 重写**：移除 Nacos、微服务等过时引用，同步当前 Gateway + service 两层架构
 - **文件名统一大写**：ARCHITECTURE.md、BUG.md、DATABASE-SCHEMA.md、STARTUP.md
@@ -39,7 +39,7 @@
 
 ### 多 SPA → 单一 SPA 合并
 
-- **三 SPA 合并**：将 front-landing、front-user、front 合并为单一 SPA（`front/`），端口统一为 3004
+- **三 SPA 合并**：将 front-landing、front-user、front 合并为单一 SPA（`front/`），端口统一为 3000
 - **History 模式路由**：`/auth/login`（登录）、`/home`（首页）、`/user/*`（用户端）、`/admin/*`（管理端）
 - **双布局架构**：`UnifiedLayout`（顶部导航，用户端/公开页）+ `AdminLayout`（侧栏导航，管理端）
 - **路由守卫自动跳转**：登录后根据角色（admin/user）自动跳转对应首页

@@ -4,8 +4,11 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.wealth.common.contract.AdminIdentityProvider;
+import com.wealth.common.dto.AdminIdentityDTO;
 import com.wealth.common.exception.ServiceException;
 import com.wealth.common.dto.LoginDTO;
+import com.wealth.common.utils.BeanConvertUtil;
 import com.wealth.common.utils.JwtUtil;
 import com.wealth.common.utils.JwtUtil.TokenPair;
 import com.wealth.common.utils.RedisUtil;
@@ -32,7 +35,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
-public class UmsAdminServiceImpl extends ServiceImpl<UmsAdminMapper, UmsAdmin> implements UmsAdminService {
+public class UmsAdminServiceImpl extends ServiceImpl<UmsAdminMapper, UmsAdmin>
+        implements UmsAdminService, AdminIdentityProvider {
 
     private static final Logger log = LoggerFactory.getLogger(UmsAdminServiceImpl.class);
 
@@ -351,5 +355,18 @@ public class UmsAdminServiceImpl extends ServiceImpl<UmsAdminMapper, UmsAdmin> i
 
         AntPathMatcher pathMatcher = new AntPathMatcher();
         return urlPatterns.stream().anyMatch(pattern -> pathMatcher.match(pattern, uri));
+    }
+
+    @Override
+    public AdminIdentityDTO findByUsername(String username) {
+        UmsAdmin admin = lambdaQuery()
+                .eq(UmsAdmin::getUsername, username)
+                .one();
+        if (admin == null) {
+            return null;
+        }
+        AdminIdentityDTO dto = BeanConvertUtil.convert(admin, AdminIdentityDTO.class);
+        dto.setNickname(admin.getNickName());
+        return dto;
     }
 }

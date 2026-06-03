@@ -169,7 +169,7 @@ wealth-service-platform
 |------|:----:|
 | Gateway | 8080 |
 | Service | 8081 |
-| Frontend (Vite) | 3004 |
+| Frontend (Vite) | 3000 |
 | MySQL | 3306 |
 | Redis | 6379 |
 | Nginx | 80 |
@@ -267,7 +267,7 @@ mvn spring-boot:run -pl wealth-service
 cd front && npm install && npx vite
 ```
 
-前端运行于 `http://localhost:3004`，通过网关 `http://localhost:8080` 调用后端接口。
+前端运行于 `http://localhost:3000`，通过网关 `http://localhost:8080` 调用后端接口。
 
 ### 验证启动
 

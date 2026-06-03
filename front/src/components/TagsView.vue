@@ -77,7 +77,7 @@ function closeOthers() {
 
 function closeAll() {
   appStore.closeAllViews()
-  router.push('/user/dashboard')
+  router.push(route.path.startsWith('/admin') ? '/admin/dashboard' : '/user/dashboard')
   menuVisible.value = false
 }
 </script>

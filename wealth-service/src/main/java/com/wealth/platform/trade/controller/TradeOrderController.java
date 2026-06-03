@@ -6,11 +6,11 @@ import com.wealth.common.audit.AntiReplay;
 import com.wealth.common.audit.AuditLog;
 import com.wealth.common.result.Result;
 import com.wealth.common.result.ResultCode;
-import com.wealth.platform.trade.dto.FinTradeOrderDTO;
-import com.wealth.platform.trade.dto.FinTradeOrderStatusDTO;
+import com.wealth.platform.trade.dto.TradeOrderDTO;
+import com.wealth.platform.trade.dto.TradeOrderStatusDTO;
 import com.wealth.platform.trade.entity.WeaTradeOrder;
-import com.wealth.platform.trade.service.FinTradeOrderService;
-import com.wealth.platform.trade.vo.FinTradeOrderVO;
+import com.wealth.platform.trade.service.TradeOrderService;
+import com.wealth.platform.trade.vo.TradeOrderVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -27,12 +27,12 @@ import java.util.List;
 @Validated
 public class TradeOrderController {
 
-    private final FinTradeOrderService finTradeOrderService;
+    private final TradeOrderService tradeOrderService;
 
     @Operation(summary = "根据ID查询交易委托单")
     @GetMapping("/{id}")
-    public Result<FinTradeOrderVO> getById(@PathVariable Long id) {
-        FinTradeOrderVO vo = finTradeOrderService.getOrderById(id);
+    public Result<TradeOrderVO> getById(@PathVariable Long id) {
+        TradeOrderVO vo = tradeOrderService.getOrderById(id);
         if (vo == null) {
             return Result.error(ResultCode.NOT_FOUND);
         }
@@ -41,13 +41,13 @@ public class TradeOrderController {
 
     @Operation(summary = "查询交易委托单列表")
     @GetMapping
-    public Result<List<FinTradeOrderVO>> list() {
-        return Result.success(finTradeOrderService.getOrderList());
+    public Result<List<TradeOrderVO>> list() {
+        return Result.success(tradeOrderService.getOrderList());
     }
 
     @Operation(summary = "分页查询交易委托单")
     @GetMapping("/page")
-    public Result<IPage<FinTradeOrderVO>> page(
+    public Result<IPage<TradeOrderVO>> page(
             @RequestParam(defaultValue = "1") Integer pageNum,
             @RequestParam(defaultValue = "10") Integer pageSize,
             @RequestParam(required = false) Long userId,
@@ -55,35 +55,35 @@ public class TradeOrderController {
             @RequestParam(required = false) String productCode,
             @RequestParam(required = false) Integer orderStatus) {
         Page<WeaTradeOrder> page = new Page<>(pageNum, pageSize);
-        return Result.success(finTradeOrderService.pageOrders(page, userId, orderNo, productCode, orderStatus));
+        return Result.success(tradeOrderService.pageOrders(page, userId, orderNo, productCode, orderStatus));
     }
 
     @Operation(summary = "创建交易委托单（支持幂等键防重）")
     @PostMapping
     @AuditLog(module = "交易管理", operation = "创建委托单")
     @AntiReplay
-    public Result<Boolean> create(@Valid @RequestBody FinTradeOrderDTO dto) {
-        return Result.success(finTradeOrderService.createOrder(dto));
+    public Result<Boolean> create(@Valid @RequestBody TradeOrderDTO dto) {
+        return Result.success(tradeOrderService.createOrder(dto));
     }
 
     @Operation(summary = "更新交易委托单信息")
     @PutMapping("/{id}")
     @AuditLog(module = "交易管理", operation = "更新委托单")
-    public Result<Boolean> update(@PathVariable Long id, @Valid @RequestBody FinTradeOrderDTO dto) {
-        return Result.success(finTradeOrderService.updateOrder(id, dto));
+    public Result<Boolean> update(@PathVariable Long id, @Valid @RequestBody TradeOrderDTO dto) {
+        return Result.success(tradeOrderService.updateOrder(id, dto));
     }
 
     @Operation(summary = "更新交易委托单状态（含状态机校验）")
     @PutMapping("/{id}/status")
     @AuditLog(module = "交易管理", operation = "更新委托单状态")
-    public Result<Boolean> updateStatus(@PathVariable Long id, @Valid @RequestBody FinTradeOrderStatusDTO dto) {
-        return Result.success(finTradeOrderService.updateOrderStatus(id, dto));
+    public Result<Boolean> updateStatus(@PathVariable Long id, @Valid @RequestBody TradeOrderStatusDTO dto) {
+        return Result.success(tradeOrderService.updateOrderStatus(id, dto));
     }
 
     @Operation(summary = "删除交易委托单（逻辑删除）")
     @DeleteMapping("/{id}")
     @AuditLog(module = "交易管理", operation = "删除委托单")
     public Result<Boolean> delete(@PathVariable Long id) {
-        return Result.success(finTradeOrderService.deleteOrder(id));
+        return Result.success(tradeOrderService.deleteOrder(id));
     }
 }

@@ -6,10 +6,10 @@ import com.wealth.common.audit.AntiReplay;
 import com.wealth.common.audit.AuditLog;
 import com.wealth.common.result.Result;
 import com.wealth.common.result.ResultCode;
-import com.wealth.platform.product.dto.FinProductDTO;
+import com.wealth.platform.product.dto.ProductDTO;
 import com.wealth.platform.product.entity.WeaProduct;
-import com.wealth.platform.product.service.FinProductService;
-import com.wealth.platform.product.vo.FinProductVO;
+import com.wealth.platform.product.service.ProductService;
+import com.wealth.platform.product.vo.ProductVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -26,12 +26,12 @@ import java.util.List;
 @Validated
 public class ProductController {
 
-    private final FinProductService finProductService;
+    private final ProductService productService;
 
     @Operation(summary = "根据ID查询产品")
     @GetMapping("/{id}")
-    public Result<FinProductVO> getById(@PathVariable Long id) {
-        FinProductVO vo = finProductService.getProductById(id);
+    public Result<ProductVO> getById(@PathVariable Long id) {
+        ProductVO vo = productService.getProductById(id);
         if (vo == null) {
             return Result.error(ResultCode.NOT_FOUND);
         }
@@ -40,13 +40,13 @@ public class ProductController {
 
     @Operation(summary = "查询产品列表")
     @GetMapping
-    public Result<List<FinProductVO>> list() {
-        return Result.success(finProductService.getProductList());
+    public Result<List<ProductVO>> list() {
+        return Result.success(productService.getProductList());
     }
 
     @Operation(summary = "分页查询产品")
     @GetMapping("/page")
-    public Result<IPage<FinProductVO>> page(
+    public Result<IPage<ProductVO>> page(
             @RequestParam(defaultValue = "1") Integer pageNum,
             @RequestParam(defaultValue = "10") Integer pageSize,
             @RequestParam(required = false) String productName,
@@ -55,23 +55,23 @@ public class ProductController {
             @RequestParam(required = false) String orderBy,
             @RequestParam(required = false) String orderDir) {
         Page<WeaProduct> page = new Page<>(pageNum, pageSize);
-        return Result.success(finProductService.pageProducts(page, productName, productCode, productType, orderBy, orderDir));
+        return Result.success(productService.pageProducts(page, productName, productCode, productType, orderBy, orderDir));
     }
 
     @Operation(summary = "创建产品")
     @PostMapping
     @AuditLog(module = "产品管理", operation = "创建产品")
     @AntiReplay
-    public Result<Boolean> create(@Valid @RequestBody FinProductDTO dto) {
-        return Result.success(finProductService.createProduct(dto));
+    public Result<Boolean> create(@Valid @RequestBody ProductDTO dto) {
+        return Result.success(productService.createProduct(dto));
     }
 
     @Operation(summary = "更新产品信息")
     @PutMapping("/{id}")
     @AuditLog(module = "产品管理", operation = "更新产品")
     @AntiReplay
-    public Result<Boolean> update(@PathVariable Long id, @Valid @RequestBody FinProductDTO dto) {
-        return Result.success(finProductService.updateProduct(id, dto));
+    public Result<Boolean> update(@PathVariable Long id, @Valid @RequestBody ProductDTO dto) {
+        return Result.success(productService.updateProduct(id, dto));
     }
 
     @Operation(summary = "删除产品")
@@ -79,7 +79,7 @@ public class ProductController {
     @AuditLog(module = "产品管理", operation = "删除产品")
     @AntiReplay
     public Result<Boolean> delete(@PathVariable Long id) {
-        return Result.success(finProductService.deleteProduct(id));
+        return Result.success(productService.deleteProduct(id));
     }
 
 }

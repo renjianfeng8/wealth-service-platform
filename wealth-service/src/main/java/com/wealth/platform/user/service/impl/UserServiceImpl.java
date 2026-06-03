@@ -4,11 +4,11 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.wealth.common.contract.AdminIdentityProvider;
+import com.wealth.common.dto.AdminIdentityDTO;
 import com.wealth.common.utils.JwtUtil;
 import com.wealth.common.dto.LoginDTO;
 import com.wealth.common.exception.ServiceException;
-import com.wealth.platform.system.service.UmsAdminService;
-import com.wealth.platform.system.entity.UmsAdmin;
 import com.wealth.platform.user.entity.User;
 import com.wealth.platform.user.mapper.UserMapper;
 import com.wealth.platform.user.service.UserService;
@@ -23,12 +23,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     private final JwtUtil jwtUtil;
     private final BCryptPasswordEncoder passwordEncoder;
-    private final UmsAdminService umsAdminService;
+    private final AdminIdentityProvider adminIdentityProvider;
 
-    public UserServiceImpl(JwtUtil jwtUtil, BCryptPasswordEncoder passwordEncoder, UmsAdminService umsAdminService) {
+    public UserServiceImpl(JwtUtil jwtUtil, BCryptPasswordEncoder passwordEncoder, AdminIdentityProvider adminIdentityProvider) {
         this.jwtUtil = jwtUtil;
         this.passwordEncoder = passwordEncoder;
-        this.umsAdminService = umsAdminService;
+        this.adminIdentityProvider = adminIdentityProvider;
     }
 
     @Override
@@ -77,9 +77,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
 
         // 1. 先查 ums_admin 表 — 判断是否为管理员
-        UmsAdmin admin = umsAdminService.lambdaQuery()
-                .eq(UmsAdmin::getUsername, dto.getUsername())
-                .one();
+        AdminIdentityDTO admin = adminIdentityProvider.findByUsername(dto.getUsername());
 
         if (admin != null) {
             if (admin.getStatus() != null && admin.getStatus() == 0) {
@@ -89,7 +87,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                 throw new ServiceException(401, "密码错误");
             }
             String token = jwtUtil.generateToken(admin.getUsername(), "admin");
-            return new LoginVO(token, admin.getId(), admin.getNickName(), "admin");
+            return new LoginVO(token, admin.getId(), admin.getNickname(), "admin");
         }
 
         // 2. 再查 user 表 — 判断是否为普通用户

@@ -7,12 +7,12 @@ import com.wealth.common.audit.AuditLog;
 import com.wealth.common.result.Result;
 import com.wealth.common.result.ResultCode;
 import com.wealth.common.utils.BeanConvertUtil;
-import com.wealth.platform.product.dto.FinMarketDataDTO;
+import com.wealth.platform.product.dto.MarketDataDTO;
 import com.wealth.platform.product.entity.WeaMarketData;
-import com.wealth.platform.product.service.FinMarketDataService;
+import com.wealth.platform.product.service.MarketDataService;
 import com.wealth.platform.product.service.MarketDataPushService;
 import com.wealth.platform.product.service.MarketDataSimulationService;
-import com.wealth.platform.product.vo.FinMarketDataVO;
+import com.wealth.platform.product.vo.MarketDataVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -32,14 +32,14 @@ import java.util.List;
 @Validated
 public class MarketDataController {
 
-    private final FinMarketDataService finMarketDataService;
+    private final MarketDataService marketDataService;
     private final MarketDataPushService marketDataPushService;
     private final MarketDataSimulationService marketDataSimulationService;
 
     @Operation(summary = "根据ID查询行情数据")
     @GetMapping("/{id}")
-    public Result<FinMarketDataVO> getById(@PathVariable Long id) {
-        FinMarketDataVO vo = finMarketDataService.getMarketDataById(id);
+    public Result<MarketDataVO> getById(@PathVariable Long id) {
+        MarketDataVO vo = marketDataService.getMarketDataById(id);
         if (vo == null) {
             return Result.error(ResultCode.NOT_FOUND);
         }
@@ -48,8 +48,8 @@ public class MarketDataController {
 
     @Operation(summary = "查询行情数据列表")
     @GetMapping
-    public Result<List<FinMarketDataVO>> list() {
-        return Result.success(finMarketDataService.getMarketDataList());
+    public Result<List<MarketDataVO>> list() {
+        return Result.success(marketDataService.getMarketDataList());
     }
 
     @Operation(summary = "SSE 实时行情推送（JWT 由 Gateway 校验或 httpOnly Cookie 携带）")
@@ -57,7 +57,7 @@ public class MarketDataController {
     public SseEmitter subscribe() {
         // JWT 身份认证由 Gateway 统一处理，此处不再单独校验
         // 先推送全量快照
-        List<FinMarketDataVO> snapshot = marketDataSimulationService.getAllMarketData();
+        List<MarketDataVO> snapshot = marketDataSimulationService.getAllMarketData();
         SseEmitter emitter = marketDataPushService.createEmitter();
         try {
             emitter.send(SseEmitter.event()
@@ -71,28 +71,28 @@ public class MarketDataController {
 
     @Operation(summary = "分页查询行情数据")
     @GetMapping("/page")
-    public Result<IPage<FinMarketDataVO>> page(
+    public Result<IPage<MarketDataVO>> page(
             @RequestParam(defaultValue = "1") Integer pageNum,
             @RequestParam(defaultValue = "10") Integer pageSize,
             @RequestParam(required = false) String productCode) {
-        IPage<WeaMarketData> page = finMarketDataService.pageWithFilter(pageNum, pageSize, productCode);
-        return Result.success(BeanConvertUtil.convertPage(page, FinMarketDataVO.class));
+        IPage<WeaMarketData> page = marketDataService.pageWithFilter(pageNum, pageSize, productCode);
+        return Result.success(BeanConvertUtil.convertPage(page, MarketDataVO.class));
     }
 
     @Operation(summary = "创建行情数据")
     @PostMapping
     @AuditLog(module = "行情管理", operation = "创建行情数据")
     @AntiReplay
-    public Result<Boolean> create(@Valid @RequestBody FinMarketDataDTO dto) {
-        return Result.success(finMarketDataService.createMarketData(dto));
+    public Result<Boolean> create(@Valid @RequestBody MarketDataDTO dto) {
+        return Result.success(marketDataService.createMarketData(dto));
     }
 
     @Operation(summary = "更新行情数据")
     @PutMapping("/{id}")
     @AuditLog(module = "行情管理", operation = "更新行情数据")
     @AntiReplay
-    public Result<Boolean> update(@PathVariable Long id, @Valid @RequestBody FinMarketDataDTO dto) {
-        return Result.success(finMarketDataService.updateMarketData(id, dto));
+    public Result<Boolean> update(@PathVariable Long id, @Valid @RequestBody MarketDataDTO dto) {
+        return Result.success(marketDataService.updateMarketData(id, dto));
     }
 
     @Operation(summary = "删除行情数据")
@@ -100,6 +100,6 @@ public class MarketDataController {
     @AuditLog(module = "行情管理", operation = "删除行情数据")
     @AntiReplay
     public Result<Boolean> delete(@PathVariable Long id) {
-        return Result.success(finMarketDataService.deleteMarketData(id));
+        return Result.success(marketDataService.deleteMarketData(id));
     }
 }

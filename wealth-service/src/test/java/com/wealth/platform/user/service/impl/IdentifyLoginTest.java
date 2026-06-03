@@ -1,11 +1,11 @@
 package com.wealth.platform.user.service.impl;
 
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
+import com.wealth.common.contract.AdminIdentityProvider;
+import com.wealth.common.dto.AdminIdentityDTO;
 import com.wealth.common.dto.LoginDTO;
 import com.wealth.common.exception.ServiceException;
 import com.wealth.common.utils.JwtUtil;
-import com.wealth.platform.system.entity.UmsAdmin;
-import com.wealth.platform.system.service.UmsAdminService;
 import com.wealth.platform.user.entity.User;
 import com.wealth.platform.user.mapper.UserMapper;
 import com.wealth.platform.user.vo.LoginVO;
@@ -28,7 +28,7 @@ class IdentifyLoginTest {
     @Mock
     private UserMapper userMapper;
     @Mock
-    private UmsAdminService umsAdminService;
+    private AdminIdentityProvider adminIdentityProvider;
     @Mock
     private JwtUtil jwtUtil;
     @Mock
@@ -38,26 +38,21 @@ class IdentifyLoginTest {
 
     @BeforeEach
     void setUp() {
-        userService = new UserServiceImpl(jwtUtil, passwordEncoder, umsAdminService);
+        userService = new UserServiceImpl(jwtUtil, passwordEncoder, adminIdentityProvider);
         ReflectionTestUtils.setField(userService, "baseMapper", userMapper);
     }
 
     @Test
     @DisplayName("统一登录-管理员成功")
     void identifyLogin_AdminSuccess() {
-        UmsAdmin admin = new UmsAdmin();
+        AdminIdentityDTO admin = new AdminIdentityDTO();
         admin.setId(1L);
         admin.setUsername("admin");
         admin.setPassword("encodedAdminPwd");
         admin.setStatus(1);
-        admin.setNickName("管理员");
+        admin.setNickname("管理员");
 
-        when(umsAdminService.lambdaQuery()).thenAnswer(invocation -> {
-            LambdaQueryChainWrapper<UmsAdmin> wrapper = mock(LambdaQueryChainWrapper.class);
-            when(wrapper.eq(any(), any())).thenReturn(wrapper);
-            when(wrapper.one()).thenReturn(admin);
-            return wrapper;
-        });
+        when(adminIdentityProvider.findByUsername("admin")).thenReturn(admin);
         when(passwordEncoder.matches("admin123", "encodedAdminPwd")).thenReturn(true);
         when(jwtUtil.generateToken("admin", "admin")).thenReturn("admin.jwt.token");
 
@@ -71,18 +66,13 @@ class IdentifyLoginTest {
         assertEquals("admin", result.getUserType());
         assertEquals("admin.jwt.token", result.getToken());
         assertEquals(1L, result.getUserId());
-        verify(umsAdminService).lambdaQuery();
+        verify(adminIdentityProvider).findByUsername("admin");
     }
 
     @Test
     @DisplayName("统一登录-普通用户成功")
     void identifyLogin_UserSuccess() {
-        when(umsAdminService.lambdaQuery()).thenAnswer(invocation -> {
-            LambdaQueryChainWrapper<UmsAdmin> wrapper = mock(LambdaQueryChainWrapper.class);
-            when(wrapper.eq(any(), any())).thenReturn(wrapper);
-            when(wrapper.one()).thenReturn(null);
-            return wrapper;
-        });
+        when(adminIdentityProvider.findByUsername("testuser")).thenReturn(null);
 
         User user = new User();
         user.setId(2L);
@@ -116,12 +106,7 @@ class IdentifyLoginTest {
     @Test
     @DisplayName("统一登录-账号不存在抛异常")
     void identifyLogin_NotFound() {
-        when(umsAdminService.lambdaQuery()).thenAnswer(invocation -> {
-            LambdaQueryChainWrapper<UmsAdmin> wrapper = mock(LambdaQueryChainWrapper.class);
-            when(wrapper.eq(any(), any())).thenReturn(wrapper);
-            when(wrapper.one()).thenReturn(null);
-            return wrapper;
-        });
+        when(adminIdentityProvider.findByUsername("nobody")).thenReturn(null);
 
         LambdaQueryChainWrapper<User> userWrapper = mock(LambdaQueryChainWrapper.class);
         when(userWrapper.eq(any(), any())).thenReturn(userWrapper);

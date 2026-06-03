@@ -54,7 +54,7 @@ front/
 ### 认证流程
 
 ```
-用户打开 http://localhost:3004/auth/login
+用户打开 http://localhost:3000/auth/login
   → 输入用户名密码 → POST /system/umsAdmin/login 或 /user/login
   → 后端返回 JWT access_token + refresh_token
   → 前端存入 sessionStorage，设置 wealth_logged_in + wealth_role 标志
@@ -86,7 +86,7 @@ v1.8.1 完成前端合并，3 个独立 SPA 合并为单一 `front/`：
 ```
 v1.8.0 (三 SPA)                  v1.8.1+ (单一 SPA)
 front-landing/ (3002)            
-front-user/    (3001)            →  front/ (3004)
+front-user/    (3001)            →  front/ (3000)
 front/         (3000)            
 ```
 
@@ -108,7 +108,7 @@ front/         (3000)
 |------|:----:|:-----------:|------|
 | wealth-gateway | 8080 | — | Spring Cloud Gateway（WebFlux） |
 | wealth-service | 8081 | / | 所有业务域聚合 |
-| 前端 Vite | 3004 | / | 开发服务器 |
+| 前端 Vite | 3000 | / | 开发服务器 |
 
 ### 网关路由
 

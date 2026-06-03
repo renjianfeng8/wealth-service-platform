@@ -128,7 +128,7 @@ npm install
 npx vite
 ```
 
-前端运行在 `http://localhost:3004`，通过网关 `http://localhost:8080` 调用后端接口。
+前端运行在 `http://localhost:3000`，通过网关 `http://localhost:8080` 调用后端接口。
 
 ---
 

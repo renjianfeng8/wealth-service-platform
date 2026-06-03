@@ -1,6 +1,6 @@
 package com.wealth.platform.product.service;
 
-import com.wealth.platform.product.vo.FinMarketDataVO;
+import com.wealth.platform.product.vo.MarketDataVO;
 import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -63,7 +63,7 @@ public class MarketDataPushService {
      * 向所有客户端广播完整行情快照。
      * 发送失败时立即移除对应 emitter，避免僵尸连接堆积。
      */
-    public void broadcastMarketUpdate(List<FinMarketDataVO> marketDataList) {
+    public void broadcastMarketUpdate(List<MarketDataVO> marketDataList) {
         if (emitters.isEmpty()) return;
 
         Iterator<SseEmitter> it = emitters.iterator();

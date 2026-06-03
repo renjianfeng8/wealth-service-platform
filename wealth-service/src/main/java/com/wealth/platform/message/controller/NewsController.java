@@ -6,10 +6,10 @@ import com.wealth.common.audit.AntiReplay;
 import com.wealth.common.audit.AuditLog;
 import com.wealth.common.result.Result;
 import com.wealth.common.result.ResultCode;
-import com.wealth.platform.message.dto.FinNewsDTO;
+import com.wealth.platform.message.dto.NewsDTO;
 import com.wealth.platform.message.entity.WeaNews;
-import com.wealth.platform.message.service.FinNewsService;
-import com.wealth.platform.message.vo.FinNewsVO;
+import com.wealth.platform.message.service.NewsService;
+import com.wealth.platform.message.vo.NewsVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -26,12 +26,12 @@ import java.util.List;
 @Validated
 public class NewsController {
 
-    private final FinNewsService finNewsService;
+    private final NewsService newsService;
 
     @Operation(summary = "根据ID查询财经资讯公告")
     @GetMapping("/{id}")
-    public Result<FinNewsVO> getById(@PathVariable Long id) {
-        FinNewsVO vo = finNewsService.getNewsById(id);
+    public Result<NewsVO> getById(@PathVariable Long id) {
+        NewsVO vo = newsService.getNewsById(id);
         if (vo == null) {
             return Result.error(ResultCode.NOT_FOUND);
         }
@@ -40,36 +40,36 @@ public class NewsController {
 
     @Operation(summary = "查询财经资讯公告列表")
     @GetMapping
-    public Result<List<FinNewsVO>> list() {
-        return Result.success(finNewsService.getNewsList());
+    public Result<List<NewsVO>> list() {
+        return Result.success(newsService.getNewsList());
     }
 
     @Operation(summary = "分页查询财经资讯公告")
     @GetMapping("/page")
-    public Result<IPage<FinNewsVO>> page(
+    public Result<IPage<NewsVO>> page(
             @RequestParam(defaultValue = "1") Integer pageNum,
             @RequestParam(defaultValue = "10") Integer pageSize,
             @RequestParam(required = false) String title,
             @RequestParam(required = false) String source,
             @RequestParam(required = false) Integer newsType) {
         Page<WeaNews> page = new Page<>(pageNum, pageSize);
-        return Result.success(finNewsService.pageNews(page, title, source, newsType));
+        return Result.success(newsService.pageNews(page, title, source, newsType));
     }
 
     @Operation(summary = "创建财经资讯公告")
     @PostMapping
     @AuditLog(module = "资讯管理", operation = "创建资讯")
     @AntiReplay
-    public Result<Boolean> create(@Valid @RequestBody FinNewsDTO dto) {
-        return Result.success(finNewsService.createNews(dto));
+    public Result<Boolean> create(@Valid @RequestBody NewsDTO dto) {
+        return Result.success(newsService.createNews(dto));
     }
 
     @Operation(summary = "更新财经资讯公告信息")
     @PutMapping("/{id}")
     @AuditLog(module = "资讯管理", operation = "更新资讯")
     @AntiReplay
-    public Result<Boolean> update(@PathVariable Long id, @Valid @RequestBody FinNewsDTO dto) {
-        boolean success = finNewsService.updateNews(id, dto);
+    public Result<Boolean> update(@PathVariable Long id, @Valid @RequestBody NewsDTO dto) {
+        boolean success = newsService.updateNews(id, dto);
         if (!success) {
             return Result.error(ResultCode.NOT_FOUND);
         }
@@ -81,7 +81,7 @@ public class NewsController {
     @AuditLog(module = "资讯管理", operation = "删除资讯")
     @AntiReplay
     public Result<Boolean> delete(@PathVariable Long id) {
-        boolean success = finNewsService.deleteNews(id);
+        boolean success = newsService.deleteNews(id);
         if (!success) {
             return Result.error(ResultCode.NOT_FOUND);
         }

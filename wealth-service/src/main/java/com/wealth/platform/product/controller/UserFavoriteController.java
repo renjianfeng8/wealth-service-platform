@@ -6,10 +6,10 @@ import com.wealth.common.audit.AuditLog;
 import com.wealth.common.result.Result;
 import com.wealth.common.result.ResultCode;
 import com.wealth.common.utils.BeanConvertUtil;
-import com.wealth.platform.product.dto.FinUserFavoriteDTO;
+import com.wealth.platform.product.dto.UserFavoriteDTO;
 import com.wealth.platform.product.entity.WeaUserFavorite;
-import com.wealth.platform.product.service.FinUserFavoriteService;
-import com.wealth.platform.product.vo.FinUserFavoriteVO;
+import com.wealth.platform.product.service.UserFavoriteService;
+import com.wealth.platform.product.vo.UserFavoriteVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -29,12 +29,12 @@ import java.util.List;
 @Validated
 public class UserFavoriteController {
 
-    private final FinUserFavoriteService finUserFavoriteService;
+    private final UserFavoriteService userFavoriteService;
 
     @Operation(summary = "根据ID查询用户自选关注信息")
     @GetMapping("/{id}")
-    public Result<FinUserFavoriteVO> getById(@PathVariable Long id) {
-        FinUserFavoriteVO vo = finUserFavoriteService.getFavoriteById(id);
+    public Result<UserFavoriteVO> getById(@PathVariable Long id) {
+        UserFavoriteVO vo = userFavoriteService.getFavoriteById(id);
         if (vo == null) {
             return Result.error(ResultCode.NOT_FOUND);
         }
@@ -43,27 +43,27 @@ public class UserFavoriteController {
 
     @Operation(summary = "查询用户自选关注列表")
     @GetMapping
-    public Result<List<FinUserFavoriteVO>> list(@RequestParam(required = false) Long userId) {
-        return Result.success(finUserFavoriteService.getFavoriteList(userId));
+    public Result<List<UserFavoriteVO>> list(@RequestParam(required = false) Long userId) {
+        return Result.success(userFavoriteService.getFavoriteList(userId));
     }
 
     @Operation(summary = "分页查询用户自选关注")
     @GetMapping("/page")
-    public Result<IPage<FinUserFavoriteVO>> page(
+    public Result<IPage<UserFavoriteVO>> page(
             @RequestParam(defaultValue = "1") Integer pageNum,
             @RequestParam(defaultValue = "10") Integer pageSize,
             @RequestParam(required = false) Long userId,
             @RequestParam(required = false) String productCode) {
-        IPage<WeaUserFavorite> page = finUserFavoriteService.pageWithFilter(pageNum, pageSize, userId, productCode);
-        return Result.success(BeanConvertUtil.convertPage(page, FinUserFavoriteVO.class));
+        IPage<WeaUserFavorite> page = userFavoriteService.pageWithFilter(pageNum, pageSize, userId, productCode);
+        return Result.success(BeanConvertUtil.convertPage(page, UserFavoriteVO.class));
     }
 
     @Operation(summary = "创建用户自选关注")
     @PostMapping
     @AuditLog(module = "自选管理", operation = "添加自选关注")
     @AntiReplay
-    public Result<Boolean> create(@Valid @RequestBody FinUserFavoriteDTO dto) {
-        boolean success = finUserFavoriteService.createFavorite(dto);
+    public Result<Boolean> create(@Valid @RequestBody UserFavoriteDTO dto) {
+        boolean success = userFavoriteService.createFavorite(dto);
         if (!success) {
             return Result.error(ResultCode.FAIL.getCode(), "已关注该产品，请勿重复添加");
         }
@@ -73,8 +73,8 @@ public class UserFavoriteController {
     @Operation(summary = "更新用户自选关注信息")
     @PutMapping("/{id}")
     @AuditLog(module = "自选管理", operation = "更新自选关注")
-    public Result<Boolean> update(@PathVariable Long id, @Valid @RequestBody FinUserFavoriteDTO dto) {
-        return Result.success(finUserFavoriteService.updateFavorite(id, dto));
+    public Result<Boolean> update(@PathVariable Long id, @Valid @RequestBody UserFavoriteDTO dto) {
+        return Result.success(userFavoriteService.updateFavorite(id, dto));
     }
 
     @Operation(summary = "删除用户自选关注（物理删除）")
@@ -82,6 +82,6 @@ public class UserFavoriteController {
     @AuditLog(module = "自选管理", operation = "删除自选关注")
     @AntiReplay
     public Result<Boolean> delete(@PathVariable Long id) {
-        return Result.success(finUserFavoriteService.deleteFavorite(id));
+        return Result.success(userFavoriteService.deleteFavorite(id));
     }
 }

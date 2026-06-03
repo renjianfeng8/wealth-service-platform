@@ -171,7 +171,7 @@ cd front
 # 安装依赖
 npm install
 
-# 启动开发服务器（端口 3004）
+# 启动开发服务器（端口 3000）
 npx vite
 ```
 
@@ -227,10 +227,10 @@ curl -s -X POST "http://localhost:8080/system/umsAdmin/login" \
 
 | 页面 | URL |
 |------|-----|
-| 首页 | http://localhost:3004/home |
-| 登录页 | http://localhost:3004/auth/login |
-| 用户端 | http://localhost:3004/user/dashboard |
-| 管理端 | http://localhost:3004/admin/dashboard |
+| 首页 | http://localhost:3000/home |
+| 登录页 | http://localhost:3000/auth/login |
+| 用户端 | http://localhost:3000/user/dashboard |
+| 管理端 | http://localhost:3000/admin/dashboard |
 | Knife4j 文档 | http://localhost:8080/doc.html |
 
 ### 业务接口测试
@@ -240,15 +240,15 @@ TOKEN="<从登录响应中获取的 accessToken>"
 
 # 管理员分页
 curl -s -H "Authorization: Bearer $TOKEN" \
-  "http://localhost:8080/system/umsAdmin/list?pageNum=1&pageSize=10"
+  "http://localhost:8080/system/umsAdmin/page?pageNum=1&pageSize=10"
 
 # 产品分页
 curl -s -H "Authorization: Bearer $TOKEN" \
-  "http://localhost:8080/product/WeaProduct/page?pageNum=1&pageSize=10"
+  "http://localhost:8080/product/wea-product/page?pageNum=1&pageSize=10"
 
 # 交易订单
 curl -s -H "Authorization: Bearer $TOKEN" \
-  "http://localhost:8080/trade/WeaTradeOrder/page?pageNum=1&pageSize=10"
+  "http://localhost:8080/trade/wea-trade-order/page?pageNum=1&pageSize=10"
 
 # 产品搜索
 curl -s -H "Authorization: Bearer $TOKEN" \
@@ -270,7 +270,7 @@ curl -s -H "Authorization: Bearer $TOKEN" \
 | wealth-gateway | **8080** | 网关（统一入口）|
 | wealth-service | **8081** | 业务聚合服务 |
 | **前端** | | |
-| Vite 开发服务器 | **3004** | 前端 SPA |
+| Vite 开发服务器 | **3000** | 前端 SPA |
 
 ---
 
@@ -316,7 +316,7 @@ taskkill /PID <PID> /F
 
 ### 跨域问题
 
-网关已全局配置 CORS，允许 Vite 开发服务器（`localhost:3004`）及生产环境域名访问。如果跳过网关直接访问 `localhost:8081` 需要同时在 wealth-service 配置 CORS。
+网关已全局配置 CORS，允许 Vite 开发服务器（`localhost:3000`）及生产环境域名访问。如果跳过网关直接访问 `localhost:8081` 需要同时在 wealth-service 配置 CORS。
 
 ---
 
@@ -333,7 +333,7 @@ wealth-gateway（端口 8080，最先启动）
        ↓
 wealth-service（端口 8081，所有业务域聚合）
        ↓
-front/（端口 3004，Vite 开发服务器）
+front/（端口 3000，Vite 开发服务器）
 ```
 
 > 每次修改 `wealth-common` 后，必须重新执行 `mvn clean install -pl wealth-common -DskipTests` 才能被其他模块引用。

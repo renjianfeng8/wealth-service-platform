@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
 import NProgress from 'nprogress'
 import 'nprogress/nprogress.css'
+import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/store'
 
 declare module 'vue-router' {
@@ -106,12 +107,14 @@ router.beforeEach((to, _from) => {
   // 检查登录状态
   if (!userStore.isLoggedIn) {
     const loginPath = '/auth/login'
+    ElMessage.warning('请先登录后再访问')
     // 使用 replace 避免回退时陷入登录页死循环
     return { path: loginPath, query: { redirect: to.fullPath }, replace: true }
   }
 
   // 检查管理员权限
   if (to.meta.requiresAdmin && !userStore.isAdmin) {
+    ElMessage.warning('当前账号暂无管理员权限')
     return { path: '/403', query: { redirect: to.fullPath }, replace: true }
   }
 
@@ -120,6 +123,11 @@ router.beforeEach((to, _from) => {
 
 router.afterEach(() => {
   NProgress.done()
+})
+
+router.onError(() => {
+  NProgress.done()
+  ElMessage.error('页面加载失败，请稍后重试')
 })
 
 export default router

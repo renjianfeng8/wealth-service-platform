@@ -2,8 +2,8 @@ package com.wealth.platform.product.service;
 
 import com.wealth.common.utils.BeanConvertUtil;
 import com.wealth.platform.product.entity.WeaMarketData;
-import com.wealth.platform.product.mapper.FinMarketDataMapper;
-import com.wealth.platform.product.vo.FinMarketDataVO;
+import com.wealth.platform.product.mapper.MarketDataMapper;
+import com.wealth.platform.product.vo.MarketDataVO;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +25,7 @@ import java.util.Random;
 @Service
 public class MarketDataSimulationService {
 
-    private final FinMarketDataMapper marketDataMapper;
+    private final MarketDataMapper marketDataMapper;
     private final MarketDataPushService pushService;
 
     /** 自注入代理，解决 @Transactional 自调用失效问题 */
@@ -36,7 +36,7 @@ public class MarketDataSimulationService {
     private volatile List<WeaMarketData> cachedMarketData;
     private final Random random = new Random();
 
-    public MarketDataSimulationService(FinMarketDataMapper marketDataMapper,
+    public MarketDataSimulationService(MarketDataMapper marketDataMapper,
                                         MarketDataPushService pushService) {
         this.marketDataMapper = marketDataMapper;
         this.pushService = pushService;
@@ -64,7 +64,7 @@ public class MarketDataSimulationService {
         self.simulateTickDb();
 
         // 2. 事务外广播 SSE（避免广播异常导致 DB 回滚）
-        List<FinMarketDataVO> voList = BeanConvertUtil.convertList(cachedMarketData, FinMarketDataVO.class);
+        List<MarketDataVO> voList = BeanConvertUtil.convertList(cachedMarketData, MarketDataVO.class);
         try {
             pushService.broadcastMarketUpdate(voList);
         } catch (Exception e) {
@@ -100,7 +100,7 @@ public class MarketDataSimulationService {
     }
 
     /** 返回当前缓存的全部行情数据（全量快照） */
-    public List<FinMarketDataVO> getAllMarketData() {
-        return BeanConvertUtil.convertList(cachedMarketData, FinMarketDataVO.class);
+    public List<MarketDataVO> getAllMarketData() {
+        return BeanConvertUtil.convertList(cachedMarketData, MarketDataVO.class);
     }
 }

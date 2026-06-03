@@ -35,6 +35,29 @@
             <artifactId>knife4j-gateway-spring-boot-starter</artifactId>
         </dependency>
 
+        <!-- JWT 认证过滤器 -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- Lombok 注解处理 -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+
         <!-- 链路追踪 (Micrometer Tracing + Brave + Zipkin) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
