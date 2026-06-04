@@ -46,37 +46,8 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>properties-maven-plugin</artifactId>
-                <version>1.2.1</version>
-                <executions>
-                    <execution>
-                        <phase>initialize</phase>
-                        <goals>
-                            <goal>read-project-properties</goal>
-                        </goals>
-                        <configuration>
-                            <files>
-                                <file>.env</file>
-                            </files>
-                            <ignoreFileNotFound>true</ignoreFileNotFound>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <configuration>
-                    <environmentVariables>
-                        <JWT_SECRET>${JWT_SECRET}</JWT_SECRET>
-                        <MYSQL_HOST>${MYSQL_HOST}</MYSQL_HOST>
-                        <MYSQL_ROOT_PASSWORD>${MYSQL_ROOT_PASSWORD}</MYSQL_ROOT_PASSWORD>
-                        <REDIS_HOST>${REDIS_HOST}</REDIS_HOST>
-                        <REDIS_PORT>${REDIS_PORT}</REDIS_PORT>
-                        <REDIS_PASSWORD>${REDIS_PASSWORD}</REDIS_PASSWORD>
-                    </environmentVariables>
-                </configuration>
             </plugin>
         </plugins>
     </build>

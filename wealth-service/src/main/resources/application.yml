@@ -16,7 +16,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://${MYSQL_HOST:localhost}:3306/wealth?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
     username: root
-    password: ${MYSQL_ROOT_PASSWORD}
+    password: ${MYSQL_ROOT_PASSWORD:123456}
     hikari:
       maximum-pool-size: 30
       minimum-idle: 10
