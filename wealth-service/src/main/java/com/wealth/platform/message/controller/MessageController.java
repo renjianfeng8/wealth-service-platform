@@ -6,6 +6,7 @@ import com.wealth.common.audit.AntiReplay;
 import com.wealth.common.audit.AuditLog;
 import com.wealth.common.result.Result;
 import com.wealth.common.result.ResultCode;
+import com.wealth.platform.message.dto.BatchReadDTO;
 import com.wealth.platform.message.dto.MessageDTO;
 import com.wealth.platform.message.entity.WeaMessage;
 import com.wealth.platform.message.service.MessageService;
@@ -74,6 +75,26 @@ public class MessageController {
         if (!success) {
             return Result.error(ResultCode.NOT_FOUND);
         }
+        return Result.success(true);
+    }
+
+    @Operation(summary = "标记消息为已读")
+    @PutMapping("/{id}/read")
+    public Result<Boolean> markAsRead(@PathVariable Long id) {
+        boolean success = messageService.markAsRead(id);
+        if (!success) {
+            return Result.error(ResultCode.NOT_FOUND);
+        }
+        return Result.success(true);
+    }
+
+    @Operation(summary = "批量标记消息为已读")
+    @PutMapping("/batch-read")
+    public Result<Boolean> batchMarkAsRead(@RequestBody BatchReadDTO dto) {
+        if (dto.getIds() == null || dto.getIds().isEmpty()) {
+            return Result.error(ResultCode.PARAM_ERROR);
+        }
+        messageService.batchMarkAsRead(dto.getIds());
         return Result.success(true);
     }
 

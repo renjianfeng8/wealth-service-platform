@@ -144,9 +144,9 @@ export const ORDER_STATUS_OPTIONS: DictItem[] = [
 ]
 
 export const MSG_TYPE_OPTIONS: DictItem[] = [
-  { label: '系统通知', value: 1 },
-  { label: '交易提醒', value: 2 },
-  { label: '风控通知', value: 3 },
+  { label: '行情提醒', value: 1 },
+  { label: '资讯推送', value: 2 },
+  { label: '委托通知', value: 3 },
   { label: '活动通知', value: 4 },
 ]
 
@@ -158,8 +158,7 @@ export const PRODUCT_TYPE_OPTIONS: DictItem[] = [
 ]
 
 export const NEWS_TYPE_OPTIONS: DictItem[] = [
-  { label: '行业动态', value: 1 },
-  { label: '市场分析', value: 2 },
-  { label: '政策解读', value: 3 },
-  { label: '公司公告', value: 4 },
+  { label: '行情快讯', value: 1 },
+  { label: '行业公告', value: 2 },
+  { label: '理财资讯', value: 3 },
 ]

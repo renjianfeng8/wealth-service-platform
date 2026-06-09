@@ -23,5 +23,9 @@ public interface MessageService extends IService<WeaMessage> {
 
     boolean updateMessage(Long id, MessageDTO dto);
 
+    boolean markAsRead(Long id);
+
+    void batchMarkAsRead(List<Long> ids);
+
     boolean deleteMessage(Long id);
 }

@@ -114,5 +114,14 @@ export function deleteNews(id: number) {
  * @returns 更新结果
  */
 export function readMessage(id: number) {
-  return request.put(`/message/wea-message/${id}`, { readFlag: 1 })
+  return request.put(`/message/wea-message/${id}/read`)
+}
+
+/**
+ * 批量标记站内消息为已读
+ * @param ids - 消息 ID 列表
+ * @returns 更新结果
+ */
+export function batchReadMessage(ids: number[]) {
+  return request.put('/message/wea-message/batch-read', { ids })
 }

@@ -64,11 +64,11 @@ export function formatRelativeTime(time: string | undefined | null): string {
 }
 
 export function newsTypeText(type: number | undefined | null): string {
-  const map: Record<number, string> = { 1: '行业动态', 2: '市场分析', 3: '政策解读', 4: '公司公告' }
+  const map: Record<number, string> = { 1: '行情快讯', 2: '行业公告', 3: '理财资讯' }
   return type !== null && type !== undefined ? map[type] || '-' : '-'
 }
 
 export function msgTypeText(type: number | undefined | null): string {
-  const map: Record<number, string> = { 1: '系统通知', 2: '交易提醒', 3: '风控通知', 4: '活动通知' }
+  const map: Record<number, string> = { 1: '行情提醒', 2: '资讯推送', 3: '委托通知', 4: '活动通知' }
   return type !== null && type !== undefined ? map[type] || '-' : '-'
 }

@@ -13,7 +13,7 @@ public class MessageDTO {
     @Schema(description = "用户ID")
     private Long userId;
 
-    @Schema(description = "消息类型 1系统 2交易 3风控")
+    @Schema(description = "消息类型 1行情提醒 2资讯推送 3委托通知 4活动通知")
     private Integer msgType;
 
     @NotBlank(message = "消息标题不能为空")

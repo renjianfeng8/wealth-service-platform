@@ -74,7 +74,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/store/index'
-import { getMessagePage, readMessage } from '@/api/message'
+import { getMessagePage, readMessage, batchReadMessage } from '@/api/message'
 import { formatDateTime, formatRelativeTime, msgTypeText } from '@/utils/format'
 import type { WeaMessage } from '@/types'
 
@@ -130,7 +130,7 @@ async function handleMarkAllRead() {
   const unreadIds = messages.value.filter(m => m.readFlag !== 1 && m.id).map(m => m.id as number)
   if (unreadIds.length === 0) return
   try {
-    await Promise.all(unreadIds.map(id => readMessage(id)))
+    await batchReadMessage(unreadIds)
     messages.value.forEach(m => { m.readFlag = 1 })
     ElMessage.success('已全部标为已读')
   } catch {

@@ -4,7 +4,6 @@
     <Sidebar :is-collapsed="isCollapsed" />
     <div class="layout-main">
       <Navbar :collapsed="isCollapsed" @toggle="handleToggle" />
-      <TagsView />
       <div class="layout-content">
         <router-view />
       </div>
@@ -16,7 +15,6 @@
 import { onMounted, onUnmounted, ref, watch } from 'vue'
 import Sidebar from './Sidebar.vue'
 import Navbar from './Navbar.vue'
-import TagsView from '@/components/TagsView.vue'
 
 const COLLAPSED_KEY = 'wealth_admin_sidebar_collapsed'
 const isCollapsed = ref(localStorage.getItem(COLLAPSED_KEY) === '1')

@@ -80,6 +80,25 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, WeaMessage>
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    public boolean markAsRead(Long id) {
+        WeaMessage entity = getById(id);
+        if (entity == null) return false;
+        entity.setReadFlag(1);
+        return updateById(entity);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void batchMarkAsRead(List<Long> ids) {
+        List<WeaMessage> list = listByIds(ids);
+        for (WeaMessage msg : list) {
+            msg.setReadFlag(1);
+        }
+        updateBatchById(list);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean deleteMessage(Long id) {
         if (getById(id) == null) {
             throw new ServiceException(404, "message not found");

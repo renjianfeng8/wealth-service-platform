@@ -38,6 +38,16 @@
 
 ---
 
+## 文档入口
+
+- [文档总索引](docs/README.md)：项目文档导航、状态口径和阅读顺序。
+- [文档治理规则](docs/DOCUMENTATION-GOVERNANCE.md)：权威来源、分类、命名、归档和更新检查清单。
+- [启动指南](docs/STARTUP.md)：本地环境、依赖服务、启动顺序和冒烟验证。
+- [架构文档](docs/ARCHITECTURE.md)：模块、路由、配置体系和部署结构。
+- [数据库结构](docs/DATABASE-SCHEMA.md)：表结构、字段和 Entity 生成依据。
+
+---
+
 ## 项目亮点
 
 ### 双 Token 认证体系
