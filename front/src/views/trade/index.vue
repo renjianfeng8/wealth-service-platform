@@ -176,6 +176,25 @@ const userStore = useUserStore()
 const orderFormRef = ref<FormInstance>()
 const submitting = ref(false)
 const confirmVisible = ref(false)
+// B6: 基于业务参数的幂等键缓存 — key 由最终提交参数确定，参数变更自动重算
+let lastOrderHash = ''
+let currentIdempotentKey = ''
+
+/** B6: 根据订单参数生成稳定哈希，相同参数返回相同 key，参数变更自动生成新 key */
+function resolveIdempotentKey(): string {
+  const hash = [
+    userStore.userId,
+    orderForm.productCode,
+    orderForm.tradeType,
+    orderForm.entrustPrice,
+    orderForm.entrustNum,
+  ].join('|')
+  if (hash !== lastOrderHash || !currentIdempotentKey) {
+    currentIdempotentKey = crypto.randomUUID()
+    lastOrderHash = hash
+  }
+  return currentIdempotentKey
+}
 const confirmData = reactive({
   productCode: '',
   tradeType: 1,
@@ -212,6 +231,9 @@ async function handleSubmit() {
     ElMessage.error('用户信息异常，请重新登录')
     return
   }
+  // B6: resolveIdempotentKey() 在弹窗打开前预计算一次，确保 key 基于当前参数
+  // 用户修改参数再提交时，hash 变化自动触发新 key 生成
+  resolveIdempotentKey()
   // 打开下单确认弹窗
   confirmData.productCode = orderForm.productCode
   confirmData.tradeType = orderForm.tradeType
@@ -224,23 +246,24 @@ async function doSubmit() {
   confirmVisible.value = false
   submitting.value = true
   try {
-    const idempotentKey = crypto.randomUUID()
     await createTradeOrder({
       userId: userStore.userId,
       productCode: orderForm.productCode,
       tradeType: orderForm.tradeType,
       entrustPrice: orderForm.entrustPrice,
       entrustNum: orderForm.entrustNum,
-      idempotentKey,
+      idempotentKey: resolveIdempotentKey(), // B6: 实时计算 key，参数变更自动重算
     })
     ElMessage.success('委托提交成功')
+    lastOrderHash = '' // B6: 清除哈希缓存，下次全新提交
+    currentIdempotentKey = ''
     orderForm.productCode = ''
     orderForm.tradeType = 1
     orderForm.entrustPrice = 100
     orderForm.entrustNum = 1
     fetchOrders()
   } catch {
-    // handled
+    // handled — currentIdempotentKey 保留，允许重试复用
   } finally {
     submitting.value = false
   }

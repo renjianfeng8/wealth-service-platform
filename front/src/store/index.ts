@@ -51,6 +51,20 @@ export const useUserStore = defineStore('user', {
       setStoredUser({ username: this.username, ...info })
     },
     /**
+     * S2: 检查令牌是否过期，过期则自动登出。
+     * @returns true 表示已过期并登出
+     */
+    checkTokenExpired(): boolean {
+      if (!this.token) return false
+      // 从 storage 重新获取，getToken() 内部会做过期检查
+      const stored = getToken()
+      if (!stored) {
+        this.logout()
+        return true
+      }
+      return false
+    },
+    /**
      * 登出，清除所有登录状态、用户信息和角色
      */
     logout() {

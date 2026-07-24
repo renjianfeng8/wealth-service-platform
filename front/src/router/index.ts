@@ -12,6 +12,7 @@ declare module 'vue-router' {
     requiresAuth?: boolean
     requiresAdmin?: boolean
     group?: string
+    keepAlive?: boolean // B1: 是否启用 KeepAlive 缓存，默认 true
   }
 }
 
@@ -26,8 +27,8 @@ const routes: RouteRecordRaw[] = [
       { path: 'products', component: () => import('@/views/products/index.vue'), meta: { title: '产品中心' } },
       { path: 'market',   component: () => import('@/views/market/index.vue'),  meta: { title: '实时行情' } },
       { path: 'news',     component: () => import('@/views/news/index.vue'),    meta: { title: '财经资讯' } },
-      { path: 'auth/login', component: () => import('@/views/auth/login/index.vue'), meta: { title: '登录' } },
-      { path: 'register', component: () => import('@/views/register/index.vue'),   meta: { title: '注册' } },
+      { path: 'auth/login', component: () => import('@/views/auth/login/index.vue'), meta: { title: '登录', keepAlive: false } },
+      { path: 'register', component: () => import('@/views/register/index.vue'),   meta: { title: '注册', keepAlive: false } },
     ],
   },
 
@@ -40,7 +41,7 @@ const routes: RouteRecordRaw[] = [
       { path: 'dashboard', component: () => import('@/views/dashboard/index.vue'), meta: { title: '个人中心' } },
       { path: 'profile',   component: () => import('@/views/profile/index.vue'),   meta: { title: '个人资料' } },
       { path: 'favorite',  component: () => import('@/views/favorite/index.vue'),  meta: { title: '我的自选' } },
-      { path: 'trade',     component: () => import('@/views/trade/index.vue'),     meta: { title: '交易委托' } },
+      { path: 'trade',     component: () => import('@/views/trade/index.vue'),     meta: { title: '交易委托', keepAlive: false } },
       { path: 'message',   component: () => import('@/views/message/index.vue'),   meta: { title: '消息中心' } },
     ],
   },
@@ -93,6 +94,15 @@ router.beforeEach((to, _from) => {
   }
 
   const userStore = useUserStore()
+
+  // S2: 导航时重新校验令牌过期状态
+  if (userStore.isLoggedIn) {
+    const expired = userStore.checkTokenExpired()
+    if (expired) {
+      ElMessage.warning('登录已过期，请重新登录')
+      return { path: '/auth/login', replace: true }
+    }
+  }
 
   // 已登录用户访问登录页 → 跳转对应首页
   if (to.path === '/auth/login' && userStore.isLoggedIn) {

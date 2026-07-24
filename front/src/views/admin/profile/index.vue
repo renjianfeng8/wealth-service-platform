@@ -73,12 +73,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, onUnmounted } from 'vue'
 import { useUserStore } from '@/store/index'
 import { getAdminById, updateAdmin, resetAdminPassword } from '@/api/system'
 import { UserFilled } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
+import { useFormGuard } from '@/composables/useFormGuard'
+import { onBeforeRouteLeave } from 'vue-router' // B7
 
 const userStore = useUserStore()
 
@@ -92,6 +94,9 @@ const adminInfo = reactive({
   nickName: '',
   email: '',
 })
+
+// B7: 表单离开守卫
+const { isDirty, reset } = useFormGuard(adminInfo)
 
 const passwordFormRef = ref<FormInstance>()
 const passwordForm = reactive({
@@ -131,6 +136,8 @@ async function fetchProfile() {
       adminInfo.nickName = data.nickName || ''
       adminInfo.email = data.email || ''
     }
+    // B7: 数据加载完成后更新快照，防止异步填充后的脏误判
+    reset()
   } catch {
     // use store defaults
   } finally {
@@ -151,6 +158,7 @@ async function handleSave() {
       nickname: adminInfo.nickName || '',
       avatar: '',
     })
+    reset() // B7: 保存成功后重置脏标记
     ElMessage.success('保存成功')
   } catch {
     // handled
@@ -189,7 +197,32 @@ async function handlePasswordDialogClose(done: () => void) {
   } catch { /* 取消关闭 */ }
 }
 
-onMounted(fetchProfile)
+// B7: 表单离开保护 — 路由导航拦截
+onBeforeRouteLeave((_to, _from, next) => {
+  if (!isDirty()) {
+    next()
+    return
+  }
+  ElMessageBox.confirm('有未保存的修改，确定离开吗？', '离开确认', { type: 'warning' })
+    .then(() => next())
+    .catch(() => next(false))
+})
+
+// B7: 表单离开保护 — 浏览器刷新/关闭拦截
+function handleBeforeUnload(e: BeforeUnloadEvent) {
+  if (isDirty()) {
+    e.preventDefault()
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('beforeunload', handleBeforeUnload)
+  fetchProfile()
+})
+
+onUnmounted(() => {
+  window.removeEventListener('beforeunload', handleBeforeUnload)
+})
 </script>
 
 <style scoped>

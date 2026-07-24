@@ -52,6 +52,7 @@ import AdminFilterBar from '@/components/admin/AdminFilterBar.vue'
 import AdminDataTable from '@/components/admin/AdminDataTable.vue'
 import AdminFormDialog from '@/components/admin/AdminFormDialog.vue'
 import { useFormGuard } from '@/composables/useFormGuard'
+import { assignEditable } from '@/utils/object'
 import { getFavoritePage, createFavorite, updateFavorite, deleteFavorite } from '@/api/favorite'
 import { formatDateTime } from '@/utils/format'
 import type { WeaUserFavorite } from '@/types'
@@ -69,7 +70,7 @@ type FavoriteForm = Omit<WeaUserFavorite, 'userId'> & {
 }
 
 const filterFields: AdminFilterField[] = [
-  { prop: 'userId', label: '用户ID', type: 'number', min: 0, width: '148px' },
+  { prop: 'userId', label: '用户ID', type: 'number', width: '148px' },
   { prop: 'productCode', label: '产品编码', placeholder: '搜索产品编码' },
 ]
 
@@ -96,7 +97,7 @@ async function fetchData() {
       pageNum: query.pageNum,
       pageSize: query.pageSize,
     }
-    if (query.userId !== undefined) params.userId = query.userId
+    if (query.userId != null) params.userId = query.userId // B4: != null 同时排除 undefined 和 null
     if (query.productCode) params.productCode = query.productCode
     const res = await getFavoritePage(params)
     tableData.value = res.data.records || []
@@ -130,7 +131,7 @@ function handleAdd() {
 
 function handleEdit(row: WeaUserFavorite) {
   isEdit.value = true
-  Object.assign(form, row)
+  assignEditable(form, row)
   reset()
   dialogVisible.value = true
 }

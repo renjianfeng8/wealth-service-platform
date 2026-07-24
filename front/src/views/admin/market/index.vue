@@ -115,6 +115,7 @@ import AdminFilterBar from '@/components/admin/AdminFilterBar.vue'
 import AdminDataTable from '@/components/admin/AdminDataTable.vue'
 import AdminFormDialog from '@/components/admin/AdminFormDialog.vue'
 import { useFormGuard } from '@/composables/useFormGuard'
+import { assignEditable } from '@/utils/object'
 import { getMarketDataPage, createMarketData, updateMarketData, deleteMarketData } from '@/api/product'
 import { formatDateTime, formatPrice, formatRate } from '@/utils/format'
 import type { WeaMarketData } from '@/types'
@@ -210,7 +211,7 @@ function handleAdd() {
 
 function handleEdit(row: WeaMarketData) {
   isEdit.value = true
-  Object.assign(form, row)
+  assignEditable(form, row)
   reset()
   dialogVisible.value = true
 }

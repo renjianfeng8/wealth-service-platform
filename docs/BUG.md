@@ -8,7 +8,65 @@
 
 ## 活跃问题
 
-### Bug-014: 12 个 list() 端点缺少分页参数（已用 LIMIT 1000 兜底）
+### Bug-017: 管理员个人信息页 API 加载失败时表单离开守卫误判
+
+**日期**: 2026-07-24
+**模块**: front（admin/profile/index.vue）
+**影响**: 后端接口异常时，`useFormGuard` 的 `reset()` 在 `try` 块内未被调用，username 被 store 前端赋值后与空快照不一致，`isDirty()` 返回 true，未修改字段直接导航仍弹出确认框
+
+#### 现象
+1. `fetchProfile()` 中 `adminInfo.username = userStore.username` 在 `try` 前执行
+2. API 调用进入 `catch` 块，`reset()` 未执行
+3. 快照仍为 composable 初始化时的空值 `{username:'', nickName:'', email:''}`
+4. 当前 adminInfo 的 `username` 不为空 → `isDirty()=true` → 导航拦截误弹窗
+
+#### 改进方向
+将 `reset()` 移至 `finally` 块，无论成功/失败均以最终状态更新快照
+
+---
+
+### Bug-018: 交易页幂等键参数改回原值后 hash 重算
+
+**日期**: 2026-07-24
+**模块**: front（trade/index.vue）
+**影响**: 极低频边缘场景，用户提交失败→修改参数→改回原值→再次提交，幂等键与第一次不同，后端视作新请求
+
+#### 现象
+1. 提交 A（hash-A）→ 失败 → key 缓存 `lastOrderHash=hash-A`
+2. 用户改参数 → hash-B → `lastOrderHash=hash-B`
+3. 用户改回原参数 → hash-A（≠ lastOrderHash=hash-B）→ 生成新 key
+4. 若第一次提交实际成功（仅网络超时），第二次产生重复订单
+
+#### 改进方向
+引入更稳定的去重策略（如服务端基于业务参数的幂等判断），前端侧影响可控
+
+---
+
+### Bug-019: 自选页产品分批加载 API 错误时降级不完整
+
+**日期**: 2026-07-24
+**模块**: front（favorite/index.vue）
+**影响**: `enrichFavorites` 分批产品过程中某页 API 出错，partial data 仍被使用，部分产品名称回退为 productCode
+
+#### 现象
+`while(true)` 循环中 `catch { break }`，已加载的部分数据保留，未加载的产品名显示为编码
+
+#### 改进方向
+可增加重试机制或标记降级状态 UI 提示
+
+---
+
+### Bug-020: KeepAlive exclude 残留 defineOptions
+
+**日期**: 2026-07-24
+**模块**: front（login/index.vue、register/index.vue）
+**影响**: 无害残留。App.vue 已切换为路由 meta 动态 key 方案，`defineOptions({ name: 'LoginPage' })` 不再被 KeepAlive 使用
+
+#### 现象
+`LoginPage`/`RegisterPage` 组件名称声明仅对 Vue DevTools 有辅助作用，无功能影响
+
+#### 改进方向
+下阶段可移除，或保留作为 DevTools 调试标识
 
 **日期**: 2026-05-23
 **模块**: 全模块

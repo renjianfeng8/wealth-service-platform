@@ -25,10 +25,10 @@
   --fl-primary-hover: #4a8aff;
   --fl-primary-light: rgba(26, 109, 255, 0.08);
 
-  --fl-rise: #e74c3c;
-  --fl-fall: #27ae60;
-  --fl-rise-bg: rgba(231, 76, 60, 0.08);
-  --fl-fall-bg: rgba(39, 174, 96, 0.08);
+  --fl-rise: #34c759;   /* B8: 涨绿 — 与 --rise-color 统一 */
+  --fl-fall: #ff3b30;   /* B8: 跌红 — 与 --fall-color 统一 */
+  --fl-rise-bg: rgba(52, 199, 89, 0.08);
+  --fl-fall-bg: rgba(255, 59, 48, 0.08);
 
   --fl-radius: 10px;
   --fl-radius-sm: 6px;

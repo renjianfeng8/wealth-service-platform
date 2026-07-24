@@ -79,6 +79,9 @@ import { User, Lock, TrendCharts } from '@element-plus/icons-vue'
 import type { FormInstance, FormRules } from 'element-plus'
 import { identifyLogin } from '@/api/user'
 
+// B1: 为 KeepAlive exclude 提供组件名
+defineOptions({ name: 'LoginPage' })
+
 const router = useRouter()
 const route = useRoute()
 const userStore = useUserStore()
@@ -128,23 +131,13 @@ async function handleLogin() {
   }
 }
 
-// ---- URL token auto-login (来自统一登录跳转，仅处理一次) ----
+// S1: URL token 参数不再自动登录（需通过后端表单验证）
+// 仅清理 URL 参数，避免泄露
 onMounted(() => {
   const params = new URLSearchParams(window.location.search)
-  const token = params.get('token')
-  if (token && !userStore.isLoggedIn) {
-    userStore.setLoginInfo({
-      username: '用户',
-      userId: 0,
-      role: 'user',
-    })
+  if (params.get('token')) {
     window.history.replaceState({}, '', window.location.pathname)
-    ElMessage.success('登录成功')
-    router.push('/user/dashboard')
-    return
   }
-
-  // 无 token 直接访问 → 展示登录页面等待用户操作
 })
 </script>
 

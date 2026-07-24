@@ -73,6 +73,7 @@ import AdminFilterBar from '@/components/admin/AdminFilterBar.vue'
 import AdminDataTable from '@/components/admin/AdminDataTable.vue'
 import AdminFormDialog from '@/components/admin/AdminFormDialog.vue'
 import { useFormGuard } from '@/composables/useFormGuard'
+import { assignEditable } from '@/utils/object'
 import { getRolePage, createRole, updateRole, deleteRole } from '@/api/system'
 import { formatDateTime, statusTag, statusText } from '@/utils/format'
 import { STATUS_OPTIONS } from '@/types'
@@ -148,7 +149,7 @@ function handleAdd() {
 
 function handleEdit(row: RoleRow) {
   isEdit.value = true
-  Object.assign(form, row)
+  assignEditable(form, row)
   reset()
   dialogVisible.value = true
 }

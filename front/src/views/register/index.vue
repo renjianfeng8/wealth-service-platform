@@ -90,6 +90,9 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
 import { useFormGuard } from '@/composables/useFormGuard'
 
+// B1: 为 KeepAlive exclude 提供组件名
+defineOptions({ name: 'RegisterPage' })
+
 const router = useRouter()
 
 const formRef = ref<FormInstance>()

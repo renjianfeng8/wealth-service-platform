@@ -183,7 +183,7 @@ async function fetchProducts() {
     if (filterType.value) params.productType = filterType.value
     if (keyword.value) {
       params.productName = keyword.value
-      params.productCode = keyword.value
+      // B2: 移除重复的 productCode 参数，避免 AND 条件导致搜索永久无结果
     }
     if (sortBy.value) {
       const parts = sortBy.value.split('_')

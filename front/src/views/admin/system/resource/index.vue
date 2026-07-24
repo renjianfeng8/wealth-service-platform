@@ -60,6 +60,7 @@ import AdminFilterBar from '@/components/admin/AdminFilterBar.vue'
 import AdminDataTable from '@/components/admin/AdminDataTable.vue'
 import AdminFormDialog from '@/components/admin/AdminFormDialog.vue'
 import { useFormGuard } from '@/composables/useFormGuard'
+import { assignEditable } from '@/utils/object'
 import { getResourcePage, createResource, updateResource, deleteResource } from '@/api/system'
 import { formatDateTime } from '@/utils/format'
 import type { UmsResource } from '@/types'
@@ -135,7 +136,7 @@ function handleAdd() {
 
 function handleEdit(row: ResourceRow) {
   isEdit.value = true
-  Object.assign(form, row)
+  assignEditable(form, row)
   reset()
   dialogVisible.value = true
 }

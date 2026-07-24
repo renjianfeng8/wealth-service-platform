@@ -91,6 +91,7 @@ import AdminFilterBar from '@/components/admin/AdminFilterBar.vue'
 import AdminDataTable from '@/components/admin/AdminDataTable.vue'
 import AdminFormDialog from '@/components/admin/AdminFormDialog.vue'
 import { useFormGuard } from '@/composables/useFormGuard'
+import { assignEditable } from '@/utils/object'
 import { getNewsPage, createNews, updateNews, deleteNews } from '@/api/message'
 import { formatDateTime, newsTypeText } from '@/utils/format'
 import { NEWS_TYPE_OPTIONS } from '@/types'
@@ -165,7 +166,7 @@ function handleAdd() {
 
 function handleEdit(row: WeaNews) {
   isEdit.value = true
-  Object.assign(form, row)
+  assignEditable(form, row)
   reset()
   dialogVisible.value = true
 }

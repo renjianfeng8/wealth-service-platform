@@ -93,6 +93,7 @@ import AdminFilterBar from '@/components/admin/AdminFilterBar.vue'
 import AdminDataTable from '@/components/admin/AdminDataTable.vue'
 import AdminFormDialog from '@/components/admin/AdminFormDialog.vue'
 import { useFormGuard } from '@/composables/useFormGuard'
+import { assignEditable } from '@/utils/object'
 import { getTradeOrderPage, createTradeOrder, updateTradeOrder, deleteTradeOrder } from '@/api/trade'
 import { formatDateTime, formatPrice } from '@/utils/format'
 import type { DictItem, WeaTradeOrder } from '@/types'
@@ -218,7 +219,7 @@ function handleAdd() {
 
 function handleEdit(row: WeaTradeOrder) {
   isEdit.value = true
-  Object.assign(form, row)
+  assignEditable(form, row)
   reset()
   dialogVisible.value = true
 }

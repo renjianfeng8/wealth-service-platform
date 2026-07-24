@@ -63,7 +63,8 @@ export function deleteUser(id: number) {
  * @returns 删除结果
  */
 export function deleteUserBatch(ids: number[]) {
-  return request.delete('/user/batch', { data: ids })
+  // D1: 包裹为 { ids } 格式，避免 DELETE 请求裸数组 body 不被后端解析
+  return request.delete('/user/batch', { data: { ids } })
 }
 
 /**

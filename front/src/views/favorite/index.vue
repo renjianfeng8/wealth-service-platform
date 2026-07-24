@@ -97,7 +97,7 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/store/index'
 import { getFavoritePage, createFavorite, deleteFavorite } from '@/api/favorite'
-import { getProductList } from '@/api/product'
+import { getProductPage } from '@/api/product'
 import { formatPrice, formatRate, formatDate } from '@/utils/format'
 import { Delete } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -124,11 +124,20 @@ const sseConnected = ref(false)
 let eventSource: EventSource | null = null
 
 async function enrichFavorites(records: WeaUserFavorite[]): Promise<FavoriteItem[]> {
-  let allProducts: WeaProduct[] = []
-  try {
-    const pr = await getProductList()
-    allProducts = (pr.data || []) as WeaProduct[]
-  } catch { /* ignore */ }
+  const allProducts: WeaProduct[] = []
+  // D2: 分批懒加载全部产品（pageSize=200 每次），消除硬上限，适配产品持续增长
+  let pageNum = 1
+  const pageSize = 200
+  while (true) {
+    try {
+      const res = await getProductPage({ pageNum, pageSize })
+      const items = (res.data?.records || []) as WeaProduct[]
+      if (items.length === 0) break
+      allProducts.push(...items)
+      if (items.length < pageSize) break // 已到最后一页
+      pageNum++
+    } catch { break }
+  }
 
   return records.map((fav) => {
     const product = allProducts.find((p) => p.productCode === fav.productCode)
