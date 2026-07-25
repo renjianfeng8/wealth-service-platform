@@ -207,7 +207,7 @@ async function fetchProfile() {
       userInfo.nickname = data.nickname || userStore.nickname
       userInfo.phone = data.phone || ''
     }
-  } catch { /* use store defaults */ }
+  } catch (err) { console.warn('[profile] fetchProfile 失败:', err) }
 }
 
 async function fetchStats() {
@@ -221,7 +221,7 @@ async function fetchStats() {
     statFavorites.value = fr.data?.total || 0
     statOrders.value = tr.data?.total || 0
     statMessages.value = mr.data?.total || 0
-  } catch { /* ignore */ }
+  } catch (err) { console.warn('[profile] fetchStats 失败:', err) }
 }
 
 async function handleSave() {

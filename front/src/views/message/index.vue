@@ -108,7 +108,8 @@ async function fetchMessages() {
     const res = await getMessagePage(params)
     messages.value = (res.data?.records || []) as WeaMessage[]
     total.value = res.data?.total || 0
-  } catch {
+  } catch (err) {
+    console.warn('[message] fetchMessages 失败:', err)
     messages.value = []
   } finally {
     loading.value = false
@@ -122,7 +123,7 @@ async function handleRead(item: WeaMessage) {
     try {
       await readMessage(item.id)
       item.readFlag = 1
-    } catch { /* ignore */ }
+    } catch (err) { console.warn('[message] readMessage 失败:', err) }
   }
 }
 

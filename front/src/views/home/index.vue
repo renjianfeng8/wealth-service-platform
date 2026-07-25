@@ -134,7 +134,8 @@ async function fetchMarketData() {
   try {
     const res = await getMarketDataList()
     marketList.value = (res.data || []) as WeaMarketData[]
-  } catch {
+  } catch (err) {
+    console.warn('[home] fetchMarketData 失败:', err)
     marketList.value = []
   } finally {
     loading.value = false

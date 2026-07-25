@@ -163,7 +163,8 @@ async function fetchFavorites() {
     const records = (res.data?.records || []) as WeaUserFavorite[]
     total.value = res.data?.total || 0
     favorites.value = await enrichFavorites(records)
-  } catch {
+  } catch (err) {
+    console.warn('[favorite] fetchFavorites 失败:', err)
     favorites.value = []
   } finally {
     loading.value = false

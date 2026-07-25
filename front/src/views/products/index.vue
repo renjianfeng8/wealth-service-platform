@@ -241,8 +241,8 @@ async function fetchFavorites() {
       if (fav.productCode) map[fav.productCode] = fav.id!
     }
     favoritedMap.value = map
-  } catch {
-    // ignore
+  } catch (err) {
+    console.warn('[products] fetchFavorites 失败:', err)
   }
 }
 

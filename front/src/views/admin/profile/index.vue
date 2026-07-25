@@ -138,7 +138,8 @@ async function fetchProfile() {
     }
     // B7: 数据加载完成后更新快照，防止异步填充后的脏误判
     reset()
-  } catch {
+  } catch (err) {
+    console.warn('[admin/profile] fetchProfile 失败:', err)
     // use store defaults
   } finally {
     loading.value = false

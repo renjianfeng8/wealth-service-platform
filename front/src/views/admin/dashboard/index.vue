@@ -116,8 +116,8 @@ async function fetchData() {
       loadLatestOrders(),
       loadUnreadMessages(),
     ])
-  } catch {
-    // Request errors are handled by the shared interceptor.
+  } catch (err) {
+    console.warn('[admin/dashboard] fetchData 部分接口失败:', err)
   } finally {
     loading.value = false
   }

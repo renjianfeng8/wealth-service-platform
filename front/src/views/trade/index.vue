@@ -285,7 +285,8 @@ async function fetchOrders() {
     const res = await getTradeOrderPage(params)
     orders.value = (res.data?.records || []) as WeaTradeOrder[]
     orderTotal.value = res.data?.total || 0
-  } catch {
+  } catch (err) {
+    console.warn('[trade] fetchOrders 失败:', err)
     orders.value = []
   } finally {
     loading.value = false
