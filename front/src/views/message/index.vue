@@ -103,7 +103,7 @@ function msgTagType(msgType: number | undefined): string {
 async function fetchMessages() {
   loading.value = true
   try {
-    const params: any = { pageNum: pageNum.value, pageSize: pageSize.value }
+    const params: { pageNum: number; pageSize: number; userId?: number } = { pageNum: pageNum.value, pageSize: pageSize.value }
     if (userStore.userId) params.userId = userStore.userId
     const res = await getMessagePage(params)
     messages.value = (res.data?.records || []) as WeaMessage[]

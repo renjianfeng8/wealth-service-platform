@@ -45,7 +45,7 @@
         <el-input v-model="form.description" type="textarea" :rows="2" />
       </el-form-item>
       <el-form-item label="分类ID">
-        <el-input-number v-model="form.categoryId" style="width: 100%" />
+        <el-input-number v-model="form.categoryId" :min="1" controls-position="right" style="width: 100%" />
       </el-form-item>
     </AdminFormDialog>
   </AdminPageShell>
@@ -101,7 +101,7 @@ const rules: FormRules = {
 async function fetchData() {
   loading.value = true
   try {
-    const params: any = { pageNum: query.pageNum, pageSize: query.pageSize }
+    const params: { pageNum: number; pageSize: number; name?: string; url?: string } = { pageNum: query.pageNum, pageSize: query.pageSize }
     if (query.name) params.name = query.name
     if (query.url) params.url = query.url
     const res = await getResourcePage(params)

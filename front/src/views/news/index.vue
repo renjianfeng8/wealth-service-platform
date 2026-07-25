@@ -106,7 +106,7 @@ async function fetchNews() {
   hasError.value = false
   loading.value = true
   try {
-    const params: any = { pageNum: pageNum.value, pageSize: pageSize.value }
+    const params: { pageNum: number; pageSize: number; newsType?: number } = { pageNum: pageNum.value, pageSize: pageSize.value }
     if (filterType.value) params.newsType = filterType.value
     const res = await getNewsPage(params)
     newsList.value = (res.data?.records || []) as WeaNews[]

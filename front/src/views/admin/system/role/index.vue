@@ -48,7 +48,7 @@
       <el-row :gutter="20">
         <el-col :span="12">
           <el-form-item label="排序">
-            <el-input-number v-model="form.sort" style="width: 100%" />
+            <el-input-number v-model="form.sort" :min="0" controls-position="right" style="width: 100%" />
           </el-form-item>
         </el-col>
         <el-col :span="12">
@@ -114,7 +114,7 @@ const rules: FormRules = {
 async function fetchData() {
   loading.value = true
   try {
-    const params: any = { pageNum: query.pageNum, pageSize: query.pageSize }
+    const params: { pageNum: number; pageSize: number; name?: string; status?: number } = { pageNum: query.pageNum, pageSize: query.pageSize }
     if (query.name) params.name = query.name
     if (query.status !== '') params.status = query.status
     const res = await getRolePage(params)

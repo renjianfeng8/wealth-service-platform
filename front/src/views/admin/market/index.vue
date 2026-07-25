@@ -59,43 +59,43 @@
         </el-col>
         <el-col :span="12">
           <el-form-item label="当前价" prop="currentPrice">
-            <el-input-number v-model="form.currentPrice" :precision="2" style="width: 100%" />
+            <el-input-number v-model="form.currentPrice" :min="0" :precision="2" controls-position="right" style="width: 100%" />
           </el-form-item>
         </el-col>
       </el-row>
       <el-row :gutter="20">
         <el-col :span="12">
           <el-form-item label="开盘价">
-            <el-input-number v-model="form.openPrice" :precision="2" style="width: 100%" />
+            <el-input-number v-model="form.openPrice" :min="0" :precision="2" controls-position="right" style="width: 100%" />
           </el-form-item>
         </el-col>
         <el-col :span="12">
           <el-form-item label="收盘价">
-            <el-input-number v-model="form.closePrice" :precision="2" style="width: 100%" />
+            <el-input-number v-model="form.closePrice" :min="0" :precision="2" controls-position="right" style="width: 100%" />
           </el-form-item>
         </el-col>
       </el-row>
       <el-row :gutter="20">
         <el-col :span="12">
           <el-form-item label="最高价">
-            <el-input-number v-model="form.highestPrice" :precision="2" style="width: 100%" />
+            <el-input-number v-model="form.highestPrice" :min="0" :precision="2" controls-position="right" style="width: 100%" />
           </el-form-item>
         </el-col>
         <el-col :span="12">
           <el-form-item label="最低价">
-            <el-input-number v-model="form.lowestPrice" :precision="2" style="width: 100%" />
+            <el-input-number v-model="form.lowestPrice" :min="0" :precision="2" controls-position="right" style="width: 100%" />
           </el-form-item>
         </el-col>
       </el-row>
       <el-row :gutter="20">
         <el-col :span="12">
           <el-form-item label="涨跌额">
-            <el-input-number v-model="form.riseFall" :precision="2" style="width: 100%" />
+            <el-input-number v-model="form.riseFall" :precision="2" controls-position="right" style="width: 100%" />
           </el-form-item>
         </el-col>
         <el-col :span="12">
           <el-form-item label="涨跌幅">
-            <el-input-number v-model="form.riseFallRate" :precision="4" :step="0.001" style="width: 100%" />
+            <el-input-number v-model="form.riseFallRate" :precision="4" :step="0.001" controls-position="right" style="width: 100%" />
           </el-form-item>
         </el-col>
       </el-row>

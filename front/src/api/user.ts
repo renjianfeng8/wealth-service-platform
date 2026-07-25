@@ -1,4 +1,5 @@
 import request from './index'
+import type { UserInfo } from '@/types'
 
 /**
  * 分页查询用户列表
@@ -34,7 +35,7 @@ export { getUserById as getUserInfo }
  * @param data - 用户信息
  * @returns 创建结果
  */
-export function createUser(data: any) {
+export function createUser(data: { username: string; password?: string; nickname?: string; phone?: string; status?: number }) {
   return request.post('/user', data)
 }
 
@@ -44,7 +45,7 @@ export function createUser(data: any) {
  * @param data - 待更新的用户信息
  * @returns 更新结果
  */
-export function updateUser(id: number, data: any) {
+export function updateUser(id: number, data: Partial<UserInfo>) {
   return request.put(`/user/${id}`, data)
 }
 
@@ -72,7 +73,7 @@ export function deleteUserBatch(ids: number[]) {
  * @param data - 注册信息
  * @returns 注册结果
  */
-export function registerUser(data: any) {
+export function registerUser(data: { username: string; password: string }) {
   return request.post('/user/register', data)
 }
 
@@ -81,7 +82,7 @@ export function registerUser(data: any) {
  * @param data - 重置密码参数
  * @returns 重置结果
  */
-export function resetPassword(data: any) {
+export function resetPassword(data: { id: number; oldPassword: string; password: string }) {
   return request.post('/user/resetPassword', data)
 }
 

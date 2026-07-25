@@ -179,7 +179,14 @@ async function fetchProducts() {
   hasError.value = false
   loading.value = true
   try {
-    const params: any = { pageNum: pageNum.value, pageSize: pageSize.value }
+    const params: {
+      pageNum: number
+      pageSize: number
+      productType?: number
+      productName?: string
+      orderBy?: string
+      orderDir?: string
+    } = { pageNum: pageNum.value, pageSize: pageSize.value }
     if (filterType.value) params.productType = filterType.value
     if (keyword.value) {
       params.productName = keyword.value

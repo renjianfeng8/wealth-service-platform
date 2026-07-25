@@ -1,11 +1,12 @@
 import request from './index'
+import type { PageParam, WeaUserFavorite } from '@/types'
 
 /**
  * 分页查询用户自选列表
  * @param params - 查询参数
  * @returns 分页结果包含用户自选列表
  */
-export function getFavoritePage(params: any) {
+export function getFavoritePage(params: PageParam & { userId?: number; productCode?: string }) {
   return request.get('/product/wea-user-favorite/page', { params })
 }
 
@@ -32,7 +33,7 @@ export function getFavoriteById(id: number) {
  * @param data - 自选信息
  * @returns 创建结果
  */
-export function createFavorite(data: any) {
+export function createFavorite(data: Partial<WeaUserFavorite>) {
   return request.post('/product/wea-user-favorite', data)
 }
 
@@ -42,7 +43,7 @@ export function createFavorite(data: any) {
  * @param data - 待更新的自选信息
  * @returns 更新结果
  */
-export function updateFavorite(id: number, data: any) {
+export function updateFavorite(id: number, data: Partial<WeaUserFavorite>) {
   return request.put(`/product/wea-user-favorite/${id}`, data)
 }
 

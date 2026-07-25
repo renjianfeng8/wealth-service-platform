@@ -54,7 +54,7 @@
       <el-row :gutter="20">
         <el-col :span="12">
           <el-form-item label="用户ID" prop="userId">
-            <el-input-number v-model="form.userId" style="width: 100%" />
+            <el-input-number v-model="form.userId" :min="1" controls-position="right" style="width: 100%" />
           </el-form-item>
         </el-col>
         <el-col :span="12">
@@ -73,12 +73,12 @@
         </el-col>
         <el-col :span="12">
           <el-form-item label="委托价" prop="entrustPrice">
-            <el-input-number v-model="form.entrustPrice" :precision="2" style="width: 100%" />
+            <el-input-number v-model="form.entrustPrice" :min="0.01" :precision="2" controls-position="right" style="width: 100%" />
           </el-form-item>
         </el-col>
       </el-row>
       <el-form-item label="委托数量" prop="entrustNum">
-        <el-input-number v-model="form.entrustNum" style="width: 100%" />
+        <el-input-number v-model="form.entrustNum" :min="1" controls-position="right" style="width: 100%" />
       </el-form-item>
     </AdminFormDialog>
   </AdminPageShell>

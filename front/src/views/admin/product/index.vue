@@ -78,26 +78,26 @@
         </el-col>
         <el-col :span="12">
           <el-form-item label="价格" prop="price">
-            <el-input-number v-model="form.price" :precision="2" style="width: 100%" />
+            <el-input-number v-model="form.price" :min="0" :precision="2" controls-position="right" style="width: 100%" />
           </el-form-item>
         </el-col>
       </el-row>
       <el-row :gutter="20">
         <el-col :span="12">
           <el-form-item label="涨跌额">
-            <el-input-number v-model="form.riseFall" :precision="2" style="width: 100%" />
+            <el-input-number v-model="form.riseFall" :precision="2" controls-position="right" style="width: 100%" />
           </el-form-item>
         </el-col>
         <el-col :span="12">
           <el-form-item label="涨跌幅">
-            <el-input-number v-model="form.riseFallRate" :precision="4" :step="0.001" style="width: 100%" />
+            <el-input-number v-model="form.riseFallRate" :precision="4" :step="0.001" controls-position="right" style="width: 100%" />
           </el-form-item>
         </el-col>
       </el-row>
       <el-row :gutter="20">
         <el-col :span="12">
           <el-form-item label="排序">
-            <el-input-number v-model="form.sort" style="width: 100%" />
+            <el-input-number v-model="form.sort" :min="0" controls-position="right" style="width: 100%" />
           </el-form-item>
         </el-col>
         <el-col :span="12">

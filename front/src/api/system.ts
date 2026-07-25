@@ -1,4 +1,5 @@
 import request from './index'
+import type { PageParam, UmsAdmin, UmsRole, UmsResource } from '@/types'
 
 /**
  * 管理员登录
@@ -14,7 +15,7 @@ export function loginApi(data: { username: string; password: string }) {
  * @param params - 查询参数（pageNum、pageSize）
  * @returns 分页结果包含管理员列表
  */
-export function getAdminPage(params: { pageNum: number; pageSize: number }) {
+export function getAdminPage(params: { pageNum: number; pageSize: number; username?: string; status?: number }) {
   return request.get('/system/umsAdmin/page', { params })
 }
 
@@ -40,7 +41,7 @@ export function getAdminById(id: number) {
  * @param data - 管理员信息
  * @returns 创建结果
  */
-export function createAdmin(data: any) {
+export function createAdmin(data: UmsAdmin) {
   return request.post('/system/umsAdmin', data)
 }
 
@@ -50,7 +51,7 @@ export function createAdmin(data: any) {
  * @param data - 待更新的管理员信息
  * @returns 更新结果
  */
-export function updateAdmin(id: number, data: any) {
+export function updateAdmin(id: number, data: Partial<UmsAdmin>) {
   return request.put(`/system/umsAdmin/${id}`, data)
 }
 
@@ -77,7 +78,7 @@ export function resetAdminPassword(data: { id: number; oldPassword: string; pass
  * @param params - 查询参数（pageNum、pageSize）
  * @returns 分页结果包含角色列表
  */
-export function getRolePage(params: { pageNum: number; pageSize: number }) {
+export function getRolePage(params: { pageNum: number; pageSize: number; name?: string; status?: number }) {
   return request.get('/system/umsRole/page', { params })
 }
 
@@ -103,7 +104,7 @@ export function getRoleById(id: number) {
  * @param data - 角色信息
  * @returns 创建结果
  */
-export function createRole(data: any) {
+export function createRole(data: UmsRole) {
   return request.post('/system/umsRole', data)
 }
 
@@ -113,7 +114,7 @@ export function createRole(data: any) {
  * @param data - 待更新的角色信息
  * @returns 更新结果
  */
-export function updateRole(id: number, data: any) {
+export function updateRole(id: number, data: Partial<UmsRole>) {
   return request.put(`/system/umsRole/${id}`, data)
 }
 
@@ -131,7 +132,7 @@ export function deleteRole(id: number) {
  * @param params - 查询参数（pageNum、pageSize）
  * @returns 分页结果包含资源列表
  */
-export function getResourcePage(params: { pageNum: number; pageSize: number }) {
+export function getResourcePage(params: { pageNum: number; pageSize: number; name?: string; url?: string }) {
   return request.get('/system/umsResource/page', { params })
 }
 
@@ -157,7 +158,7 @@ export function getResourceById(id: number) {
  * @param data - 资源信息
  * @returns 创建结果
  */
-export function createResource(data: any) {
+export function createResource(data: UmsResource) {
   return request.post('/system/umsResource', data)
 }
 
@@ -167,7 +168,7 @@ export function createResource(data: any) {
  * @param data - 待更新的资源信息
  * @returns 更新结果
  */
-export function updateResource(id: number, data: any) {
+export function updateResource(id: number, data: Partial<UmsResource>) {
   return request.put(`/system/umsResource/${id}`, data)
 }
 
@@ -182,10 +183,10 @@ export function deleteResource(id: number) {
 
 /**
  * 分页查询管理员-角色关联列表
- * @param params - 查询参数
+ * @param params - 查询参数（pageNum、pageSize，可选 adminId）
  * @returns 分页结果包含管理员-角色关联列表
  */
-export function getAdminRoleRelationPage(params: any) {
+export function getAdminRoleRelationPage(params: PageParam & { adminId?: number | string }) {
   return request.get('/system/umsAdminRoleRelation/page', { params })
 }
 
@@ -194,7 +195,7 @@ export function getAdminRoleRelationPage(params: any) {
  * @param data - 关联信息
  * @returns 创建结果
  */
-export function createAdminRoleRelation(data: any) {
+export function createAdminRoleRelation(data: { adminId?: number; roleId?: number }) {
   return request.post('/system/umsAdminRoleRelation', data)
 }
 
@@ -209,10 +210,10 @@ export function deleteAdminRoleRelation(id: number) {
 
 /**
  * 分页查询角色-资源关联列表
- * @param params - 查询参数
+ * @param params - 查询参数（pageNum、pageSize，可选 roleId）
  * @returns 分页结果包含角色-资源关联列表
  */
-export function getRoleResourceRelationPage(params: any) {
+export function getRoleResourceRelationPage(params: PageParam & { roleId?: number | string }) {
   return request.get('/system/umsRoleResourceRelation/page', { params })
 }
 
@@ -221,7 +222,7 @@ export function getRoleResourceRelationPage(params: any) {
  * @param data - 关联信息
  * @returns 创建结果
  */
-export function createRoleResourceRelation(data: any) {
+export function createRoleResourceRelation(data: { roleId?: number; resourceId?: number }) {
   return request.post('/system/umsRoleResourceRelation', data)
 }
 

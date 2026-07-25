@@ -1,11 +1,12 @@
 import request from './index'
+import type { PageParam, WeaMessage, WeaNews } from '@/types'
 
 /**
  * 分页查询站内消息列表
  * @param params - 查询参数
  * @returns 分页结果包含站内消息列表
  */
-export function getMessagePage(params: any) {
+export function getMessagePage(params: PageParam & { msgTitle?: string; msgType?: number; userId?: number; readFlag?: number }) {
   return request.get('/message/wea-message/page', { params })
 }
 
@@ -31,7 +32,7 @@ export function getMessageById(id: number) {
  * @param data - 消息信息
  * @returns 创建结果
  */
-export function createMessage(data: any) {
+export function createMessage(data: Partial<WeaMessage>) {
   return request.post('/message/wea-message', data)
 }
 
@@ -41,7 +42,7 @@ export function createMessage(data: any) {
  * @param data - 待更新的消息信息
  * @returns 更新结果
  */
-export function updateMessage(id: number, data: any) {
+export function updateMessage(id: number, data: Partial<WeaMessage>) {
   return request.put(`/message/wea-message/${id}`, data)
 }
 
@@ -59,7 +60,7 @@ export function deleteMessage(id: number) {
  * @param params - 查询参数
  * @returns 分页结果包含资讯列表
  */
-export function getNewsPage(params: any) {
+export function getNewsPage(params: PageParam & { title?: string; source?: string; newsType?: number }) {
   return request.get('/message/wea-news/page', { params })
 }
 
@@ -85,7 +86,7 @@ export function getNewsById(id: number) {
  * @param data - 资讯信息
  * @returns 创建结果
  */
-export function createNews(data: any) {
+export function createNews(data: Partial<WeaNews>) {
   return request.post('/message/wea-news', data)
 }
 
@@ -95,7 +96,7 @@ export function createNews(data: any) {
  * @param data - 待更新的资讯信息
  * @returns 更新结果
  */
-export function updateNews(id: number, data: any) {
+export function updateNews(id: number, data: Partial<WeaNews>) {
   return request.put(`/message/wea-news/${id}`, data)
 }
 

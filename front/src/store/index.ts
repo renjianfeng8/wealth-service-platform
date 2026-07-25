@@ -30,10 +30,10 @@ export const useUserStore = defineStore('user', {
      */
     setLoginInfo(info: LoginInfo) {
       const { username, userId, nickname, avatar, role } = info
-      setToken('true')
+      setToken()
       sessionStorage.setItem('wealth_role', role)
       setStoredUser({ username, userId, nickname, avatar })
-      this.token = 'true'
+      this.token = getToken() || ''
       this.username = username
       this.userId = userId
       this.nickname = nickname || ''
@@ -79,8 +79,8 @@ export const useUserStore = defineStore('user', {
       try {
         const appStore = useAppStore()
         appStore.closeAllViews()
-      } catch {
-        // appStore 可能尚未初始化
+      } catch (e) {
+        console.warn('[logout] closeAllViews 失败:', e)
       }
     },
   },

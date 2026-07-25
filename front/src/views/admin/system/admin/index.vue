@@ -130,7 +130,7 @@ const rules: FormRules = {
 async function fetchData() {
   loading.value = true
   try {
-    const params: any = { pageNum: query.pageNum, pageSize: query.pageSize }
+    const params: { pageNum: number; pageSize: number; username?: string; status?: number } = { pageNum: query.pageNum, pageSize: query.pageSize }
     if (query.username) params.username = query.username
     if (query.status !== '') params.status = query.status
     const res = await getAdminPage(params)

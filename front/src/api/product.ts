@@ -1,4 +1,5 @@
 import request from './index'
+import type { WeaProduct, WeaMarketData } from '@/types'
 
 /**
  * 分页查询产品列表
@@ -31,7 +32,7 @@ export function getProductById(id: number) {
  * @param data - 产品信息
  * @returns 创建结果
  */
-export function createProduct(data: any) {
+export function createProduct(data: Partial<WeaProduct>) {
   return request.post('/product/wea-product', data)
 }
 
@@ -41,7 +42,7 @@ export function createProduct(data: any) {
  * @param data - 待更新的产品信息
  * @returns 更新结果
  */
-export function updateProduct(id: number, data: any) {
+export function updateProduct(id: number, data: Partial<WeaProduct>) {
   return request.put(`/product/wea-product/${id}`, data)
 }
 
@@ -85,7 +86,7 @@ export function getMarketDataById(id: number) {
  * @param data - 行情数据信息
  * @returns 创建结果
  */
-export function createMarketData(data: any) {
+export function createMarketData(data: Partial<WeaMarketData>) {
   return request.post('/product/wea-market-data', data)
 }
 
@@ -95,7 +96,7 @@ export function createMarketData(data: any) {
  * @param data - 待更新的行情数据信息
  * @returns 更新结果
  */
-export function updateMarketData(id: number, data: any) {
+export function updateMarketData(id: number, data: Partial<WeaMarketData>) {
   return request.put(`/product/wea-market-data/${id}`, data)
 }
 

@@ -104,11 +104,7 @@ a {
 .el-card {
   border-radius: var(--radius) !important;
   border: 1px solid var(--border-color) !important;
-  transition: var(--transition);
-}
-
-.el-card:hover {
-  box-shadow: var(--shadow-md) !important;
+  transition: box-shadow var(--transition);
 }
 
 .el-card__header {
@@ -131,9 +127,7 @@ a {
   font-size: 13px;
 }
 
-.el-table__body tr:hover > td.el-table__cell {
-  background-color: var(--primary-light) !important;
-}
+/* 行 hover 高亮遵循 Element Plus 默认样式，不再全局覆盖以减少大型表格 repaint */
 
 .el-button {
   border-radius: 6px;
@@ -214,21 +208,3 @@ a {
   opacity: 0.6;
 }
 
-/* 滚动条 */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #c7c7cc;
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #8e8e93;
-}

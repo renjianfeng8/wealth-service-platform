@@ -54,8 +54,10 @@
               <el-input-number
                 v-model="orderForm.entrustPrice"
                 :min="0.01"
+                :max="999999.99"
                 :precision="2"
                 :step="0.1"
+                controls-position="right"
                 style="width: 100%"
               />
             </el-form-item>
@@ -63,7 +65,9 @@
               <el-input-number
                 v-model="orderForm.entrustNum"
                 :min="1"
+                :max="1000000"
                 :step="1"
+                controls-position="right"
                 style="width: 100%"
               />
             </el-form-item>
@@ -272,7 +276,7 @@ async function doSubmit() {
 async function fetchOrders() {
   loading.value = true
   try {
-    const params: any = {
+    const params: { pageNum: number; pageSize: number; userId?: number; orderStatus?: number } = {
       pageNum: orderPageNum.value,
       pageSize: orderPageSize.value,
       userId: userStore.userId || undefined,

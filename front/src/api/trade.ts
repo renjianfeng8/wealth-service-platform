@@ -1,11 +1,12 @@
 import request from './index'
+import type { PageParam, WeaTradeOrder } from '@/types'
 
 /**
  * 分页查询交易委托列表
- * @param params - 查询参数
+ * @param params - 查询参数（pageNum、pageSize，可选 userId、orderStatus）
  * @returns 分页结果包含交易委托列表
  */
-export function getTradeOrderPage(params: any) {
+export function getTradeOrderPage(params: PageParam & { userId?: number; productCode?: string; orderStatus?: number }) {
   return request.get('/trade/wea-trade-order/page', { params })
 }
 
@@ -31,7 +32,7 @@ export function getTradeOrderById(id: number) {
  * @param data - 交易委托信息
  * @returns 创建结果
  */
-export function createTradeOrder(data: any) {
+export function createTradeOrder(data: Omit<WeaTradeOrder, 'id' | 'orderNo' | 'orderStatus' | 'createTime'> & { idempotentKey?: string }) {
   return request.post('/trade/wea-trade-order', data)
 }
 
@@ -41,7 +42,7 @@ export function createTradeOrder(data: any) {
  * @param data - 待更新的交易委托信息
  * @returns 更新结果
  */
-export function updateTradeOrder(id: number, data: any) {
+export function updateTradeOrder(id: number, data: Partial<WeaTradeOrder>) {
   return request.put(`/trade/wea-trade-order/${id}`, data)
 }
 

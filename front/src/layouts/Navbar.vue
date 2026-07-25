@@ -6,7 +6,7 @@
       </el-button>
       <el-breadcrumb>
         <el-breadcrumb-item :to="{ path: '/admin/dashboard' }">首页</el-breadcrumb-item>
-        <el-breadcrumb-item>{{ route.meta?.title as string || '' }}</el-breadcrumb-item>
+        <el-breadcrumb-item v-for="(item, idx) in breadcrumbItems" :key="idx" :to="item.path">{{ item.title }}</el-breadcrumb-item>
       </el-breadcrumb>
     </div>
 
@@ -40,6 +40,7 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '@/store'
 import MessageNoticePopover from '@/components/MessageNoticePopover.vue'
@@ -54,6 +55,30 @@ defineEmits<{ toggle: [] }>()
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
+
+const GROUP_LABELS: Record<string, string> = {
+  dashboard: '仪表盘',
+  profile: '个人中心',
+  user: '用户管理',
+  system: '系统管理',
+  product: '产品管理',
+  trade: '交易管理',
+  message: '消息管理',
+  search: '搜索',
+}
+
+const breadcrumbItems = computed(() => {
+  const items: { title: string; path?: string }[] = []
+  const group = route.meta?.group as string | undefined
+  const pathSegments = route.path.replace('/admin/', '').split('/')
+  if (group && GROUP_LABELS[group] && pathSegments.length > 1) {
+    items.push({ title: GROUP_LABELS[group] })
+  }
+  if (route.meta?.title) {
+    items.push({ title: route.meta.title as string })
+  }
+  return items
+})
 
 function goSearch() {
   router.push('/admin/search')

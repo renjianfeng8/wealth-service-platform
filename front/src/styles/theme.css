@@ -133,29 +133,3 @@
 ::-webkit-scrollbar-thumb:hover { background: var(--fl-text-placeholder); }
 
 /* ===== TagsView ===== */
-.tags-view-container {
-  background: #fff;
-  border-bottom: 1px solid var(--fl-border);
-  padding: 4px 8px 0;
-}
-.tags-view-container .el-tabs__header {
-  margin: 0;
-}
-.tags-view-container .el-tabs__nav-wrap::after {
-  height: 1px;
-}
-.tags-view-container .el-tabs__item {
-  height: 32px;
-  line-height: 32px;
-  font-size: 12px;
-  border: 1px solid var(--fl-border);
-  border-bottom: none;
-  border-radius: 4px 4px 0 0;
-  margin-right: 4px;
-  padding: 0 14px;
-}
-.tags-view-container .el-tabs__item.is-active {
-  background: var(--fl-content-bg);
-  border-bottom-color: var(--fl-content-bg);
-  color: var(--fl-primary);
-}

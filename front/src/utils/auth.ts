@@ -27,8 +27,8 @@ export function getToken(): string | null {
  * S2: 同时记录登录时间戳。
  * @param _token - 登录 token（实际未使用，仅标记登录状态为 true）
  */
-export function setToken(_token: string) {
-  sessionStorage.setItem(LOGIN_KEY, 'true')
+export function setToken() {
+  sessionStorage.setItem(LOGIN_KEY, crypto.randomUUID())
   sessionStorage.setItem(LOGIN_TIME_KEY, String(Date.now())) // S2: 记录登录时间
 }
 
@@ -42,11 +42,18 @@ export function removeToken() {
   sessionStorage.removeItem(LOGIN_TIME_KEY) // S2: 同时清除登录时间
 }
 
+export interface StoredUser {
+  username: string
+  userId: number
+  nickname?: string
+  avatar?: string
+}
+
 /**
  * 获取存储的用户信息
  * @returns 用户信息对象，无数据时返回 null
  */
-export function getStoredUser(): any {
+export function getStoredUser(): StoredUser | null {
   const raw = sessionStorage.getItem(USER_KEY)
   return raw ? JSON.parse(raw) : null
 }
@@ -55,6 +62,6 @@ export function getStoredUser(): any {
  * 存储用户信息
  * @param user - 用户信息对象
  */
-export function setStoredUser(user: any) {
+export function setStoredUser(user: StoredUser) {
   sessionStorage.setItem(USER_KEY, JSON.stringify(user))
 }
