@@ -20,7 +20,7 @@
 
       <el-dropdown trigger="click">
         <span class="user-dropdown">
-          <el-avatar :size="28" icon="UserFilled" />
+          <el-avatar :size="28"><UserFilled /></el-avatar>
           <span class="username">{{ userStore.username || '管理员' }}</span>
           <el-icon><ArrowDown /></el-icon>
         </span>
@@ -46,7 +46,7 @@ import { useUserStore } from '@/store'
 import MessageNoticePopover from '@/components/MessageNoticePopover.vue'
 import {
   Fold, Expand, Search,
-  ArrowDown, User, SwitchButton,
+  ArrowDown, User, SwitchButton, UserFilled,
 } from '@element-plus/icons-vue'
 
 defineProps<{ collapsed: boolean }>()

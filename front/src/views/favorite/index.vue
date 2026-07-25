@@ -124,28 +124,22 @@ const sseConnected = ref(false)
 let eventSource: EventSource | null = null
 
 async function enrichFavorites(records: WeaUserFavorite[]): Promise<FavoriteItem[]> {
-  const allProducts: WeaProduct[] = []
-  // D2: 分批懒加载全部产品（pageSize=200 每次），消除硬上限，适配产品持续增长
-  let pageNum = 1
-  const pageSize = 200
-  while (true) {
-    try {
-      const res = await getProductPage({ pageNum, pageSize })
-      const items = (res.data?.records || []) as WeaProduct[]
-      if (items.length === 0) break
-      allProducts.push(...items)
-      if (items.length < pageSize) break // 已到最后一页
-      pageNum++
-    } catch { break }
-  }
+  // 仅查当前页自选对应的 productCode，避免全表扫描
+  const codes = [...new Set(records.map((r) => r.productCode))]
+  const productMap = new Map<string, string>()
 
-  return records.map((fav) => {
-    const product = allProducts.find((p) => p.productCode === fav.productCode)
-    return {
-      ...fav,
-      productName: product?.productName || fav.productCode,
-    }
-  })
+  await Promise.all(codes.map(async (code) => {
+    try {
+      const res = await getProductPage({ pageNum: 1, pageSize: 1, productCode: code })
+      const p = (res.data?.records || [])[0] as WeaProduct | undefined
+      if (p) productMap.set(code, p.productName)
+    } catch { /* 单个查询失败不影响其他 */ }
+  }))
+
+  return records.map((fav) => ({
+    ...fav,
+    productName: productMap.get(fav.productCode) || fav.productCode,
+  }))
 }
 
 function handleMarketUpdate(data: WeaMarketData[]) {

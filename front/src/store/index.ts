@@ -1,6 +1,5 @@
 import { defineStore } from 'pinia'
 import { getToken, setToken, removeToken, setStoredUser, getStoredUser } from '@/utils/auth'
-import { useAppStore } from '@/store/app'
 
 export interface LoginInfo {
   username: string
@@ -75,13 +74,6 @@ export const useUserStore = defineStore('user', {
       this.avatar = ''
       this.role = null
       removeToken()
-      // 清理缓存的标签页状态
-      try {
-        const appStore = useAppStore()
-        appStore.closeAllViews()
-      } catch (e) {
-        console.warn('[logout] closeAllViews 失败:', e)
-      }
     },
   },
 })

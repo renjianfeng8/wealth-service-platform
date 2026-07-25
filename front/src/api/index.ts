@@ -40,13 +40,15 @@ request.interceptors.response.use(
   },
   (error) => {
     const status = error.response?.status
-    const data = error.response?.data
-    const msg = data?.message || error.message || '网络错误'
     if (status === 401) {
       useUserStore().logout()
       redirectLogin()
+      ElMessage.error('登录已过期，请重新登录')
+    } else {
+      const data = error.response?.data
+      const msg = data?.message || error.message || '网络错误'
+      ElMessage.error(msg)
     }
-    ElMessage.error(msg)
     return Promise.reject(error)
   },
 )

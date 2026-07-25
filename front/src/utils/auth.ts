@@ -3,8 +3,8 @@ const USER_KEY = 'wealth_user'
 const ROLE_KEY = 'wealth_role'
 const LOGIN_TIME_KEY = 'wealth_login_time' // S2: 记录登录时间用于过期检测
 
-// S2: 令牌过期时间（24小时），与后端 JWT 过期时间对齐
-const TOKEN_EXPIRY_MS = 24 * 60 * 60 * 1000
+// 令牌过期时间（30分钟），与后端 jwt.access-expire=1800000 对齐
+const TOKEN_EXPIRY_MS = 30 * 60 * 1000
 
 /**
  * 返回登录状态标记（true/false）。JWT 已由后端写入 httpOnly Cookie，

@@ -36,26 +36,28 @@ const route = useRoute()
 let nonceCounter = 0
 const routeKey = ref('')
 
-watch(() => route.path, () => {
+watch(() => [route.path, route.query._ref], () => {
   if (route.meta.keepAlive === false) {
     nonceCounter++
     routeKey.value = route.fullPath + '__nc_' + nonceCounter
   } else {
-    routeKey.value = (route.meta.group as string) || route.path
+    const base = (route.meta.group as string) || route.path
+    const ref = route.query._ref as string | undefined
+    routeKey.value = ref ? base + '__ref_' + ref : base
   }
 }, { immediate: true })
 
-// S2: 全局 token 过期定时检测（每 5 分钟），无路由跳转时主动登出
+// 全局 token 过期定时检测（每 5 分钟），无路由跳转时主动登出
 const TOKEN_CHECK_INTERVAL = 5 * 60 * 1000
 let tokenTimer: ReturnType<typeof setInterval> | null = null
 
 onMounted(() => {
+  const router = useRouter()
   tokenTimer = setInterval(() => {
     const userStore = useUserStore()
-    const router = useRouter()
     if (userStore.isLoggedIn && userStore.checkTokenExpired()) {
       ElMessage.warning('登录已过期，请重新登录')
-      router.push('/auth/login')
+      router.replace('/auth/login')
     }
   }, TOKEN_CHECK_INTERVAL)
 })

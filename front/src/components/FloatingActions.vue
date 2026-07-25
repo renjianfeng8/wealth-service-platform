@@ -13,10 +13,11 @@
 </template>
 
 <script setup lang="ts">
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { ArrowUp, Back, Refresh } from '@element-plus/icons-vue'
 
 const router = useRouter()
+const route = useRoute()
 
 function goBack() {
   if (window.history.length > 1) {
@@ -26,8 +27,13 @@ function goBack() {
   router.push('/home')
 }
 
+let refreshNonce = 0
 function refreshPage() {
-  router.go(0)
+  refreshNonce++
+  router.replace({
+    path: route.path,
+    query: { ...route.query, _ref: refreshNonce },
+  })
 }
 
 function scrollTop() {

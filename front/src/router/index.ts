@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
+import { nextTick } from 'vue'
 import NProgress from 'nprogress'
 import 'nprogress/nprogress.css'
 import { ElMessage } from 'element-plus'
@@ -85,8 +86,14 @@ const router = createRouter({
 NProgress.configure({ showSpinner: false })
 
 // 导航守卫 — 认证 + 角色校验 + 动态标题
+let isInitialNavigation = true
+
 router.beforeEach((to, _from) => {
-  NProgress.start()
+  if (isInitialNavigation) {
+    isInitialNavigation = false
+  } else {
+    NProgress.start()
+  }
   // 动态更新页面标题
   const title = to.meta.title as string
   if (title) {
@@ -132,7 +139,8 @@ router.beforeEach((to, _from) => {
 })
 
 router.afterEach(() => {
-  NProgress.done()
+  // L5：延迟到 DOM 更新后结束进度条，避免懒加载组件未渲染时进度条已消失
+  nextTick(() => NProgress.done())
 })
 
 router.onError(() => {
