@@ -1,6 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
-import { nextTick } from 'vue'
 import NProgress from 'nprogress'
 import 'nprogress/nprogress.css'
 import { ElMessage } from 'element-plus'
@@ -139,8 +138,8 @@ router.beforeEach((to, _from) => {
 })
 
 router.afterEach(() => {
-  // L5：延迟到 DOM 更新后结束进度条，避免懒加载组件未渲染时进度条已消失
-  nextTick(() => NProgress.done())
+  // 用 setTimeout(宏任务)代替 nextTick(微任务)，等待 Suspense 解析懒加载组件
+  setTimeout(() => NProgress.done(), 120)
 })
 
 router.onError(() => {

@@ -69,6 +69,7 @@ import AdminPageShell from '@/components/admin/AdminPageShell.vue'
 import AdminFilterBar from '@/components/admin/AdminFilterBar.vue'
 import AdminDataTable from '@/components/admin/AdminDataTable.vue'
 import AdminFormDialog from '@/components/admin/AdminFormDialog.vue'
+import { assignEditable } from '@/utils/object'
 import { useFormGuard } from '@/composables/useFormGuard'
 import { getAdminPage, createAdmin, updateAdmin, deleteAdmin } from '@/api/system'
 import { formatDateTime, statusTag, statusText } from '@/utils/format'
@@ -165,7 +166,8 @@ function handleAdd() {
 
 function handleEdit(row: AdminForm) {
   isEdit.value = true
-  Object.assign(form, row, { password: '' })
+  assignEditable(form, row)
+  form.password = ''
   reset()
   dialogVisible.value = true
 }
