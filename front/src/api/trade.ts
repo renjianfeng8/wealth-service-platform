@@ -11,14 +11,6 @@ export function getTradeOrderPage(params: PageParam & { userId?: number; product
 }
 
 /**
- * 查询所有交易委托列表
- * @returns 交易委托列表
- */
-export function getTradeOrderList() {
-  return request.get('/trade/wea-trade-order')
-}
-
-/**
  * 根据 ID 查询交易委托
  * @param id - 交易委托 ID
  * @returns 交易委托信息

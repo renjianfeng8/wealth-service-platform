@@ -11,14 +11,6 @@ export function getProductPage(params: { pageNum: number; pageSize: number; prod
 }
 
 /**
- * 查询所有产品列表
- * @returns 产品列表
- */
-export function getProductList() {
-  return request.get('/product/wea-product')
-}
-
-/**
  * 根据 ID 查询产品
  * @param id - 产品 ID
  * @returns 产品信息
@@ -62,14 +54,6 @@ export function deleteProduct(id: number) {
  */
 export function getMarketDataPage(params: { pageNum: number; pageSize: number }) {
   return request.get('/product/wea-market-data/page', { params })
-}
-
-/**
- * 查询所有行情数据列表
- * @returns 行情数据列表
- */
-export function getMarketDataList() {
-  return request.get('/product/wea-market-data')
 }
 
 /**

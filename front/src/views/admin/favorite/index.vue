@@ -1,10 +1,10 @@
 <template>
   <AdminPageShell title="自选管理" description="管理用户自选产品关系，便于排查关注与推荐数据。">
-    <AdminFilterBar :model="query" :fields="filterFields" @search="handleSearch" @reset="handleReset" />
+    <AdminFilterBar :model="query" :fields="filterFields" @search="handleSearch(query)" @reset="handleReset" />
 
     <AdminDataTable :data="tableData" :loading="loading" :total="total" :pagination="query" @page-change="fetchData">
       <template #toolbar>
-        <el-button type="primary" @click="handleAdd">新增自选</el-button>
+        <el-button type="primary" @click="handleAdd(resetForm, reset)">新增自选</el-button>
       </template>
 
       <el-table-column prop="id" label="ID" width="70" />
@@ -13,8 +13,8 @@
       <el-table-column prop="createTime" label="添加时间" width="170" :formatter="formatDateColumn" />
       <el-table-column label="操作" width="160" fixed="right">
         <template #default="{ row }">
-          <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
-          <el-popconfirm title="确定删除该自选？" @confirm="handleDelete(row.id)">
+          <el-button type="primary" link @click="handleEdit(form, row, reset)">编辑</el-button>
+          <el-popconfirm title="确定删除该自选？" @confirm="handleDelete(row.id, deleteFavorite)">
             <template #reference>
               <el-button type="danger" link>删除</el-button>
             </template>
@@ -29,7 +29,7 @@
       :model="form"
       :rules="rules"
       :saving="saving"
-      :before-close="handleDialogClose"
+      :before-close="handleDialogClose(isDirty)"
       width="420px"
       @submit="handleSave"
     >
@@ -44,17 +44,16 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { onMounted, reactive } from 'vue'
+import { ElMessage } from 'element-plus'
 import type { FormRules } from 'element-plus'
 import AdminPageShell from '@/components/admin/AdminPageShell.vue'
 import AdminFilterBar from '@/components/admin/AdminFilterBar.vue'
 import AdminDataTable from '@/components/admin/AdminDataTable.vue'
 import AdminFormDialog from '@/components/admin/AdminFormDialog.vue'
 import { useFormGuard } from '@/composables/useFormGuard'
-import { assignEditable } from '@/utils/object'
+import { useCrudPage } from '@/composables/useCrudPage'
 import { getFavoritePage, createFavorite, updateFavorite, deleteFavorite } from '@/api/favorite'
-import { formatDateTime } from '@/utils/format'
 import type { WeaUserFavorite } from '@/types'
 import type { AdminFilterField } from '@/components/admin/AdminFilterBar.vue'
 
@@ -74,16 +73,10 @@ const filterFields: AdminFilterField[] = [
   { prop: 'productCode', label: '产品编码', placeholder: '搜索产品编码' },
 ]
 
-const loading = ref(false)
-const saving = ref(false)
-const tableData = ref<WeaUserFavorite[]>([])
-const total = ref(0)
-const dialogVisible = ref(false)
-const isEdit = ref(false)
-
 const query = reactive<FavoriteQuery>({ pageNum: 1, pageSize: 10, userId: undefined, productCode: '' })
 const form = reactive<FavoriteForm>({ id: undefined, userId: undefined, productCode: '' })
 const { isDirty, reset } = useFormGuard(form)
+const { loading, saving, tableData, total, dialogVisible, isEdit, handleSearch, handleAdd, handleEdit, handleDialogClose, handleDelete, formatDateColumn } = useCrudPage<WeaUserFavorite>(fetchData)
 
 const rules: FormRules = {
   userId: [{ required: true, message: '请输入用户ID', trigger: 'blur' }],
@@ -107,46 +100,14 @@ async function fetchData() {
   }
 }
 
-function handleSearch() {
-  query.pageNum = 1
-  fetchData()
-}
-
 function handleReset() {
   query.userId = undefined
   query.productCode = ''
-  handleSearch()
+  handleSearch(query)
 }
 
 function resetForm() {
   Object.assign(form, { id: undefined, userId: undefined, productCode: '' })
-}
-
-function handleAdd() {
-  isEdit.value = false
-  resetForm()
-  reset()
-  dialogVisible.value = true
-}
-
-function handleEdit(row: WeaUserFavorite) {
-  isEdit.value = true
-  assignEditable(form, row)
-  reset()
-  dialogVisible.value = true
-}
-
-async function handleDialogClose(done: () => void) {
-  if (!isDirty()) {
-    done()
-    return
-  }
-  try {
-    await ElMessageBox.confirm('有未保存的修改，确定关闭吗？', '离开确认', { type: 'warning' })
-    done()
-  } catch {
-    // 用户取消关闭
-  }
 }
 
 async function handleSave() {
@@ -165,21 +126,6 @@ async function handleSave() {
   } finally {
     saving.value = false
   }
-}
-
-async function handleDelete(id?: number) {
-  if (!id) return
-  try {
-    await deleteFavorite(id)
-    ElMessage.success('删除成功')
-    fetchData()
-  } catch {
-    // 统一拦截器处理错误提示
-  }
-}
-
-function formatDateColumn(_row: WeaUserFavorite, _column: unknown, value: string) {
-  return formatDateTime(value)
 }
 
 onMounted(fetchData)

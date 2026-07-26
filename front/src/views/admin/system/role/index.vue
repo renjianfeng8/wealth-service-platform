@@ -1,10 +1,10 @@
 <template>
   <AdminPageShell title="角色管理" description="维护后台角色、排序、描述和启用状态。">
-    <AdminFilterBar :model="query" :fields="filterFields" @search="handleSearch" @reset="handleReset" />
+    <AdminFilterBar :model="query" :fields="filterFields" @search="handleSearch(query)" @reset="handleReset" />
 
     <AdminDataTable :data="tableData" :loading="loading" :total="total" :pagination="query" @page-change="fetchData">
       <template #toolbar>
-        <el-button type="primary" @click="handleAdd">新增角色</el-button>
+        <el-button type="primary" @click="handleAdd(resetForm, reset)">新增角色</el-button>
       </template>
 
       <el-table-column prop="id" label="ID" width="70" />
@@ -19,8 +19,8 @@
       <el-table-column prop="createTime" label="创建时间" width="170" :formatter="formatDateColumn" />
       <el-table-column label="操作" width="160" fixed="right">
         <template #default="{ row }">
-          <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
-          <el-popconfirm title="确定删除该角色？" @confirm="handleDelete(row.id)">
+          <el-button type="primary" link @click="handleEdit(form, row, reset)">编辑</el-button>
+          <el-popconfirm title="确定删除该角色？" @confirm="handleDelete(row.id, deleteRole)">
             <template #reference>
               <el-button type="danger" link>删除</el-button>
             </template>
@@ -35,7 +35,7 @@
       :model="form"
       :rules="rules"
       :saving="saving"
-      :before-close="handleDialogClose"
+      :before-close="handleDialogClose(isDirty)"
       width="520px"
       @submit="handleSave"
     >
@@ -65,17 +65,17 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { onMounted, reactive } from 'vue'
+import { ElMessage } from 'element-plus'
 import type { FormRules } from 'element-plus'
 import AdminPageShell from '@/components/admin/AdminPageShell.vue'
 import AdminFilterBar from '@/components/admin/AdminFilterBar.vue'
 import AdminDataTable from '@/components/admin/AdminDataTable.vue'
 import AdminFormDialog from '@/components/admin/AdminFormDialog.vue'
 import { useFormGuard } from '@/composables/useFormGuard'
-import { assignEditable } from '@/utils/object'
+import { useCrudPage } from '@/composables/useCrudPage'
 import { getRolePage, createRole, updateRole, deleteRole } from '@/api/system'
-import { formatDateTime, statusTag, statusText } from '@/utils/format'
+import { statusTag, statusText } from '@/utils/format'
 import { STATUS_OPTIONS } from '@/types'
 import type { UmsRole } from '@/types'
 import type { AdminFilterField } from '@/components/admin/AdminFilterBar.vue'
@@ -96,16 +96,10 @@ const filterFields: AdminFilterField[] = [
   { prop: 'status', label: '状态', type: 'select', options: STATUS_OPTIONS, width: '132px' },
 ]
 
-const loading = ref(false)
-const saving = ref(false)
-const tableData = ref<RoleRow[]>([])
-const total = ref(0)
-const dialogVisible = ref(false)
-const isEdit = ref(false)
-
 const query = reactive<RoleQuery>({ pageNum: 1, pageSize: 10, name: '', status: '' })
 const form = reactive<RoleRow>({ id: undefined, name: '', description: '', sort: 0, status: 1 })
 const { isDirty, reset } = useFormGuard(form)
+const { loading, saving, tableData, total, dialogVisible, isEdit, handleSearch, handleAdd, handleEdit, handleDialogClose, handleDelete, formatDateColumn } = useCrudPage<UmsRole>(fetchData)
 
 const rules: FormRules = {
   name: [{ required: true, message: '请输入角色名称', trigger: 'blur' }],
@@ -125,46 +119,14 @@ async function fetchData() {
   }
 }
 
-function handleSearch() {
-  query.pageNum = 1
-  fetchData()
-}
-
 function handleReset() {
   query.name = ''
   query.status = ''
-  handleSearch()
+  handleSearch(query)
 }
 
 function resetForm() {
   Object.assign(form, { id: undefined, name: '', description: '', sort: 0, status: 1 })
-}
-
-function handleAdd() {
-  isEdit.value = false
-  resetForm()
-  reset()
-  dialogVisible.value = true
-}
-
-function handleEdit(row: RoleRow) {
-  isEdit.value = true
-  assignEditable(form, row)
-  reset()
-  dialogVisible.value = true
-}
-
-async function handleDialogClose(done: () => void) {
-  if (!isDirty()) {
-    done()
-    return
-  }
-  try {
-    await ElMessageBox.confirm('有未保存的修改，确定关闭吗？', '离开确认', { type: 'warning' })
-    done()
-  } catch {
-    // 用户取消关闭
-  }
 }
 
 async function handleSave() {
@@ -182,21 +144,6 @@ async function handleSave() {
   } finally {
     saving.value = false
   }
-}
-
-async function handleDelete(id?: number) {
-  if (!id) return
-  try {
-    await deleteRole(id)
-    ElMessage.success('删除成功')
-    fetchData()
-  } catch {
-    // 统一拦截器处理错误提示
-  }
-}
-
-function formatDateColumn(_row: RoleRow, _column: unknown, value: string) {
-  return formatDateTime(value)
 }
 
 onMounted(fetchData)

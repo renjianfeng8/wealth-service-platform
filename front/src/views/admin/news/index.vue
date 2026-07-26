@@ -1,10 +1,10 @@
 <template>
   <AdminPageShell title="资讯管理" description="维护财经资讯内容、来源、分类与发布状态。">
-    <AdminFilterBar :model="query" :fields="filterFields" @search="handleSearch" @reset="handleReset" />
+    <AdminFilterBar :model="query" :fields="filterFields" @search="handleSearch(query)" @reset="handleReset" />
 
     <AdminDataTable :data="tableData" :loading="loading" :total="total" :pagination="query" @page-change="fetchData">
       <template #toolbar>
-        <el-button type="primary" @click="handleAdd">新增资讯</el-button>
+        <el-button type="primary" @click="handleAdd(resetForm, reset)">新增资讯</el-button>
       </template>
 
       <el-table-column prop="id" label="ID" width="70" />
@@ -23,8 +23,8 @@
       <el-table-column prop="publishTime" label="发布时间" width="170" :formatter="formatDateColumn" />
       <el-table-column label="操作" width="160" fixed="right">
         <template #default="{ row }">
-          <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
-          <el-popconfirm title="确定删除该资讯？" @confirm="handleDelete(row.id)">
+          <el-button type="primary" link @click="handleEdit(form, row, reset)">编辑</el-button>
+          <el-popconfirm title="确定删除该资讯？" @confirm="handleDelete(row.id, deleteNews)">
             <template #reference>
               <el-button type="danger" link>删除</el-button>
             </template>
@@ -39,7 +39,7 @@
       :model="form"
       :rules="rules"
       :saving="saving"
-      :before-close="handleDialogClose"
+      :before-close="handleDialogClose(isDirty)"
       width="620px"
       @submit="handleSave"
     >
@@ -83,17 +83,17 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { onMounted, reactive } from 'vue'
+import { ElMessage } from 'element-plus'
 import type { FormRules } from 'element-plus'
 import AdminPageShell from '@/components/admin/AdminPageShell.vue'
 import AdminFilterBar from '@/components/admin/AdminFilterBar.vue'
 import AdminDataTable from '@/components/admin/AdminDataTable.vue'
 import AdminFormDialog from '@/components/admin/AdminFormDialog.vue'
 import { useFormGuard } from '@/composables/useFormGuard'
-import { assignEditable } from '@/utils/object'
+import { useCrudPage } from '@/composables/useCrudPage'
 import { getNewsPage, createNews, updateNews, deleteNews } from '@/api/message'
-import { formatDateTime, newsTypeText } from '@/utils/format'
+import { newsTypeText } from '@/utils/format'
 import { NEWS_TYPE_OPTIONS } from '@/types'
 import type { WeaNews } from '@/types'
 import type { AdminFilterField } from '@/components/admin/AdminFilterBar.vue'
@@ -110,16 +110,10 @@ const filterFields: AdminFilterField[] = [
   { prop: 'source', label: '来源', placeholder: '搜索来源' },
 ]
 
-const loading = ref(false)
-const saving = ref(false)
-const tableData = ref<WeaNews[]>([])
-const total = ref(0)
-const dialogVisible = ref(false)
-const isEdit = ref(false)
-
 const query = reactive<NewsQuery>({ pageNum: 1, pageSize: 10, title: '', source: '' })
 const form = reactive<WeaNews>({ id: undefined, title: '', content: '', newsType: 1, source: '', status: 1, publishTime: '' })
 const { isDirty, reset } = useFormGuard(form)
+const { loading, saving, tableData, total, dialogVisible, isEdit, handleSearch, handleAdd, handleEdit, handleDialogClose, handleDelete, formatDateColumn } = useCrudPage<WeaNews>(fetchData)
 
 const rules: FormRules = {
   title: [{ required: true, message: '请输入标题', trigger: 'blur' }],
@@ -142,46 +136,14 @@ async function fetchData() {
   }
 }
 
-function handleSearch() {
-  query.pageNum = 1
-  fetchData()
-}
-
 function handleReset() {
   query.title = ''
   query.source = ''
-  handleSearch()
+  handleSearch(query)
 }
 
 function resetForm() {
   Object.assign(form, { id: undefined, title: '', content: '', newsType: 1, source: '', status: 1, publishTime: '' })
-}
-
-function handleAdd() {
-  isEdit.value = false
-  resetForm()
-  reset()
-  dialogVisible.value = true
-}
-
-function handleEdit(row: WeaNews) {
-  isEdit.value = true
-  assignEditable(form, row)
-  reset()
-  dialogVisible.value = true
-}
-
-async function handleDialogClose(done: () => void) {
-  if (!isDirty()) {
-    done()
-    return
-  }
-  try {
-    await ElMessageBox.confirm('有未保存的修改，确定关闭吗？', '离开确认', { type: 'warning' })
-    done()
-  } catch {
-    // 用户取消关闭
-  }
 }
 
 async function handleSave() {
@@ -199,21 +161,6 @@ async function handleSave() {
   } finally {
     saving.value = false
   }
-}
-
-async function handleDelete(id?: number) {
-  if (!id) return
-  try {
-    await deleteNews(id)
-    ElMessage.success('删除成功')
-    fetchData()
-  } catch {
-    // 统一拦截器处理错误提示
-  }
-}
-
-function formatDateColumn(_row: WeaNews, _column: unknown, value: string) {
-  return formatDateTime(value)
 }
 
 onMounted(fetchData)

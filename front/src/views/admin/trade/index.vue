@@ -1,6 +1,6 @@
 <template>
   <AdminPageShell title="交易委托管理" description="跟踪委托订单、成交状态与交易方向。">
-    <AdminFilterBar :model="query" :fields="filterFields" @search="handleSearch" @reset="handleReset" />
+    <AdminFilterBar :model="query" :fields="filterFields" @search="handleSearch(query)" @reset="handleReset" />
 
     <AdminDataTable
       :data="tableData"
@@ -10,7 +10,7 @@
       @page-change="fetchData"
     >
       <template #toolbar>
-        <el-button type="primary" @click="handleAdd">新增委托</el-button>
+        <el-button type="primary" @click="handleAdd(resetForm, reset)">新增委托</el-button>
       </template>
 
       <el-table-column prop="id" label="ID" width="70" />
@@ -32,8 +32,8 @@
       <el-table-column prop="createTime" label="创建时间" width="170" :formatter="formatDateColumn" />
       <el-table-column label="操作" width="160" fixed="right">
         <template #default="{ row }">
-          <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
-          <el-popconfirm title="确定删除该委托？" @confirm="handleDelete(row.id)">
+          <el-button type="primary" link @click="handleEdit(form, row, reset)">编辑</el-button>
+          <el-popconfirm title="确定删除该委托？" @confirm="handleDelete(row.id, deleteTradeOrder)">
             <template #reference>
               <el-button type="danger" link>删除</el-button>
             </template>
@@ -48,7 +48,7 @@
       :model="form"
       :rules="rules"
       :saving="saving"
-      :before-close="handleDialogClose"
+      :before-close="handleDialogClose(isDirty)"
       @submit="handleSave"
     >
       <el-row :gutter="20">
@@ -85,17 +85,16 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { onMounted, reactive } from 'vue'
+import { ElMessage } from 'element-plus'
 import type { FormRules } from 'element-plus'
 import AdminPageShell from '@/components/admin/AdminPageShell.vue'
 import AdminFilterBar from '@/components/admin/AdminFilterBar.vue'
 import AdminDataTable from '@/components/admin/AdminDataTable.vue'
 import AdminFormDialog from '@/components/admin/AdminFormDialog.vue'
 import { useFormGuard } from '@/composables/useFormGuard'
-import { assignEditable } from '@/utils/object'
+import { useCrudPage } from '@/composables/useCrudPage'
 import { getTradeOrderPage, createTradeOrder, updateTradeOrder, deleteTradeOrder } from '@/api/trade'
-import { formatDateTime, formatPrice } from '@/utils/format'
 import type { DictItem, WeaTradeOrder } from '@/types'
 import type { AdminFilterField } from '@/components/admin/AdminFilterBar.vue'
 
@@ -128,13 +127,6 @@ const filterFields: AdminFilterField[] = [
   { prop: 'orderStatus', label: '状态', type: 'select', options: orderStatusOptions, width: '132px' },
 ]
 
-const loading = ref(false)
-const saving = ref(false)
-const tableData = ref<WeaTradeOrder[]>([])
-const total = ref(0)
-const dialogVisible = ref(false)
-const isEdit = ref(false)
-
 const query = reactive<TradeQuery>({
   pageNum: 1,
   pageSize: 10,
@@ -153,6 +145,7 @@ const form = reactive<TradeForm>({
 })
 
 const { isDirty, reset } = useFormGuard(form)
+const { loading, saving, tableData, total, dialogVisible, isEdit, handleSearch, handleAdd, handleEdit, handleDialogClose, handleDelete, formatDateColumn, formatPriceColumn } = useCrudPage<WeaTradeOrder>(fetchData)
 
 const rules: FormRules = {
   userId: [{ required: true, message: '请输入用户ID', trigger: 'blur' }],
@@ -187,16 +180,11 @@ async function fetchData() {
   }
 }
 
-function handleSearch() {
-  query.pageNum = 1
-  fetchData()
-}
-
 function handleReset() {
   query.orderNo = ''
   query.productCode = ''
   query.orderStatus = ''
-  handleSearch()
+  handleSearch(query)
 }
 
 function resetForm() {
@@ -208,34 +196,6 @@ function resetForm() {
     entrustPrice: 0,
     entrustNum: 0,
   })
-}
-
-function handleAdd() {
-  isEdit.value = false
-  resetForm()
-  reset()
-  dialogVisible.value = true
-}
-
-function handleEdit(row: WeaTradeOrder) {
-  isEdit.value = true
-  assignEditable(form, row)
-  reset()
-  dialogVisible.value = true
-}
-
-async function handleDialogClose(done: () => void) {
-  if (!isDirty()) {
-    done()
-    return
-  }
-
-  try {
-    await ElMessageBox.confirm('有未保存的修改，确定关闭吗？', '离开确认', { type: 'warning' })
-    done()
-  } catch {
-    // 用户取消关闭
-  }
 }
 
 async function handleSave() {
@@ -261,17 +221,6 @@ async function handleSave() {
   }
 }
 
-async function handleDelete(id?: number) {
-  if (!id) return
-  try {
-    await deleteTradeOrder(id)
-    ElMessage.success('删除成功')
-    fetchData()
-  } catch {
-    // 统一拦截器处理错误提示
-  }
-}
-
 function tradeTypeText(value?: number) {
   return tradeTypeOptions.find((item) => item.value === value)?.label || '-'
 }
@@ -284,14 +233,6 @@ function orderStatusTag(value?: number) {
   if (value === 1) return 'success'
   if (value === 2) return 'info'
   return 'warning'
-}
-
-function formatPriceColumn(_row: WeaTradeOrder, _column: unknown, value: number) {
-  return formatPrice(value)
-}
-
-function formatDateColumn(_row: WeaTradeOrder, _column: unknown, value: string) {
-  return formatDateTime(value)
 }
 
 onMounted(fetchData)

@@ -20,7 +20,7 @@ export function getAdminPage(params: { pageNum: number; pageSize: number; userna
 }
 
 /**
- * 查询所有管理员列表
+ * 查询所有管理员列表（用于下拉选择器）
  * @returns 管理员列表
  */
 export function getAdminList() {
@@ -83,7 +83,7 @@ export function getRolePage(params: { pageNum: number; pageSize: number; name?: 
 }
 
 /**
- * 查询所有角色列表
+ * 查询所有角色列表（用于下拉选择器）
  * @returns 角色列表
  */
 export function getRoleList() {

@@ -11,14 +11,6 @@ export function getUserPage(params: { pageNum: number; pageSize: number; usernam
 }
 
 /**
- * 查询所有用户列表
- * @returns 用户列表
- */
-export function getUserList() {
-  return request.get('/user')
-}
-
-/**
  * 根据 ID 查询用户
  * @param id - 用户 ID
  * @returns 用户信息

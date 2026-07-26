@@ -11,14 +11,6 @@ export function getMessagePage(params: PageParam & { msgTitle?: string; msgType?
 }
 
 /**
- * 查询所有站内消息列表
- * @returns 站内消息列表
- */
-export function getMessageList() {
-  return request.get('/message/wea-message')
-}
-
-/**
  * 根据 ID 查询站内消息
  * @param id - 消息 ID
  * @returns 站内消息信息
@@ -62,14 +54,6 @@ export function deleteMessage(id: number) {
  */
 export function getNewsPage(params: PageParam & { title?: string; source?: string; newsType?: number }) {
   return request.get('/message/wea-news/page', { params })
-}
-
-/**
- * 查询所有资讯列表
- * @returns 资讯列表
- */
-export function getNewsList() {
-  return request.get('/message/wea-news')
 }
 
 /**

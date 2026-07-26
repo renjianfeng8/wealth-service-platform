@@ -1,10 +1,10 @@
 <template>
   <AdminPageShell title="用户管理" description="维护普通用户账号、联系方式与启用状态。">
-    <AdminFilterBar :model="query" :fields="filterFields" @search="handleSearch" @reset="handleReset" />
+    <AdminFilterBar :model="query" :fields="filterFields" @search="handleSearch(query)" @reset="handleReset" />
 
     <AdminDataTable :data="tableData" :loading="loading" :total="total" :pagination="query" @page-change="fetchData">
       <template #toolbar>
-        <el-button type="primary" @click="handleAdd">新增用户</el-button>
+        <el-button type="primary" @click="crudAdd(resetForm, reset)">新增用户</el-button>
       </template>
 
       <el-table-column prop="id" label="ID" width="70" />
@@ -20,7 +20,7 @@
       <el-table-column label="操作" width="160" fixed="right">
         <template #default="{ row }">
           <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
-          <el-popconfirm title="确定删除该用户？" @confirm="handleDelete(row.id)">
+          <el-popconfirm title="确定删除该用户？" @confirm="handleDelete(row.id, deleteUser)">
             <template #reference>
               <el-button type="danger" link>删除</el-button>
             </template>
@@ -35,7 +35,7 @@
       :model="form"
       :rules="rules"
       :saving="saving"
-      :before-close="handleDialogClose"
+      :before-close="handleDialogClose(isDirty)"
       width="520px"
       @submit="handleSave"
     >
@@ -62,16 +62,17 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { onMounted, reactive } from 'vue'
+import { ElMessage } from 'element-plus'
 import type { FormRules } from 'element-plus'
 import AdminPageShell from '@/components/admin/AdminPageShell.vue'
 import AdminFilterBar from '@/components/admin/AdminFilterBar.vue'
 import AdminDataTable from '@/components/admin/AdminDataTable.vue'
 import AdminFormDialog from '@/components/admin/AdminFormDialog.vue'
 import { useFormGuard } from '@/composables/useFormGuard'
+import { useCrudPage } from '@/composables/useCrudPage'
 import { getUserPage, createUser, updateUser, deleteUser } from '@/api/user'
-import { formatDateTime, statusTag, statusText } from '@/utils/format'
+import { statusTag, statusText } from '@/utils/format'
 import { STATUS_OPTIONS } from '@/types'
 import type { AdminFilterField } from '@/components/admin/AdminFilterBar.vue'
 
@@ -96,16 +97,10 @@ const filterFields: AdminFilterField[] = [
   { prop: 'status', label: '状态', type: 'select', options: STATUS_OPTIONS, width: '132px' },
 ]
 
-const loading = ref(false)
-const saving = ref(false)
-const tableData = ref<UserForm[]>([])
-const total = ref(0)
-const dialogVisible = ref(false)
-const isEdit = ref(false)
-
 const query = reactive<UserQuery>({ pageNum: 1, pageSize: 10, username: '', status: '' })
 const form = reactive<UserForm>({ id: undefined, username: '', password: '', nickname: '', phone: '', status: 1 })
 const { isDirty, reset } = useFormGuard(form)
+const { loading, saving, tableData, total, dialogVisible, isEdit, handleSearch, handleAdd: crudAdd, handleEdit: crudEdit, handleDialogClose, handleDelete, formatDateColumn } = useCrudPage<UserForm>(fetchData)
 
 const validatePhone = (_rule: unknown, value: string, callback: (error?: Error) => void) => {
   if (value && !/^1\d{10}$/.test(value)) {
@@ -147,46 +142,19 @@ async function fetchData() {
   }
 }
 
-function handleSearch() {
-  query.pageNum = 1
-  fetchData()
-}
-
 function handleReset() {
   query.username = ''
   query.status = ''
-  handleSearch()
+  handleSearch(query)
 }
 
 function resetForm() {
   Object.assign(form, { id: undefined, username: '', password: '', nickname: '', phone: '', status: 1 })
 }
 
-function handleAdd() {
-  isEdit.value = false
-  resetForm()
-  reset()
-  dialogVisible.value = true
-}
-
 function handleEdit(row: UserForm) {
-  isEdit.value = true
-  Object.assign(form, row, { password: '' })
-  reset()
-  dialogVisible.value = true
-}
-
-async function handleDialogClose(done: () => void) {
-  if (!isDirty()) {
-    done()
-    return
-  }
-  try {
-    await ElMessageBox.confirm('有未保存的修改，确定关闭吗？', '离开确认', { type: 'warning' })
-    done()
-  } catch {
-    // 用户取消关闭
-  }
+  crudEdit(form, row, reset)
+  form.password = ''
 }
 
 async function handleSave() {
@@ -206,21 +174,6 @@ async function handleSave() {
   } finally {
     saving.value = false
   }
-}
-
-async function handleDelete(id?: number) {
-  if (!id) return
-  try {
-    await deleteUser(id)
-    ElMessage.success('删除成功')
-    fetchData()
-  } catch {
-    // 统一拦截器处理错误提示
-  }
-}
-
-function formatDateColumn(_row: UserForm, _column: unknown, value: string) {
-  return formatDateTime(value)
 }
 
 onMounted(fetchData)

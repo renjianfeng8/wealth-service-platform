@@ -199,34 +199,4 @@ onUnmounted(() => {
   justify-content: flex-end;
 }
 
-.sse-status {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  padding: 2px 10px;
-  border-radius: 12px;
-  margin-left: 12px;
-  vertical-align: middle;
-}
-.sse-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  display: inline-block;
-}
-.sse-status.connected {
-  color: #67c23a;
-  background: rgba(103, 194, 58, 0.1);
-}
-.sse-status.connected .sse-dot {
-  background: #67c23a;
-}
-.sse-status.disconnected {
-  color: #f56c6c;
-  background: rgba(245, 108, 108, 0.1);
-}
-.sse-status.disconnected .sse-dot {
-  background: #f56c6c;
-}
 </style>

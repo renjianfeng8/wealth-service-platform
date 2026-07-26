@@ -1,6 +1,6 @@
 <template>
   <AdminPageShell title="产品管理" description="维护产品基础信息、价格、涨跌幅与上下架状态。">
-    <AdminFilterBar :model="query" :fields="filterFields" @search="handleSearch" @reset="handleReset" />
+    <AdminFilterBar :model="query" :fields="filterFields" @search="handleSearch(query)" @reset="handleReset" />
 
     <AdminDataTable
       :data="tableData"
@@ -10,7 +10,7 @@
       @page-change="fetchData"
     >
       <template #toolbar>
-        <el-button type="primary" @click="handleAdd">新增产品</el-button>
+        <el-button type="primary" @click="handleAdd(resetForm, reset)">新增产品</el-button>
       </template>
 
       <el-table-column prop="id" label="ID" width="70" />
@@ -37,8 +37,8 @@
       <el-table-column prop="createTime" label="创建时间" width="170" :formatter="formatDateColumn" />
       <el-table-column label="操作" width="160" fixed="right">
         <template #default="{ row }">
-          <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
-          <el-popconfirm title="确定删除该产品？" @confirm="handleDelete(row.id)">
+          <el-button type="primary" link @click="handleEdit(form, row, reset)">编辑</el-button>
+          <el-popconfirm title="确定删除该产品？" @confirm="handleDelete(row.id, deleteProduct)">
             <template #reference>
               <el-button type="danger" link>删除</el-button>
             </template>
@@ -53,7 +53,7 @@
       :model="form"
       :rules="rules"
       :saving="saving"
-      :before-close="handleDialogClose"
+      :before-close="handleDialogClose(isDirty)"
       @submit="handleSave"
     >
       <el-row :gutter="20">
@@ -114,17 +114,17 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { onMounted, reactive } from 'vue'
+import { ElMessage } from 'element-plus'
 import type { FormRules } from 'element-plus'
 import AdminPageShell from '@/components/admin/AdminPageShell.vue'
 import AdminFilterBar from '@/components/admin/AdminFilterBar.vue'
 import AdminDataTable from '@/components/admin/AdminDataTable.vue'
 import AdminFormDialog from '@/components/admin/AdminFormDialog.vue'
 import { useFormGuard } from '@/composables/useFormGuard'
-import { assignEditable } from '@/utils/object'
+import { useCrudPage } from '@/composables/useCrudPage'
 import { getProductPage, createProduct, updateProduct, deleteProduct } from '@/api/product'
-import { formatDateTime, formatPrice, formatRate } from '@/utils/format'
+import { formatRate } from '@/utils/format'
 import type { DictItem, WeaProduct } from '@/types'
 import type { AdminFilterField } from '@/components/admin/AdminFilterBar.vue'
 
@@ -149,13 +149,6 @@ const filterFields: AdminFilterField[] = [
   { prop: 'productType', label: '类型', type: 'select', options: productTypeOptions, width: '132px' },
 ]
 
-const loading = ref(false)
-const saving = ref(false)
-const tableData = ref<WeaProduct[]>([])
-const total = ref(0)
-const dialogVisible = ref(false)
-const isEdit = ref(false)
-
 const query = reactive<ProductQuery>({
   pageNum: 1,
   pageSize: 10,
@@ -177,6 +170,7 @@ const form = reactive<WeaProduct>({
 })
 
 const { isDirty, reset } = useFormGuard(form)
+const { loading, saving, tableData, total, dialogVisible, isEdit, handleSearch, handleAdd, handleEdit, handleDialogClose, handleDelete, formatDateColumn, formatPriceColumn } = useCrudPage<WeaProduct>(fetchData)
 
 const rules: FormRules = {
   productName: [{ required: true, message: '请输入产品名称', trigger: 'blur' }],
@@ -210,16 +204,11 @@ async function fetchData() {
   }
 }
 
-function handleSearch() {
-  query.pageNum = 1
-  fetchData()
-}
-
 function handleReset() {
   query.productName = ''
   query.productCode = ''
   query.productType = ''
-  handleSearch()
+  handleSearch(query)
 }
 
 function resetForm() {
@@ -234,34 +223,6 @@ function resetForm() {
     status: 1,
     sort: 0,
   })
-}
-
-function handleAdd() {
-  isEdit.value = false
-  resetForm()
-  reset()
-  dialogVisible.value = true
-}
-
-function handleEdit(row: WeaProduct) {
-  isEdit.value = true
-  assignEditable(form, row)
-  reset()
-  dialogVisible.value = true
-}
-
-async function handleDialogClose(done: () => void) {
-  if (!isDirty()) {
-    done()
-    return
-  }
-
-  try {
-    await ElMessageBox.confirm('有未保存的修改，确定关闭吗？', '离开确认', { type: 'warning' })
-    done()
-  } catch {
-    // 用户取消关闭
-  }
 }
 
 async function handleSave() {
@@ -281,17 +242,6 @@ async function handleSave() {
   }
 }
 
-async function handleDelete(id?: number) {
-  if (!id) return
-  try {
-    await deleteProduct(id)
-    ElMessage.success('删除成功')
-    fetchData()
-  } catch {
-    // 统一拦截器处理错误提示
-  }
-}
-
 function productTypeText(value?: number) {
   return productTypeOptions.find((item) => item.value === value)?.label || '-'
 }
@@ -302,14 +252,6 @@ function statusText(value?: number) {
 
 function statusTag(value?: number) {
   return value === 1 ? 'success' : 'info'
-}
-
-function formatPriceColumn(_row: WeaProduct, _column: unknown, value: number) {
-  return formatPrice(value)
-}
-
-function formatDateColumn(_row: WeaProduct, _column: unknown, value: string) {
-  return formatDateTime(value)
 }
 
 onMounted(fetchData)

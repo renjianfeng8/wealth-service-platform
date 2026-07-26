@@ -1,6 +1,6 @@
 <template>
   <AdminPageShell title="管理员角色关联" description="维护管理员与角色之间的授权关系。">
-    <AdminFilterBar :model="query" :fields="filterFields" @search="handleSearch" @reset="handleReset" />
+    <AdminFilterBar :model="query" :fields="filterFields" @search="handleSearch(query)" @reset="handleReset" />
 
     <AdminDataTable :data="tableData" :loading="loading" :total="total" :pagination="query" @page-change="fetchData">
       <template #toolbar>
@@ -19,7 +19,7 @@
       <el-table-column prop="createTime" label="创建时间" width="170" :formatter="formatDateColumn" />
       <el-table-column label="操作" width="120" fixed="right">
         <template #default="{ row }">
-          <el-popconfirm title="确定解除该关联？" @confirm="handleDelete(row.id)">
+          <el-popconfirm title="确定解除该关联？" @confirm="handleDelete(row.id, deleteAdminRoleRelation)">
             <template #reference>
               <el-button type="danger" link>解除</el-button>
             </template>
@@ -61,8 +61,8 @@ import AdminFilterBar from '@/components/admin/AdminFilterBar.vue'
 import AdminDataTable from '@/components/admin/AdminDataTable.vue'
 import AdminFormDialog from '@/components/admin/AdminFormDialog.vue'
 import { useFormGuard } from '@/composables/useFormGuard'
+import { useCrudPage } from '@/composables/useCrudPage'
 import { getAdminRoleRelationPage, createAdminRoleRelation, deleteAdminRoleRelation, getAdminList, getRoleList } from '@/api/system'
-import { formatDateTime } from '@/utils/format'
 import type { DictItem, UmsAdmin, UmsRole } from '@/types'
 import type { AdminFilterField } from '@/components/admin/AdminFilterBar.vue'
 
@@ -79,13 +79,9 @@ type AdminRoleRelation = {
   createTime?: string
 }
 
-const loading = ref(false)
-const saving = ref(false)
-const tableData = ref<AdminRoleRelation[]>([])
-const total = ref(0)
 const adminList = ref<UmsAdmin[]>([])
 const roleList = ref<UmsRole[]>([])
-const dialogVisible = ref(false)
+const { loading, saving, tableData, total, dialogVisible, handleSearch, handleDelete, formatDateColumn } = useCrudPage<AdminRoleRelation>(fetchData)
 
 const query = reactive<RelationQuery>({ pageNum: 1, pageSize: 10, adminId: '' })
 const form = reactive<AdminRoleRelation>({ adminId: undefined, roleId: undefined })
@@ -150,14 +146,9 @@ async function fetchData() {
   }
 }
 
-function handleSearch() {
-  query.pageNum = 1
-  fetchData()
-}
-
 function handleReset() {
   query.adminId = ''
-  handleSearch()
+  handleSearch(query)
 }
 
 function handleAdd() {
@@ -179,17 +170,6 @@ async function handleSave() {
   }
 }
 
-async function handleDelete(id?: number) {
-  if (!id) return
-  try {
-    await deleteAdminRoleRelation(id)
-    ElMessage.success('已解除关联')
-    fetchData()
-  } catch {
-    // 统一拦截器处理错误提示
-  }
-}
-
 async function handleDialogClose(done: () => void) {
   if (!isDirty()) {
     done()
@@ -201,10 +181,6 @@ async function handleDialogClose(done: () => void) {
   } catch {
     // 用户取消关闭
   }
-}
-
-function formatDateColumn(_row: AdminRoleRelation, _column: unknown, value: string) {
-  return formatDateTime(value)
 }
 
 onMounted(async () => {
