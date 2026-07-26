@@ -8,7 +8,7 @@
           <el-skeleton animated :loading="loading">
             <template #default>
               <div class="profile-header">
-                <el-avatar :size="72" :icon="UserFilled" class="profile-avatar" />
+                <el-avatar :size="72" :src="userStore.avatar" class="profile-avatar" />
                 <h2 class="profile-name">{{ adminInfo.nickName || adminInfo.username }}</h2>
                 <p class="profile-username">@{{ adminInfo.username }}</p>
               </div>
@@ -76,7 +76,6 @@
 import { ref, reactive, onMounted, onUnmounted } from 'vue'
 import { useUserStore } from '@/store/index'
 import { getAdminById, updateAdmin, resetAdminPassword } from '@/api/system'
-import { UserFilled } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
 import { useFormGuard } from '@/composables/useFormGuard'
@@ -140,6 +139,7 @@ async function fetchProfile() {
         adminInfo.username = data.username || userStore.username
         adminInfo.nickName = data.nickName || ''
         adminInfo.email = data.email || ''
+        if (data.avatar) userStore.setUserInfo({ userId: userStore.userId, nickname: adminInfo.nickName, avatar: data.avatar })
       }
       // B7: 数据加载完成后更新快照，防止异步填充后的脏误判
       reset()
@@ -165,7 +165,7 @@ async function handleSave() {
     userStore.setUserInfo({
       userId: userStore.userId,
       nickname: adminInfo.nickName || '',
-      avatar: '',
+      avatar: userStore.avatar,
     })
     reset() // B7: 保存成功后重置脏标记
     ElMessage.success('保存成功')

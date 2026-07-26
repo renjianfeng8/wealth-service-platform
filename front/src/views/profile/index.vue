@@ -24,7 +24,7 @@
             </template>
             <template #default>
               <div class="profile-header">
-                <el-avatar :size="72" :icon="UserFilled" class="profile-avatar" />
+                <el-avatar :size="72" :src="userStore.avatar" class="profile-avatar" />
                 <h2 class="profile-name">{{ userInfo.nickname || userInfo.username }}</h2>
                 <p class="profile-username">@{{ userInfo.username }}</p>
               </div>
@@ -124,7 +124,6 @@ import { resetPassword } from '@/api/user'
 import { getFavoritePage } from '@/api/favorite'
 import { getTradeOrderPage } from '@/api/trade'
 import { getMessagePage } from '@/api/message'
-import { UserFilled } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
 import { useFormGuard } from '@/composables/useFormGuard'
@@ -212,6 +211,7 @@ async function fetchProfile() {
         userInfo.username = data.username || userStore.username
         userInfo.nickname = data.nickname || userStore.nickname
         userInfo.phone = data.phone || ''
+        if (data.avatar) userStore.setUserInfo({ userId: userStore.userId, nickname: userInfo.nickname, avatar: data.avatar })
       }
     } catch (err) { console.warn('[profile] fetchProfile 失败:', err)
     } finally { fetchProfilePromise = null }

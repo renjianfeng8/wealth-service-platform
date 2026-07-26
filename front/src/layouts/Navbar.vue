@@ -11,16 +11,22 @@
     </div>
 
     <div class="navbar-right">
-      <div class="search-box" @click="goSearch">
-        <el-icon><Search /></el-icon>
-        <span class="search-placeholder">搜索产品...</span>
+      <div class="search-box">
+        <el-input
+          v-model="searchKeyword"
+          placeholder="搜索产品..."
+          :prefix-icon="Search"
+          size="small"
+          clearable
+          @keyup.enter="doSearch"
+        />
       </div>
 
       <MessageNoticePopover target-path="/admin/message" />
 
       <el-dropdown trigger="click">
         <span class="user-dropdown">
-          <el-avatar :size="28"><UserFilled /></el-avatar>
+          <el-avatar :size="28" :src="userStore.avatar" />
           <span class="username">{{ userStore.username || '管理员' }}</span>
           <el-icon><ArrowDown /></el-icon>
         </span>
@@ -40,7 +46,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '@/store'
 import MessageNoticePopover from '@/components/MessageNoticePopover.vue'
@@ -55,6 +61,14 @@ defineEmits<{ toggle: [] }>()
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
+
+const searchKeyword = ref('')
+
+function doSearch() {
+  const keyword = searchKeyword.value.trim()
+  if (!keyword) return
+  router.push({ path: '/admin/search', query: { keyword } })
+}
 
 const GROUP_LABELS: Record<string, string> = {
   dashboard: '仪表盘',
@@ -79,10 +93,6 @@ const breadcrumbItems = computed(() => {
   }
   return items
 })
-
-function goSearch() {
-  router.push('/admin/search')
-}
 
 function handleLogout() {
   userStore.logout()
@@ -120,24 +130,22 @@ function handleLogout() {
 }
 
 .search-box {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 14px;
-  background: #f5f7fa;
-  border-radius: 20px;
-  cursor: pointer;
-  transition: all 0.2s;
-  color: var(--fl-text-dim);
+  width: 180px;
 }
 
-.search-box:hover {
+.search-box .el-input__wrapper {
+  background: #f5f7fa;
+  border-radius: 6px;
+  box-shadow: none;
+}
+
+.search-box .el-input__wrapper:hover {
   background: #eef1f6;
 }
 
-.search-placeholder {
-  font-size: 13px;
-  white-space: nowrap;
+.search-box .el-input__wrapper.is-focus {
+  background: #fff;
+  box-shadow: 0 0 0 1px var(--el-color-primary) inset;
 }
 
 .search-shortcut {

@@ -9,13 +9,15 @@ export interface LoginInfo {
   role: 'admin' | 'user'
 }
 
+export const DEFAULT_AVATAR = '/default-avatar.svg'
+
 export const useUserStore = defineStore('user', {
   state: () => ({
     token: getToken() || '',
     username: getStoredUser()?.username || '',
     userId: getStoredUser()?.userId || 0,
     nickname: getStoredUser()?.nickname || '',
-    avatar: getStoredUser()?.avatar || '',
+    avatar: getStoredUser()?.avatar || DEFAULT_AVATAR,
     role: (sessionStorage.getItem('wealth_role') as 'admin' | 'user' | null) || null,
   }),
   getters: {
@@ -36,7 +38,7 @@ export const useUserStore = defineStore('user', {
       this.username = username
       this.userId = userId
       this.nickname = nickname || ''
-      this.avatar = avatar || ''
+      this.avatar = avatar || DEFAULT_AVATAR
       this.role = role
     },
     /**
@@ -46,7 +48,7 @@ export const useUserStore = defineStore('user', {
     setUserInfo(info: { userId: number; nickname: string; avatar: string }) {
       this.userId = info.userId
       this.nickname = info.nickname
-      this.avatar = info.avatar
+      this.avatar = info.avatar || DEFAULT_AVATAR
       setStoredUser({ username: this.username, ...info })
     },
     /**
@@ -71,7 +73,7 @@ export const useUserStore = defineStore('user', {
       this.username = ''
       this.userId = 0
       this.nickname = ''
-      this.avatar = ''
+      this.avatar = DEFAULT_AVATAR
       this.role = null
       removeToken()
     },

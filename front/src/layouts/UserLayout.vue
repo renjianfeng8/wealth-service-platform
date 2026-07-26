@@ -79,7 +79,7 @@
 
             <el-dropdown trigger="click" @command="handleCommand">
               <span class="user-info">
-                <el-avatar :size="32" :icon="UserFilled" class="user-avatar" />
+                <el-avatar :size="32" :src="userStore.avatar" class="user-avatar" />
                 <span class="username">{{ userStore.nickname || userStore.username }}</span>
                 <el-icon><ArrowDown /></el-icon>
               </span>

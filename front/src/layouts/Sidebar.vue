@@ -76,7 +76,7 @@
 
     <div class="sidebar-footer" v-show="!isCollapsed">
       <div class="user-info">
-        <el-avatar :size="32" icon="UserFilled" />
+        <el-avatar :size="32" :src="userStore.avatar" />
         <div class="user-detail">
           <div class="user-name">{{ userStore.username || '管理员' }}</div>
           <div class="user-role">超级管理员</div>
