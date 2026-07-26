@@ -24,6 +24,7 @@ import jakarta.validation.constraints.NotEmpty;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import java.util.List;
 
 @RestController
@@ -33,9 +34,11 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
+    private final BCryptPasswordEncoder passwordEncoder;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, BCryptPasswordEncoder passwordEncoder) {
         this.userService = userService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @GetMapping("/{id}")
@@ -72,6 +75,7 @@ public class UserController {
     @AuditLog(module = "用户管理", operation = "新增用户")
     public Result<Boolean> create(@Valid @RequestBody UserDTO dto) {
         User user = BeanConvertUtil.convert(dto, User.class);
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         return Result.success(userService.save(user));
     }
 
@@ -121,6 +125,7 @@ public class UserController {
     @PostMapping("/login")
     @Operation(summary = "用户登录")
     @AuditLog(module = "用户管理", operation = "用户登录")
+    @AntiReplay
     public ResponseEntity<Result<LoginVO>> login(@Valid @RequestBody LoginDTO dto) {
         LoginVO loginVO = userService.login(dto);
         ResponseCookie cookie = ResponseCookie.from("wealth_token", loginVO.getToken())
@@ -136,6 +141,7 @@ public class UserController {
     @PostMapping("/identify-login")
     @Operation(summary = "统一登录（自动识别用户类型）")
     @AuditLog(module = "用户管理", operation = "统一登录")
+    @AntiReplay
     public ResponseEntity<Result<LoginVO>> identifyLogin(@Valid @RequestBody LoginDTO dto) {
         LoginVO loginVO = userService.identifyLogin(dto);
         ResponseCookie cookie = ResponseCookie.from("wealth_token", loginVO.getToken())

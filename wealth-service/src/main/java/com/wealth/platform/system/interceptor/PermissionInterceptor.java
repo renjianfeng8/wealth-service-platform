@@ -1,5 +1,7 @@
 package com.wealth.platform.system.interceptor;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.wealth.common.result.Result;
 import com.wealth.common.utils.JwtUtil;
 import com.wealth.common.utils.RedisUtil;
 import com.wealth.platform.system.entity.UmsAdmin;
@@ -39,17 +41,20 @@ public class PermissionInterceptor implements HandlerInterceptor {
     private final UmsAdminRoleRelationService adminRoleRelationService;
     private final UmsRoleResourceRelationService roleResourceRelationService;
     private final RedisUtil redisUtil;
+    private final ObjectMapper objectMapper;
 
     public PermissionInterceptor(JwtUtil jwtUtil,
                                  UmsAdminService adminService,
                                  UmsAdminRoleRelationService adminRoleRelationService,
                                  UmsRoleResourceRelationService roleResourceRelationService,
-                                 ObjectProvider<RedisUtil> redisUtilProvider) {
+                                 ObjectProvider<RedisUtil> redisUtilProvider,
+                                 ObjectMapper objectMapper) {
         this.jwtUtil = jwtUtil;
         this.adminService = adminService;
         this.adminRoleRelationService = adminRoleRelationService;
         this.roleResourceRelationService = roleResourceRelationService;
         this.redisUtil = redisUtilProvider.getIfAvailable();
+        this.objectMapper = objectMapper;
     }
 
     @Override
@@ -180,7 +185,6 @@ public class PermissionInterceptor implements HandlerInterceptor {
         response.setCharacterEncoding("UTF-8");
         response.setContentType("application/json;charset=UTF-8");
         response.setStatus(code);
-        response.getWriter().write("{\"code\":" + code + ",\"message\":\"" + message + "\"}");
-        response.getWriter().flush();
+        objectMapper.writeValue(response.getWriter(), Result.error(code, message));
     }
 }

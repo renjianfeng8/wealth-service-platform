@@ -1,6 +1,8 @@
 package com.wealth.platform.trade.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -24,10 +26,12 @@ public class TradeOrderDTO {
     private Integer tradeType;
 
     @NotNull(message = "委托价格不能为空")
+    @DecimalMin(value = "0.01", message = "委托价格必须大于0")
     @Schema(description = "委托价格")
     private java.math.BigDecimal entrustPrice;
 
     @NotNull(message = "委托数量不能为空")
+    @Min(value = 1, message = "委托数量不能小于1")
     @Schema(description = "委托数量")
     private Integer entrustNum;
 

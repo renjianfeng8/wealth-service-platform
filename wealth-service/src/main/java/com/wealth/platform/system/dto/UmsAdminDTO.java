@@ -19,8 +19,7 @@ public class UmsAdminDTO {
     @Schema(description = "用户名")
     private String username;
 
-    @NotBlank(message = "密码不能为空")
-    @Schema(description = "密码")
+    @Schema(description = "密码（创建时必填，更新时不填则不修改）")
     private String password;
 
     @Email(message = "邮箱格式不正确")

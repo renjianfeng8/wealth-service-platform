@@ -151,6 +151,7 @@ CREATE TABLE ums_admin (
     nick_name   VARCHAR(200) DEFAULT NULL            COMMENT '昵称',
     status      TINYINT      DEFAULT NULL            COMMENT '账号启用状态 0禁用 1启用',
     create_time DATETIME     DEFAULT NULL            COMMENT '创建时间',
+    update_time DATETIME     DEFAULT NULL            COMMENT '更新时间',
     login_time  DATETIME     DEFAULT NULL            COMMENT '最后登录时间',
     avatar      VARCHAR(500) DEFAULT NULL            COMMENT '头像',
     del_flag    INT          DEFAULT '0'             COMMENT '逻辑删除 0未删除 1已删除',

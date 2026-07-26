@@ -21,13 +21,13 @@
         <el-card class="info-card" shadow="never">
           <template #header>基本信息</template>
           <el-form :model="adminInfo" label-width="80px" size="large">
-            <el-form-item label="用户名">
+            <el-form-item label="用户名" prop="username">
               <el-input v-model="adminInfo.username" disabled />
             </el-form-item>
-            <el-form-item label="昵称">
+            <el-form-item label="昵称" prop="nickName">
               <el-input v-model="adminInfo.nickName" placeholder="设置昵称" />
             </el-form-item>
-            <el-form-item label="邮箱">
+            <el-form-item label="邮箱" prop="email">
               <el-input v-model="adminInfo.email" placeholder="设置邮箱" />
             </el-form-item>
             <el-form-item>
@@ -105,6 +105,9 @@ const passwordForm = reactive({
   confirmPassword: '',
 })
 
+// 防止组件重复挂载导致重复 API 请求
+let fetchProfilePromise: Promise<void> | null = null
+
 const passwordRules: FormRules = {
   oldPassword: [
     { required: true, message: '请输入当前密码', trigger: 'blur' },
@@ -127,23 +130,28 @@ const passwordRules: FormRules = {
 
 async function fetchProfile() {
   if (!userStore.userId) return
+  if (fetchProfilePromise) return fetchProfilePromise
   adminInfo.username = userStore.username
-  try {
-    const res = await getAdminById(userStore.userId)
-    const data = res.data
-    if (data) {
-      adminInfo.username = data.username || userStore.username
-      adminInfo.nickName = data.nickName || ''
-      adminInfo.email = data.email || ''
+  fetchProfilePromise = (async () => {
+    try {
+      const res = await getAdminById(userStore.userId)
+      const data = res.data
+      if (data) {
+        adminInfo.username = data.username || userStore.username
+        adminInfo.nickName = data.nickName || ''
+        adminInfo.email = data.email || ''
+      }
+      // B7: 数据加载完成后更新快照，防止异步填充后的脏误判
+      reset()
+    } catch (err) {
+      console.warn('[admin/profile] fetchProfile 失败:', err)
+      // use store defaults
+    } finally {
+      loading.value = false
+      fetchProfilePromise = null
     }
-    // B7: 数据加载完成后更新快照，防止异步填充后的脏误判
-    reset()
-  } catch (err) {
-    console.warn('[admin/profile] fetchProfile 失败:', err)
-    // use store defaults
-  } finally {
-    loading.value = false
-  }
+  })()
+  return fetchProfilePromise
 }
 
 async function handleSave() {

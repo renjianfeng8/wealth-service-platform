@@ -28,6 +28,7 @@ request.interceptors.response.use(
   (response) => {
     const res = response.data
     if (res.code === 401) {
+      ElMessage.error(res.message || '未登录')
       useUserStore().logout()
       redirectLogin()
       return Promise.reject(new Error(res.message || '未登录'))

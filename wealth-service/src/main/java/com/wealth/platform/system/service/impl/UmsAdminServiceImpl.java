@@ -55,6 +55,7 @@ public class UmsAdminServiceImpl extends ServiceImpl<UmsAdminMapper, UmsAdmin>
     private static final String KEY_REFRESH_JTI = "refresh:jti:";
     private static final String KEY_REFRESH_COMPROMISED = "refresh:compromised:";
     private static final String KEY_PERMISSION_CACHE = "permission:urls:";
+    private static final String KEY_REFRESH_BLACKLIST = "refresh:blacklist:";
 
     private final JwtUtil jwtUtil;
     private final UmsResourceService resourceService;
@@ -147,7 +148,17 @@ public class UmsAdminServiceImpl extends ServiceImpl<UmsAdminMapper, UmsAdmin>
             throw new ServiceException(401, "refreshToken 无效或已过期");
         }
 
-        // 2. 检查该用户是否被标记为"疑似被盗"，Redis 不可用时跳过检查
+        // 2. 检查 refresh_token 是否已被注销（退出登录时加入黑名单）
+        try {
+            Boolean blacklisted = redisUtil.hasKey(KEY_REFRESH_BLACKLIST + jti);
+            if (Boolean.TRUE.equals(blacklisted)) {
+                throw new ServiceException(401, "refreshToken 已注销，请重新登录");
+            }
+        } catch (RedisConnectionFailureException e) {
+            log.warn("Redis 不可用，跳过黑名单检查: {}", e.getMessage());
+        }
+
+        // 3. 检查该用户是否被标记为"疑似被盗"，Redis 不可用时跳过检查
         try {
             Boolean compromised = redisUtil.hasKey(KEY_REFRESH_COMPROMISED + username);
             if (Boolean.TRUE.equals(compromised)) {
@@ -158,7 +169,18 @@ public class UmsAdminServiceImpl extends ServiceImpl<UmsAdminMapper, UmsAdmin>
             log.warn("Redis 不可用，跳过被盗检测: {}", e.getMessage());
         }
 
-        // 3. 检查是否已吊销（Redis 中是否存在），Redis 不可用时要求重新登录
+        // 4. 防并发竞争锁（以 jti 为锁 key，30 秒自动过期）
+        String lockKey = "refresh:lock:" + jti;
+        try {
+            Boolean locked = redisUtil.setIfAbsent(lockKey, "1", 30, TimeUnit.SECONDS);
+            if (Boolean.FALSE.equals(locked)) {
+                throw new ServiceException(429, "正在刷新 token，请稍后重试");
+            }
+        } catch (RedisConnectionFailureException e) {
+            log.warn("Redis 不可用，跳过并发锁: {}", e.getMessage());
+        }
+
+        // 5. 检查是否已吊销（Redis 中是否存在），Redis 不可用时要求重新登录
         Boolean exists;
         try {
             exists = redisUtil.hasKey(KEY_REFRESH_JTI + jti);
@@ -178,14 +200,14 @@ public class UmsAdminServiceImpl extends ServiceImpl<UmsAdminMapper, UmsAdmin>
             throw new ServiceException(401, "refreshToken 已吊销，请重新登录");
         }
 
-        // 4. 吊销旧 refresh_token（一次性使用，防重放）
+        // 6. 吊销旧 refresh_token（一次性使用，防重放）
         try {
             redisUtil.delete(KEY_REFRESH_JTI + jti);
         } catch (RedisConnectionFailureException e) {
             log.warn("Redis 不可用，跳过旧 refresh_token 删除: {}", e.getMessage());
         }
 
-        // 5. 生成新的 token 对
+        // 7. 生成新的 token 对
         TokenPair pair = jwtUtil.generateTokenPair(username);
         String newJti = jwtUtil.getTokenIdFromToken(pair.refreshToken());
         try {
@@ -194,7 +216,7 @@ public class UmsAdminServiceImpl extends ServiceImpl<UmsAdminMapper, UmsAdmin>
             log.warn("Redis 不可用，新 refresh_token 未持久化: {}", e.getMessage());
         }
 
-        // 6. 登录成功则清除该用户被盗标记（如有）
+        // 8. 登录成功则清除该用户被盗标记（如有）
         try {
             redisUtil.delete(KEY_REFRESH_COMPROMISED + username);
         } catch (RedisConnectionFailureException e) {
@@ -205,15 +227,16 @@ public class UmsAdminServiceImpl extends ServiceImpl<UmsAdminMapper, UmsAdmin>
     }
 
     /**
-     * 退出登录：吊销当前用户的 refresh_token。
+     * 退出登录：将 refresh_token 加入黑名单，阻止后续刷新。
      */
     @Override
-    public void logout(String username) {
-        // 清除被盗标记，让下一次 refresh 能正常使用
+    public void logout(String refreshToken) {
         try {
-            redisUtil.delete(KEY_REFRESH_COMPROMISED + username);
-        } catch (RedisConnectionFailureException e) {
-            log.warn("Redis 不可用，跳过退出登录处理: {}", e.getMessage());
+            String jti = jwtUtil.getTokenIdFromToken(refreshToken);
+            redisUtil.set(KEY_REFRESH_BLACKLIST + jti, "1", 7, TimeUnit.DAYS);
+            log.info("refresh_token 已加入黑名单，jti={}", jti);
+        } catch (Exception e) {
+            log.warn("退出登录处理异常: {}", e.getMessage());
         }
     }
 

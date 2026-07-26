@@ -3,6 +3,7 @@ package com.wealth.platform.product.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.Data;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -16,6 +17,7 @@ public class MarketDataDTO {
     private String productCode;
 
     @NotNull(message = "当前价格不能为空")
+    @Positive(message = "当前价格必须大于0")
     @Schema(description = "当前价格")
     private BigDecimal currentPrice;
 

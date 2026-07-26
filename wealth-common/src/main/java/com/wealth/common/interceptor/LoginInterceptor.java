@@ -1,6 +1,8 @@
 package com.wealth.common.interceptor;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wealth.common.constants.AuthConstant;
+import com.wealth.common.result.Result;
 import com.wealth.common.utils.JwtUtil;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -15,9 +17,11 @@ public class LoginInterceptor implements HandlerInterceptor {
     private static final String TOKEN_COOKIE_NAME = "wealth_token";
 
     private final JwtUtil jwtUtil;
+    private final ObjectMapper objectMapper;
 
-    public LoginInterceptor(JwtUtil jwtUtil) {
+    public LoginInterceptor(JwtUtil jwtUtil, ObjectMapper objectMapper) {
         this.jwtUtil = jwtUtil;
+        this.objectMapper = objectMapper;
     }
 
     private static final AntPathMatcher PATH_MATCHER = new AntPathMatcher();
@@ -40,7 +44,7 @@ public class LoginInterceptor implements HandlerInterceptor {
             log.warn("无Token，返回401");
             response.setStatus(401);
             response.setContentType("application/json;charset=UTF-8");
-            response.getWriter().write("{\"code\":401,\"message\":\"未登录\"}");
+            objectMapper.writeValue(response.getWriter(), Result.error(401, "未登录"));
             return false;
         }
 
@@ -48,7 +52,7 @@ public class LoginInterceptor implements HandlerInterceptor {
             log.warn("Token无效，返回401");
             response.setStatus(401);
             response.setContentType("application/json;charset=UTF-8");
-            response.getWriter().write("{\"code\":401,\"message\":\"Token无效或已过期\"}");
+            objectMapper.writeValue(response.getWriter(), Result.error(401, "Token无效或已过期"));
             return false;
         }
 

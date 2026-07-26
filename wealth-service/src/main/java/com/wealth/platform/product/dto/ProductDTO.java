@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.Data;
 import java.math.BigDecimal;
 
@@ -26,6 +27,7 @@ public class ProductDTO {
     private Integer productType;
 
     @NotNull(message = "价格不能为空")
+    @Positive(message = "价格必须大于0")
     @Schema(description = "价格")
     private BigDecimal price;
 

@@ -1,5 +1,6 @@
 package com.wealth.platform.system.interceptor;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wealth.common.utils.JwtUtil;
 import com.wealth.common.utils.RedisUtil;
 import com.wealth.platform.system.service.UmsAdminRoleRelationService;
@@ -35,13 +36,14 @@ class PermissionInterceptorTest {
     @Mock
     private ObjectProvider<RedisUtil> redisUtilProvider;
 
+    private final ObjectMapper objectMapper = new ObjectMapper();
     private PermissionInterceptor interceptor;
 
     @BeforeEach
     void setUp() {
         when(redisUtilProvider.getIfAvailable()).thenReturn(null);
         interceptor = new PermissionInterceptor(jwtUtil, adminService, adminRoleRelationService,
-                roleResourceRelationService, redisUtilProvider);
+                roleResourceRelationService, redisUtilProvider, objectMapper);
     }
 
     @Test
@@ -54,6 +56,6 @@ class PermissionInterceptorTest {
         assertThat(allowed).isFalse();
         assertThat(response.getStatus()).isEqualTo(401);
         assertThat(response.getContentType()).isEqualTo("application/json;charset=UTF-8");
-        assertThat(response.getContentAsString()).isEqualTo("{\"code\":401,\"message\":\"未登录\"}");
+        assertThat(response.getContentAsString()).isEqualTo("{\"code\":401,\"message\":\"未登录\",\"data\":null}");
     }
 }

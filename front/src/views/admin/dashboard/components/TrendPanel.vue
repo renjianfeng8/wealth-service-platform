@@ -91,7 +91,8 @@ function lightAxis() {
   }
 }
 
-function createChart(dom: HTMLDivElement): echarts.ECharts {
+function createChart(dom: HTMLDivElement): echarts.ECharts | null {
+  if (!dom.clientWidth || !dom.clientHeight) return null
   const chart = echarts.init(dom, undefined, { renderer: 'canvas' })
   const observer = new ResizeObserver(() => chart.resize())
   observer.observe(dom)
@@ -195,13 +196,15 @@ async function onBalChange(period: string) {
 }
 
 function initCharts() {
-  if (assetChartRef.value && !assetChart) {
-    assetChart = createChart(assetChartRef.value)
-  }
-  if (balanceChartRef.value && !balanceChart) {
-    balanceChart = createChart(balanceChartRef.value)
-  }
+  const needAsset = assetChartRef.value && !assetChart
+  const needBalance = balanceChartRef.value && !balanceChart
+  if (needAsset) assetChart = createChart(assetChartRef.value)
+  if (needBalance) balanceChart = createChart(balanceChartRef.value)
   updateCharts()
+  // Retry if any container wasn't laid out yet
+  if ((needAsset && !assetChart) || (needBalance && !balanceChart)) {
+    requestAnimationFrame(() => nextTick(initCharts))
+  }
 }
 
 function disposeCharts() {

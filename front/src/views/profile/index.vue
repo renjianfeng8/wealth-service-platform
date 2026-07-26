@@ -63,13 +63,13 @@
             </template>
             <template #default>
               <el-form :model="userInfo" label-width="80px" size="large">
-                <el-form-item label="用户名">
+                <el-form-item label="用户名" prop="username">
                   <el-input v-model="userInfo.username" disabled />
                 </el-form-item>
-                <el-form-item label="昵称">
+                <el-form-item label="昵称" prop="nickname">
                   <el-input v-model="userInfo.nickname" placeholder="设置昵称" />
                 </el-form-item>
-                <el-form-item label="手机号">
+                <el-form-item label="手机号" prop="phone">
                   <el-input v-model="userInfo.phone" placeholder="绑定手机号" />
                 </el-form-item>
                 <el-form-item>
@@ -158,6 +158,10 @@ const passwordForm = reactive({
 
 const { isDirty, reset } = useFormGuard(userInfo)
 
+// 防止组件重复挂载导致重复 API 请求
+let fetchProfilePromise: Promise<void> | null = null
+let fetchStatsPromise: Promise<void> | null = null
+
 const passwordRules: FormRules = {
   oldPassword: [
     { required: true, message: '请输入当前密码', trigger: 'blur' },
@@ -194,34 +198,44 @@ onMounted(() => window.addEventListener('beforeunload', beforeUnloadHandler))
 onUnmounted(() => window.removeEventListener('beforeunload', beforeUnloadHandler))
 
 async function fetchProfile() {
+  if (!userStore.userId) return
+  if (fetchProfilePromise) return fetchProfilePromise
   // 使用 store 数据作为兜底
   userInfo.username = userStore.username
   userInfo.nickname = userStore.nickname
 
-  if (!userStore.userId) return
-  try {
-    const res = await getUserInfo(userStore.userId)
-    const data = res.data
-    if (data) {
-      userInfo.username = data.username || userStore.username
-      userInfo.nickname = data.nickname || userStore.nickname
-      userInfo.phone = data.phone || ''
-    }
-  } catch (err) { console.warn('[profile] fetchProfile 失败:', err) }
+  fetchProfilePromise = (async () => {
+    try {
+      const res = await getUserInfo(userStore.userId)
+      const data = res.data
+      if (data) {
+        userInfo.username = data.username || userStore.username
+        userInfo.nickname = data.nickname || userStore.nickname
+        userInfo.phone = data.phone || ''
+      }
+    } catch (err) { console.warn('[profile] fetchProfile 失败:', err)
+    } finally { fetchProfilePromise = null }
+  })()
+  return fetchProfilePromise
 }
 
 async function fetchStats() {
   if (!userStore.userId) return
-  try {
-    const [fr, tr, mr] = await Promise.all([
-      getFavoritePage({ pageNum: 1, pageSize: 1, userId: userStore.userId }),
-      getTradeOrderPage({ pageNum: 1, pageSize: 1, userId: userStore.userId }),
-      getMessagePage({ pageNum: 1, pageSize: 1, userId: userStore.userId }),
-    ])
-    statFavorites.value = fr.data?.total || 0
-    statOrders.value = tr.data?.total || 0
-    statMessages.value = mr.data?.total || 0
-  } catch (err) { console.warn('[profile] fetchStats 失败:', err) }
+  if (fetchStatsPromise) return fetchStatsPromise
+  fetchStatsPromise = (async () => {
+    try {
+      const [fr, tr, mr] = await Promise.all([
+        getFavoritePage({ pageNum: 1, pageSize: 1, userId: userStore.userId }),
+        getTradeOrderPage({ pageNum: 1, pageSize: 1, userId: userStore.userId }),
+        getMessagePage({ pageNum: 1, pageSize: 1, userId: userStore.userId }),
+      ])
+      statFavorites.value = fr.data?.total || 0
+      statOrders.value = tr.data?.total || 0
+      statMessages.value = mr.data?.total || 0
+    } catch (err) { console.warn('[profile] fetchStats 失败:', err)
+    } finally { fetchStatsPromise = null }
+  })()
+  return fetchStatsPromise
 }
 
 async function handleSave() {

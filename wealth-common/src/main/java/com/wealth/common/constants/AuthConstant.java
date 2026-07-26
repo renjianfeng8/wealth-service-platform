@@ -6,6 +6,7 @@ public class AuthConstant {
     // 开发环境 Swagger/Knife4j 路径加入白名单
     public static final String[] PERMIT_ALL_URLS = {
             "/system/umsAdmin/login",
+            "/system/umsAdmin/refresh",
             "/system/captcha",
             "/user/login",
             "/user/register",
@@ -14,7 +15,6 @@ public class AuthConstant {
             "/product/wea-market-data",
             "/message/wea-news/page",
             "/product/wea-market-data/sse/**",
-            "/actuator/**",
             /* Swagger / Knife4j */
             "/doc.html",
             "/webjars/**",

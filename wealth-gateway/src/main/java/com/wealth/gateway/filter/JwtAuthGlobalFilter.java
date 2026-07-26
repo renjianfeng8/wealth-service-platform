@@ -1,5 +1,6 @@
 package com.wealth.gateway.filter;
 
+import com.wealth.common.constants.AuthConstant;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -35,29 +36,6 @@ public class JwtAuthGlobalFilter implements GlobalFilter, Ordered {
 
     private final AntPathMatcher pathMatcher = new AntPathMatcher();
 
-    /** 无需认证的白名单路径 */
-    private static final String[] PERMIT_ALL_URLS = {
-            "/system/umsAdmin/login",
-            "/system/captcha",
-            "/user/login",
-            "/user/register",
-            "/user/identify-login",
-            "/product/wea-product/page",
-            "/product/wea-market-data",
-            "/product/wea-market-data/sse/**",
-            "/message/wea-news/page",
-            /* Knife4j / Swagger 文档路径 */
-            "/doc.html",
-            "/webjars/**",
-            "/v3/api-docs/**",
-            "/system/v3/api-docs",
-            "/user/v3/api-docs",
-            "/product/v3/api-docs",
-            "/trade/v3/api-docs",
-            "/message/v3/api-docs",
-            "/search/v3/api-docs",
-    };
-
     /** JWT Cookie 名称（httpOnly，防 XSS 窃取） */
     private static final String TOKEN_COOKIE_NAME = "wealth_token";
 
@@ -81,8 +59,8 @@ public class JwtAuthGlobalFilter implements GlobalFilter, Ordered {
         String path = exchange.getRequest().getURI().getPath();
         log.debug("Gateway 认证过滤器 | 请求路径：{}", path);
 
-        // 白名单路径直接放行
-        for (String permitUrl : PERMIT_ALL_URLS) {
+        // 白名单路径直接放行（引用 AuthConstant，与 Service 层保持一致）
+        for (String permitUrl : AuthConstant.PERMIT_ALL_URLS) {
             if (pathMatcher.match(permitUrl, path)) {
                 return chain.filter(exchange);
             }

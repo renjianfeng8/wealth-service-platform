@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.dao.DataAccessException;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashMap;
@@ -18,6 +19,7 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 @RestController
+@RequestMapping("/system")
 @Tag(name = "验证码管理")
 public class CaptchaController {
 

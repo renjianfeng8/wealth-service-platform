@@ -88,7 +88,6 @@
               <span>我的委托单</span>
               <div class="header-filters">
                 <el-select v-model="statusFilter" placeholder="状态" clearable size="small" style="width:110px" @change="fetchOrders">
-                  <el-option label="全部" :value="undefined" />
                   <el-option v-for="opt in ORDER_STATUS_OPTIONS" :key="opt.value" :label="opt.label" :value="opt.value" />
                 </el-select>
                 <el-button size="small" :icon="Refresh" @click="fetchOrders" :loading="refreshing" />

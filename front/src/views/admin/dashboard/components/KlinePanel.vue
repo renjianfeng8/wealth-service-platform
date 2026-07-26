@@ -73,7 +73,8 @@ function lightAxis() {
   }
 }
 
-function createChart(dom: HTMLDivElement): echarts.ECharts {
+function createChart(dom: HTMLDivElement): echarts.ECharts | null {
+  if (!dom.clientWidth || !dom.clientHeight) return null
   const chart = echarts.init(dom, undefined, { renderer: 'canvas' })
   const observer = new ResizeObserver(() => chart.resize())
   observer.observe(dom)
@@ -144,10 +145,12 @@ async function onKlineChange(period: string) {
 }
 
 function initChart() {
-  if (klineChartRef.value && !klineChart) {
-    klineChart = createChart(klineChartRef.value)
-  }
+  const needKline = klineChartRef.value && !klineChart
+  if (needKline) klineChart = createChart(klineChartRef.value)
   updateKlineChart()
+  if (needKline && !klineChart) {
+    requestAnimationFrame(() => nextTick(initChart))
+  }
 }
 
 function disposeChart() {

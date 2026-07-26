@@ -43,6 +43,7 @@ public class UmsAdminController {
     @PostMapping("/login")
     @Operation(summary = "管理员登录（返回 access_token + refresh_token）")
     @AuditLog(module = "系统管理", operation = "管理员登录")
+    @AntiReplay
     public ResponseEntity<Result<TokenPair>> login(@Valid @RequestBody LoginDTO dto) {
         TokenPair tokenPair = umsAdminService.login(dto);
 
@@ -114,6 +115,7 @@ public class UmsAdminController {
             return Result.error(ResultCode.NOT_FOUND);
         }
         BeanConvertUtil.copyNonNullProperties(dto, existing);
+        existing.setPassword(null); // 禁止通过通用更新接口修改密码
         existing.setId(id);
         return Result.success(umsAdminService.updateById(existing));
     }
@@ -154,14 +156,11 @@ public class UmsAdminController {
     }
 
     @PostMapping("/logout")
-    @Operation(summary = "退出登录（吊销当前 refresh_token）")
+    @Operation(summary = "退出登录（将 refresh_token 加入黑名单）")
     public Result<Void> logout(@RequestHeader("Authorization") String authHeader) {
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String refreshToken = authHeader.substring(7);
-            if (jwtUtil.validateToken(refreshToken)) {
-                String username = jwtUtil.getUsernameFromToken(refreshToken);
-                umsAdminService.logout(username);
-            }
+            umsAdminService.logout(refreshToken);
         }
         return Result.success(null);
     }
