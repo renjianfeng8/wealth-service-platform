@@ -50,7 +50,6 @@ const entries: QuickEntry[] = [
   { label: '自选管理', path: '/admin/favorite', icon: Star, bg: '#d29922' },
   { label: '消息管理', path: '/admin/message', icon: Message, bg: '#00b894' },
   { label: '管理员', path: '/admin/system/admin', icon: Setting, bg: '#8b5cf6' },
-  { label: 'ES 搜索', path: '/admin/search', icon: Search, bg: '#1a6dff' },
 ]
 </script>
 
