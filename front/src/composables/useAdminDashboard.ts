@@ -1,5 +1,5 @@
 import { ref } from 'vue'
-import { getProductList } from '@/api/product'
+import { getProductPage } from '@/api/product'
 import { getTradeOrderPage } from '@/api/trade'
 import { getMessagePage } from '@/api/message'
 import { getDashboardOverview, getDashboardTrend, getDashboardKline } from '@/api/dashboard'
@@ -47,8 +47,8 @@ export function useAdminDashboard() {
   }
 
   async function loadProducts() {
-    const res = await getProductList()
-    products.value = (res.data || []) as WeaProduct[]
+    const res = await getProductPage({ pageNum: 1, pageSize: 200 })
+    products.value = (res.data?.records || []) as WeaProduct[]
   }
 
   async function loadLatestOrders() {
