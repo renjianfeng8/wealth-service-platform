@@ -60,7 +60,7 @@
           <el-button text type="primary" @click="router.push('/market')">查看更多</el-button>
         </div>
       </template>
-      <el-table :data="hotProducts" stripe v-loading="loading" empty-text="暂无数据">
+      <el-table :data="products" stripe v-loading="loading" empty-text="暂无数据">
         <el-table-column prop="productName" label="产品名称" min-width="140" />
         <el-table-column prop="productCode" label="代码" width="120" />
         <el-table-column label="类型" width="100">
@@ -89,7 +89,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { getProductList } from '@/api/product'
+import { getProductPage } from '@/api/product'
 import {
   TrendCharts, Coin, DataLine, Star,
   Goods, Notebook, Money, Message,
@@ -103,14 +103,12 @@ const loading = ref(false)
 const hasError = ref(false)
 const products = ref<WeaProduct[]>([])
 
-const hotProducts = computed(() => products.value.slice(0, 8))
-
 const marketStats = computed(() => [
-  { label: '产品总数', value: products.value.length, change: 12.5, icon: Coin, color: '#1a6dff' },
-  { label: '上涨产品', value: products.value.filter(p => (p.riseFallRate || 0) > 0).length, change: 5.8, icon: TrendCharts, color: '#34c759' },
-  { label: '下跌产品', value: products.value.filter(p => (p.riseFallRate || 0) < 0).length, change: -3.2, icon: DataLine, color: '#ff3b30' },
-  { label: '在售产品', value: products.value.filter(p => p.status === 1).length, change: 8.1, icon: Star, color: '#ff9500' },
-])
+    { label: '展示产品', value: products.value.length, change: 0, icon: Coin, color: '#1a6dff' },
+    { label: '上涨产品', value: products.value.filter(p => (p.riseFallRate || 0) > 0).length, change: 0, icon: TrendCharts, color: '#34c759' },
+    { label: '下跌产品', value: products.value.filter(p => (p.riseFallRate || 0) < 0).length, change: 0, icon: DataLine, color: '#ff3b30' },
+    { label: '在售产品', value: products.value.filter(p => p.status === 1).length, change: 0, icon: Star, color: '#ff9500' },
+  ])
 
 const quickActions = [
   { label: '产品中心', path: '/products', icon: Goods, bg: 'linear-gradient(135deg, #1a6dff, #0a4dcc)' },
@@ -125,8 +123,8 @@ async function fetchProducts() {
   hasError.value = false
   loading.value = true
   try {
-    const res = await getProductList()
-    products.value = (res.data || []) as WeaProduct[]
+    const res = await getProductPage({ pageNum: 1, pageSize: 8 })
+    products.value = (res.data?.records || []) as WeaProduct[]
   } catch {
     hasError.value = true
     products.value = []
