@@ -92,7 +92,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/store/index'
 import { TrendCharts, Coin, DataLine, Star } from '@element-plus/icons-vue'
-import { getMarketDataList } from '@/api/product'
+import { getMarketDataPage } from '@/api/product'
 import { formatPrice, formatRate } from '@/utils/format'
 import type { WeaMarketData } from '@/types'
 
@@ -132,8 +132,8 @@ const features = [
 async function fetchMarketData() {
   loading.value = true
   try {
-    const res = await getMarketDataList()
-    marketList.value = (res.data || []) as WeaMarketData[]
+    const res = await getMarketDataPage({ pageNum: 1, pageSize: 4 })
+    marketList.value = (res.data?.records || []) as WeaMarketData[]
   } catch (err) {
     console.warn('[home] fetchMarketData 失败:', err)
     marketList.value = []
