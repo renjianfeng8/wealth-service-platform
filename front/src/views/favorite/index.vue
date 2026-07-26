@@ -93,7 +93,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/store/index'
 import { getFavoritePage, createFavorite, deleteFavorite } from '@/api/favorite'
@@ -102,7 +102,7 @@ import { formatPrice, formatRate, formatDate } from '@/utils/format'
 import { Delete } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { WeaUserFavorite, WeaProduct, WeaMarketData } from '@/types'
-import { createMarketSSE, onMarketUpdate } from '@/utils/sse'
+import { useMarketSSEStore } from '@/store/marketSSE'
 
 interface FavoriteItem extends WeaUserFavorite {
   productName?: string
@@ -120,8 +120,8 @@ const total = ref(0)
 const pageNum = ref(1)
 const pageSize = ref(12)
 const newProductCode = ref('')
-const sseConnected = ref(false)
-let eventSource: EventSource | null = null
+const marketSSE = useMarketSSEStore()
+const sseConnected = computed(() => marketSSE.connected)
 
 async function enrichFavorites(records: WeaUserFavorite[]): Promise<FavoriteItem[]> {
   // 仅查当前页自选对应的 productCode，避免全表扫描
@@ -211,14 +211,12 @@ function goTrade(item: FavoriteItem) {
 onMounted(() => {
   if (userStore.userId) {
     fetchFavorites()
-    eventSource = createMarketSSE((connected) => sseConnected.value = connected)
-    onMarketUpdate(eventSource, handleMarketUpdate)
+    marketSSE.subscribe(handleMarketUpdate)
   }
 })
 
 onUnmounted(() => {
-  eventSource?.close()
-  eventSource = null
+  marketSSE.unsubscribe(handleMarketUpdate)
 })
 </script>
 

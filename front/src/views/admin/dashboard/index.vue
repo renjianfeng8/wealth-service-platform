@@ -108,19 +108,14 @@ function formatNumber(value: number): string {
 
 async function fetchData() {
   loading.value = true
-  try {
-    await Promise.all([
-      loadProducts(),
-      loadOverview(),
-      loadTrend(),
-      loadLatestOrders(),
-      loadUnreadMessages(),
-    ])
-  } catch (err) {
-    console.warn('[admin/dashboard] fetchData 部分接口失败:', err)
-  } finally {
-    loading.value = false
-  }
+  await Promise.allSettled([
+    loadProducts(),
+    loadOverview(),
+    loadTrend(),
+    loadLatestOrders(),
+    loadUnreadMessages(),
+  ])
+  loading.value = false
 }
 
 onMounted(fetchData)

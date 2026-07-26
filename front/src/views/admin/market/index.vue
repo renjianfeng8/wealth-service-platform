@@ -107,7 +107,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted, reactive, ref } from 'vue'
+import { computed, onMounted, onUnmounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormRules } from 'element-plus'
 import AdminPageShell from '@/components/admin/AdminPageShell.vue'
@@ -120,7 +120,7 @@ import { getMarketDataPage, createMarketData, updateMarketData, deleteMarketData
 import { formatDateTime, formatPrice, formatRate } from '@/utils/format'
 import type { WeaMarketData } from '@/types'
 import type { AdminFilterField } from '@/components/admin/AdminFilterBar.vue'
-import { createMarketSSE, onMarketUpdate } from '@/utils/sse'
+import { useMarketSSEStore } from '@/store/marketSSE'
 
 type MarketQuery = {
   pageNum: number
@@ -138,8 +138,8 @@ const tableData = ref<WeaMarketData[]>([])
 const total = ref(0)
 const dialogVisible = ref(false)
 const isEdit = ref(false)
-const sseConnected = ref(false)
-let eventSource: EventSource | null = null
+const marketSSE = useMarketSSEStore()
+const sseConnected = computed(() => marketSSE.connected)
 
 const query = reactive<MarketQuery>({ pageNum: 1, pageSize: 10, productCode: '' })
 const form = reactive<WeaMarketData>({
@@ -275,15 +275,11 @@ function formatDateColumn(_row: WeaMarketData, _column: unknown, value: string) 
 
 onMounted(() => {
   fetchData()
-  eventSource = createMarketSSE((connected) => {
-    sseConnected.value = connected
-  })
-  onMarketUpdate(eventSource, handleMarketUpdate)
+  marketSSE.subscribe(handleMarketUpdate)
 })
 
 onUnmounted(() => {
-  eventSource?.close()
-  eventSource = null
+  marketSSE.unsubscribe(handleMarketUpdate)
 })
 </script>
 

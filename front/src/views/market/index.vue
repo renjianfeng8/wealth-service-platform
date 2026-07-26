@@ -94,12 +94,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { getMarketDataPage } from '@/api/product'
 import { formatPrice, formatRate, formatDateTime } from '@/utils/format'
 import { Refresh } from '@element-plus/icons-vue'
 import type { WeaMarketData } from '@/types'
-import { createMarketSSE, onMarketUpdate } from '@/utils/sse'
+import { useMarketSSEStore } from '@/store/marketSSE'
 
 const marketList = ref<WeaMarketData[]>([])
 const loading = ref(false)
@@ -108,8 +108,8 @@ const hasError = ref(false)
 const total = ref(0)
 const pageNum = ref(1)
 const pageSize = ref(20)
-const sseConnected = ref(false)
-let eventSource: EventSource | null = null
+const marketSSE = useMarketSSEStore()
+const sseConnected = computed(() => marketSSE.connected)
 
 async function fetchData() {
   hasError.value = false
@@ -142,13 +142,11 @@ function handleMarketUpdate(data: WeaMarketData[]) {
 
 onMounted(() => {
   fetchData()
-  eventSource = createMarketSSE((connected) => sseConnected.value = connected)
-  onMarketUpdate(eventSource, handleMarketUpdate)
+  marketSSE.subscribe(handleMarketUpdate)
 })
 
 onUnmounted(() => {
-  eventSource?.close()
-  eventSource = null
+  marketSSE.unsubscribe(handleMarketUpdate)
 })
 </script>
 
