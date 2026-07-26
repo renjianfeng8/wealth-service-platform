@@ -148,7 +148,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/store/index'
 import { getProductPage } from '@/api/product'
-import { createFavorite, getFavoriteList, deleteFavorite } from '@/api/favorite'
+import { createFavorite, getFavoritePage, deleteFavorite } from '@/api/favorite'
 import { PRODUCT_TYPE_OPTIONS } from '@/types'
 import { formatPrice, formatRate, productTypeText } from '@/utils/format'
 import { CaretTop, CaretBottom, Star, StarFilled } from '@element-plus/icons-vue'
@@ -235,9 +235,9 @@ async function fetchFavorites() {
     return
   }
   try {
-    const res = await getFavoriteList({ userId: userStore.userId })
+    const res = await getFavoritePage({ pageNum: 1, pageSize: 200, userId: userStore.userId })
     const map: Record<string, number> = {}
-    for (const fav of (res.data || []) as WeaUserFavorite[]) {
+    for (const fav of (res.data?.records || []) as WeaUserFavorite[]) {
       if (fav.productCode) map[fav.productCode] = fav.id!
     }
     favoritedMap.value = map
