@@ -3,7 +3,7 @@
     <header class="layout-header">
       <div class="header-inner">
         <div class="header-left">
-          <div class="logo" @click="router.push('/home')">
+          <div class="logo" @click="router.push(homePath)">
             <div class="logo-icon">
               <el-icon :size="28"><TrendCharts /></el-icon>
             </div>
@@ -138,9 +138,9 @@
     </div>
 
     <main class="layout-main">
-      <el-breadcrumb v-if="route.meta?.title" class="layout-breadcrumb" separator="/">
-        <el-breadcrumb-item :to="{ path: '/home' }">首页</el-breadcrumb-item>
-        <el-breadcrumb-item v-if="route.meta?.title">{{ route.meta.title as string }}</el-breadcrumb-item>
+      <el-breadcrumb v-if="route.meta?.title && route.path !== homePath" class="layout-breadcrumb" separator="/">
+        <el-breadcrumb-item :to="{ path: homePath }">首页</el-breadcrumb-item>
+        <el-breadcrumb-item>{{ route.meta.title as string }}</el-breadcrumb-item>
       </el-breadcrumb>
       <router-view />
     </main>
@@ -175,12 +175,14 @@ const currentPath = computed(() => route.path)
 const mobileMenuOpen = ref(false)
 const isAdmin = computed(() => userStore.isAdmin)
 
-const publicNavItems = [
-  { path: '/home', title: '首页', icon: HomeFilled },
+const homePath = computed(() => userStore.isLoggedIn ? '/user/dashboard' : '/home')
+
+const publicNavItems = computed(() => [
+  { path: homePath.value, title: '首页', icon: HomeFilled },
   { path: '/products', title: '产品中心', icon: GoodsFilled },
   { path: '/market', title: '实时行情', icon: DataAnalysis },
   { path: '/news', title: '财经资讯', icon: Notebook },
-]
+])
 
 const authNavItems = [
   { path: '/user/trade', title: '交易委托', icon: Money },
@@ -190,9 +192,9 @@ const authNavItems = [
 
 const visibleNavItems = computed(() => {
   if (userStore.isLoggedIn) {
-    return [...publicNavItems, ...authNavItems]
+    return [...publicNavItems.value, ...authNavItems]
   }
-  return publicNavItems
+  return publicNavItems.value
 })
 
 function handleCommand(command: string) {

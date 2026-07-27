@@ -27,28 +27,78 @@
       </div>
     </section>
 
-    <!-- 平台特色 -->
-    <section class="features-section">
-      <h2 class="section-title">为什么选择我们</h2>
-      <div class="features-grid">
-        <div class="feature-card" v-for="f in features" :key="f.title">
-          <div class="feature-icon" :style="{ background: f.bg }">
-            <el-icon :size="32" color="#fff"><component :is="f.icon" /></el-icon>
-          </div>
-          <h3 class="feature-title">{{ f.title }}</h3>
-          <p class="feature-desc">{{ f.desc }}</p>
-        </div>
+    <!-- 信任数据 -->
+    <section class="trust-section">
+      <div class="trust-item" v-for="s in trustStats" :key="s.label">
+        <span class="trust-value">{{ s.value }}<span class="trust-suffix">{{ s.suffix }}</span></span>
+        <span class="trust-label">{{ s.label }}</span>
       </div>
+    </section>
+
+    <!-- 快捷入口 -->
+    <section class="quick-entry-section">
+      <router-link
+        v-for="entry in quickEntries"
+        :key="entry.label"
+        :to="entry.path"
+        class="quick-entry-item"
+      >
+        <div class="quick-entry-icon" :style="{ background: entry.bg }">
+          <el-icon :size="24" color="#fff"><component :is="entry.icon" /></el-icon>
+        </div>
+        <span class="quick-entry-label">{{ entry.label }}</span>
+      </router-link>
+    </section>
+
+    <!-- 热门产品 -->
+    <section class="products-section">
+      <div class="section-header">
+        <h2 class="section-title">热门产品</h2>
+        <router-link to="/products" class="section-more">查看更多 →</router-link>
+      </div>
+
+      <el-skeleton animated :loading="prodLoading" v-if="prodLoading">
+        <el-row :gutter="16">
+          <el-col :span="8" v-for="i in 3" :key="i">
+            <el-card shadow="never">
+              <el-skeleton-item variant="text" style="width: 60%; height: 16px; margin-bottom: 12px;" />
+              <el-skeleton-item variant="text" style="width: 40%; height: 24px; margin-bottom: 8px;" />
+              <el-skeleton-item variant="text" style="width: 30%; height: 14px;" />
+            </el-card>
+          </el-col>
+        </el-row>
+      </el-skeleton>
+
+      <el-empty v-else-if="productList.length === 0" description="暂无产品数据" />
+
+      <el-row :gutter="16" v-else>
+        <el-col :xs="24" :sm="12" :md="8" v-for="item in productList" :key="item.id" class="product-col">
+          <el-card shadow="never" class="product-card" @click="router.push('/products')">
+            <div class="product-tag" :class="'type-' + (item.productType || 1)">{{ productTypeLabel(item.productType) }}</div>
+            <div class="product-name">{{ item.productName }}</div>
+            <div class="product-code">{{ item.productCode }}</div>
+            <div class="product-price-row">
+              <span class="product-price">{{ formatPrice(item.price) }}</span>
+              <span class="product-change" :class="(item.riseFallRate || 0) >= 0 ? 'rise' : 'fall'">
+                {{ formatRate(item.riseFallRate) }}
+              </span>
+            </div>
+            <el-tag :type="item.status === 1 ? 'success' : 'info'" size="small" effect="plain">
+              {{ item.status === 1 ? '在售' : '已下架' }}
+            </el-tag>
+          </el-card>
+        </el-col>
+      </el-row>
     </section>
 
     <!-- 行情简报 -->
     <section class="market-section">
       <div class="section-header">
         <h2 class="section-title">实时行情</h2>
-        <el-button text type="primary" @click="router.push('/market')">查看更多</el-button>
+        <router-link to="/market" class="section-more">查看更多 →</router-link>
       </div>
-      <!-- 骨架屏 -->
-      <el-row :gutter="16" v-if="loading">
+
+      <el-row :gutter="16" v-if="marketLoading">
         <el-col :xs="12" :sm="6" v-for="i in 4" :key="i">
           <el-card shadow="never" class="market-card">
             <el-skeleton animated :loading="true">
@@ -64,14 +114,8 @@
         </el-col>
       </el-row>
 
-      <!-- 空状态 -->
-      <el-row :gutter="16" v-else-if="marketList.length === 0">
-        <el-col :span="24">
-          <el-empty description="暂无行情数据" />
-        </el-col>
-      </el-row>
+      <el-empty v-else-if="marketList.length === 0" description="暂无行情数据" />
 
-      <!-- 行情卡片 -->
       <el-row :gutter="16" v-else>
         <el-col :xs="12" :sm="6" v-for="item in marketList" :key="item.productCode">
           <el-card shadow="never" class="market-card">
@@ -84,6 +128,49 @@
         </el-col>
       </el-row>
     </section>
+
+    <!-- 最新资讯 -->
+    <section class="news-section">
+      <div class="section-header">
+        <h2 class="section-title">最新资讯</h2>
+        <router-link to="/news" class="section-more">查看更多 →</router-link>
+      </div>
+
+      <el-skeleton animated :loading="newsLoading" v-if="newsLoading">
+        <div v-for="i in 4" :key="i" style="padding: 12px 0; border-bottom: 1px solid #f0f0f0;">
+          <el-skeleton-item variant="text" style="width: 70%; height: 16px; margin-bottom: 8px;" />
+          <el-skeleton-item variant="text" style="width: 30%; height: 12px;" />
+        </div>
+      </el-skeleton>
+
+      <el-empty v-else-if="newsList.length === 0" description="暂无资讯" />
+
+      <div v-else class="news-list">
+        <div class="news-item" v-for="item in newsList" :key="item.id" @click="router.push('/news')">
+          <div class="news-left">
+            <span class="news-type-tag" :class="'nt-' + (item.newsType || 1)">{{ newsTypeLabel(item.newsType) }}</span>
+          </div>
+          <div class="news-center">
+            <div class="news-title">{{ item.title }}</div>
+            <div class="news-meta">
+              <span v-if="item.source">{{ item.source }}</span>
+              <span v-if="item.source && item.publishTime"> · </span>
+              <span v-if="item.publishTime">{{ formatTime(item.publishTime) }}</span>
+            </div>
+          </div>
+          <el-icon class="news-arrow"><ArrowRight /></el-icon>
+        </div>
+      </div>
+    </section>
+
+    <!-- 登录引导 -->
+    <section class="cta-section" v-if="!userStore.isLoggedIn">
+      <div class="cta-content">
+        <h3>开启您的投资之旅</h3>
+        <p>注册即享个性化产品推荐、实时行情提醒、资产分析等专业服务</p>
+        <el-button type="primary" size="large" @click="router.push('/auth/login')">立即登录 / 注册</el-button>
+      </div>
+    </section>
   </div>
 </template>
 
@@ -91,54 +178,91 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/store/index'
-import { TrendCharts, Coin, DataLine, Star } from '@element-plus/icons-vue'
-import { getMarketDataPage } from '@/api/product'
+import { Coin, TrendCharts, Reading, Star, ArrowRight } from '@element-plus/icons-vue'
+import { getProductPage, getMarketDataPage } from '@/api/product'
+import { getNewsPage } from '@/api/message'
 import { formatPrice, formatRate } from '@/utils/format'
-import type { WeaMarketData } from '@/types'
+import type { WeaProduct, WeaMarketData, WeaNews } from '@/types'
 
 const router = useRouter()
 const userStore = useUserStore()
 
-const loading = ref(false)
-const marketList = ref<WeaMarketData[]>([])
-
-const features = [
-  {
-    title: '丰富产品',
-    desc: '覆盖基金、理财、债券等多种投资产品，满足不同风险偏好',
-    icon: Coin,
-    bg: 'linear-gradient(135deg, #1a6dff, #0a4dcc)',
-  },
-  {
-    title: '实时行情',
-    desc: '毫秒级行情推送，掌握市场动态，把握投资时机',
-    icon: TrendCharts,
-    bg: 'linear-gradient(135deg, #34c759, #28a745)',
-  },
-  {
-    title: '数据分析',
-    desc: '专业的走势图表和数据分析工具，辅助投资决策',
-    icon: DataLine,
-    bg: 'linear-gradient(135deg, #ff9500, #e68a00)',
-  },
-  {
-    title: '智能推荐',
-    desc: '基于您的风险偏好和投资习惯，智能推荐合适产品',
-    icon: Star,
-    bg: 'linear-gradient(135deg, #8e44ad, #6c3483)',
-  },
+/* ---- 信任数据 ---- */
+const productTotalCount = ref(0)
+const trustStats = [
+  { label: '产品数量', value: productTotalCount, suffix: '+' },
+  { label: '服务用户', value: '10', suffix: '万+' },
+  { label: '覆盖市场', value: '2', suffix: '个' },
 ]
 
+/* ---- 快捷入口 ---- */
+const quickEntries = [
+  { label: '产品中心', path: '/products', icon: Coin, bg: 'linear-gradient(135deg, #1a6dff, #0a4dcc)' },
+  { label: '实时行情', path: '/market', icon: TrendCharts, bg: 'linear-gradient(135deg, #34c759, #28a745)' },
+  { label: '财经资讯', path: '/news', icon: Reading, bg: 'linear-gradient(135deg, #ff9500, #e68a00)' },
+  { label: '我的自选', path: userStore.isLoggedIn ? '/user/favorite' : '/auth/login', icon: Star, bg: 'linear-gradient(135deg, #8e44ad, #6c3483)' },
+]
+
+/* ---- 产品 ---- */
+const prodLoading = ref(false)
+const productList = ref<WeaProduct[]>([])
+
+const PRODUCT_TYPE_LABELS: Record<number, string> = { 1: '黄金', 2: '白银', 3: '理财' }
+function productTypeLabel(v?: number) { return v ? PRODUCT_TYPE_LABELS[v] || '-' : '-' }
+
+/* ---- 行情 ---- */
+const marketLoading = ref(false)
+const marketList = ref<WeaMarketData[]>([])
+
+/* ---- 资讯 ---- */
+const newsLoading = ref(false)
+const newsList = ref<WeaNews[]>([])
+
+const NEWS_TYPE_LABELS: Record<number, string> = { 1: '行情快讯', 2: '行业公告', 3: '理财资讯' }
+function newsTypeLabel(v?: number) { return v ? NEWS_TYPE_LABELS[v] || '资讯' : '资讯' }
+
+function formatTime(t?: string) {
+  if (!t) return ''
+  const d = new Date(t)
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+}
+
+async function fetchProducts() {
+  prodLoading.value = true
+  try {
+    const res = await getProductPage({ pageNum: 1, pageSize: 6, orderBy: 'sort', orderDir: 'asc' })
+    productList.value = res.data?.records || []
+    productTotalCount.value = res.data?.total || 0
+    trustStats[0].value = productTotalCount
+  } catch {
+    productList.value = []
+  } finally {
+    prodLoading.value = false
+  }
+}
+
 async function fetchMarketData() {
-  loading.value = true
+  marketLoading.value = true
   try {
     const res = await getMarketDataPage({ pageNum: 1, pageSize: 4 })
     marketList.value = (res.data?.records || []) as WeaMarketData[]
-  } catch (err) {
-    console.warn('[home] fetchMarketData 失败:', err)
+  } catch {
     marketList.value = []
   } finally {
-    loading.value = false
+    marketLoading.value = false
+  }
+}
+
+async function fetchNews() {
+  newsLoading.value = true
+  try {
+    const res = await getNewsPage({ pageNum: 1, pageSize: 5 })
+    newsList.value = res.data?.records || []
+  } catch {
+    newsList.value = []
+  } finally {
+    newsLoading.value = false
   }
 }
 
@@ -146,26 +270,24 @@ function goProfile() {
   router.push('/user/profile')
 }
 
-onMounted(fetchMarketData)
+onMounted(() => {
+  Promise.all([fetchProducts(), fetchMarketData(), fetchNews()])
+})
 </script>
 
 <style scoped>
-.home {
-  max-width: 1200px;
-}
+.home { max-width: 1200px; }
 
-/* Hero */
+/* ============ Hero ============ */
 .hero-section {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 48px 0;
+  padding: 48px 0 32px;
   gap: 40px;
 }
 
-.hero-content {
-  flex: 1;
-}
+.hero-content { flex: 1; }
 
 .hero-title {
   font-size: 36px;
@@ -182,18 +304,11 @@ onMounted(fetchMarketData)
   line-height: 1.6;
 }
 
-.hero-actions {
-  display: flex;
-  gap: 12px;
-}
+.hero-actions { display: flex; gap: 12px; }
 
-.hero-visual {
-  flex-shrink: 0;
-}
+.hero-visual { flex-shrink: 0; }
 
-.hero-chart svg {
-  display: block;
-}
+.hero-chart svg { display: block; }
 
 .chart-line {
   stroke-dasharray: 600;
@@ -206,75 +321,87 @@ onMounted(fetchMarketData)
   opacity: 0;
 }
 
-@keyframes drawLine {
-  to { stroke-dashoffset: 0; }
-}
+@keyframes drawLine { to { stroke-dashoffset: 0; } }
+@keyframes fadeIn { to { opacity: 1; } }
 
-@keyframes fadeIn {
-  to { opacity: 1; }
-}
-
-/* Features */
-.features-section {
-  padding: 48px 0;
-}
-
-.section-title {
-  font-size: 24px;
-  font-weight: 700;
-  color: var(--text-primary);
+/* ============ 信任数据 ============ */
+.trust-section {
+  display: flex;
+  justify-content: center;
+  gap: 64px;
+  padding: 28px 0;
+  background: var(--el-fill-color-lighter);
+  border-radius: 12px;
   margin-bottom: 32px;
-  text-align: center;
 }
 
-.features-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 20px;
+.trust-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
 }
 
-.feature-card {
-  padding: 32px 24px;
-  border-radius: var(--radius);
+.trust-value {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--el-color-primary);
+  font-family: 'DIN Pro', monospace;
+}
+
+.trust-suffix {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.trust-label {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+/* ============ 快捷入口 ============ */
+.quick-entry-section {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 48px;
+}
+
+.quick-entry-item {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px;
+  border-radius: 12px;
   background: var(--bg-card);
   border: 1px solid var(--border-color);
-  transition: var(--transition);
-  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
 }
 
-.feature-card:hover {
-  transform: translateY(-4px);
+.quick-entry-item:hover {
+  transform: translateY(-2px);
   box-shadow: var(--shadow-md);
 }
 
-.feature-icon {
-  width: 64px;
-  height: 64px;
+.quick-entry-icon {
+  width: 48px;
+  height: 48px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 16px;
-  margin: 0 auto 16px;
+  border-radius: 12px;
+  flex-shrink: 0;
 }
 
-.feature-title {
-  font-size: 18px;
+.quick-entry-label {
+  font-size: 15px;
   font-weight: 600;
   color: var(--text-primary);
-  margin-bottom: 8px;
 }
 
-.feature-desc {
-  font-size: 14px;
-  color: var(--text-secondary);
-  line-height: 1.6;
-}
-
-/* Market */
-.market-section {
-  padding: 48px 0;
-}
-
+/* ============ 通用 Section ============ */
 .section-header {
   display: flex;
   align-items: center;
@@ -282,10 +409,86 @@ onMounted(fetchMarketData)
   margin-bottom: 24px;
 }
 
-.section-header .section-title {
-  margin-bottom: 0;
+.section-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
 }
 
+.section-more {
+  font-size: 14px;
+  color: var(--el-color-primary);
+  text-decoration: none;
+}
+
+.section-more:hover { text-decoration: underline; }
+
+.products-section,
+.market-section,
+.news-section {
+  padding: 40px 0;
+  border-top: 1px solid var(--border-color);
+}
+
+/* ============ 热门产品 ============ */
+.product-col { margin-bottom: 16px; }
+
+.product-card {
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.product-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.product-tag {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-bottom: 10px;
+}
+
+.product-tag.type-1 { background: #fff7e6; color: #d48806; }
+.product-tag.type-2 { background: #f0f5ff; color: #597ef7; }
+.product-tag.type-3 { background: #f6ffed; color: #52c41a; }
+
+.product-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.product-code {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+}
+
+.product-price-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.product-price {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+  font-family: 'DIN Pro', monospace;
+}
+
+.product-change { font-size: 14px; font-weight: 600; }
+.product-change.rise { color: var(--rise-color); }
+.product-change.fall { color: var(--fall-color); }
+
+/* ============ 行情简报 ============ */
 .market-card {
   text-align: center;
   cursor: default;
@@ -310,29 +513,100 @@ onMounted(fetchMarketData)
   font-family: 'DIN Pro', monospace;
 }
 
-.market-change {
-  font-size: 14px;
-  font-weight: 600;
-}
-
+.market-change { font-size: 14px; font-weight: 600; }
 .market-change.rise { color: var(--rise-color); }
 .market-change.fall { color: var(--fall-color); }
 
-/* Skeleton */
-.skeleton-market {
-  text-align: center;
-  padding: 12px 0;
+/* Skeleton 行情 */
+.skeleton-market { text-align: center; padding: 12px 0; }
+
+/* ============ 最新资讯 ============ */
+.news-list {
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
 }
 
+.news-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.news-item:hover { background: var(--el-fill-color-lighter); }
+.news-item + .news-item { border-top: 1px solid #f5f5f5; }
+
+.news-left { flex-shrink: 0; }
+
+.news-type-tag {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.news-type-tag.nt-1 { background: #fff7e6; color: #d48806; }
+.news-type-tag.nt-2 { background: #f0f5ff; color: #597ef7; }
+.news-type-tag.nt-3 { background: #f6ffed; color: #52c41a; }
+
+.news-center {
+  flex: 1;
+  min-width: 0;
+}
+
+.news-title {
+  font-size: 14px;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-bottom: 2px;
+}
+
+.news-meta {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.news-arrow {
+  flex-shrink: 0;
+  color: #c9cdd4;
+  font-size: 14px;
+}
+
+/* ============ 登录引导 ============ */
+.cta-section {
+  margin: 48px 0;
+  padding: 48px;
+  text-align: center;
+  background: linear-gradient(135deg, #f0f5ff, #e6f7ff);
+  border-radius: 12px;
+}
+
+.cta-content h3 {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 8px;
+}
+
+.cta-content p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0 0 24px;
+}
+
+/* ============ 响应式 ============ */
 @media (max-width: 768px) {
-  .hero-visual {
-    display: none;
-  }
-  .hero-title {
-    font-size: 28px;
-  }
-  .features-grid {
-    grid-template-columns: 1fr 1fr;
-  }
+  .hero-visual { display: none; }
+  .hero-title { font-size: 28px; }
+  .trust-section { gap: 32px; flex-wrap: wrap; }
+  .quick-entry-section { flex-wrap: wrap; }
+  .quick-entry-item { min-width: calc(50% - 8px); }
+  .news-item { flex-wrap: wrap; }
 }
 </style>
