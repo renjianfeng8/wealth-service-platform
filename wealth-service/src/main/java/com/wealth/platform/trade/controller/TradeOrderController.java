@@ -43,8 +43,10 @@ public class TradeOrderController {
 
     @Operation(summary = "查询交易委托单列表")
     @GetMapping
-    public Result<List<TradeOrderVO>> list() {
-        return Result.success(tradeOrderService.getOrderList());
+    public Result<List<TradeOrderVO>> list(
+            @Min(1) @RequestParam(defaultValue = "1") Integer pageNum,
+            @Min(1) @Max(100) @RequestParam(defaultValue = "10") Integer pageSize) {
+        return Result.success(tradeOrderService.getOrderList(pageNum, pageSize));
     }
 
     @Operation(summary = "分页查询交易委托单")

@@ -255,3 +255,16 @@ CREATE TABLE audit_log (
     KEY idx_module (module),
     KEY idx_create_time (create_time)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='操作审计日志表';
+
+-- ============================================================
+-- 搜索索引（LIKE 查询优化）
+-- ============================================================
+CREATE INDEX idx_product_name ON wea_product(product_name);
+CREATE INDEX idx_news_title ON wea_news(title);
+CREATE INDEX idx_news_source ON wea_news(source);
+CREATE INDEX idx_msg_title ON wea_message(msg_title);
+CREATE INDEX idx_trade_order_product ON wea_trade_order(product_code);
+CREATE INDEX idx_ums_admin_username ON ums_admin(username);
+CREATE INDEX idx_ums_role_name ON ums_role(name);
+CREATE INDEX idx_ums_resource_name ON ums_resource(name);
+CREATE INDEX idx_ums_resource_url ON ums_resource(url);

@@ -16,7 +16,7 @@ public interface MarketDataService extends IService<WeaMarketData> {
     MarketDataVO getMarketDataById(Long id);
 
     // 查询列表VO
-    List<MarketDataVO> getMarketDataList();
+    List<MarketDataVO> getMarketDataList(Integer pageNum, Integer pageSize);
 
     // 新增：接收DTO
     boolean createMarketData(MarketDataDTO dto);

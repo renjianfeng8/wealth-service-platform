@@ -37,8 +37,8 @@ public class MarketDataServiceImpl extends ServiceImpl<MarketDataMapper, WeaMark
     }
 
     @Override
-    public List<MarketDataVO> getMarketDataList() {
-        List<WeaMarketData> list = page(new Page<>(1, 1000), new LambdaQueryWrapper<>()).getRecords();
+    public List<MarketDataVO> getMarketDataList(Integer pageNum, Integer pageSize) {
+        List<WeaMarketData> list = page(new Page<>(pageNum, pageSize), new LambdaQueryWrapper<>()).getRecords();
         return list.stream().map(entity -> {
             MarketDataVO vo = BeanConvertUtil.convert(entity, MarketDataVO.class);
             return vo;
@@ -102,6 +102,7 @@ public class MarketDataServiceImpl extends ServiceImpl<MarketDataMapper, WeaMark
                         .ge(WeaMarketData::getMarketTime, startTime)
                         .le(WeaMarketData::getMarketTime, endTime)
                         .orderByAsc(WeaMarketData::getMarketTime)
+                        .last("LIMIT 100000")
         );
         return BeanConvertUtil.convertList(records, DashboardMarketDataDTO.class);
     }

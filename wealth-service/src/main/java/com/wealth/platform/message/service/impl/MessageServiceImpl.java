@@ -34,8 +34,8 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, WeaMessage>
     }
 
     @Override
-    public List<MessageVO> getMessageList() {
-        List<WeaMessage> list = page(new Page<>(1, 1000), new LambdaQueryWrapper<>()).getRecords();
+    public List<MessageVO> getMessageList(Integer pageNum, Integer pageSize) {
+        List<WeaMessage> list = page(new Page<>(pageNum, pageSize), new LambdaQueryWrapper<>()).getRecords();
         return list.stream().map(entity -> BeanConvertUtil.convert(entity, MessageVO.class))
                 .collect(Collectors.toList());
     }

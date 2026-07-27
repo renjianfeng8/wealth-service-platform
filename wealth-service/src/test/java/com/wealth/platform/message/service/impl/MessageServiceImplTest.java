@@ -96,7 +96,7 @@ class MessageServiceImplTest {
         mockPage.setRecords(List.of(mockMessage));
         when(messageMapper.selectPage(any(Page.class), any(LambdaQueryWrapper.class))).thenReturn(mockPage);
 
-        List<MessageVO> result = messageService.getMessageList();
+        List<MessageVO> result = messageService.getMessageList(1, 10);
 
         assertEquals(1, result.size());
         assertEquals("测试消息标题", result.get(0).getMsgTitle());

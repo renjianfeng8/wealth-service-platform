@@ -75,7 +75,7 @@ class NewsServiceImplTest {
         mockPage.setRecords(List.of(mockNews));
         when(newsMapper.selectPage(any(Page.class), any(LambdaQueryWrapper.class))).thenReturn(mockPage);
 
-        List<NewsVO> result = newsService.getNewsList();
+        List<NewsVO> result = newsService.getNewsList(1, 10);
 
         assertEquals(1, result.size());
         assertEquals("测试资讯标题", result.get(0).getTitle());
@@ -88,7 +88,7 @@ class NewsServiceImplTest {
         mockPage.setRecords(List.of());
         when(newsMapper.selectPage(any(Page.class), any(LambdaQueryWrapper.class))).thenReturn(mockPage);
 
-        List<NewsVO> result = newsService.getNewsList();
+        List<NewsVO> result = newsService.getNewsList(1, 10);
 
         assertTrue(result.isEmpty());
     }

@@ -33,8 +33,8 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, WeaProduct>
     }
 
     @Override
-    public List<ProductVO> getProductList() {
-        List<WeaProduct> list = page(new Page<>(1, 1000), new LambdaQueryWrapper<>()).getRecords();
+    public List<ProductVO> getProductList(Integer pageNum, Integer pageSize) {
+        List<WeaProduct> list = page(new Page<>(pageNum, pageSize), new LambdaQueryWrapper<>()).getRecords();
         return list.stream().map(entity -> {
             ProductVO vo = BeanConvertUtil.convert(entity, ProductVO.class);
             return vo;

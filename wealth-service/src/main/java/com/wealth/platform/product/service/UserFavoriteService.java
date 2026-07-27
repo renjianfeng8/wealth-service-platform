@@ -17,7 +17,7 @@ public interface UserFavoriteService extends IService<WeaUserFavorite> {
 
     UserFavoriteVO getFavoriteById(Long id);
 
-    List<UserFavoriteVO> getFavoriteList(Long userId);
+    List<UserFavoriteVO> getFavoriteList(Long userId, Integer pageNum, Integer pageSize);
 
     boolean createFavorite(UserFavoriteDTO dto);
 

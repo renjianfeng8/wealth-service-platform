@@ -15,7 +15,7 @@ public interface NewsService extends IService<WeaNews> {
 
     NewsVO getNewsById(Long id);
 
-    List<NewsVO> getNewsList();
+    List<NewsVO> getNewsList(Integer pageNum, Integer pageSize);
 
     IPage<NewsVO> pageNews(Page<WeaNews> page, String title, String source, Integer newsType);
 

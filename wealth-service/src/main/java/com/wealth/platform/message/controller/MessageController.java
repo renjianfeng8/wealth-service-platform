@@ -43,8 +43,10 @@ public class MessageController {
 
     @Operation(summary = "查询站内消息推送列表")
     @GetMapping
-    public Result<List<MessageVO>> list() {
-        return Result.success(messageService.getMessageList());
+    public Result<List<MessageVO>> list(
+            @Min(1) @RequestParam(defaultValue = "1") Integer pageNum,
+            @Min(1) @Max(100) @RequestParam(defaultValue = "10") Integer pageSize) {
+        return Result.success(messageService.getMessageList(pageNum, pageSize));
     }
 
     @Operation(summary = "分页查询站内消息推送")

@@ -15,7 +15,7 @@ public interface ProductService extends IService<WeaProduct> {
 
     ProductVO getProductById(Long id);
 
-    List<ProductVO> getProductList();
+    List<ProductVO> getProductList(Integer pageNum, Integer pageSize);
 
     IPage<ProductVO> pageProducts(Page<WeaProduct> page, String productName, String productCode, Integer productType, String orderBy, String orderDir);
 

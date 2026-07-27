@@ -42,8 +42,10 @@ public class NewsController {
 
     @Operation(summary = "查询财经资讯公告列表")
     @GetMapping
-    public Result<List<NewsVO>> list() {
-        return Result.success(newsService.getNewsList());
+    public Result<List<NewsVO>> list(
+            @Min(1) @RequestParam(defaultValue = "1") Integer pageNum,
+            @Min(1) @Max(100) @RequestParam(defaultValue = "10") Integer pageSize) {
+        return Result.success(newsService.getNewsList(pageNum, pageSize));
     }
 
     @Operation(summary = "分页查询财经资讯公告")

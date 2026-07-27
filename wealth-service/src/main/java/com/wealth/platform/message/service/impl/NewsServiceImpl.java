@@ -34,8 +34,8 @@ public class NewsServiceImpl extends ServiceImpl<NewsMapper, WeaNews>
     }
 
     @Override
-    public List<NewsVO> getNewsList() {
-        List<WeaNews> list = page(new Page<>(1, 1000), new LambdaQueryWrapper<>()).getRecords();
+    public List<NewsVO> getNewsList(Integer pageNum, Integer pageSize) {
+        List<WeaNews> list = page(new Page<>(pageNum, pageSize), new LambdaQueryWrapper<>()).getRecords();
         return list.stream().map(entity -> {
             NewsVO vo = BeanConvertUtil.convert(entity, NewsVO.class);
             return vo;

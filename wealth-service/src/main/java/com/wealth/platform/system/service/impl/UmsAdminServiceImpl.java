@@ -369,13 +369,32 @@ public class UmsAdminServiceImpl extends ServiceImpl<UmsAdminMapper, UmsAdmin>
 
     @Override
     public boolean hasPermission(Long adminId, String uri) {
-        List<Long> roleIds = adminRoleRelationService.getRoleIdByAdminId(adminId);
-        if (roleIds.isEmpty()) return false;
+        // 尝试从 Redis 读取缓存
+        String cacheKey = KEY_PERMISSION_CACHE + adminId;
+        List<String> urlPatterns = null;
+        try {
+            @SuppressWarnings("unchecked")
+            List<String> cached = (List<String>) redisUtil.get(cacheKey);
+            urlPatterns = cached;
+        } catch (RedisConnectionFailureException e) {
+            log.warn("Redis 不可用，跳过权限缓存读取: {}", e.getMessage());
+        }
 
-        List<Long> resourceIds = roleResourceRelationService.getResourceIdByRoleIds(roleIds);
-        if (resourceIds.isEmpty()) return false;
+        if (urlPatterns == null) {
+            List<Long> roleIds = adminRoleRelationService.getRoleIdByAdminId(adminId);
+            if (roleIds.isEmpty()) return false;
 
-        List<String> urlPatterns = getResourceUrlsByIds(resourceIds);
+            List<Long> resourceIds = roleResourceRelationService.getResourceIdByRoleIds(roleIds);
+            if (resourceIds.isEmpty()) return false;
+
+            urlPatterns = getResourceUrlsByIds(resourceIds);
+
+            try {
+                redisUtil.set(cacheKey, urlPatterns, 1, TimeUnit.HOURS);
+            } catch (RedisConnectionFailureException e) {
+                log.warn("Redis 不可用，跳过权限缓存写入: {}", e.getMessage());
+            }
+        }
 
         AntPathMatcher pathMatcher = new AntPathMatcher();
         return urlPatterns.stream().anyMatch(pattern -> pathMatcher.match(pattern, uri));

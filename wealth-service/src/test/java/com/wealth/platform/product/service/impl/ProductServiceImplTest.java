@@ -82,7 +82,7 @@ class ProductServiceImplTest {
         mockPage.setRecords(List.of(mockProduct, p2));
         when(productMapper.selectPage(any(Page.class), any(LambdaQueryWrapper.class))).thenReturn(mockPage);
 
-        List<ProductVO> result = productService.getProductList();
+        List<ProductVO> result = productService.getProductList(1, 10);
 
         assertEquals(2, result.size());
         assertEquals("测试产品", result.get(0).getProductName());
@@ -96,7 +96,7 @@ class ProductServiceImplTest {
         mockPage.setRecords(List.of());
         when(productMapper.selectPage(any(Page.class), any(LambdaQueryWrapper.class))).thenReturn(mockPage);
 
-        List<ProductVO> result = productService.getProductList();
+        List<ProductVO> result = productService.getProductList(1, 10);
 
         assertTrue(result.isEmpty());
     }

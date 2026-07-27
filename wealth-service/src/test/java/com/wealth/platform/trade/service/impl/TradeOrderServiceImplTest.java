@@ -148,7 +148,7 @@ class TradeOrderServiceImplTest {
         mockPage.setRecords(List.of(mockOrder));
         when(tradeOrderMapper.selectPage(any(Page.class), any(LambdaQueryWrapper.class))).thenReturn(mockPage);
 
-        List<TradeOrderVO> result = tradeOrderService.getOrderList();
+        List<TradeOrderVO> result = tradeOrderService.getOrderList(1, 10);
 
         assertEquals(1, result.size());
         assertEquals("ORDER_TEST123456", result.get(0).getOrderNo());
@@ -161,7 +161,7 @@ class TradeOrderServiceImplTest {
         mockPage.setRecords(List.of());
         when(tradeOrderMapper.selectPage(any(Page.class), any(LambdaQueryWrapper.class))).thenReturn(mockPage);
 
-        List<TradeOrderVO> result = tradeOrderService.getOrderList();
+        List<TradeOrderVO> result = tradeOrderService.getOrderList(1, 10);
 
         assertTrue(result.isEmpty());
     }

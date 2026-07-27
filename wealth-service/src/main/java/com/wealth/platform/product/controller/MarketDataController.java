@@ -50,8 +50,10 @@ public class MarketDataController {
 
     @Operation(summary = "查询行情数据列表")
     @GetMapping
-    public Result<List<MarketDataVO>> list() {
-        return Result.success(marketDataService.getMarketDataList());
+    public Result<List<MarketDataVO>> list(
+            @Min(1) @RequestParam(defaultValue = "1") Integer pageNum,
+            @Min(1) @Max(100) @RequestParam(defaultValue = "10") Integer pageSize) {
+        return Result.success(marketDataService.getMarketDataList(pageNum, pageSize));
     }
 
     @Operation(summary = "SSE 实时行情推送（JWT 由 Gateway 校验或 httpOnly Cookie 携带）")

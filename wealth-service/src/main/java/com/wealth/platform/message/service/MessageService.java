@@ -15,7 +15,7 @@ public interface MessageService extends IService<WeaMessage> {
 
     MessageVO getMessageById(Long id);
 
-    List<MessageVO> getMessageList();
+    List<MessageVO> getMessageList(Integer pageNum, Integer pageSize);
 
     IPage<MessageVO> pageMessages(Page<WeaMessage> page, Long userId, String msgTitle, Integer msgType, Integer readFlag);
 

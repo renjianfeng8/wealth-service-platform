@@ -45,8 +45,11 @@ public class UserFavoriteController {
 
     @Operation(summary = "查询用户自选关注列表")
     @GetMapping
-    public Result<List<UserFavoriteVO>> list(@RequestParam(required = false) Long userId) {
-        return Result.success(userFavoriteService.getFavoriteList(userId));
+    public Result<List<UserFavoriteVO>> list(
+            @RequestParam(required = false) Long userId,
+            @Min(1) @RequestParam(defaultValue = "1") Integer pageNum,
+            @Min(1) @Max(100) @RequestParam(defaultValue = "10") Integer pageSize) {
+        return Result.success(userFavoriteService.getFavoriteList(userId, pageNum, pageSize));
     }
 
     @Operation(summary = "分页查询用户自选关注")

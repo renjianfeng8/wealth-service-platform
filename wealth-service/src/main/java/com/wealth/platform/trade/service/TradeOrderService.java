@@ -16,7 +16,7 @@ public interface TradeOrderService extends IService<WeaTradeOrder> {
 
     TradeOrderVO getOrderById(Long id);
 
-    List<TradeOrderVO> getOrderList();
+    List<TradeOrderVO> getOrderList(Integer pageNum, Integer pageSize);
 
     IPage<TradeOrderVO> pageOrders(Page<WeaTradeOrder> page, Long userId, String orderNo, String productCode, Integer orderStatus);
 

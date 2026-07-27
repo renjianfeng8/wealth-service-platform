@@ -42,8 +42,10 @@ public class ProductController {
 
     @Operation(summary = "查询产品列表")
     @GetMapping
-    public Result<List<ProductVO>> list() {
-        return Result.success(productService.getProductList());
+    public Result<List<ProductVO>> list(
+            @Min(1) @RequestParam(defaultValue = "1") Integer pageNum,
+            @Min(1) @Max(100) @RequestParam(defaultValue = "10") Integer pageSize) {
+        return Result.success(productService.getProductList(pageNum, pageSize));
     }
 
     @Operation(summary = "分页查询产品")

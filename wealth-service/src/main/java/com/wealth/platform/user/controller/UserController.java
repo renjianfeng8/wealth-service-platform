@@ -55,8 +55,10 @@ public class UserController {
 
     @GetMapping
     @Operation(summary = "查询用户列表")
-    public Result<List<UserVO>> list() {
-        List<User> list = userService.page(new Page<>(1, 1000)).getRecords();
+    public Result<List<UserVO>> list(
+            @Min(1) @RequestParam(defaultValue = "1") Integer pageNum,
+            @Min(1) @Max(100) @RequestParam(defaultValue = "10") Integer pageSize) {
+        List<User> list = userService.page(new Page<>(pageNum, pageSize)).getRecords();
         List<UserVO> voList = BeanConvertUtil.convertList(list, UserVO.class);
         return Result.success(voList);
     }

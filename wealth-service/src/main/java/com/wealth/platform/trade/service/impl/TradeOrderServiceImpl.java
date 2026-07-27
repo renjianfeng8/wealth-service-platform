@@ -62,8 +62,8 @@ public class TradeOrderServiceImpl extends ServiceImpl<TradeOrderMapper, WeaTrad
     }
 
     @Override
-    public List<TradeOrderVO> getOrderList() {
-        List<WeaTradeOrder> list = page(new Page<>(1, 1000), new LambdaQueryWrapper<>()).getRecords();
+    public List<TradeOrderVO> getOrderList(Integer pageNum, Integer pageSize) {
+        List<WeaTradeOrder> list = page(new Page<>(pageNum, pageSize), new LambdaQueryWrapper<>()).getRecords();
         return list.stream().map(order -> {
             TradeOrderVO vo = BeanConvertUtil.convert(order, TradeOrderVO.class);
             return vo;
@@ -234,6 +234,7 @@ public class TradeOrderServiceImpl extends ServiceImpl<TradeOrderMapper, WeaTrad
                 .eq(WeaTradeOrder::getOrderStatus, OrderStatusEnum.MATCHED.getCode())
                 .ge(WeaTradeOrder::getCreateTime, startTime)
                 .le(WeaTradeOrder::getCreateTime, endTime)
+                .last("LIMIT 1000")
                 .list();
         return BeanConvertUtil.convertList(orders, DashboardTradeOrderDTO.class);
     }

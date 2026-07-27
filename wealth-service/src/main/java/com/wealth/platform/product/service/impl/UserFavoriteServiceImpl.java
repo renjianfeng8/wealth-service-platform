@@ -50,12 +50,12 @@ public class UserFavoriteServiceImpl extends ServiceImpl<UserFavoriteMapper, Wea
     }
 
     @Override
-    public List<UserFavoriteVO> getFavoriteList(Long userId) {
+    public List<UserFavoriteVO> getFavoriteList(Long userId, Integer pageNum, Integer pageSize) {
         List<WeaUserFavorite> list;
         if (userId != null) {
-            list = lambdaQuery().eq(WeaUserFavorite::getUserId, userId).list();
+            list = lambdaQuery().eq(WeaUserFavorite::getUserId, userId).page(new Page<>(pageNum, pageSize)).getRecords();
         } else {
-            list = lambdaQuery().page(new Page<>(1, 1000)).getRecords();
+            list = lambdaQuery().page(new Page<>(pageNum, pageSize)).getRecords();
         }
         return list.stream().map(entity -> BeanConvertUtil.convert(entity, UserFavoriteVO.class))
                 .collect(Collectors.toList());
