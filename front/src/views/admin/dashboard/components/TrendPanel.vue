@@ -198,8 +198,8 @@ async function onBalChange(period: string) {
 function initCharts() {
   const needAsset = assetChartRef.value && !assetChart
   const needBalance = balanceChartRef.value && !balanceChart
-  if (needAsset) assetChart = createChart(assetChartRef.value)
-  if (needBalance) balanceChart = createChart(balanceChartRef.value)
+  if (needAsset) assetChart = createChart(assetChartRef.value!)
+  if (needBalance) balanceChart = createChart(balanceChartRef.value!)
   updateCharts()
   // Retry if any container wasn't laid out yet
   if ((needAsset && !assetChart) || (needBalance && !balanceChart)) {

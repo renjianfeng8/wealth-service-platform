@@ -146,7 +146,7 @@ async function onKlineChange(period: string) {
 
 function initChart() {
   const needKline = klineChartRef.value && !klineChart
-  if (needKline) klineChart = createChart(klineChartRef.value)
+  if (needKline) klineChart = createChart(klineChartRef.value!)
   updateKlineChart()
   if (needKline && !klineChart) {
     requestAnimationFrame(() => nextTick(initChart))
