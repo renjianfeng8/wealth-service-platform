@@ -1,6 +1,20 @@
 <template>
   <AdminPageShell title="产品搜索" description="按产品名称或编码快速检索产品数据。">
-    <AdminFilterBar :model="query" :fields="filterFields" @search="handleSearch" @reset="handleReset" />
+    <div class="search-header" v-if="routeKeyword">
+      <div class="search-header-info">
+        搜索"<strong>{{ routeKeyword }}</strong>"，共找到 <strong>{{ total }}</strong> 条结果
+      </div>
+      <el-input
+        v-model="query.keyword"
+        placeholder="输入关键词搜索..."
+        :prefix-icon="Search"
+        size="default"
+        clearable
+        class="search-inline-input"
+        @keyup.enter="handleSearch"
+        @clear="handleReset"
+      />
+    </div>
 
     <AdminDataTable
       :data="tableData"
@@ -16,7 +30,11 @@
       </template>
 
       <el-table-column prop="id" label="ID" width="70" />
-      <el-table-column prop="productName" label="产品名称" min-width="160" show-overflow-tooltip />
+      <el-table-column label="产品名称" min-width="180" show-overflow-tooltip>
+        <template #default="{ row }">
+          <router-link to="/admin/product" class="result-link">{{ row.productName }}</router-link>
+        </template>
+      </el-table-column>
       <el-table-column prop="productCode" label="产品编码" min-width="130" show-overflow-tooltip />
       <el-table-column prop="productType" label="类型" width="110">
         <template #default="{ row }">
@@ -26,21 +44,32 @@
       <el-table-column prop="price" label="价格" width="110">
         <template #default="{ row }">{{ formatPrice(row.price) }}</template>
       </el-table-column>
+      <el-table-column label="状态" width="80">
+        <template #default="{ row }">
+          <el-tag :type="row.status === 1 ? 'success' : 'info'" size="small">
+            {{ row.status === 1 ? '在售' : '已下架' }}
+          </el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column label="操作" width="100" fixed="right">
+        <template #default="{ row }">
+          <router-link to="/admin/product" class="result-link">前往管理</router-link>
+        </template>
+      </el-table-column>
     </AdminDataTable>
   </AdminPageShell>
 </template>
 
 <script setup lang="ts">
-import { reactive, ref, onMounted } from 'vue'
+import { reactive, ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import { Search } from '@element-plus/icons-vue'
 import AdminPageShell from '@/components/admin/AdminPageShell.vue'
-import AdminFilterBar from '@/components/admin/AdminFilterBar.vue'
 import AdminDataTable from '@/components/admin/AdminDataTable.vue'
 import { getProductPage } from '@/api/product'
 import { formatPrice, productTypeText } from '@/utils/format'
 import type { WeaProduct } from '@/types'
-import type { AdminFilterField } from '@/components/admin/AdminFilterBar.vue'
 
 type SearchQuery = {
   pageNum: number
@@ -48,15 +77,14 @@ type SearchQuery = {
   keyword: string
 }
 
-const filterFields: AdminFilterField[] = [
-  { prop: 'keyword', label: '关键词', placeholder: '输入产品名称或编码搜索', width: '320px' },
-]
-
 const loading = ref(false)
 const searched = ref(false)
 const tableData = ref<WeaProduct[]>([])
 const total = ref(0)
 const query = reactive<SearchQuery>({ keyword: '', pageNum: 1, pageSize: 10 })
+
+const route = useRoute()
+const routeKeyword = computed(() => (route.query.keyword as string) || '')
 
 async function handleSearch() {
   if (!query.keyword.trim()) {
@@ -91,7 +119,6 @@ function handleReset() {
   searched.value = false
 }
 
-const route = useRoute()
 onMounted(() => {
   const kw = route.query.keyword
   if (kw && typeof kw === 'string' && kw.trim()) {
@@ -105,5 +132,39 @@ onMounted(() => {
 .search-result-info {
   color: var(--fl-text-secondary);
   font-size: 14px;
+}
+
+.search-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  background: var(--el-fill-color-lighter);
+  border-radius: 8px;
+}
+
+.search-header-info {
+  font-size: 14px;
+  color: var(--fl-text-secondary);
+}
+
+.search-header-info strong {
+  color: var(--fl-text-primary);
+}
+
+.search-inline-input {
+  width: 280px;
+}
+
+.result-link {
+  color: var(--el-color-primary);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.result-link:hover {
+  text-decoration: underline;
 }
 </style>

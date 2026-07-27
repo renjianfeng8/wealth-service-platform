@@ -5,6 +5,7 @@
     <el-row :gutter="20">
       <el-col :xs="24" :lg="8">
         <el-card class="profile-card" shadow="never">
+          <el-tag v-if="userStore.isAdmin" size="small" type="warning" effect="dark" class="preview-badge">预览模式</el-tag>
           <el-skeleton animated :loading="loading">
             <template #template>
               <div class="profile-skeleton">
@@ -49,49 +50,67 @@
       </el-col>
 
       <el-col :xs="24" :lg="16">
-        <el-card class="info-card" shadow="never">
-          <template #header>个人信息</template>
-          <el-skeleton animated :loading="loading">
-            <template #template>
-              <div class="form-skeleton">
-                <div v-for="i in 3" :key="i" class="form-skeleton-row">
-                  <el-skeleton-item variant="text" style="width: 60px; height: 14px;" />
-                  <el-skeleton-item variant="text" style="width: 100%; height: 32px;" />
-                </div>
-                <el-skeleton-item variant="button" style="width: 100px; height: 36px; margin-top: 8px;" />
-              </div>
-            </template>
-            <template #default>
-              <el-form :model="userInfo" label-width="80px" size="large">
-                <el-form-item label="用户名" prop="username">
-                  <el-input v-model="userInfo.username" disabled />
-                </el-form-item>
-                <el-form-item label="昵称" prop="nickname">
-                  <el-input v-model="userInfo.nickname" placeholder="设置昵称" />
-                </el-form-item>
-                <el-form-item label="手机号" prop="phone">
-                  <el-input v-model="userInfo.phone" placeholder="绑定手机号" />
-                </el-form-item>
-                <el-form-item>
-                  <el-button type="primary" :loading="saving" @click="handleSave">
-                    {{ saving ? '保存中...' : '保存修改' }}
-                  </el-button>
-                </el-form-item>
-              </el-form>
-            </template>
-          </el-skeleton>
-        </el-card>
-
-        <el-card class="security-card" shadow="never" style="margin-top: 20px">
-          <template #header>安全设置</template>
-          <div class="security-item">
-            <div class="security-info">
-              <span class="security-label">登录密码</span>
-              <span class="security-desc">建议定期更换密码以保障账户安全</span>
-            </div>
-            <el-button text type="primary" @click="showPasswordDialog = true">修改密码</el-button>
+        <!-- 管理员预览模式 -->
+        <el-card v-if="userStore.isAdmin" class="info-card" shadow="never">
+          <template #header>
+            <span>管理员信息</span>
+            <el-tag size="small" type="warning">预览模式</el-tag>
+          </template>
+          <div class="admin-preview-info">
+            <p>管理员后台信息请前往 <router-link to="/admin/profile">个人信息</router-link> 查看与编辑。</p>
+            <el-descriptions :column="1" border size="small">
+              <el-descriptions-item label="用户名">{{ userInfo.username }}</el-descriptions-item>
+              <el-descriptions-item label="角色">管理员</el-descriptions-item>
+            </el-descriptions>
           </div>
         </el-card>
+
+        <!-- 普通用户个人信息 -->
+        <template v-else>
+          <el-card class="info-card" shadow="never">
+            <template #header>个人信息</template>
+            <el-skeleton animated :loading="loading">
+              <template #template>
+                <div class="form-skeleton">
+                  <div v-for="i in 3" :key="i" class="form-skeleton-row">
+                    <el-skeleton-item variant="text" style="width: 60px; height: 14px;" />
+                    <el-skeleton-item variant="text" style="width: 100%; height: 32px;" />
+                  </div>
+                  <el-skeleton-item variant="button" style="width: 100px; height: 36px; margin-top: 8px;" />
+                </div>
+              </template>
+              <template #default>
+                <el-form :model="userInfo" label-width="80px" size="large">
+                  <el-form-item label="用户名" prop="username">
+                    <el-input v-model="userInfo.username" disabled />
+                  </el-form-item>
+                  <el-form-item label="昵称" prop="nickname">
+                    <el-input v-model="userInfo.nickname" placeholder="设置昵称" />
+                  </el-form-item>
+                  <el-form-item label="手机号" prop="phone">
+                    <el-input v-model="userInfo.phone" placeholder="绑定手机号" />
+                  </el-form-item>
+                  <el-form-item>
+                    <el-button type="primary" :loading="saving" @click="handleSave">
+                      {{ saving ? '保存中...' : '保存修改' }}
+                    </el-button>
+                  </el-form-item>
+                </el-form>
+              </template>
+            </el-skeleton>
+          </el-card>
+
+          <el-card class="security-card" shadow="never" style="margin-top: 20px">
+            <template #header>安全设置</template>
+            <div class="security-item">
+              <div class="security-info">
+                <span class="security-label">登录密码</span>
+                <span class="security-desc">建议定期更换密码以保障账户安全</span>
+              </div>
+              <el-button text type="primary" @click="showPasswordDialog = true">修改密码</el-button>
+            </div>
+          </el-card>
+        </template>
       </el-col>
     </el-row>
 
@@ -199,6 +218,12 @@ onUnmounted(() => window.removeEventListener('beforeunload', beforeUnloadHandler
 async function fetchProfile() {
   if (!userStore.userId) return
   if (fetchProfilePromise) return fetchProfilePromise
+  // 管理员预览模式：跳过 API 查询
+  if (userStore.isAdmin) {
+    userInfo.username = userStore.username
+    userInfo.nickname = userStore.nickname
+    return
+  }
   // 使用 store 数据作为兜底
   userInfo.username = userStore.username
   userInfo.nickname = userStore.nickname
@@ -221,6 +246,8 @@ async function fetchProfile() {
 
 async function fetchStats() {
   if (!userStore.userId) return
+  // 管理员预览模式：无 stats 数据
+  if (userStore.isAdmin) return
   if (fetchStatsPromise) return fetchStatsPromise
   fetchStatsPromise = (async () => {
     try {
@@ -299,6 +326,30 @@ onMounted(async () => {
 
 <style scoped>
 .profile-page { max-width: 1200px; }
+
+.preview-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 1;
+}
+
+.admin-preview-info {
+  padding: 8px 0;
+}
+.admin-preview-info p {
+  margin: 0 0 16px;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+.admin-preview-info a {
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 500;
+}
+.admin-preview-info a:hover {
+  text-decoration: underline;
+}
 
 .profile-card {
   margin-bottom: 20px;

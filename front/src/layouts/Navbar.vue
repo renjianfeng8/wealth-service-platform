@@ -11,16 +11,42 @@
     </div>
 
     <div class="navbar-right">
-      <div class="search-box">
-        <el-input
-          v-model="searchKeyword"
-          placeholder="搜索产品..."
-          :prefix-icon="Search"
-          size="small"
-          clearable
-          @keyup.enter="doSearch"
+      <div class="search-wrap" ref="searchWrapRef">
+        <div class="search-box" :class="{ 'is-focused': searchFocused }">
+          <el-input
+            ref="searchInputRef"
+            v-model="searchKeyword"
+            placeholder="搜索产品..."
+            :prefix-icon="Search"
+            size="small"
+            clearable
+            @focus="onSearchFocus"
+            @input="onSearchInput"
+            @keydown.enter.prevent="onSearchEnter"
+            @keydown.esc="closeSearchDropdown"
+            @clear="onSearchClear"
+          />
+          <div class="search-shortcut-hint" v-if="!searchFocused && !searchKeyword">
+            <kbd>Ctrl+K</kbd>
+          </div>
+        </div>
+
+        <SearchDropdown
+          :visible="showSearchDropdown"
+          :keyword="searchKeyword"
+          :results="searchResults"
+          :total="searchTotal"
+          :loading="searchLoading"
+          @select="handleSelectResult"
+          @view-all="doSearch"
         />
       </div>
+
+      <el-tooltip content="前台评测" placement="bottom">
+        <el-button text class="preview-btn" @click="router.push('/home')">
+          <el-icon :size="18"><View /></el-icon>
+        </el-button>
+      </el-tooltip>
 
       <MessageNoticePopover target-path="/admin/message" />
 
@@ -46,13 +72,16 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '@/store'
 import MessageNoticePopover from '@/components/MessageNoticePopover.vue'
+import SearchDropdown from '@/components/admin/SearchDropdown.vue'
+import { getProductPage } from '@/api/product'
+import type { WeaProduct } from '@/types'
 import {
   Fold, Expand, Search,
-  ArrowDown, User, SwitchButton, UserFilled,
+  ArrowDown, User, SwitchButton, UserFilled, View,
 } from '@element-plus/icons-vue'
 
 defineProps<{ collapsed: boolean }>()
@@ -62,13 +91,115 @@ const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
 
+/* ---- 搜索 ---- */
 const searchKeyword = ref('')
+const searchInputRef = ref<{ focus: () => void } | null>(null)
+const searchWrapRef = ref<HTMLElement>()
+const searchFocused = ref(false)
+const showSearchDropdown = ref(false)
+const searchResults = ref<WeaProduct[]>([])
+const searchLoading = ref(false)
+const searchTotal = ref(0)
+
+let searchTimer: ReturnType<typeof setTimeout> | null = null
+
+function onSearchFocus() {
+  searchFocused.value = true
+  if (searchKeyword.value.trim()) {
+    showSearchDropdown.value = true
+  }
+}
+
+function onSearchInput(val: string | number) {
+  const kw = String(val)
+  if (searchTimer) clearTimeout(searchTimer)
+  if (!kw.trim()) {
+    searchResults.value = []
+    searchTotal.value = 0
+    showSearchDropdown.value = false
+    return
+  }
+  searchTimer = setTimeout(() => fetchSearchResults(kw.trim()), 300)
+}
+
+function onSearchClear() {
+  searchResults.value = []
+  searchTotal.value = 0
+  showSearchDropdown.value = false
+}
+
+function onSearchEnter() {
+  if (!searchKeyword.value.trim()) return
+  showSearchDropdown.value = false
+  doSearch()
+}
+
+function closeSearchDropdown() {
+  showSearchDropdown.value = false
+  searchFocused.value = false
+}
+
+async function fetchSearchResults(keyword: string) {
+  searchLoading.value = true
+  showSearchDropdown.value = true
+  try {
+    const res = await getProductPage({
+      pageNum: 1,
+      pageSize: 6,
+      productName: keyword,
+      productCode: keyword,
+    })
+    searchResults.value = res.data?.records || []
+    searchTotal.value = res.data?.total || 0
+  } catch {
+    searchResults.value = []
+    searchTotal.value = 0
+  } finally {
+    searchLoading.value = false
+  }
+}
+
+function handleSelectResult(item: WeaProduct) {
+  showSearchDropdown.value = false
+  searchFocused.value = false
+  router.push({ path: '/admin/product' })
+}
 
 function doSearch() {
   const keyword = searchKeyword.value.trim()
   if (!keyword) return
+  showSearchDropdown.value = false
+  searchFocused.value = false
   router.push({ path: '/admin/search', query: { keyword } })
 }
+
+/* ---- 键盘快捷键 Ctrl+K ---- */
+function onGlobalKeydown(e: KeyboardEvent) {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+    e.preventDefault()
+    searchInputRef.value?.focus()
+    return
+  }
+}
+
+/* ---- 点击外部关闭 ---- */
+function onDocumentMousedown(e: MouseEvent) {
+  if (searchWrapRef.value && !searchWrapRef.value.contains(e.target as Node)) {
+    showSearchDropdown.value = false
+    searchFocused.value = false
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('keydown', onGlobalKeydown)
+  document.addEventListener('mousedown', onDocumentMousedown)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('keydown', onGlobalKeydown)
+  document.removeEventListener('mousedown', onDocumentMousedown)
+  if (searchTimer) clearTimeout(searchTimer)
+})
 
 const GROUP_LABELS: Record<string, string> = {
   dashboard: '仪表盘',
@@ -131,6 +262,41 @@ function handleLogout() {
 
 .search-box {
   width: 180px;
+  transition: width 0.25s ease;
+  position: relative;
+}
+
+.search-box.is-focused {
+  width: 300px;
+}
+
+.search-shortcut-hint {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.search-shortcut-hint kbd {
+  font-size: 11px;
+  padding: 1px 6px;
+  background: #e4e7ed;
+  border-radius: 4px;
+  color: var(--fl-text-placeholder);
+  font-family: inherit;
+}
+
+.search-wrap {
+  position: relative;
+}
+
+.preview-btn {
+  color: var(--fl-text-secondary);
+  font-size: 13px;
+}
+.preview-btn:hover {
+  color: var(--fl-primary);
 }
 
 .search-box .el-input__wrapper {

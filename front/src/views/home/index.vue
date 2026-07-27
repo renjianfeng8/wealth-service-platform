@@ -8,7 +8,7 @@
         <div class="hero-actions">
           <el-button type="primary" size="large" @click="router.push('/products')">了解产品</el-button>
           <el-button size="large" @click="router.push('/auth/login')" v-if="!userStore.isLoggedIn">立即登录</el-button>
-          <el-button size="large" @click="router.push('/user/dashboard')" v-else>进入个人中心</el-button>
+          <el-button size="large" @click="goProfile" v-else>进入个人中心</el-button>
         </div>
       </div>
       <div class="hero-visual">
@@ -140,6 +140,10 @@ async function fetchMarketData() {
   } finally {
     loading.value = false
   }
+}
+
+function goProfile() {
+  router.push('/user/profile')
 }
 
 onMounted(fetchMarketData)

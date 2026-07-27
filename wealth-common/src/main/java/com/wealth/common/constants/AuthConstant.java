@@ -13,8 +13,9 @@ public class AuthConstant {
             "/user/identify-login",
             "/product/wea-product/page",
             "/product/wea-market-data",
-            "/message/wea-news/page",
+            "/product/wea-market-data/page",
             "/product/wea-market-data/sse/**",
+            "/message/wea-news/page",
             /* Swagger / Knife4j */
             "/doc.html",
             "/webjars/**",
