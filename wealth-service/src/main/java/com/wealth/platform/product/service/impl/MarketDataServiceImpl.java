@@ -12,6 +12,7 @@ import com.wealth.platform.product.entity.WeaMarketData;
 import com.wealth.platform.product.mapper.MarketDataMapper;
 import com.wealth.platform.product.service.MarketDataService;
 import com.wealth.platform.product.vo.MarketDataVO;
+import com.wealth.common.utils.LikeUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -77,7 +78,7 @@ public class MarketDataServiceImpl extends ServiceImpl<MarketDataMapper, WeaMark
         Page<WeaMarketData> page = new Page<>(pageNum, pageSize);
         LambdaQueryWrapper<WeaMarketData> wrapper = new LambdaQueryWrapper<>();
         if (StringUtils.hasText(productCode)) {
-            wrapper.like(WeaMarketData::getProductCode, productCode);
+            wrapper.like(WeaMarketData::getProductCode, LikeUtil.escape(productCode));
         }
         wrapper.orderByDesc(WeaMarketData::getMarketTime);
         return baseMapper.selectPage(page, wrapper);

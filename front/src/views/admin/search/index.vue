@@ -31,7 +31,8 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref } from 'vue'
+import { reactive, ref, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import AdminPageShell from '@/components/admin/AdminPageShell.vue'
 import AdminFilterBar from '@/components/admin/AdminFilterBar.vue'
@@ -62,6 +63,7 @@ async function handleSearch() {
     ElMessage.warning('请输入关键词')
     return
   }
+  query.pageNum = 1
   loading.value = true
   searched.value = true
   try {
@@ -88,6 +90,15 @@ function handleReset() {
   total.value = 0
   searched.value = false
 }
+
+const route = useRoute()
+onMounted(() => {
+  const kw = route.query.keyword
+  if (kw && typeof kw === 'string' && kw.trim()) {
+    query.keyword = kw.trim()
+    handleSearch()
+  }
+})
 </script>
 
 <style scoped>

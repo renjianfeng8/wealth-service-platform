@@ -12,6 +12,7 @@ import com.wealth.common.utils.BeanConvertUtil;
 import com.wealth.common.utils.JwtUtil;
 import com.wealth.common.utils.JwtUtil.TokenPair;
 import com.wealth.common.utils.RedisUtil;
+import com.wealth.common.utils.LikeUtil;
 import com.wealth.platform.system.entity.UmsAdmin;
 import com.wealth.platform.system.entity.UmsAdminRoleRelation;
 import com.wealth.platform.system.entity.UmsResource;
@@ -343,7 +344,7 @@ public class UmsAdminServiceImpl extends ServiceImpl<UmsAdminMapper, UmsAdmin>
         Page<UmsAdmin> page = new Page<>(pageNum, pageSize);
         LambdaQueryWrapper<UmsAdmin> wrapper = new LambdaQueryWrapper<>();
         if (StringUtils.hasText(username)) {
-            wrapper.like(UmsAdmin::getUsername, username);
+            wrapper.like(UmsAdmin::getUsername, LikeUtil.escape(username));
         }
         if (status != null) {
             wrapper.eq(UmsAdmin::getStatus, status);

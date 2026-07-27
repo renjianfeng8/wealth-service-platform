@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.wealth.common.contract.AdminIdentityProvider;
 import com.wealth.common.dto.AdminIdentityDTO;
 import com.wealth.common.utils.JwtUtil;
+import com.wealth.common.utils.LikeUtil;
 import com.wealth.common.dto.LoginDTO;
 import com.wealth.common.exception.ServiceException;
 import com.wealth.platform.user.entity.User;
@@ -115,7 +116,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         Page<User> page = new Page<>(pageNum, pageSize);
         LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
         if (StringUtils.hasText(username)) {
-            wrapper.like(User::getUsername, username);
+            wrapper.like(User::getUsername, LikeUtil.escape(username));
         }
         if (status != null) {
             wrapper.eq(User::getStatus, status);

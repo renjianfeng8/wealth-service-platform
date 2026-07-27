@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.wealth.common.exception.ServiceException;
 import com.wealth.common.utils.BeanConvertUtil;
+import com.wealth.common.utils.LikeUtil;
 import com.wealth.platform.message.dto.NewsDTO;
 import com.wealth.platform.message.entity.WeaNews;
 import com.wealth.platform.message.mapper.NewsMapper;
@@ -56,10 +57,10 @@ public class NewsServiceImpl extends ServiceImpl<NewsMapper, WeaNews>
     public IPage<NewsVO> pageNews(Page<WeaNews> page, String title, String source, Integer newsType) {
         LambdaQueryWrapper<WeaNews> wrapper = new LambdaQueryWrapper<>();
         if (StringUtils.hasText(title)) {
-            wrapper.like(WeaNews::getTitle, title);
+            wrapper.like(WeaNews::getTitle, LikeUtil.escape(title));
         }
         if (StringUtils.hasText(source)) {
-            wrapper.like(WeaNews::getSource, source);
+            wrapper.like(WeaNews::getSource, LikeUtil.escape(source));
         }
         if (newsType != null) {
             wrapper.eq(WeaNews::getNewsType, newsType);

@@ -11,6 +11,7 @@ import com.wealth.common.dto.MessageFeignDTO;
 import com.wealth.common.exception.ServiceException;
 import com.wealth.common.utils.BeanConvertUtil;
 import com.wealth.common.utils.RedisUtil;
+import com.wealth.common.utils.LikeUtil;
 import com.wealth.platform.trade.constant.OrderStatusEnum;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -120,10 +121,10 @@ public class TradeOrderServiceImpl extends ServiceImpl<TradeOrderMapper, WeaTrad
             wrapper.eq(WeaTradeOrder::getUserId, userId);
         }
         if (StringUtils.hasText(orderNo)) {
-            wrapper.like(WeaTradeOrder::getOrderNo, orderNo);
+            wrapper.like(WeaTradeOrder::getOrderNo, LikeUtil.escape(orderNo));
         }
         if (StringUtils.hasText(productCode)) {
-            wrapper.like(WeaTradeOrder::getProductCode, productCode);
+            wrapper.like(WeaTradeOrder::getProductCode, LikeUtil.escape(productCode));
         }
         if (orderStatus != null) {
             wrapper.eq(WeaTradeOrder::getOrderStatus, orderStatus);

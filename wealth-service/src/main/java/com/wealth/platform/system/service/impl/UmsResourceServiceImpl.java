@@ -9,6 +9,7 @@ import com.wealth.platform.system.mapper.UmsResourceMapper;
 import com.wealth.platform.system.service.UmsResourceService;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import com.wealth.common.utils.LikeUtil;
 import java.util.stream.Collectors;
 import java.util.List;
 
@@ -20,10 +21,10 @@ public class UmsResourceServiceImpl extends ServiceImpl<UmsResourceMapper, UmsRe
         Page<UmsResource> page = new Page<>(pageNum, pageSize);
         LambdaQueryWrapper<UmsResource> wrapper = new LambdaQueryWrapper<>();
         if (StringUtils.hasText(name)) {
-            wrapper.like(UmsResource::getName, name);
+            wrapper.like(UmsResource::getName, LikeUtil.escape(name));
         }
         if (StringUtils.hasText(url)) {
-            wrapper.like(UmsResource::getUrl, url);
+            wrapper.like(UmsResource::getUrl, LikeUtil.escape(url));
         }
         wrapper.orderByDesc(UmsResource::getCreateTime);
         return baseMapper.selectPage(page, wrapper);

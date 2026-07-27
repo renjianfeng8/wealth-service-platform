@@ -184,13 +184,14 @@ async function fetchProducts() {
       pageSize: number
       productType?: number
       productName?: string
+      productCode?: string
       orderBy?: string
       orderDir?: string
     } = { pageNum: pageNum.value, pageSize: pageSize.value }
     if (filterType.value) params.productType = filterType.value
     if (keyword.value) {
       params.productName = keyword.value
-      // B2: 移除重复的 productCode 参数，避免 AND 条件导致搜索永久无结果
+      params.productCode = keyword.value
     }
     if (sortBy.value) {
       const parts = sortBy.value.split('_')

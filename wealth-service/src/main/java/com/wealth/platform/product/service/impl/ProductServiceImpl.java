@@ -11,6 +11,7 @@ import com.wealth.platform.product.service.ProductService;
 import com.wealth.platform.product.vo.ProductVO;
 import com.wealth.common.exception.ServiceException;
 import com.wealth.common.utils.BeanConvertUtil;
+import com.wealth.common.utils.LikeUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -57,13 +58,13 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, WeaProduct>
         if (StringUtils.hasText(productName) || StringUtils.hasText(productCode)) {
             wrapper.and(w -> {
                 if (StringUtils.hasText(productName)) {
-                    w.like(WeaProduct::getProductName, productName);
+                    w.like(WeaProduct::getProductName, LikeUtil.escape(productName));
                 }
                 if (StringUtils.hasText(productCode)) {
                     if (StringUtils.hasText(productName)) {
                         w.or();
                     }
-                    w.like(WeaProduct::getProductCode, productCode);
+                    w.like(WeaProduct::getProductCode, LikeUtil.escape(productCode));
                 }
             });
         }

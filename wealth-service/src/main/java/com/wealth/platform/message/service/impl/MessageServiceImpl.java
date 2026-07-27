@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.wealth.common.dto.MessageFeignDTO;
 import com.wealth.common.exception.ServiceException;
 import com.wealth.common.utils.BeanConvertUtil;
+import com.wealth.common.utils.LikeUtil;
 import com.wealth.platform.message.dto.MessageDTO;
 import com.wealth.platform.message.entity.WeaMessage;
 import com.wealth.platform.message.mapper.MessageMapper;
@@ -66,7 +67,7 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, WeaMessage>
             wrapper.eq(WeaMessage::getUserId, userId);
         }
         if (StringUtils.hasText(msgTitle)) {
-            wrapper.like(WeaMessage::getMsgTitle, msgTitle);
+            wrapper.like(WeaMessage::getMsgTitle, LikeUtil.escape(msgTitle));
         }
         if (msgType != null) {
             wrapper.eq(WeaMessage::getMsgType, msgType);

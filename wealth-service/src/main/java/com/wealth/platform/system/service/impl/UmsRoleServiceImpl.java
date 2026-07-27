@@ -9,6 +9,7 @@ import com.wealth.platform.system.mapper.UmsRoleMapper;
 import com.wealth.platform.system.service.UmsRoleService;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import com.wealth.common.utils.LikeUtil;
 
 @Service
 public class UmsRoleServiceImpl extends ServiceImpl<UmsRoleMapper, UmsRole> implements UmsRoleService {
@@ -18,7 +19,7 @@ public class UmsRoleServiceImpl extends ServiceImpl<UmsRoleMapper, UmsRole> impl
         Page<UmsRole> page = new Page<>(pageNum, pageSize);
         LambdaQueryWrapper<UmsRole> wrapper = new LambdaQueryWrapper<>();
         if (StringUtils.hasText(name)) {
-            wrapper.like(UmsRole::getName, name);
+            wrapper.like(UmsRole::getName, LikeUtil.escape(name));
         }
         if (status != null) {
             wrapper.eq(UmsRole::getStatus, status);

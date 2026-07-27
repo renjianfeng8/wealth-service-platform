@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.wealth.common.exception.ServiceException;
 import com.wealth.common.utils.BeanConvertUtil;
+import com.wealth.common.utils.LikeUtil;
 import com.wealth.platform.product.dto.UserFavoriteDTO;
 import com.wealth.platform.product.entity.WeaUserFavorite;
 import com.wealth.platform.product.mapper.UserFavoriteMapper;
@@ -33,7 +34,7 @@ public class UserFavoriteServiceImpl extends ServiceImpl<UserFavoriteMapper, Wea
             wrapper.eq(WeaUserFavorite::getUserId, userId);
         }
         if (StringUtils.hasText(productCode)) {
-            wrapper.like(WeaUserFavorite::getProductCode, productCode);
+            wrapper.like(WeaUserFavorite::getProductCode, LikeUtil.escape(productCode));
         }
         wrapper.orderByDesc(WeaUserFavorite::getCreateTime);
         return baseMapper.selectPage(page, wrapper);
