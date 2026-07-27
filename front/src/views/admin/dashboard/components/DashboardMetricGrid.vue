@@ -1,148 +1,148 @@
 <template>
-  <div class="fl-stats-row">
-    <div class="fl-stat-card">
-      <div class="fl-stat-icon fl-icon-blue">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
-          <polyline points="16 7 22 7 22 13" />
+  <div class="metric-grid">
+    <div class="metric-card" @click="$router.push('/admin/user')">
+      <div class="metric-icon metric-icon-blue">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+          <path d="M16 3.13a4 4 0 0 1 0 7.75" />
         </svg>
       </div>
-      <div class="fl-stat-body">
-        <div class="fl-stat-label">资产总值 (估算)</div>
-        <div class="fl-stat-value">¥{{ formatNumber(overview.totalAsset) }}</div>
-        <div class="fl-stat-change">
-          <span :class="overview.assetChange >= 0 ? 'fl-rise' : 'fl-fall'">
-            <svg v-if="overview.assetChange >= 0" width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M7 14l5-5 5 5z" />
-            </svg>
-            <svg v-else width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M7 10l5 5 5-5z" />
-            </svg>
-            {{ Math.abs(overview.assetChange).toFixed(2) }}%
-          </span>
-          <span class="fl-stat-sub">过去24小时</span>
-        </div>
+      <div class="metric-body">
+        <span class="metric-label">总用户数</span>
+        <span class="metric-value">{{ totalUsers.toLocaleString() }}</span>
       </div>
     </div>
 
-    <div class="fl-stat-card">
-      <div class="fl-stat-icon fl-icon-yellow">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="3" />
-          <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+    <div class="metric-card" @click="$router.push('/admin/product')">
+      <div class="metric-icon metric-icon-green">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+          <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+          <line x1="12" y1="22.08" x2="12" y2="12" />
         </svg>
       </div>
-      <div class="fl-stat-body">
-        <div class="fl-stat-label">账户余额</div>
-        <div class="fl-stat-value fl-text-yellow">¥{{ formatNumber(overview.balanceValue) }}</div>
-        <div class="fl-stat-change">
-          <span :class="overview.balanceChange >= 0 ? 'fl-rise' : 'fl-fall'">
-            <svg v-if="overview.balanceChange >= 0" width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M7 14l5-5 5 5z" />
-            </svg>
-            <svg v-else width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M7 10l5 5 5-5z" />
-            </svg>
-            {{ Math.abs(overview.balanceChange).toFixed(2) }}%
-          </span>
-          <span class="fl-stat-sub">本期变化</span>
-        </div>
+      <div class="metric-body">
+        <span class="metric-label">产品总量</span>
+        <span class="metric-value">{{ totalProducts.toLocaleString() }}</span>
       </div>
     </div>
 
-    <div class="fl-stat-card">
-      <div class="fl-stat-icon fl-icon-green">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <div class="metric-card" @click="$router.push('/admin/trade')">
+      <div class="metric-icon metric-icon-orange">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <line x1="12" y1="1" x2="12" y2="23" />
-          <path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" />
+          <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
         </svg>
       </div>
-      <div class="fl-stat-body">
-        <div class="fl-stat-label">今日收益</div>
-        <div class="fl-stat-value" :class="overview.dailyIncome >= 0 ? 'fl-text-green' : 'fl-text-red'">
-          ¥{{ formatNumber(overview.dailyIncome) }}
-        </div>
-        <div class="fl-stat-change">
-          <span :class="overview.dailyIncome >= 0 ? 'fl-rise' : 'fl-fall'">
-            <svg v-if="overview.dailyIncome >= 0" width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M7 14l5-5 5 5z" />
-            </svg>
-            <svg v-else width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M7 10l5 5 5-5z" />
-            </svg>
-            {{ Math.abs(overview.dailyIncomeRate).toFixed(2) }}%
-          </span>
-          <span class="fl-stat-sub">日收益率</span>
-        </div>
+      <div class="metric-body">
+        <span class="metric-label">委托订单</span>
+        <span class="metric-value">{{ totalOrders.toLocaleString() }}</span>
+      </div>
+    </div>
+
+    <div class="metric-card" @click="$router.push('/admin/message')">
+      <div class="metric-icon metric-icon-red">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+        </svg>
+      </div>
+      <div class="metric-body">
+        <span class="metric-label">未读消息</span>
+        <span class="metric-value">{{ unreadMessages.toLocaleString() }}</span>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import type { DashboardOverview } from '@/api/dashboard'
-
 defineProps<{
-  overview: DashboardOverview
-  formatNumber: (value: number) => string
+  totalUsers: number
+  totalProducts: number
+  totalOrders: number
+  unreadMessages: number
 }>()
 </script>
 
 <style scoped>
-.fl-stats-row {
+.metric-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 14px;
 }
 
-.fl-stat-body {
-  flex: 1;
+.metric-card {
+  background: var(--fl-card-bg);
+  border: 1px solid var(--fl-border);
+  border-radius: var(--fl-radius);
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+.metric-card:hover {
+  box-shadow: var(--fl-shadow-hover);
+  transform: translateY(-2px);
+}
+
+.metric-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.metric-icon-blue {
+  background: rgba(26, 109, 255, 0.08);
+  color: var(--fl-primary);
+}
+.metric-icon-green {
+  background: rgba(52, 199, 89, 0.08);
+  color: var(--fl-rise);
+}
+.metric-icon-orange {
+  background: rgba(245, 166, 35, 0.1);
+  color: #f5a623;
+}
+.metric-icon-red {
+  background: rgba(255, 59, 48, 0.08);
+  color: var(--fl-fall);
+}
+
+.metric-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
   min-width: 0;
 }
 
-.fl-icon-blue {
-  background: var(--fl-primary-light);
-  color: var(--fl-primary);
-}
-
-.fl-icon-yellow {
-  background: rgba(245, 166, 35, 0.08);
-  color: #f5a623;
-}
-
-.fl-icon-green {
-  background: rgba(25, 190, 107, 0.08);
-  color: #19be6b;
-}
-
-.fl-stat-change {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 6px;
+.metric-label {
   font-size: 13px;
+  color: var(--fl-text-dim);
 }
 
-.fl-stat-sub {
-  color: var(--fl-text-placeholder);
-}
-
-.fl-text-yellow {
-  color: #f5a623;
-}
-
-.fl-stat-value {
+.metric-value {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--fl-text);
+  line-height: 1.2;
   font-family: 'Courier New', monospace;
 }
 
-@media (max-width: 900px) {
-  .fl-stats-row {
-    gap: 10px;
+@media (max-width: 1024px) {
+  .metric-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
-@media (max-width: 768px) {
-  .fl-stats-row {
+@media (max-width: 480px) {
+  .metric-grid {
     grid-template-columns: 1fr;
   }
 }
