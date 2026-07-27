@@ -137,10 +137,9 @@ type ProductQuery = {
 }
 
 const productTypeOptions: DictItem[] = [
-  { label: '贵金属', value: 1 },
-  { label: '理财产品', value: 2 },
-  { label: '基金', value: 3 },
-  { label: '股票', value: 4 },
+  { label: '黄金', value: 1 },
+  { label: '白银', value: 2 },
+  { label: '理财', value: 3 },
 ]
 
 const filterFields: AdminFilterField[] = [

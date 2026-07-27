@@ -45,7 +45,7 @@ export function orderStatusTag(status: number | undefined | null): string {
 }
 
 export function productTypeText(type: number | undefined | null): string {
-  const map: Record<number, string> = { 1: '贵金属', 2: '理财产品', 3: '基金', 4: '股票' }
+  const map: Record<number, string> = { 1: '黄金', 2: '白银', 3: '理财' }
   return type !== null && type !== undefined ? map[type] || '-' : '-'
 }
 

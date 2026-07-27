@@ -16,6 +16,8 @@ import com.wealth.platform.product.vo.MarketDataVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import lombok.extern.slf4j.Slf4j;
@@ -72,8 +74,8 @@ public class MarketDataController {
     @Operation(summary = "分页查询行情数据")
     @GetMapping("/page")
     public Result<IPage<MarketDataVO>> page(
-            @RequestParam(defaultValue = "1") Integer pageNum,
-            @RequestParam(defaultValue = "10") Integer pageSize,
+            @Min(1) @RequestParam(defaultValue = "1") Integer pageNum,
+            @Min(1) @Max(100) @RequestParam(defaultValue = "10") Integer pageSize,
             @RequestParam(required = false) String productCode) {
         IPage<WeaMarketData> page = marketDataService.pageWithFilter(pageNum, pageSize, productCode);
         return Result.success(BeanConvertUtil.convertPage(page, MarketDataVO.class));

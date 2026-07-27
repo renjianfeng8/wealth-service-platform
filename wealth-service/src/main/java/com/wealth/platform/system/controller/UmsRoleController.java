@@ -14,6 +14,8 @@ import com.wealth.platform.system.vo.UmsRoleVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -51,8 +53,8 @@ public class UmsRoleController {
     @Operation(summary = "分页查询角色列表")
     @GetMapping("/page")
     public Result<IPage<UmsRoleVO>> page(
-            @RequestParam(defaultValue = "1") Integer pageNum,
-            @RequestParam(defaultValue = "10") Integer pageSize,
+            @Min(1) @RequestParam(defaultValue = "1") Integer pageNum,
+            @Min(1) @Max(100) @RequestParam(defaultValue = "10") Integer pageSize,
             @RequestParam(required = false) String name,
             @RequestParam(required = false) Integer status) {
 

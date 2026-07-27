@@ -235,7 +235,7 @@ async function fetchFavorites() {
     return
   }
   try {
-    const res = await getFavoritePage({ pageNum: 1, pageSize: 200, userId: userStore.userId })
+    const res = await getFavoritePage({ pageNum: 1, pageSize: 100, userId: userStore.userId })
     const map: Record<string, number> = {}
     for (const fav of (res.data?.records || []) as WeaUserFavorite[]) {
       if (fav.productCode) map[fav.productCode] = fav.id!

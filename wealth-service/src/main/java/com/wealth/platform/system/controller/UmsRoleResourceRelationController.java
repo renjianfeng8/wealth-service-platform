@@ -16,6 +16,8 @@ import com.wealth.platform.system.vo.UmsRoleResourceRelationVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -59,8 +61,8 @@ public class UmsRoleResourceRelationController {
     @Operation(summary = "分页")
     @GetMapping("/page")
     public Result<IPage<UmsRoleResourceRelationVO>> page(
-            @RequestParam(defaultValue = "1") Integer pageNum,
-            @RequestParam(defaultValue = "10") Integer pageSize,
+            @Min(1) @RequestParam(defaultValue = "1") Integer pageNum,
+            @Min(1) @Max(100) @RequestParam(defaultValue = "10") Integer pageSize,
             @RequestParam(required = false) Long roleId) {
         IPage<UmsRoleResourceRelation> page = umsRoleResourceRelationService.pageWithFilter(pageNum, pageSize, roleId);
         return Result.success(BeanConvertUtil.convertPage(page, UmsRoleResourceRelationVO.class));

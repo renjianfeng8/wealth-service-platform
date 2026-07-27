@@ -13,6 +13,8 @@ import com.wealth.platform.product.vo.UserFavoriteVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -50,8 +52,8 @@ public class UserFavoriteController {
     @Operation(summary = "分页查询用户自选关注")
     @GetMapping("/page")
     public Result<IPage<UserFavoriteVO>> page(
-            @RequestParam(defaultValue = "1") Integer pageNum,
-            @RequestParam(defaultValue = "10") Integer pageSize,
+            @Min(1) @RequestParam(defaultValue = "1") Integer pageNum,
+            @Min(1) @Max(100) @RequestParam(defaultValue = "10") Integer pageSize,
             @RequestParam(required = false) Long userId,
             @RequestParam(required = false) String productCode) {
         IPage<WeaUserFavorite> page = userFavoriteService.pageWithFilter(pageNum, pageSize, userId, productCode);

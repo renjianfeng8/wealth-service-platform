@@ -14,6 +14,8 @@ import com.wealth.platform.message.vo.MessageVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -48,8 +50,8 @@ public class MessageController {
     @Operation(summary = "分页查询站内消息推送")
     @GetMapping("/page")
     public Result<IPage<MessageVO>> page(
-            @RequestParam(defaultValue = "1") Integer pageNum,
-            @RequestParam(defaultValue = "10") Integer pageSize,
+            @Min(1) @RequestParam(defaultValue = "1") Integer pageNum,
+            @Min(1) @Max(100) @RequestParam(defaultValue = "10") Integer pageSize,
             @RequestParam(required = false) Long userId,
             @RequestParam(required = false) String msgTitle,
             @RequestParam(required = false) Integer msgType,

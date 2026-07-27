@@ -47,7 +47,7 @@ export function useAdminDashboard() {
   }
 
   async function loadProducts() {
-    const res = await getProductPage({ pageNum: 1, pageSize: 200 })
+    const res = await getProductPage({ pageNum: 1, pageSize: 100 })
     products.value = (res.data?.records || []) as WeaProduct[]
   }
 
