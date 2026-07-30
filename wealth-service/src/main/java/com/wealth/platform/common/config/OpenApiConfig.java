@@ -22,6 +22,6 @@ public class OpenApiConfig {
                 .info(new Info()
                         .title("理财服务平台 — 单体聚合接口")
                         .description("原 6 个业务模块合并后的统一 API 文档")
-                        .version("v1.7.3"));
+                        .version("v1.8.2"));
     }
 }

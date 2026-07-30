@@ -8,6 +8,9 @@ import com.wealth.platform.user.vo.LoginVO;
 
 public interface UserService extends IService<User> {
 
+    // 新增用户（含密码加密）
+    boolean createUser(User user);
+
     // 用户注册
     Boolean register(User user);
 

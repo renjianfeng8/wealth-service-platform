@@ -17,12 +17,16 @@ import java.time.LocalDateTime;
 @TableName("ums_role")
 public class UmsRole extends BaseEntity {
 
+    @TableField("name")
     private String name;
 
+    @TableField("description")
     private String description;
 
+    @TableField("status")
     private Integer status;
 
+    @TableField("sort")
     private Integer sort;
 
     /** ums_role 表无 update_time 列 */

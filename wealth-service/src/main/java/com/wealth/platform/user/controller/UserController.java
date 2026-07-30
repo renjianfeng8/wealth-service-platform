@@ -9,11 +9,9 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -51,7 +49,6 @@ public class UserController {
     private static final int COOKIE_MAX_AGE_SECONDS = 1800;
 
     private final UserService userService;
-    private final BCryptPasswordEncoder passwordEncoder;
 
     @GetMapping("/{id}")
     @Operation(summary = "根据ID查询用户")
@@ -89,8 +86,7 @@ public class UserController {
     @AuditLog(module = "用户管理", operation = "新增用户")
     public Result<Boolean> create(@Valid @RequestBody UserDTO dto) {
         User user = BeanConvertUtil.convert(dto, User.class);
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        return Result.success(userService.save(user));
+        return Result.success(userService.createUser(user));
     }
 
     @PutMapping("/{id}")
@@ -104,9 +100,14 @@ public class UserController {
             return Result.error(ResultCode.NOT_FOUND);
         }
         BeanConvertUtil.copyNonNullProperties(dto, user);
-        user.setPassword(null); // 禁止通过更新接口修改密码
+        clearPasswordForUpdate(user);
         user.setId(id);
         return Result.success(userService.updateById(user));
+    }
+
+    /** 通用更新接口中置空密码，防止通过 update 接口修改密码 */
+    private void clearPasswordForUpdate(User user) {
+        user.setPassword(null);
     }
 
     @DeleteMapping("/{id}")
@@ -161,7 +162,7 @@ public class UserController {
         ResponseCookie cookie = ResponseCookie.from("wealth_token", loginVO.getToken())
                 .httpOnly(true)
                 .path("/")
-                .maxAge(1800)
+                .maxAge(COOKIE_MAX_AGE_SECONDS)
                 .build();
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())

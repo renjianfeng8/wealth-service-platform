@@ -51,8 +51,10 @@ public class UmsRoleController {
 
     @Operation(summary = "查询角色列表")
     @GetMapping
-    public Result<List<UmsRoleVO>> list() {
-        List<UmsRole> list = umsRoleService.page(new Page<>(1, 1000)).getRecords();
+    public Result<List<UmsRoleVO>> list(
+            @Min(1) @RequestParam(defaultValue = "1") Integer pageNum,
+            @Min(1) @Max(200) @RequestParam(defaultValue = "20") Integer pageSize) {
+        List<UmsRole> list = umsRoleService.page(new Page<>(pageNum, pageSize)).getRecords();
         return Result.success(BeanConvertUtil.convertList(list, UmsRoleVO.class));
     }
 

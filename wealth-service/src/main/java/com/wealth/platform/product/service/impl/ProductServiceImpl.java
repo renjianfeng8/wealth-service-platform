@@ -3,7 +3,7 @@ package com.wealth.platform.product.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.wealth.platform.common.base.BaseBizServiceImpl;
 import com.wealth.platform.product.dto.ProductDTO;
 import com.wealth.platform.product.entity.WeaProduct;
 import com.wealth.platform.product.mapper.ProductMapper;
@@ -16,29 +16,19 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
-public class ProductServiceImpl extends ServiceImpl<ProductMapper, WeaProduct>
+public class ProductServiceImpl extends BaseBizServiceImpl<ProductMapper, WeaProduct>
         implements ProductService {
 
     @Override
     public ProductVO getProductById(Long id) {
-        WeaProduct entity = getById(id);
-        if (entity == null) {
-            return null;
-        }
-        ProductVO vo = BeanConvertUtil.convert(entity, ProductVO.class);
-        return vo;
+        return getVoById(id, ProductVO.class);
     }
 
     @Override
     public List<ProductVO> getProductList(Integer pageNum, Integer pageSize) {
-        List<WeaProduct> list = page(new Page<>(pageNum, pageSize), new LambdaQueryWrapper<>()).getRecords();
-        return list.stream().map(entity -> {
-            ProductVO vo = BeanConvertUtil.convert(entity, ProductVO.class);
-            return vo;
-        }).collect(Collectors.toList());
+        return pageVoList(pageNum, pageSize, ProductVO.class);
     }
 
     @Override
@@ -85,21 +75,12 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, WeaProduct>
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean updateProduct(Long id, ProductDTO dto) {
-        WeaProduct entity = getById(id);
-        if (entity == null) {
-            throw new ServiceException(404, "产品不存在");
-        }
-        BeanConvertUtil.copyNonNullProperties(dto, entity);
-        entity.setId(id);
-        return updateById(entity);
+        return updateDto(id, dto, "产品");
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean deleteProduct(Long id) {
-        if (getById(id) == null) {
-            throw new ServiceException(404, "产品不存在");
-        }
-        return removeById(id);
+        return deleteWithCheck(id, "产品");
     }
 }

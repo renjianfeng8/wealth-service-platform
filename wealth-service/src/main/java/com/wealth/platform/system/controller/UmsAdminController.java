@@ -82,8 +82,10 @@ public class UmsAdminController {
 
     @GetMapping
     @Operation(summary = "列表查询")
-    public Result<List<UmsAdminVO>> list() {
-        List<UmsAdmin> list = umsAdminService.page(new Page<>(1, 1000)).getRecords();
+    public Result<List<UmsAdminVO>> list(
+            @Min(1) @RequestParam(defaultValue = "1") Integer pageNum,
+            @Min(1) @Max(200) @RequestParam(defaultValue = "20") Integer pageSize) {
+        List<UmsAdmin> list = umsAdminService.page(new Page<>(pageNum, pageSize)).getRecords();
         return Result.success(BeanConvertUtil.convertList(list, UmsAdminVO.class));
     }
 
@@ -117,7 +119,7 @@ public class UmsAdminController {
             return Result.error(ResultCode.NOT_FOUND);
         }
         BeanConvertUtil.copyNonNullProperties(dto, existing);
-        existing.setPassword(null); // 禁止通过通用更新接口修改密码
+        clearPasswordForUpdate(existing);
         existing.setId(id);
         return Result.success(umsAdminService.updateById(existing));
     }
@@ -155,5 +157,10 @@ public class UmsAdminController {
     @AntiReplay
     public Result<Boolean> resetPassword(@Valid @RequestBody UmsAdminResetPasswordDTO dto) {
         return Result.success(umsAdminService.resetPassword(dto.getId(), dto.getOldPassword(), dto.getPassword()));
+    }
+
+    /** 通用更新接口中置空密码，防止通过 update 接口修改密码 */
+    private void clearPasswordForUpdate(UmsAdmin admin) {
+        admin.setPassword(null);
     }
 }

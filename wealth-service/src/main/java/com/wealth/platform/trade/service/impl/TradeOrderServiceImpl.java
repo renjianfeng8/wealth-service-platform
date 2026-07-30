@@ -3,7 +3,7 @@ package com.wealth.platform.trade.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.wealth.platform.common.base.BaseBizServiceImpl;
 import com.wealth.common.contract.DashboardTradeOrderProvider;
 import com.wealth.common.contract.MessageService;
 import com.wealth.common.dto.DashboardTradeOrderDTO;
@@ -13,10 +13,6 @@ import com.wealth.common.utils.BeanConvertUtil;
 import com.wealth.common.utils.RedisUtil;
 import com.wealth.common.utils.LikeUtil;
 import com.wealth.platform.trade.constant.OrderStatusEnum;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.dao.DataAccessException;
 import com.wealth.platform.trade.dto.TradeOrderDTO;
 import com.wealth.platform.trade.dto.TradeOrderStatusDTO;
 import com.wealth.platform.trade.entity.WeaTradeOrder;
@@ -24,6 +20,9 @@ import com.wealth.platform.trade.mapper.TradeOrderMapper;
 import com.wealth.platform.trade.service.TradeOrderService;
 import com.wealth.platform.trade.vo.TradeOrderVO;
 
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -35,11 +34,11 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
-public class TradeOrderServiceImpl extends ServiceImpl<TradeOrderMapper, WeaTradeOrder>
+public class TradeOrderServiceImpl extends BaseBizServiceImpl<TradeOrderMapper, WeaTradeOrder>
         implements TradeOrderService, DashboardTradeOrderProvider {
 
-    private static final Logger log = LoggerFactory.getLogger(TradeOrderServiceImpl.class);
     private static final String IDEMPOTENT_KEY_PREFIX = "idempotent:trade:";
     private static final long IDEMPOTENT_TTL_HOURS = 24;
 
@@ -53,21 +52,12 @@ public class TradeOrderServiceImpl extends ServiceImpl<TradeOrderMapper, WeaTrad
 
     @Override
     public TradeOrderVO getOrderById(Long id) {
-        WeaTradeOrder order = getById(id);
-        if (order == null) {
-            return null;
-        }
-        TradeOrderVO vo = BeanConvertUtil.convert(order, TradeOrderVO.class);
-        return vo;
+        return getVoById(id, TradeOrderVO.class);
     }
 
     @Override
     public List<TradeOrderVO> getOrderList(Integer pageNum, Integer pageSize) {
-        List<WeaTradeOrder> list = page(new Page<>(pageNum, pageSize), new LambdaQueryWrapper<>()).getRecords();
-        return list.stream().map(order -> {
-            TradeOrderVO vo = BeanConvertUtil.convert(order, TradeOrderVO.class);
-            return vo;
-        }).collect(Collectors.toList());
+        return pageVoList(pageNum, pageSize, TradeOrderVO.class);
     }
 
     @Override
@@ -136,13 +126,7 @@ public class TradeOrderServiceImpl extends ServiceImpl<TradeOrderMapper, WeaTrad
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean updateOrder(Long id, TradeOrderDTO dto) {
-        WeaTradeOrder order = getById(id);
-        if (order == null) {
-            throw new ServiceException(404, "订单不存在");
-        }
-        BeanConvertUtil.copyNonNullProperties(dto, order);
-        order.setId(id);
-        return updateById(order);
+        return updateDto(id, dto, "订单");
     }
 
     @Override
@@ -170,10 +154,7 @@ public class TradeOrderServiceImpl extends ServiceImpl<TradeOrderMapper, WeaTrad
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean deleteOrder(Long id) {
-        if (getById(id) == null) {
-            throw new ServiceException(404, "订单不存在");
-        }
-        return removeById(id);
+        return deleteWithCheck(id, "订单");
     }
 
     /**

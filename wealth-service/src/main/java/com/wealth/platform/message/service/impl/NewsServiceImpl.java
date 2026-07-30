@@ -3,7 +3,7 @@ package com.wealth.platform.message.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.wealth.platform.common.base.BaseBizServiceImpl;
 import com.wealth.common.exception.ServiceException;
 import com.wealth.common.utils.BeanConvertUtil;
 import com.wealth.common.utils.LikeUtil;
@@ -17,29 +17,19 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
-public class NewsServiceImpl extends ServiceImpl<NewsMapper, WeaNews>
+public class NewsServiceImpl extends BaseBizServiceImpl<NewsMapper, WeaNews>
         implements NewsService {
 
     @Override
     public NewsVO getNewsById(Long id) {
-        WeaNews entity = getById(id);
-        if (entity == null) {
-            return null;
-        }
-        NewsVO vo = BeanConvertUtil.convert(entity, NewsVO.class);
-        return vo;
+        return getVoById(id, NewsVO.class);
     }
 
     @Override
     public List<NewsVO> getNewsList(Integer pageNum, Integer pageSize) {
-        List<WeaNews> list = page(new Page<>(pageNum, pageSize), new LambdaQueryWrapper<>()).getRecords();
-        return list.stream().map(entity -> {
-            NewsVO vo = BeanConvertUtil.convert(entity, NewsVO.class);
-            return vo;
-        }).collect(Collectors.toList());
+        return pageVoList(pageNum, pageSize, NewsVO.class);
     }
 
     @Override
@@ -72,21 +62,12 @@ public class NewsServiceImpl extends ServiceImpl<NewsMapper, WeaNews>
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean updateNews(Long id, NewsDTO dto) {
-        WeaNews entity = getById(id);
-        if (entity == null) {
-            throw new ServiceException(404, "资讯不存在");
-        }
-        BeanConvertUtil.copyNonNullProperties(dto, entity);
-        entity.setId(id);
-        return updateById(entity);
+        return updateDto(id, dto, "资讯");
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean deleteNews(Long id) {
-        if (getById(id) == null) {
-            throw new ServiceException(404, "资讯不存在");
-        }
-        return removeById(id);
+        return deleteWithCheck(id, "资讯");
     }
 }

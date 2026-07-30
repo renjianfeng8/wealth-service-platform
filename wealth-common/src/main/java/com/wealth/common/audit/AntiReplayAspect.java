@@ -5,11 +5,10 @@ import com.wealth.common.utils.JwtUtil;
 import com.wealth.common.utils.RedisUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -24,12 +23,12 @@ import java.util.concurrent.TimeUnit;
  * 2. X-Nonce 在 Redis 中是否已存在（防重复提交，按用户隔离）
  * 不传 X-Timestamp/X-Nonce 头的旧客户端仍可正常访问（兼容降级）。
  */
+@Slf4j
 @Aspect
 @Component
 @RequiredArgsConstructor
 public class AntiReplayAspect {
 
-    private static final Logger log = LoggerFactory.getLogger(AntiReplayAspect.class);
     private static final String NONCE_KEY_PREFIX = "nonce:";
 
     private final ObjectProvider<RedisUtil> redisUtilProvider;

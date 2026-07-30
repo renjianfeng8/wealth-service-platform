@@ -2,21 +2,17 @@ package com.wealth.platform.system.interceptor;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wealth.common.utils.JwtUtil;
-import com.wealth.common.utils.RedisUtil;
-import com.wealth.platform.system.service.UmsAdminRoleRelationService;
+import com.wealth.platform.system.service.PermissionCacheService;
 import com.wealth.platform.system.service.UmsAdminService;
-import com.wealth.platform.system.service.UmsRoleResourceRelationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class PermissionInterceptorTest {
@@ -28,22 +24,14 @@ class PermissionInterceptorTest {
     private UmsAdminService adminService;
 
     @Mock
-    private UmsAdminRoleRelationService adminRoleRelationService;
-
-    @Mock
-    private UmsRoleResourceRelationService roleResourceRelationService;
-
-    @Mock
-    private ObjectProvider<RedisUtil> redisUtilProvider;
+    private PermissionCacheService permissionCacheService;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     private PermissionInterceptor interceptor;
 
     @BeforeEach
     void setUp() {
-        when(redisUtilProvider.getIfAvailable()).thenReturn(null);
-        interceptor = new PermissionInterceptor(jwtUtil, adminService, adminRoleRelationService,
-                roleResourceRelationService, redisUtilProvider, objectMapper);
+        interceptor = new PermissionInterceptor(jwtUtil, adminService, permissionCacheService, objectMapper);
     }
 
     @Test

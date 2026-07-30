@@ -30,6 +30,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    public boolean createUser(User user) {
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        return save(user);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
     public Boolean register(User user) {
         if (!StringUtils.hasText(user.getUsername()) || !StringUtils.hasText(user.getPassword())) {
             throw new ServiceException(400, "用户名/密码不能为空");

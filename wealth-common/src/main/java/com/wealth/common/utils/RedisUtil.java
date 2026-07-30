@@ -1,13 +1,17 @@
 package com.wealth.common.utils;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
+@Slf4j
 @Component
 @ConditionalOnClass(name = "org.springframework.data.redis.core.RedisTemplate")
 public class RedisUtil {
@@ -58,5 +62,36 @@ public class RedisUtil {
     /** 原子自增，返回自增后的值 */
     public Long increment(String key) {
         return redisTemplate.opsForValue().increment(key);
+    }
+
+    /**
+     * 安全执行 Redis 操作，当 Redis 不可用时记录警告并返回默认值。
+     *
+     * @param operation Redis 操作
+     * @param fallback  Redis 不可用时返回的默认值
+     * @param warnMsg  警告日志中的操作描述
+     * @param <T>      返回值类型
+     */
+    public <T> T safeExecute(Supplier<T> operation, T fallback, String warnMsg) {
+        try {
+            return operation.get();
+        } catch (DataAccessException e) {
+            log.warn("Redis 不可用，{}: {}", warnMsg, e.getMessage());
+            return fallback;
+        }
+    }
+
+    /**
+     * 安全执行 Redis 操作，无需返回值。
+     *
+     * @param operation Redis 操作
+     * @param warnMsg   警告日志中的操作描述
+     */
+    public void safeExecuteVoid(Runnable operation, String warnMsg) {
+        try {
+            operation.run();
+        } catch (DataAccessException e) {
+            log.warn("Redis 不可用，{}: {}", warnMsg, e.getMessage());
+        }
     }
 }

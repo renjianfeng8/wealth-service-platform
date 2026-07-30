@@ -3,7 +3,7 @@ package com.wealth.platform.product.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.wealth.platform.common.base.BaseBizServiceImpl;
 import com.wealth.common.exception.ServiceException;
 import com.wealth.common.utils.BeanConvertUtil;
 import com.wealth.common.utils.LikeUtil;
@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
  * 用户自选关注表业务层实现（从 wealth-account 迁移合并）
  */
 @Service
-public class UserFavoriteServiceImpl extends ServiceImpl<UserFavoriteMapper, WeaUserFavorite>
+public class UserFavoriteServiceImpl extends BaseBizServiceImpl<UserFavoriteMapper, WeaUserFavorite>
         implements UserFavoriteService {
 
     @Override
@@ -42,11 +42,7 @@ public class UserFavoriteServiceImpl extends ServiceImpl<UserFavoriteMapper, Wea
 
     @Override
     public UserFavoriteVO getFavoriteById(Long id) {
-        WeaUserFavorite entity = getById(id);
-        if (entity == null) {
-            return null;
-        }
-        return BeanConvertUtil.convert(entity, UserFavoriteVO.class);
+        return getVoById(id, UserFavoriteVO.class);
     }
 
     @Override
@@ -78,13 +74,7 @@ public class UserFavoriteServiceImpl extends ServiceImpl<UserFavoriteMapper, Wea
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean updateFavorite(Long id, UserFavoriteDTO dto) {
-        WeaUserFavorite entity = getById(id);
-        if (entity == null) {
-            throw new ServiceException(404, "自选关注不存在");
-        }
-        BeanConvertUtil.copyNonNullProperties(dto, entity);
-        entity.setId(id);
-        return updateById(entity);
+        return updateDto(id, dto, "自选关注");
     }
 
     @Override

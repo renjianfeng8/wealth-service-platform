@@ -3,7 +3,7 @@ package com.wealth.platform.message.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.wealth.platform.common.base.BaseBizServiceImpl;
 import com.wealth.common.dto.MessageFeignDTO;
 import com.wealth.common.exception.ServiceException;
 import com.wealth.common.utils.BeanConvertUtil;
@@ -18,26 +18,19 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
-public class MessageServiceImpl extends ServiceImpl<MessageMapper, WeaMessage>
+public class MessageServiceImpl extends BaseBizServiceImpl<MessageMapper, WeaMessage>
         implements MessageService, com.wealth.common.contract.MessageService {
 
     @Override
     public MessageVO getMessageById(Long id) {
-        WeaMessage entity = getById(id);
-        if (entity == null) {
-            return null;
-        }
-        return BeanConvertUtil.convert(entity, MessageVO.class);
+        return getVoById(id, MessageVO.class);
     }
 
     @Override
     public List<MessageVO> getMessageList(Integer pageNum, Integer pageSize) {
-        List<WeaMessage> list = page(new Page<>(pageNum, pageSize), new LambdaQueryWrapper<>()).getRecords();
-        return list.stream().map(entity -> BeanConvertUtil.convert(entity, MessageVO.class))
-                .collect(Collectors.toList());
+        return pageVoList(pageNum, pageSize, MessageVO.class);
     }
 
     @Override
@@ -51,13 +44,7 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, WeaMessage>
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean updateMessage(Long id, MessageDTO dto) {
-        WeaMessage entity = getById(id);
-        if (entity == null) {
-            throw new ServiceException(404, "消息不存在");
-        }
-        BeanConvertUtil.copyNonNullProperties(dto, entity);
-        entity.setId(id);
-        return updateById(entity);
+        return updateDto(id, dto, "消息");
     }
 
     @Override
@@ -101,10 +88,7 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, WeaMessage>
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean deleteMessage(Long id) {
-        if (getById(id) == null) {
-            throw new ServiceException(404, "消息不存在");
-        }
-        return removeById(id);
+        return deleteWithCheck(id, "消息");
     }
 
     @Override
