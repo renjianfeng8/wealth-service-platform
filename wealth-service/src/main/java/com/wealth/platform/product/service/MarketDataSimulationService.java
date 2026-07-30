@@ -6,6 +6,7 @@ import com.wealth.platform.product.mapper.MarketDataMapper;
 import com.wealth.platform.product.vo.MarketDataVO;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -24,6 +25,7 @@ import java.util.Random;
  */
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class MarketDataSimulationService {
 
     private final MarketDataMapper marketDataMapper;
@@ -36,12 +38,6 @@ public class MarketDataSimulationService {
 
     private volatile List<WeaMarketData> cachedMarketData;
     private final Random random = new Random();
-
-    public MarketDataSimulationService(MarketDataMapper marketDataMapper,
-                                        MarketDataPushService pushService) {
-        this.marketDataMapper = marketDataMapper;
-        this.pushService = pushService;
-    }
 
     @PostConstruct
     public void init() {

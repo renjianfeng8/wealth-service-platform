@@ -80,7 +80,7 @@ public class UserFavoriteServiceImpl extends ServiceImpl<UserFavoriteMapper, Wea
     public boolean updateFavorite(Long id, UserFavoriteDTO dto) {
         WeaUserFavorite entity = getById(id);
         if (entity == null) {
-            throw new ServiceException(404, "favorite not found");
+            throw new ServiceException(404, "自选关注不存在");
         }
         BeanConvertUtil.copyNonNullProperties(dto, entity);
         entity.setId(id);
@@ -91,7 +91,7 @@ public class UserFavoriteServiceImpl extends ServiceImpl<UserFavoriteMapper, Wea
     @Transactional(rollbackFor = Exception.class)
     public boolean deleteFavorite(Long id) {
         if (getById(id) == null) {
-            throw new ServiceException(404, "favorite not found");
+            throw new ServiceException(404, "自选关注不存在");
         }
         return removeById(id);
     }

@@ -171,7 +171,7 @@ public class TradeOrderServiceImpl extends ServiceImpl<TradeOrderMapper, WeaTrad
     @Transactional(rollbackFor = Exception.class)
     public boolean deleteOrder(Long id) {
         if (getById(id) == null) {
-            throw new ServiceException(404, "order not found");
+            throw new ServiceException(404, "订单不存在");
         }
         return removeById(id);
     }

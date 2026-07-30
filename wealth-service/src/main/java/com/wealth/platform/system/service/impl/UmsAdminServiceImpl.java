@@ -22,8 +22,8 @@ import com.wealth.platform.system.service.UmsAdminRoleRelationService;
 import com.wealth.platform.system.service.UmsAdminService;
 import com.wealth.platform.system.service.UmsResourceService;
 import com.wealth.platform.system.service.UmsRoleResourceRelationService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
+import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.stereotype.Service;
@@ -37,11 +37,11 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
+@RequiredArgsConstructor
 public class UmsAdminServiceImpl extends ServiceImpl<UmsAdminMapper, UmsAdmin>
         implements UmsAdminService, AdminIdentityProvider {
-
-    private static final Logger log = LoggerFactory.getLogger(UmsAdminServiceImpl.class);
 
     /** 最大登录失败次数 */
     private static final int MAX_LOGIN_ATTEMPTS = 5;
@@ -66,19 +66,6 @@ public class UmsAdminServiceImpl extends ServiceImpl<UmsAdminMapper, UmsAdmin>
     private final UmsRoleResourceRelationService roleResourceRelationService;
     private final BCryptPasswordEncoder passwordEncoder;
     private final RedisUtil redisUtil;
-
-    public UmsAdminServiceImpl(JwtUtil jwtUtil, UmsResourceService resourceService,
-                               UmsAdminRoleRelationService adminRoleRelationService,
-                               UmsRoleResourceRelationService roleResourceRelationService,
-                               BCryptPasswordEncoder passwordEncoder,
-                               RedisUtil redisUtil) {
-        this.jwtUtil = jwtUtil;
-        this.resourceService = resourceService;
-        this.adminRoleRelationService = adminRoleRelationService;
-        this.roleResourceRelationService = roleResourceRelationService;
-        this.passwordEncoder = passwordEncoder;
-        this.redisUtil = redisUtil;
-    }
 
     @Override
     public TokenPair login(LoginDTO dto) {

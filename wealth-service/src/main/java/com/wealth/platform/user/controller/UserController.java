@@ -1,5 +1,30 @@
 package com.wealth.platform.user.controller;
 
+import java.util.List;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotEmpty;
+import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.wealth.common.audit.AntiReplay;
@@ -8,40 +33,22 @@ import com.wealth.common.dto.LoginDTO;
 import com.wealth.common.result.Result;
 import com.wealth.common.result.ResultCode;
 import com.wealth.common.utils.BeanConvertUtil;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseCookie;
-import org.springframework.http.ResponseEntity;
 import com.wealth.platform.user.dto.ResetPasswordDTO;
 import com.wealth.platform.user.dto.UserDTO;
 import com.wealth.platform.user.entity.User;
 import com.wealth.platform.user.service.UserService;
-import com.wealth.platform.user.vo.UserVO;
 import com.wealth.platform.user.vo.LoginVO;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotEmpty;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
-
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import java.util.List;
+import com.wealth.platform.user.vo.UserVO;
 
 @RestController
 @Tag(name = "系统用户管理", description = "系统用户相关接口")
 @RequestMapping("/user")
 @Validated
+@RequiredArgsConstructor
 public class UserController {
 
     private final UserService userService;
     private final BCryptPasswordEncoder passwordEncoder;
-
-    public UserController(UserService userService, BCryptPasswordEncoder passwordEncoder) {
-        this.userService = userService;
-        this.passwordEncoder = passwordEncoder;
-    }
 
     @GetMapping("/{id}")
     @Operation(summary = "根据ID查询用户")

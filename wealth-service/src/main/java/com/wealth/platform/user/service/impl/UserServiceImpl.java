@@ -14,23 +14,19 @@ import com.wealth.platform.user.entity.User;
 import com.wealth.platform.user.mapper.UserMapper;
 import com.wealth.platform.user.service.UserService;
 import com.wealth.platform.user.vo.LoginVO;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.util.StringUtils;
 
 @Service
+@RequiredArgsConstructor
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
 
     private final JwtUtil jwtUtil;
     private final BCryptPasswordEncoder passwordEncoder;
     private final AdminIdentityProvider adminIdentityProvider;
-
-    public UserServiceImpl(JwtUtil jwtUtil, BCryptPasswordEncoder passwordEncoder, AdminIdentityProvider adminIdentityProvider) {
-        this.jwtUtil = jwtUtil;
-        this.passwordEncoder = passwordEncoder;
-        this.adminIdentityProvider = adminIdentityProvider;
-    }
 
     @Override
     @Transactional(rollbackFor = Exception.class)

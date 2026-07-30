@@ -19,11 +19,21 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
@@ -31,16 +41,11 @@ import java.util.List;
 @RequestMapping("/system/umsAdmin")
 @Tag(name = "后台管理员管理")
 @Validated
+@RequiredArgsConstructor
 public class UmsAdminController {
 
     private final UmsAdminService umsAdminService;
     private final com.wealth.common.utils.JwtUtil jwtUtil;
-
-    public UmsAdminController(UmsAdminService umsAdminService,
-                              com.wealth.common.utils.JwtUtil jwtUtil) {
-        this.umsAdminService = umsAdminService;
-        this.jwtUtil = jwtUtil;
-    }
 
     @PostMapping("/login")
     @Operation(summary = "管理员登录（返回 access_token + refresh_token）")

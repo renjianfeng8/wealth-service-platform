@@ -74,7 +74,7 @@ public class NewsServiceImpl extends ServiceImpl<NewsMapper, WeaNews>
     public boolean updateNews(Long id, NewsDTO dto) {
         WeaNews entity = getById(id);
         if (entity == null) {
-            throw new ServiceException(404, "news not found");
+            throw new ServiceException(404, "资讯不存在");
         }
         BeanConvertUtil.copyNonNullProperties(dto, entity);
         entity.setId(id);
@@ -85,7 +85,7 @@ public class NewsServiceImpl extends ServiceImpl<NewsMapper, WeaNews>
     @Transactional(rollbackFor = Exception.class)
     public boolean deleteNews(Long id) {
         if (getById(id) == null) {
-            throw new ServiceException(404, "news not found");
+            throw new ServiceException(404, "资讯不存在");
         }
         return removeById(id);
     }

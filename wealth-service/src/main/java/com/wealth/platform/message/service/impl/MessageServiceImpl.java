@@ -102,7 +102,7 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, WeaMessage>
     @Transactional(rollbackFor = Exception.class)
     public boolean deleteMessage(Long id) {
         if (getById(id) == null) {
-            throw new ServiceException(404, "message not found");
+            throw new ServiceException(404, "消息不存在");
         }
         return removeById(id);
     }

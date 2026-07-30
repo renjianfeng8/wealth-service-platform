@@ -98,7 +98,7 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, WeaProduct>
     @Transactional(rollbackFor = Exception.class)
     public boolean deleteProduct(Long id) {
         if (getById(id) == null) {
-            throw new ServiceException(404, "product not found");
+            throw new ServiceException(404, "产品不存在");
         }
         return removeById(id);
     }

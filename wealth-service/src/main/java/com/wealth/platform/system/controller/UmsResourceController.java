@@ -16,8 +16,17 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
@@ -28,18 +37,10 @@ import java.util.List;
 @Tag(name = "资源管理", description = "ums_resource 后台资源相关接口")
 @RequestMapping("/system/umsResource")
 @Validated
+@RequiredArgsConstructor
 public class UmsResourceController {
 
     private final UmsResourceService umsResourceService;
-
-    /**
-     * 后台资源表控制器构造器。
-     *
-     * @param umsResourceService 后台资源业务服务
-     */
-    public UmsResourceController(UmsResourceService umsResourceService) {
-        this.umsResourceService = umsResourceService;
-    }
 
     /**
      * 根据 ID 查询后台资源信息。

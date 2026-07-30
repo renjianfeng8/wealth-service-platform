@@ -3,6 +3,7 @@ package com.wealth.common.audit;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wealth.common.utils.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -26,6 +27,7 @@ import java.util.stream.Collectors;
  */
 @Aspect
 @Component
+@RequiredArgsConstructor
 public class AuditLogAspect {
 
     private static final Logger auditLog = LoggerFactory.getLogger("AUDIT_LOG");
@@ -36,10 +38,6 @@ public class AuditLogAspect {
     private static final String[] SENSITIVE_KEYS = {"password", "secret", "token", "idempotentKey"};
 
     private final JwtUtil jwtUtil;
-
-    public AuditLogAspect(JwtUtil jwtUtil) {
-        this.jwtUtil = jwtUtil;
-    }
 
     @Around("@annotation(auditLog)")
     public Object around(ProceedingJoinPoint joinPoint, AuditLog auditLog) throws Throwable {

@@ -8,21 +8,18 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import lombok.RequiredArgsConstructor;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 @Slf4j
+@RequiredArgsConstructor
 public class LoginInterceptor implements HandlerInterceptor {
 
     private static final String TOKEN_COOKIE_NAME = "wealth_token";
 
     private final JwtUtil jwtUtil;
     private final ObjectMapper objectMapper;
-
-    public LoginInterceptor(JwtUtil jwtUtil, ObjectMapper objectMapper) {
-        this.jwtUtil = jwtUtil;
-        this.objectMapper = objectMapper;
-    }
 
     private static final AntPathMatcher PATH_MATCHER = new AntPathMatcher();
 

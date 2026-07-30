@@ -1,5 +1,14 @@
 package com.wealth.platform.product.service.impl;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -7,20 +16,13 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.wealth.common.contract.DashboardMarketDataProvider;
 import com.wealth.common.dto.DashboardMarketDataDTO;
 import com.wealth.common.exception.ServiceException;
+import com.wealth.common.utils.BeanConvertUtil;
+import com.wealth.common.utils.LikeUtil;
 import com.wealth.platform.product.dto.MarketDataDTO;
 import com.wealth.platform.product.entity.WeaMarketData;
 import com.wealth.platform.product.mapper.MarketDataMapper;
 import com.wealth.platform.product.service.MarketDataService;
 import com.wealth.platform.product.vo.MarketDataVO;
-import com.wealth.common.utils.LikeUtil;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
-import com.wealth.common.utils.BeanConvertUtil;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class MarketDataServiceImpl extends ServiceImpl<MarketDataMapper, WeaMarketData>
@@ -57,7 +59,7 @@ public class MarketDataServiceImpl extends ServiceImpl<MarketDataMapper, WeaMark
     public boolean updateMarketData(Long id, MarketDataDTO dto) {
         WeaMarketData entity = getById(id);
         if (entity == null) {
-            throw new ServiceException(404, "market data not found");
+            throw new ServiceException(404, "行情数据不存在");
         }
         BeanConvertUtil.copyNonNullProperties(dto, entity);
         entity.setId(id);
@@ -68,7 +70,7 @@ public class MarketDataServiceImpl extends ServiceImpl<MarketDataMapper, WeaMark
     @Transactional(rollbackFor = Exception.class)
     public boolean deleteMarketData(Long id) {
         if (getById(id) == null) {
-            throw new ServiceException(404, "market data not found");
+            throw new ServiceException(404, "行情数据不存在");
         }
         return removeById(id);
     }

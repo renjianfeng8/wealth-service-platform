@@ -97,8 +97,14 @@ public class GlobalExceptionHandler {
         try {
             response.getOutputStream().write(body);
         } catch (IllegalStateException ex) {
-            try { response.getWriter().write(new String(body, StandardCharsets.UTF_8)); } catch (IOException ignored) {}
-        } catch (IOException ignored) {}
+            try {
+                response.getWriter().write(new String(body, StandardCharsets.UTF_8));
+            } catch (IOException e2) {
+                log.warn("通过 Writer 写入错误响应也失败", e2);
+            }
+        } catch (IOException e2) {
+            log.warn("通过 OutputStream 写入错误响应失败", e2);
+        }
     }
 
     @ExceptionHandler(Exception.class)

@@ -4,6 +4,7 @@ import com.wealth.common.exception.ServiceException;
 import com.wealth.common.utils.JwtUtil;
 import com.wealth.common.utils.RedisUtil;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -25,6 +26,7 @@ import java.util.concurrent.TimeUnit;
  */
 @Aspect
 @Component
+@RequiredArgsConstructor
 public class AntiReplayAspect {
 
     private static final Logger log = LoggerFactory.getLogger(AntiReplayAspect.class);
@@ -32,12 +34,6 @@ public class AntiReplayAspect {
 
     private final ObjectProvider<RedisUtil> redisUtilProvider;
     private final ObjectProvider<JwtUtil> jwtUtilProvider;
-
-    public AntiReplayAspect(ObjectProvider<RedisUtil> redisUtilProvider,
-                            ObjectProvider<JwtUtil> jwtUtilProvider) {
-        this.redisUtilProvider = redisUtilProvider;
-        this.jwtUtilProvider = jwtUtilProvider;
-    }
 
     @Around("@annotation(antiReplay)")
     public Object around(ProceedingJoinPoint joinPoint, AntiReplay antiReplay) throws Throwable {
