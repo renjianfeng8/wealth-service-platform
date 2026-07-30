@@ -205,16 +205,18 @@ CREATE TABLE ums_admin (
     nick_name   VARCHAR(200) DEFAULT NULL            COMMENT '昵称',
     status      TINYINT      DEFAULT NULL            COMMENT '账号启用状态 0禁用 1启用',
     create_time DATETIME     DEFAULT NULL            COMMENT '创建时间',
+    update_time DATETIME     DEFAULT NULL            COMMENT '更新时间',
     login_time  DATETIME     DEFAULT NULL            COMMENT '最后登录时间',
     avatar      VARCHAR(500) DEFAULT NULL            COMMENT '头像',
     del_flag    INT          DEFAULT '0'             COMMENT '逻辑删除 0未删除 1已删除',
-    PRIMARY KEY (id)
+    PRIMARY KEY (id),
+    UNIQUE KEY idx_ums_admin_username (username)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='后台用户表';
 ```
 
-> **注意**：本表无 `update_time` 列，Entity 中 `updateTime` 必须标注 `@TableField(exist = false)`。`nick_name` 列含下划线，Java 字段 `nickName` 配合 `map-underscore-to-camel-case` 自动映射。
+> **注意**：`nick_name` 列含下划线，Java 字段 `nickName` 配合 `map-underscore-to-camel-case` 自动映射。
 
-**Entity**: `UmsAdmin` — 继承 BaseEntity，覆盖 `updateTime` 为 `exist = false`。
+**Entity**: `UmsAdmin` — 继承 BaseEntity。
 
 ### 9. 角色表（ums_role）
 

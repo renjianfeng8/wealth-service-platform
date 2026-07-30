@@ -68,10 +68,10 @@ front/
 
 ## 架构演进
 
-v1.7.3 完成模块合并，6 个独立微服务合并为单一的 `wealth-service`，保留 Gateway 网关层：
+v1.8.0 完成模块合并，6 个独立微服务合并为单一的 `wealth-service`，保留 Gateway 网关层：
 
 ```
-v1.7.2 (微服务)                  v1.7.3+ (单体聚合)
+v1.7.2 (微服务)                  v1.8.0+ (单体聚合)
 wealth-system (8082)             
 wealth-user   (8083)             
 wealth-product (8084)            →  wealth-service (8081)

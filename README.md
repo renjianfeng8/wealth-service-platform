@@ -45,6 +45,7 @@
 - [启动指南](docs/STARTUP.md)：本地环境、依赖服务、启动顺序和冒烟验证。
 - [架构文档](docs/ARCHITECTURE.md)：模块、路由、配置体系和部署结构。
 - [数据库结构](docs/DATABASE-SCHEMA.md)：表结构、字段和 Entity 生成依据。
+- [代码规范手册](docs/CODE-STANDARDS.md)：编码规范与审计清单。
 
 ---
 
@@ -102,15 +103,14 @@ wealth-gateway (8080)             →   wealth-gateway (8080)
 |------|------|------|
 | JDK | 21 | 长期支持版本 |
 | Spring Boot | 3.3.13 | 应用基础框架 |
-| Spring Cloud | 2023.0.6 | 微服务组件 |
 | MyBatis-Plus | 3.5.9 | ORM 框架 |
 | MySQL | 8.0 | 关系型数据库 |
 | Redis | 5+ | 缓存、权限、暴力破解锁定 |
-| Elasticsearch | 8.8.2 | 全文检索（可选，支持降级） |
-| Knife4j | 4.5.0 | API 文档（OpenAPI） |
 | JWT (jjwt) | 0.12.6 | 无状态认证 |
+| Knife4j | 4.5.0 | API 文档 |
 | Sentinel | 1.8.8 | 限流熔断 |
-| Micrometer Tracing | 1.3.6 | 全链路追踪 |
+
+> 完整技术栈（含 Tracing、Prometheus、ES）见 [CLAUDE.md](CLAUDE.md#二技术栈)。
 
 ### 前端
 
@@ -124,15 +124,17 @@ wealth-gateway (8080)             →   wealth-gateway (8080)
 
 ### 中间件
 
-| 服务 | 端口 | 部署方式 |
-|------|:----:|----------|
-| MySQL | 3306 | Docker / 本地 |
-| Redis | 6379 | Docker |
-| Nginx | 80 | Docker |
-| Elasticsearch | 9200 | Docker（可选）|
-| Prometheus | 9090 | Docker |
-| Grafana | 3001 | Docker |
-| Zipkin | 9411 | Docker（可选）|
+| 服务 | 端口 |
+|------|:----:|
+| MySQL | 3306 |
+| Redis | 6379 |
+| Nginx | 80 |
+| Elasticsearch | 9200（可选）|
+| Prometheus | 9090 |
+| Grafana | 3001 |
+| Zipkin | 9411（可选）|
+
+> 部署方式与详细说明见 [STARTUP.md](docs/STARTUP.md)。
 
 ---
 
@@ -345,8 +347,7 @@ docker-compose up -d
 | [CHANGELOG.md](docs/CHANGELOG.md) | 版本变更记录 |
 | [BUG.md](docs/BUG.md) | 已知问题与排查 |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | 贡献指南 |
-| [CLAUDE.md](CLAUDE.md) | 开发规范 |
-| [AGENTS.md](AGENTS.md) | 开发规范 |
+| [CLAUDE.md](CLAUDE.md) | 项目开发规范 |
 
 ---
 
