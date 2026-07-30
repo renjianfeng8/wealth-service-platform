@@ -22,7 +22,7 @@ public class ProductDTO {
     private String productCode;
 
     @Min(value = 0, message = "产品类型不能小于0")
-    @Max(value = 999, message = "产品类型不能大于999")
+    @Max(value = 127, message = "产品类型不能大于127")
     @Schema(description = "产品类型")
     private Integer productType;
 

@@ -24,6 +24,7 @@ import com.wealth.platform.system.service.UmsResourceService;
 import com.wealth.platform.system.service.UmsRoleResourceRelationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,6 +32,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.util.StringUtils;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -121,7 +123,11 @@ public class UmsAdminServiceImpl extends ServiceImpl<UmsAdminMapper, UmsAdmin>
         // 5. 登录成功，清除失败记录
         clearFailedAttempts(dto.getUsername());
 
-        // 6. 生成双 Token（access_token + refresh_token）
+        // 6. 更新最后登录时间
+        admin.setLoginTime(LocalDateTime.now());
+        updateById(admin);
+
+        // 7. 生成双 Token（access_token + refresh_token）
         TokenPair pair = jwtUtil.generateTokenPair(admin.getUsername());
         // 将 refresh_token 的 jti 存入 Redis（TTL 7 天），Redis 不可用时不阻塞登录
         String jti = jwtUtil.getTokenIdFromToken(pair.refreshToken());
@@ -326,7 +332,11 @@ public class UmsAdminServiceImpl extends ServiceImpl<UmsAdminMapper, UmsAdmin>
             throw new ServiceException(400, "管理员用户名已存在");
         }
         admin.setPassword(passwordEncoder.encode(admin.getPassword()));
-        return save(admin);
+        try {
+            return save(admin);
+        } catch (DataIntegrityViolationException e) {
+            throw new ServiceException(400, "管理员用户名已存在");
+        }
     }
 
     @Override

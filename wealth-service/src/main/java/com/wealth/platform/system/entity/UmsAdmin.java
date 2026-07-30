@@ -31,7 +31,4 @@ public class UmsAdmin extends BaseEntity {
 
     private LocalDateTime loginTime;
 
-    /** ums_admin 表无 update_time 列 */
-    @TableField(exist = false)
-    private LocalDateTime updateTime;
 }

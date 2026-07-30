@@ -85,6 +85,7 @@ class UmsAdminServiceImplTest {
 
         TokenPair mockPair = new TokenPair("access.token", "refresh.token", 1800000);
         when(passwordEncoder.matches("rawPassword", "encodedPassword")).thenReturn(true);
+        when(umsAdminMapper.updateById(any(UmsAdmin.class))).thenReturn(1);
         when(jwtUtil.generateTokenPair("admin")).thenReturn(mockPair);
         when(jwtUtil.getTokenIdFromToken("refresh.token")).thenReturn("test-jti");
 

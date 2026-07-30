@@ -38,15 +38,4 @@ public class WeaTradeOrder extends BaseEntity {
     @TableField(value = "order_status")
     private Integer orderStatus;
 
-    /** 数据库中暂无此字段，保留实体兼容 */
-    @TableField(exist = false)
-    private BigDecimal dealPrice;
-
-    /** 数据库中暂无此字段，保留实体兼容 */
-    @TableField(exist = false)
-    private BigDecimal dealQuantity;
-
-    /** 数据库中暂无此字段，保留实体兼容 */
-    @TableField(exist = false)
-    private BigDecimal dealAmount;
 }
