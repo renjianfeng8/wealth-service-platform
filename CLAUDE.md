@@ -1,7 +1,7 @@
 # 理财服务平台 — 项目指南
 
-> 本文件是 **Claude Code 与 Codex（Codex.ai/code）共享的项目上下文**，涵盖技术栈、规范、约束与协作约定。
-> 所有重要决策和约束写入此文件，持久化记忆各自独立不互通。
+> 项目级文档，涵盖技术栈、规范、约束与协作约定。
+> 详细代码规范手册见 [docs/CODE-STANDARDS.md](docs/CODE-STANDARDS.md)。
 
 ---
 
@@ -11,13 +11,13 @@
 - [二、技术栈](#二技术栈)
 - [三、模块与目录](#三模块与目录)
 - [四、开发命令](#四开发命令)
-- [五、编码规范](#五编码规范)
+- [五、编码规范（概要）](#五编码规范概要)
 - [六、Git 提交规范](#六git-提交规范)
 - [七、常见代码模式](#七常见代码模式)
 - [八、测试规范](#八测试规范)
-- [九、协作约定](#九协作约定双客户端)
+- [九、协作约定](#九协作约定)
 - [十、启动验证](#十启动验证)
-- [十一、代码扫描](#十一代码扫描)
+- [十一、代码扫描清单](#十一代码扫描清单)
 - [十二、历史教训](#十二历史教训)
 
 ---
@@ -32,6 +32,7 @@
 | 架构文档 | `docs/ARCHITECTURE.md` |
 | 表结构 / BaseEntity 规范 | `docs/DATABASE-SCHEMA.md` |
 | 已知问题 | `docs/BUG.md` |
+| **代码规范手册** | **`docs/CODE-STANDARDS.md`** |
 
 ---
 
@@ -134,39 +135,38 @@ mvn test -pl wealth-service -Dtest=XxxTest -DskipTests=false
 
 ---
 
-## 五、编码规范
+## 五、编码规范（概要）
+
+> 详细规范（含示例和正误对比）请查阅 [docs/CODE-STANDARDS.md](docs/CODE-STANDARDS.md)。
 
 ### 5.1 实体与数据库
-- Entity 继承 `BaseEntity`，字段映射以 `init.sql` 列名为准（`@TableField("列名")`），**不信任 DATABASE-SCHEMA.md 中的列名**
-- 自动填充 `create_time` / `update_time`
+- Entity 继承 `BaseEntity`，字段映射以 `init.sql` 列名为准（`@TableField("列名")`）
 - Mapper 继承 `BaseMapper`，Service 继承 `IService` / `ServiceImpl`
-- 禁止手写复杂 SQL
+- 自动填充 `create_time` / `update_time`
 - 分页插件已全局配置，各域无需重复配置
+- 若表缺少某列（如 `del_flag`），使用 `@TableField(exist = false)` 排除，并确保删除操作走物理删除
 
 ### 5.2 接口
-- 统一返回：`{code, message, data}` — 200 成功 / 400 参数错误 / 401 未登录 / 403 无权限 / 404 不存在 / 500 服务器异常
+- 统一返回：`{code, message, data}`
 - RESTful + Swagger 注解（`@Tag` / `@Operation`）
 - `@RequestBody` DTO 必须加 `@Valid`
-- 写操作加 `@Transactional(rollbackFor = Exception.class)`
-- 新增接口确认是否加入 `AuthConstant.PERMIT_ALL_URLS`
-- Controller 只做参数校验与路由，不写业务逻辑
+- Controller 只做参数校验与路由，**不写业务逻辑**
 
-### 5.3 命名
-| 元素 | 规则 |
+### 5.3 核心代码规范速览
+| 规范 | 要求 |
 |------|------|
-| 类名 | 大驼峰 |
-| 方法名 / 变量名 | 小驼峰 |
-| 常量 | 大写+下划线 |
-| 表名 / 字段名 | 小写+下划线 |
+| 导入 | 禁止通配符，按 `java.* → org.* → com.*` 顺序 |
+| 构造器注入 | `@RequiredArgsConstructor`，禁止 `@Autowired` 字段注入 |
+| 日志 | `@Slf4j`，禁止手动声明 Logger |
+| 魔法值 | 全部抽取为 `private static final` 常量 |
+| Controller JavaDoc | 不写方法级 JavaDoc（用 `@Operation` 替代） |
+| 实体 `@TableField` | 全部显式标注 |
+| 更新操作 | `BeanConvertUtil.copyNonNullProperties`（禁止 `BeanUtils.copyProperties`）|
+| 异常 | 业务异常抛 `ServiceException(code, message)`，禁止空 catch |
+| 事务 | 写操作加 `@Transactional(rollbackFor = Exception.class)` |
 
-### 5.4 安全与异常
-- update 用 `BeanConvertUtil.copyNonNullProperties` 防 null 覆盖（禁止 `BeanUtils.copyProperties`）
-- 业务异常抛 `ServiceException(code, message)`
-- JWT 密钥通过 `.env` 注入，启动时校验字节 ≥ 32
-- 重复创建检查须配合数据库唯一索引作最终防线
-
-### 5.5 禁止
-- 修改表结构 · Controller 写业务逻辑 · hardcode 密码/IP · 无注释 · 不兼容依赖版本 · 直接 `service.list()` 全表查询
+### 5.4 禁止
+- 修改表结构 · Controller 写业务逻辑 · hardcode 密码/IP · 通配符导入 · 空 catch · 全限定类名字段 · 全表 `service.list()` 无分页 · 不兼容依赖版本
 
 ---
 
@@ -192,11 +192,10 @@ description：命令式语气、首字母小写、末尾无句号
 ```
 feat(service): 添加产品分页查询接口
 fix(service): 修复交易委托金额计算精度问题
-docs: 更新 README 部署说明
+docs: 更新代码规范手册
 ```
 
 ### 操作约束
-
 - **提交和推送必须等用户明确指令**，禁止自动执行 `git commit` 或 `git push`
 
 ---
@@ -243,12 +242,18 @@ UmsAdminController.login(LoginDTO) → UmsAdminService 验证 → 返回 JWT tok
 @Operation(summary = "操作描述")
 ```
 
+### 常量定义
+```java
+private static final int COOKIE_MAX_AGE_SECONDS = 1800;
+private static final int MAX_LOGIN_ATTEMPTS = 5;
+private static final long LOCK_DURATION_MINUTES = 15;
+```
+
 ---
 
 ## 八、测试规范
 
 ### 后端测试
-
 - 框架：JUnit 5 + Mockito
 - Controller 层：MockMvc 验证 HTTP 状态码和返回 JSON 结构
 - Service 层：Mockito mock 依赖，只测当前类逻辑
@@ -259,34 +264,16 @@ UmsAdminController.login(LoginDTO) → UmsAdminService 验证 → 返回 JWT tok
 - 分支逻辑必须覆盖异常路径（参数非法、资源不存在、状态冲突等）
 
 ### 前端测试
-
 - E2E 框架：Playwright
 - 测试文件放在 `front/tests/`
 
 ---
 
-## 九、协作约定（Codex 主控 / Claude Code 执行）
+## 九、协作约定
 
-**Codex 为主控端**，负责架构设计、任务分解、决策把关。
-
-**Claude Code 为执行端**，按指令完成实现，不自行决策架构变更。
-
-### 职责边界
-
-| 职责 | 负责方 | 说明 |
-|------|--------|------|
-| 架构设计 / 方案评审 | Codex | 涉及模块拆分、表结构变更、技术选型 |
-| 任务分解与指派 | Codex | 明确告诉 CC 做什么、改哪些文件 |
-| 代码实现 | Claude Code | 按指令完成编码，遵循 CLAUDE.md 规范 |
-| Code Review | Codex | 审查 CC 的代码质量 |
-| 文档维护 | 双方 | CLAUDE.md / docs/ 均可更新 |
-| Git 提交 | 双方 | 谁改谁提，改前 `git pull` |
-
-### 共享规则
-- **CLAUDE.md 是共享记忆核心载体**，重要决策写在此处
-- 持久化记忆各自独立，不互通
-- 改动前 `git pull`，改动后及时 `git commit && git push`
-- Claude Code 收到模糊指令时先问清楚，不自作主张
+- **CLAUDE.md** 和 **docs/CODE-STANDARDS.md** 是核心规范文档，重要决策和约定写入此处
+- 改动前先读取关键文件建立上下文（跨模块切换、涉及 DB 变更时尤需注意）
+- 文档、代码、数据库三方对齐后再修改
 
 ---
 
@@ -302,20 +289,27 @@ UmsAdminController.login(LoginDTO) → UmsAdminService 验证 → 返回 JWT tok
 
 ---
 
-## 十一、代码扫描
+## 十一、代码扫描清单
 
 每次排查逐项过：
 
 - [ ] 实体类 `@EqualsAndHashCode(callSuper=true)` 或 `@Getter @Setter` + callSuper
+- [ ] 实体字段全部标注 `@TableField("列名")`，与 init.sql 一致
+- [ ] 无 `@TableLogic` 与 `@TableField(exist = false)` 冲突（物理删除检查）
 - [ ] 写操作 `@Transactional(rollbackFor = Exception.class)`
 - [ ] `@RequestBody` 有 `@Valid`
 - [ ] getById 空值返回 404
 - [ ] list() 带分页
 - [ ] update 用 `copyNonNullProperties`
+- [ ] Controller 无业务逻辑（Token 解析、权限校验等下沉到 Service）
+- [ ] 无通配符导入、无全限定类名字段
+- [ ] 魔法值已抽取常量
+- [ ] 构造器注入使用 `@RequiredArgsConstructor`
+- [ ] Logger 使用 `@Slf4j`
 - [ ] 拦截器 pathPatterns 与 context-path 一致（不能加前缀）
 - [ ] redis 配置用 `spring.data.redis.*`
 - [ ] 链路追踪用 `management.zipkin.tracing.endpoint`
-- [ ] Entity 字段与 init.sql 逐列核对
+- [ ] 异常信息中英文统一
 
 ---
 
@@ -328,3 +322,6 @@ UmsAdminController.login(LoginDTO) → UmsAdminService 验证 → 返回 JWT tok
 | 3 | **改完主动提验证** | 涉及 DB/数据流/配置，主动提议启动验证 |
 | 4 | **三方一致** | 文档、代码、数据库三方对齐后再改 |
 | 5 | **跨域切换先读文件** | 从前端切后端 / 跨模块时，先读关键文件建立上下文 |
+| 6 | **@TableLogic 继承冲突** | BaseEntity 带 `@TableLogic`，无 `del_flag` 列的子表须走物理删除 |
+| 7 | **Controller 职责边界** | 所有 Bearer Token 解析/校验必须下沉到 Service，Controller 只路由 |
+| 8 | **异常信息语言统一** | 所有异常提示使用中文，禁止中英文混杂 |
