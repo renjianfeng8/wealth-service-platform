@@ -45,7 +45,6 @@ import java.util.List;
 public class UmsAdminController {
 
     private final UmsAdminService umsAdminService;
-    private final com.wealth.common.utils.JwtUtil jwtUtil;
 
     @PostMapping("/login")
     @Operation(summary = "管理员登录（返回 access_token + refresh_token）")
@@ -68,11 +67,7 @@ public class UmsAdminController {
     @PostMapping("/refresh")
     @Operation(summary = "刷新 Token（用 refresh_token 换取新的 access_token + refresh_token）")
     public Result<TokenPair> refresh(@RequestHeader("Authorization") String authHeader) {
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            return Result.error(ResultCode.TOKEN_INVALID);
-        }
-        String refreshToken = authHeader.substring(7);
-        return Result.success(umsAdminService.refreshToken(refreshToken));
+        return Result.success(umsAdminService.refreshToken(authHeader));
     }
 
     @GetMapping("/{id}")
@@ -144,31 +139,13 @@ public class UmsAdminController {
     public Result<Boolean> checkPermission(
             @RequestParam String uri,
             @RequestHeader("Authorization") String authHeader) {
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            return Result.success(false);
-        }
-        String token = authHeader.substring(7);
-        if (!jwtUtil.validateToken(token)) {
-            return Result.success(false);
-        }
-        String username = jwtUtil.getUsernameFromToken(token);
-        UmsAdmin admin = umsAdminService.lambdaQuery()
-                .eq(UmsAdmin::getUsername, username)
-                .eq(UmsAdmin::getDelFlag, 0)
-                .one();
-        if (admin == null) {
-            return Result.success(false);
-        }
-        return Result.success(umsAdminService.hasPermission(admin.getId(), uri));
+        return Result.success(umsAdminService.checkPermission(uri, authHeader));
     }
 
     @PostMapping("/logout")
     @Operation(summary = "退出登录（将 refresh_token 加入黑名单）")
     public Result<Void> logout(@RequestHeader("Authorization") String authHeader) {
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            String refreshToken = authHeader.substring(7);
-            umsAdminService.logout(refreshToken);
-        }
+        umsAdminService.logout(authHeader);
         return Result.success(null);
     }
 

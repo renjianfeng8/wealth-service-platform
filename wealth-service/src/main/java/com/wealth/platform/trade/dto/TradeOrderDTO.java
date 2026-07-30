@@ -28,7 +28,7 @@ public class TradeOrderDTO {
     @NotNull(message = "委托价格不能为空")
     @DecimalMin(value = "0.01", message = "委托价格必须大于0")
     @Schema(description = "委托价格")
-    private java.math.BigDecimal entrustPrice;
+    private BigDecimal entrustPrice;
 
     @NotNull(message = "委托数量不能为空")
     @Min(value = 1, message = "委托数量不能小于1")

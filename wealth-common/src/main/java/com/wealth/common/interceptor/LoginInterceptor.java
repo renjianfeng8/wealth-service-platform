@@ -17,11 +17,10 @@ import org.springframework.web.servlet.HandlerInterceptor;
 public class LoginInterceptor implements HandlerInterceptor {
 
     private static final String TOKEN_COOKIE_NAME = "wealth_token";
+    private static final AntPathMatcher PATH_MATCHER = new AntPathMatcher();
 
     private final JwtUtil jwtUtil;
     private final ObjectMapper objectMapper;
-
-    private static final AntPathMatcher PATH_MATCHER = new AntPathMatcher();
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {

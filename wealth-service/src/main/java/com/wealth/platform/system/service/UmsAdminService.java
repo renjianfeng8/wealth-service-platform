@@ -10,13 +10,16 @@ import java.util.List;
 
 public interface UmsAdminService extends IService<UmsAdmin> {
     TokenPair login(LoginDTO dto);
-    TokenPair refreshToken(String refreshToken);
+    TokenPair refreshToken(String authHeader);
     Boolean createAdmin(UmsAdmin admin);
     // 权限查询
     List<String> getResourceUrlsByIds(List<Long> resourceIds);
 
     // 校验指定用户是否有权访问指定 URI
     boolean hasPermission(Long adminId, String uri);
+
+    // 校验请求权限（从 Authorization 头解析 token 并校验）
+    boolean checkPermission(String uri, String authHeader);
 
     // 分页条件查询
     IPage<UmsAdmin> pageWithFilter(Integer pageNum, Integer pageSize, String username, Integer status);
@@ -25,7 +28,7 @@ public interface UmsAdminService extends IService<UmsAdmin> {
     Boolean resetPassword(Long id, String oldPassword, String newPassword);
 
     // 退出登录（将 refresh_token 加入黑名单）
-    void logout(String refreshToken);
+    void logout(String authHeader);
 
     // 清除指定管理员的权限缓存
     void clearPermissionCache(Long adminId);

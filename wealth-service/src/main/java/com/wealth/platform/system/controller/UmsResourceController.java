@@ -42,12 +42,6 @@ public class UmsResourceController {
 
     private final UmsResourceService umsResourceService;
 
-    /**
-     * 根据 ID 查询后台资源信息。
-     *
-     * @param id 后台资源 ID
-     * @return 查询结果
-     */
     @Operation(summary = "根据ID查询后台资源信息")
     @GetMapping("/{id}")
     public Result<UmsResourceVO> getById(@PathVariable Long id) {
@@ -58,11 +52,6 @@ public class UmsResourceController {
         return Result.success(BeanConvertUtil.convert(resource, UmsResourceVO.class));
     }
 
-    /**
-     * 查询后台资源列表（不分页）。
-     *
-     * @return 后台资源列表
-     */
     @Operation(summary = "查询后台资源列表")
     @GetMapping
     public Result<List<UmsResourceVO>> list() {
@@ -70,15 +59,6 @@ public class UmsResourceController {
         return Result.success(BeanConvertUtil.convertList(list, UmsResourceVO.class));
     }
 
-    /**
-     * 分页查询后台资源列表。
-     *
-     * @param pageNum 页码
-     * @param pageSize 每页条数
-     * @param name    资源名称（可选）
-     * @param url     资源路径（可选）
-     * @return 分页结果
-     */
     @Operation(summary = "分页查询后台资源列表")
     @GetMapping("/page")
     public Result<IPage<UmsResourceVO>> page(
@@ -90,12 +70,6 @@ public class UmsResourceController {
         return Result.success(BeanConvertUtil.convertPage(page, UmsResourceVO.class));
     }
 
-    /**
-     * 创建后台资源。
-     *
-     * @param dto 后台资源入参
-     * @return 是否创建成功
-     */
     @Operation(summary = "创建后台资源")
     @PostMapping
     @AuditLog(module = "系统管理", operation = "创建资源")
@@ -106,13 +80,6 @@ public class UmsResourceController {
         return Result.success(saved);
     }
 
-    /**
-     * 更新后台资源信息。
-     *
-     * @param id 后台资源 ID
-     * @param dto 后台资源入参
-     * @return 是否更新成功
-     */
     @Operation(summary = "更新后台资源信息")
     @PutMapping("/{id}")
     @AuditLog(module = "系统管理", operation = "更新资源")
@@ -127,12 +94,6 @@ public class UmsResourceController {
         return Result.success(umsResourceService.updateById(existing));
     }
 
-    /**
-     * 删除后台资源（逻辑删除）。
-     *
-     * @param id 后台资源 ID
-     * @return 是否删除成功
-     */
     @Operation(summary = "删除后台资源")
     @DeleteMapping("/{id}")
     @AuditLog(module = "系统管理", operation = "删除资源")

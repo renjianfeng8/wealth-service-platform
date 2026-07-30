@@ -47,6 +47,9 @@ import com.wealth.platform.user.vo.UserVO;
 @RequiredArgsConstructor
 public class UserController {
 
+    /** Cookie 有效期（秒），与 jwt.access-expire=1800000ms 对应（30分钟） */
+    private static final int COOKIE_MAX_AGE_SECONDS = 1800;
+
     private final UserService userService;
     private final BCryptPasswordEncoder passwordEncoder;
 
@@ -142,7 +145,7 @@ public class UserController {
         ResponseCookie cookie = ResponseCookie.from("wealth_token", loginVO.getToken())
                 .httpOnly(true)
                 .path("/")
-                .maxAge(1800)
+                .maxAge(COOKIE_MAX_AGE_SECONDS)
                 .build();
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())

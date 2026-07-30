@@ -93,6 +93,7 @@ public class UserFavoriteServiceImpl extends ServiceImpl<UserFavoriteMapper, Wea
         if (getById(id) == null) {
             throw new ServiceException(404, "自选关注不存在");
         }
-        return removeById(id);
+        // wea_user_favorite 表无 del_flag 列，使用物理删除
+        return baseMapper.deletePhysicalById(id) > 0;
     }
 }

@@ -15,15 +15,21 @@ import lombok.Setter;
 @TableName("sys_user")
 public class User extends BaseEntity {
 
+    @TableField("username")
     private String username;
 
+    @TableField("password")
     private String password;
 
+    @TableField("nickname")
     private String nickname;
 
+    @TableField("phone")
     private String phone;
 
+    @TableField("avatar")
     private String avatar;
 
+    @TableField("status")
     private Integer status;
 }

@@ -127,7 +127,11 @@ public class UmsAdminServiceImpl extends ServiceImpl<UmsAdminMapper, UmsAdmin>
     }
 
     @Override
-    public TokenPair refreshToken(String refreshToken) {
+    public TokenPair refreshToken(String authHeader) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            throw new ServiceException(401, "无效的 refreshToken");
+        }
+        String refreshToken = authHeader.substring(7);
         if (!StringUtils.hasText(refreshToken)) {
             throw new ServiceException(400, "refreshToken 不能为空");
         }
@@ -224,7 +228,11 @@ public class UmsAdminServiceImpl extends ServiceImpl<UmsAdminMapper, UmsAdmin>
      * 退出登录：将 refresh_token 加入黑名单，阻止后续刷新。
      */
     @Override
-    public void logout(String refreshToken) {
+    public void logout(String authHeader) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return;
+        }
+        String refreshToken = authHeader.substring(7);
         try {
             String jti = jwtUtil.getTokenIdFromToken(refreshToken);
             redisUtil.set(KEY_REFRESH_BLACKLIST + jti, "1", 7, TimeUnit.DAYS);
@@ -395,6 +403,26 @@ public class UmsAdminServiceImpl extends ServiceImpl<UmsAdminMapper, UmsAdmin>
 
         AntPathMatcher pathMatcher = new AntPathMatcher();
         return urlPatterns.stream().anyMatch(pattern -> pathMatcher.match(pattern, uri));
+    }
+
+    @Override
+    public boolean checkPermission(String uri, String authHeader) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return false;
+        }
+        String token = authHeader.substring(7);
+        if (!jwtUtil.validateToken(token)) {
+            return false;
+        }
+        String username = jwtUtil.getUsernameFromToken(token);
+        UmsAdmin admin = lambdaQuery()
+                .eq(UmsAdmin::getUsername, username)
+                .eq(UmsAdmin::getDelFlag, 0)
+                .one();
+        if (admin == null) {
+            return false;
+        }
+        return hasPermission(admin.getId(), uri);
     }
 
     @Override
