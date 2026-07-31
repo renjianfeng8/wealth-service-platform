@@ -1,12 +1,10 @@
 package com.wealth.gateway.filter;
 
 import com.wealth.common.constants.AuthConstant;
+import com.wealth.common.utils.JwtUtil;
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
-import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
@@ -20,7 +18,6 @@ import org.springframework.util.AntPathMatcher;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
-import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 
 /**
@@ -28,31 +25,13 @@ import java.nio.charset.StandardCharsets;
  * 所有请求先经过此过滤器校验 Token，白名单路径直接放行。
  */
 @Slf4j
+@RequiredArgsConstructor
 @Component
 public class JwtAuthGlobalFilter implements GlobalFilter, Ordered {
 
-    @Value("${jwt.secret}")
-    private String secretKey;
+    private final JwtUtil jwtUtil;
 
     private final AntPathMatcher pathMatcher = new AntPathMatcher();
-
-    /** JWT Cookie 名称（httpOnly，防 XSS 窃取） */
-    private static final String TOKEN_COOKIE_NAME = "wealth_token";
-
-    @PostConstruct
-    public void init() {
-        byte[] keyBytes = secretKey.getBytes(StandardCharsets.UTF_8);
-        if (keyBytes.length < 32) {
-            log.error("JWT 密钥长度不足，当前 {} 字节，需要至少 32 字节", keyBytes.length);
-            throw new IllegalStateException(
-                    "JWT 密钥长度不足，当前" + keyBytes.length + " 字节，需要至少 32 字节（256位）");
-        }
-        log.info("Gateway JWT 认证过滤器初始化完成，密钥长度：{} 字节", keyBytes.length);
-    }
-
-    private SecretKey getSigningKey() {
-        return Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
-    }
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
@@ -74,7 +53,7 @@ public class JwtAuthGlobalFilter implements GlobalFilter, Ordered {
             token = authHeader.substring(7);
         } else {
             // 降级：从 httpOnly Cookie 获取（防 XSS 窃取 JWT）
-            HttpCookie tokenCookie = exchange.getRequest().getCookies().getFirst(TOKEN_COOKIE_NAME);
+            HttpCookie tokenCookie = exchange.getRequest().getCookies().getFirst(AuthConstant.TOKEN_COOKIE_NAME);
             if (tokenCookie != null) {
                 token = tokenCookie.getValue();
             }
@@ -87,11 +66,7 @@ public class JwtAuthGlobalFilter implements GlobalFilter, Ordered {
 
         // 校验 Token 并提取用户身份
         try {
-            Claims claims = Jwts.parser()
-                    .verifyWith(getSigningKey())
-                    .build()
-                    .parseSignedClaims(token)
-                    .getPayload();
+            Claims claims = jwtUtil.parseClaims(token);
 
             // 将用户身份传递到下游服务（注入请求头）
             ServerWebExchange mutatedExchange = exchange.mutate()

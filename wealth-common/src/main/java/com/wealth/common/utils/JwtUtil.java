@@ -66,12 +66,7 @@ public class JwtUtil {
 
     /** 从 Token 获取 userType */
     public String getUserTypeFromToken(String token) {
-        Claims claims = Jwts.parser()
-                .verifyWith(getSigningKey())
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
-        return claims.get("userType", String.class);
+        return parseClaims(token).get("userType", String.class);
     }
 
     /** 生成 access_token（短时效） */
@@ -93,31 +88,33 @@ public class JwtUtil {
 
     /** 从 Token 获取用户名 */
     public String getUsernameFromToken(String token) {
-        Claims claims = Jwts.parser()
-                .verifyWith(getSigningKey())
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
-        return claims.getSubject();
+        return parseClaims(token).getSubject();
     }
 
     /** 从 Token 获取 jti */
     public String getTokenIdFromToken(String token) {
-        Claims claims = Jwts.parser()
+        return parseClaims(token).getId();
+    }
+
+    /**
+     * 解析 Token 并返回 Claims（签名校验通过后）。
+     * 收敛各解析方法的重复 parser 构建；暴露给 Gateway 过滤器以区分 Token 过期与其他无效场景。
+     *
+     * @throws ExpiredJwtException Token 已过期
+     * @throws io.jsonwebtoken.JwtException Token 无效（签名错误 / 格式错误 / 算法不支持等）
+     */
+    public Claims parseClaims(String token) {
+        return Jwts.parser()
                 .verifyWith(getSigningKey())
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
-        return claims.getId();
     }
 
     /** 验证 Token 是否有效 */
     public boolean validateToken(String token) {
         try {
-            Jwts.parser()
-                    .verifyWith(getSigningKey())
-                    .build()
-                    .parseSignedClaims(token);
+            parseClaims(token);
             return true;
         } catch (ExpiredJwtException e) {
             log.warn("JWT验证失败：Token 已过期");
