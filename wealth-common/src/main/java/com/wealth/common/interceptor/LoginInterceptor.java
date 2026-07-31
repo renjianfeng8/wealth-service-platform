@@ -1,8 +1,8 @@
 package com.wealth.common.interceptor;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wealth.common.constants.AuthConstant;
-import com.wealth.common.result.Result;
+import com.wealth.common.result.ResultCode;
+import com.wealth.common.utils.HttpResponseUtil;
 import com.wealth.common.utils.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -18,7 +18,6 @@ public class LoginInterceptor implements HandlerInterceptor {
     private static final AntPathMatcher PATH_MATCHER = new AntPathMatcher();
 
     private final JwtUtil jwtUtil;
-    private final ObjectMapper objectMapper;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
@@ -35,17 +34,13 @@ public class LoginInterceptor implements HandlerInterceptor {
         String token = AuthConstant.extractToken(request);
         if (token == null) {
             log.warn("无Token，返回401");
-            response.setStatus(401);
-            response.setContentType("application/json;charset=UTF-8");
-            objectMapper.writeValue(response.getWriter(), Result.error(401, "未登录"));
+            HttpResponseUtil.writeJson(response, 401, 401, "未登录");
             return false;
         }
 
         if (!jwtUtil.validateToken(token)) {
             log.warn("Token无效，返回401");
-            response.setStatus(401);
-            response.setContentType("application/json;charset=UTF-8");
-            objectMapper.writeValue(response.getWriter(), Result.error(401, "Token无效或已过期"));
+            HttpResponseUtil.writeJson(response, 401, ResultCode.TOKEN_INVALID.getCode(), ResultCode.TOKEN_INVALID.getMessage());
             return false;
         }
 

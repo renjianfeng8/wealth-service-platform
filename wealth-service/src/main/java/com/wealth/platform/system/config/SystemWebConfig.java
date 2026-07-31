@@ -1,6 +1,5 @@
 package com.wealth.platform.system.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wealth.common.interceptor.LoginInterceptor;
 import com.wealth.common.utils.JwtUtil;
 import com.wealth.platform.system.interceptor.PermissionInterceptor;
@@ -25,8 +24,8 @@ public class SystemWebConfig implements WebMvcConfigurer {
     private final LoginInterceptor loginInterceptor;
     private final PermissionInterceptor permissionInterceptor;
 
-    public SystemWebConfig(JwtUtil jwtUtil, ObjectMapper objectMapper, PermissionInterceptor permissionInterceptor) {
-        this.loginInterceptor = new LoginInterceptor(jwtUtil, objectMapper);
+    public SystemWebConfig(JwtUtil jwtUtil, PermissionInterceptor permissionInterceptor) {
+        this.loginInterceptor = new LoginInterceptor(jwtUtil);
         this.permissionInterceptor = permissionInterceptor;
     }
 

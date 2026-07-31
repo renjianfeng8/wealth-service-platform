@@ -1,6 +1,7 @@
 package com.wealth.gateway.filter;
 
 import com.wealth.common.constants.AuthConstant;
+import com.wealth.common.result.ResultCode;
 import com.wealth.common.utils.JwtUtil;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
@@ -76,10 +77,10 @@ public class JwtAuthGlobalFilter implements GlobalFilter, Ordered {
             return chain.filter(mutatedExchange);
         } catch (io.jsonwebtoken.ExpiredJwtException e) {
             log.warn("Token已过期 | 路径：{}", path);
-            return unauthorized(exchange, "Token已过期");
+            return unauthorized(exchange, ResultCode.TOKEN_EXPIRED.getMessage());
         } catch (Exception e) {
             log.warn("Token无效 | 路径：{}, 错误：{}", path, e.getMessage());
-            return unauthorized(exchange, "Token无效");
+            return unauthorized(exchange, ResultCode.TOKEN_INVALID.getMessage());
         }
     }
 

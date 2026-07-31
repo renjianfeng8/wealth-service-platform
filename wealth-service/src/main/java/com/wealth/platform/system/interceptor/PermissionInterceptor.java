@@ -1,8 +1,8 @@
 package com.wealth.platform.system.interceptor;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wealth.common.constants.AuthConstant;
-import com.wealth.common.result.Result;
+import com.wealth.common.result.ResultCode;
+import com.wealth.common.utils.HttpResponseUtil;
 import com.wealth.common.utils.JwtUtil;
 import com.wealth.platform.system.entity.UmsAdmin;
 import com.wealth.platform.system.service.PermissionCacheService;
@@ -26,16 +26,13 @@ public class PermissionInterceptor implements HandlerInterceptor {
     private final JwtUtil jwtUtil;
     private final UmsAdminService adminService;
     private final PermissionCacheService permissionCacheService;
-    private final ObjectMapper objectMapper;
 
     public PermissionInterceptor(JwtUtil jwtUtil,
                                  UmsAdminService adminService,
-                                 PermissionCacheService permissionCacheService,
-                                 ObjectMapper objectMapper) {
+                                 PermissionCacheService permissionCacheService) {
         this.jwtUtil = jwtUtil;
         this.adminService = adminService;
         this.permissionCacheService = permissionCacheService;
-        this.objectMapper = objectMapper;
     }
 
     @Override
@@ -52,7 +49,7 @@ public class PermissionInterceptor implements HandlerInterceptor {
 
         if (!jwtUtil.validateToken(token)) {
             log.warn("Token 无效或已过期");
-            writeError(response, HttpServletResponse.SC_UNAUTHORIZED, "Token 无效或已过期");
+            writeError(response, ResultCode.TOKEN_INVALID.getCode(), ResultCode.TOKEN_INVALID.getMessage());
             return false;
         }
 
@@ -84,9 +81,6 @@ public class PermissionInterceptor implements HandlerInterceptor {
     }
 
     private void writeError(HttpServletResponse response, int code, String message) throws IOException {
-        response.setCharacterEncoding("UTF-8");
-        response.setContentType("application/json;charset=UTF-8");
-        response.setStatus(code);
-        objectMapper.writeValue(response.getWriter(), Result.error(code, message));
+        HttpResponseUtil.writeJson(response, code, code, message);
     }
 }

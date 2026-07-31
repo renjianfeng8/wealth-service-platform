@@ -1,6 +1,5 @@
 package com.wealth.platform.system.interceptor;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wealth.common.utils.JwtUtil;
 import com.wealth.platform.system.service.PermissionCacheService;
 import com.wealth.platform.system.service.UmsAdminService;
@@ -26,12 +25,11 @@ class PermissionInterceptorTest {
     @Mock
     private PermissionCacheService permissionCacheService;
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
     private PermissionInterceptor interceptor;
 
     @BeforeEach
     void setUp() {
-        interceptor = new PermissionInterceptor(jwtUtil, adminService, permissionCacheService, objectMapper);
+        interceptor = new PermissionInterceptor(jwtUtil, adminService, permissionCacheService);
     }
 
     @Test
