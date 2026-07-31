@@ -1,5 +1,6 @@
 package com.wealth.platform.common.base;
 
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -9,7 +10,9 @@ import com.wealth.common.exception.ServiceException;
 import com.wealth.common.utils.BeanConvertUtil;
 
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * 业务层基础实现，收敛各 Service 中重复的 getById→convert / getList / update / delete 模板代码。
@@ -34,6 +37,29 @@ public abstract class BaseBizServiceImpl<M extends BaseMapper<E>, E extends Base
     protected <V> List<V> pageVoList(Integer pageNum, Integer pageSize, Class<V> voClass) {
         List<E> list = page(new Page<>(pageNum, pageSize), new LambdaQueryWrapper<>()).getRecords();
         return list.stream().map(e -> BeanConvertUtil.convert(e, voClass)).collect(Collectors.toList());
+    }
+
+    /**
+     * 查询并提取单列。
+     * 收敛关系表"查 id 列表"样板：wrapper.eq/in → list → map(列) → collect。
+     *
+     * @param wrapper 查询条件
+     * @param mapper  实体到目标列的映射
+     * @param <R>     目标列类型
+     */
+    protected <R> List<R> listColumn(Wrapper<E> wrapper, Function<E, R> mapper) {
+        return listColumn(wrapper, mapper, false);
+    }
+
+    /**
+     * 查询并提取单列（可选去重）。
+     */
+    protected <R> List<R> listColumn(Wrapper<E> wrapper, Function<E, R> mapper, boolean distinct) {
+        Stream<R> column = list(wrapper).stream().map(mapper);
+        if (distinct) {
+            column = column.distinct();
+        }
+        return column.collect(Collectors.toList());
     }
 
     /**
