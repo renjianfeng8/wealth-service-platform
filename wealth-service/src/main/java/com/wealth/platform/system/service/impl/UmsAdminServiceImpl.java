@@ -22,7 +22,6 @@ import com.wealth.platform.system.service.UmsAdminService;
 import com.wealth.platform.system.service.UmsResourceService;
 import lombok.extern.slf4j.Slf4j;
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -235,13 +234,12 @@ public class UmsAdminServiceImpl extends ServiceImpl<UmsAdminMapper, UmsAdmin>
             throw new ServiceException(400, "验证码不能为空");
         }
         String redisKey = CaptchaConstant.KEY_CAPTCHA + captchaKey;
-        String stored;
-        try {
-            stored = (String) redisUtil.get(redisKey);
-        } catch (DataAccessException e) {
-            log.warn("Redis 不可用，跳过验证码校验: {}", e.getMessage());
+        // Redis 不可用时降级跳过校验（不阻塞登录）
+        Boolean keyExists = redisUtil.safeExecute(() -> redisUtil.hasKey(redisKey), null, "跳过验证码校验");
+        if (keyExists == null) {
             return;
         }
+        String stored = Boolean.TRUE.equals(keyExists) ? (String) redisUtil.get(redisKey) : null;
         if (stored == null) {
             throw new ServiceException(400, "验证码已过期，请重新获取");
         }

@@ -8,7 +8,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.dao.DataAccessException;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -38,11 +37,7 @@ public class CaptchaController {
         String key = UUID.randomUUID().toString().replace("-", "");
 
         if (redisUtil != null) {
-            try {
-                redisUtil.set(CaptchaConstant.KEY_CAPTCHA + key, code, CaptchaConstant.CAPTCHA_TTL_MINUTES, TimeUnit.MINUTES);
-            } catch (DataAccessException e) {
-                log.warn("Redis 不可用，验证码未持久化: {}", e.getMessage());
-            }
+            redisUtil.safeExecuteVoid(() -> redisUtil.set(CaptchaConstant.KEY_CAPTCHA + key, code, CaptchaConstant.CAPTCHA_TTL_MINUTES, TimeUnit.MINUTES), "验证码未持久化");
         } else {
             log.warn("RedisUtil 不可用，验证码未持久化");
         }

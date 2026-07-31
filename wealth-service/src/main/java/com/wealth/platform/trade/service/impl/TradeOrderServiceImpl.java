@@ -22,7 +22,6 @@ import com.wealth.platform.trade.vo.TradeOrderVO;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -86,11 +85,7 @@ public class TradeOrderServiceImpl extends BaseBizServiceImpl<TradeOrderMapper, 
 
         // 5. 记录幂等键（设置 TTL 防止 Redis 内存泄漏）
         if (dto.getIdempotentKey() != null && redisUtil != null) {
-            try {
-                redisUtil.set(IDEMPOTENT_KEY_PREFIX + dto.getIdempotentKey(), orderNo, IDEMPOTENT_TTL_HOURS, TimeUnit.HOURS);
-            } catch (DataAccessException e) {
-                log.warn("Redis 不可用，幂等键未记录: {}", e.getMessage());
-            }
+            redisUtil.safeExecuteVoid(() -> redisUtil.set(IDEMPOTENT_KEY_PREFIX + dto.getIdempotentKey(), orderNo, IDEMPOTENT_TTL_HOURS, TimeUnit.HOURS), "幂等键未记录");
         }
 
         // 6. 发送通知消息（Feign 调用）
@@ -172,13 +167,10 @@ public class TradeOrderServiceImpl extends BaseBizServiceImpl<TradeOrderMapper, 
         }
 
         String redisKey = IDEMPOTENT_KEY_PREFIX + key;
-        try {
-            if (Boolean.TRUE.equals(redisUtil.hasKey(redisKey))) {
-                Object existing = redisUtil.get(redisKey);
-                throw new ServiceException(400, "请勿重复提交，已有订单: " + existing);
-            }
-        } catch (DataAccessException e) {
-            log.warn("Redis 不可用，跳过幂等性校验: {}", e.getMessage());
+        Boolean exists = redisUtil.safeExecute(() -> redisUtil.hasKey(redisKey), false, "跳过幂等性校验");
+        if (Boolean.TRUE.equals(exists)) {
+            Object existing = redisUtil.get(redisKey);
+            throw new ServiceException(400, "请勿重复提交，已有订单: " + existing);
         }
     }
 

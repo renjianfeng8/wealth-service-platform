@@ -3,7 +3,6 @@ package com.wealth.platform.system.service;
 import com.wealth.common.utils.RedisUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.util.AntPathMatcher;
 
@@ -73,32 +72,21 @@ public class PermissionCacheService {
      * 清除指定管理员的权限缓存。
      */
     public void clearCache(Long adminId) {
-        try {
-            redisUtil.delete(CACHE_KEY_PREFIX + adminId);
-        } catch (DataAccessException e) {
-            log.warn("Redis 不可用，无法清除权限缓存: {}", e.getMessage());
-        }
+        redisUtil.safeExecuteVoid(() -> redisUtil.delete(CACHE_KEY_PREFIX + adminId), "无法清除权限缓存");
     }
 
     private List<String> getCached(String cacheKey) {
-        if (redisUtil == null) return null;
-        try {
+        return redisUtil.safeExecute(() -> {
             Object cached = redisUtil.get(cacheKey);
             if (cached instanceof List<?> list && list.stream().allMatch(String.class::isInstance)) {
                 return list.stream().map(String.class::cast).collect(Collectors.toList());
             }
-        } catch (DataAccessException e) {
-            log.warn("Redis 不可用，降级到数据库查询: {}", e.getMessage());
-        }
-        return null;
+            return null;
+        }, null, "降级到数据库查询");
     }
 
     private void setCache(String cacheKey, List<String> urls) {
-        if (redisUtil == null || urls == null) return;
-        try {
-            redisUtil.set(cacheKey, urls, CACHE_TTL_HOURS, TimeUnit.HOURS);
-        } catch (DataAccessException e) {
-            log.warn("Redis 不可用，无法写入权限缓存: {}", e.getMessage());
-        }
+        if (urls == null) return;
+        redisUtil.safeExecuteVoid(() -> redisUtil.set(cacheKey, urls, CACHE_TTL_HOURS, TimeUnit.HOURS), "无法写入权限缓存");
     }
 }
