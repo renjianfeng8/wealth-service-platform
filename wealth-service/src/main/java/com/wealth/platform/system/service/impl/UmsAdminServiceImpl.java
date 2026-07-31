@@ -14,8 +14,8 @@ import com.wealth.common.utils.JwtUtil;
 import com.wealth.common.utils.JwtUtil.TokenPair;
 import com.wealth.common.utils.RedisUtil;
 import com.wealth.common.utils.LikeUtil;
+import com.wealth.platform.system.constant.CaptchaConstant;
 import com.wealth.platform.system.entity.UmsAdmin;
-import com.wealth.platform.system.entity.UmsResource;
 import com.wealth.platform.system.mapper.UmsAdminMapper;
 import com.wealth.platform.system.service.PermissionCacheService;
 import com.wealth.platform.system.service.UmsAdminService;
@@ -32,7 +32,6 @@ import org.springframework.util.StringUtils;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -46,15 +45,13 @@ public class UmsAdminServiceImpl extends ServiceImpl<UmsAdminMapper, UmsAdmin>
     private static final long LOCK_DURATION_MINUTES = 15;
     /** 失败计数 TTL（分钟） */
     private static final long FAIL_COUNT_TTL_MINUTES = 15;
-    /** 验证码 TTL（分钟） */
-    private static final long CAPTCHA_TTL_MINUTES = 5;
 
     private static final String KEY_LOGIN_FAIL_COUNT = "login:fail:count:";
     private static final String KEY_LOGIN_LOCKED = "login:locked:";
-    private static final String KEY_CAPTCHA = "captcha:";
     private static final String KEY_REFRESH_JTI = "refresh:jti:";
     private static final String KEY_REFRESH_COMPROMISED = "refresh:compromised:";
     private static final String KEY_REFRESH_BLACKLIST = "refresh:blacklist:";
+    private static final String KEY_REFRESH_LOCK = "refresh:lock:";
 
     private final JwtUtil jwtUtil;
     private final UmsResourceService resourceService;
@@ -145,7 +142,7 @@ public class UmsAdminServiceImpl extends ServiceImpl<UmsAdminMapper, UmsAdmin>
         }
 
         // 4. 防并发竞争锁（以 jti 为锁 key，30 秒自动过期）
-        String lockKey = "refresh:lock:" + jti;
+        String lockKey = KEY_REFRESH_LOCK + jti;
         Boolean locked = redisUtil.safeExecute(() -> redisUtil.setIfAbsent(lockKey, "1", 30, TimeUnit.SECONDS), false, "跳过并发锁");
         if (Boolean.FALSE.equals(locked)) {
             throw new ServiceException(429, "正在刷新 token，请稍后重试");
@@ -237,7 +234,7 @@ public class UmsAdminServiceImpl extends ServiceImpl<UmsAdminMapper, UmsAdmin>
         if (!StringUtils.hasText(captchaKey) || !StringUtils.hasText(captchaCode)) {
             throw new ServiceException(400, "验证码不能为空");
         }
-        String redisKey = KEY_CAPTCHA + captchaKey;
+        String redisKey = CaptchaConstant.KEY_CAPTCHA + captchaKey;
         String stored;
         try {
             stored = (String) redisUtil.get(redisKey);
@@ -271,12 +268,7 @@ public class UmsAdminServiceImpl extends ServiceImpl<UmsAdminMapper, UmsAdmin>
 
     @Override
     public List<String> getResourceUrlsByIds(List<Long> resourceIds) {
-        return resourceService.lambdaQuery()
-                .in(UmsResource::getId, resourceIds)
-                .list()
-                .stream()
-                .map(UmsResource::getUrl)
-                .collect(Collectors.toList());
+        return resourceService.getUrlByResourceIds(resourceIds);
     }
 
     @Override
@@ -322,14 +314,19 @@ public class UmsAdminServiceImpl extends ServiceImpl<UmsAdminMapper, UmsAdmin>
             return false;
         }
         String username = jwtUtil.getUsernameFromToken(token);
-        UmsAdmin admin = lambdaQuery()
-                .eq(UmsAdmin::getUsername, username)
-                .eq(UmsAdmin::getDelFlag, 0)
-                .one();
+        UmsAdmin admin = getActiveByUsername(username);
         if (admin == null) {
             return false;
         }
         return hasPermission(admin.getId(), uri);
+    }
+
+    @Override
+    public UmsAdmin getActiveByUsername(String username) {
+        return lambdaQuery()
+                .eq(UmsAdmin::getUsername, username)
+                .eq(UmsAdmin::getDelFlag, 0)
+                .one();
     }
 
     @Override

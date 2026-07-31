@@ -57,10 +57,7 @@ public class PermissionInterceptor implements HandlerInterceptor {
         }
 
         String username = jwtUtil.getUsernameFromToken(token);
-        UmsAdmin admin = adminService.lambdaQuery()
-                .eq(UmsAdmin::getUsername, username)
-                .eq(UmsAdmin::getDelFlag, 0)
-                .one();
+        UmsAdmin admin = adminService.getActiveByUsername(username);
 
         if (admin == null) {
             log.warn("用户不存在，username={}", username);

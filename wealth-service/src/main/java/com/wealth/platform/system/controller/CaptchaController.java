@@ -2,6 +2,7 @@ package com.wealth.platform.system.controller;
 
 import com.wealth.common.result.Result;
 import com.wealth.common.utils.RedisUtil;
+import com.wealth.platform.system.constant.CaptchaConstant;
 import com.wf.captcha.SpecCaptcha;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -23,9 +24,6 @@ import java.util.concurrent.TimeUnit;
 @Tag(name = "验证码管理")
 public class CaptchaController {
 
-    private static final long CAPTCHA_TTL_MINUTES = 5;
-    private static final String KEY_CAPTCHA = "captcha:";
-
     private final RedisUtil redisUtil;
 
     public CaptchaController(ObjectProvider<RedisUtil> redisUtilProvider) {
@@ -41,7 +39,7 @@ public class CaptchaController {
 
         if (redisUtil != null) {
             try {
-                redisUtil.set(KEY_CAPTCHA + key, code, CAPTCHA_TTL_MINUTES, TimeUnit.MINUTES);
+                redisUtil.set(CaptchaConstant.KEY_CAPTCHA + key, code, CaptchaConstant.CAPTCHA_TTL_MINUTES, TimeUnit.MINUTES);
             } catch (DataAccessException e) {
                 log.warn("Redis 不可用，验证码未持久化: {}", e.getMessage());
             }

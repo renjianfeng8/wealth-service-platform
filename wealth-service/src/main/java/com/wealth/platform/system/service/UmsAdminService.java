@@ -12,6 +12,10 @@ public interface UmsAdminService extends IService<UmsAdmin> {
     TokenPair login(LoginDTO dto);
     TokenPair refreshToken(String authHeader);
     Boolean createAdmin(UmsAdmin admin);
+
+    // 按用户名查询未删除管理员（权限校验用）
+    UmsAdmin getActiveByUsername(String username);
+
     // 权限查询
     List<String> getResourceUrlsByIds(List<Long> resourceIds);
 

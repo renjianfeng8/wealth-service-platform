@@ -7,7 +7,6 @@ import com.wealth.common.utils.JwtUtil;
 import com.wealth.common.utils.JwtUtil.TokenPair;
 import com.wealth.common.utils.RedisUtil;
 import com.wealth.platform.system.entity.UmsAdmin;
-import com.wealth.platform.system.entity.UmsResource;
 import com.wealth.platform.system.mapper.UmsAdminMapper;
 import com.wealth.platform.system.service.UmsResourceService;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,7 +26,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.Mockito.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -167,19 +165,8 @@ class UmsAdminServiceImplTest {
     @Test
     @DisplayName("根据资源ID获取URL列表-有数据")
     void getResourceUrlsByIds_WithData() {
-        UmsResource res1 = new UmsResource();
-        res1.setId(1L);
-        res1.setUrl("/api/v1/user/**");
-
-        UmsResource res2 = new UmsResource();
-        res2.setId(2L);
-        res2.setUrl("/api/v1/product/**");
-
-        @SuppressWarnings("unchecked")
-        LambdaQueryChainWrapper<UmsResource> resourceChain = mock(LambdaQueryChainWrapper.class);
-        when(resourceService.lambdaQuery()).thenReturn(resourceChain);
-        when(resourceChain.in(any(), anyCollection())).thenReturn(resourceChain);
-        when(resourceChain.list()).thenReturn(Arrays.asList(res1, res2));
+        when(resourceService.getUrlByResourceIds(Arrays.asList(1L, 2L)))
+                .thenReturn(Arrays.asList("/api/v1/user/**", "/api/v1/product/**"));
 
         List<String> urls = adminService.getResourceUrlsByIds(Arrays.asList(1L, 2L));
 
@@ -191,15 +178,23 @@ class UmsAdminServiceImplTest {
     @Test
     @DisplayName("根据空资源ID列表获取URL-返回空列表")
     void getResourceUrlsByIds_EmptyIds() {
-        @SuppressWarnings("unchecked")
-        LambdaQueryChainWrapper<UmsResource> resourceChain = mock(LambdaQueryChainWrapper.class);
-        when(resourceService.lambdaQuery()).thenReturn(resourceChain);
-        when(resourceChain.in(any(), anyCollection())).thenReturn(resourceChain);
-        when(resourceChain.list()).thenReturn(List.of());
+        when(resourceService.getUrlByResourceIds(List.of())).thenReturn(List.of());
 
         List<String> urls = adminService.getResourceUrlsByIds(List.of());
 
         assertNotNull(urls);
         assertTrue(urls.isEmpty());
+    }
+
+    @Test
+    @DisplayName("按用户名查询未删除管理员")
+    void getActiveByUsername_ShouldReturnAdmin() {
+        LambdaQueryChainWrapper<UmsAdmin> qc = setupLoginMocks();
+        when(qc.one()).thenReturn(mockAdmin);
+
+        UmsAdmin admin = adminService.getActiveByUsername("admin");
+
+        assertNotNull(admin);
+        assertEquals("admin", admin.getUsername());
     }
 }
