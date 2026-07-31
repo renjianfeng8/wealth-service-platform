@@ -2,7 +2,6 @@ package com.wealth.platform.product.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.wealth.platform.product.dto.ProductDTO;
 import com.wealth.platform.product.entity.WeaProduct;
@@ -28,7 +27,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -121,10 +119,7 @@ class ProductServiceImplTest {
         dto.setProductCode("P003");
         dto.setPrice(new BigDecimal("200.00"));
 
-        LambdaQueryChainWrapper<WeaProduct> qc = mock(LambdaQueryChainWrapper.class);
-        when(qc.eq(any(), any())).thenReturn(qc);
-        when(qc.count()).thenReturn(0L);
-        doReturn(qc).when(productService).lambdaQuery();
+        when(productMapper.selectCount(any())).thenReturn(0L);
 
         doReturn(1).when(productMapper).insert(any(WeaProduct.class));
 

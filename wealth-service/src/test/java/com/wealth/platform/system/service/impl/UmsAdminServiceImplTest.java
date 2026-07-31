@@ -147,10 +147,7 @@ class UmsAdminServiceImplTest {
         admin.setUsername("newadmin");
         admin.setPassword("rawPassword");
 
-        LambdaQueryChainWrapper<UmsAdmin> qc = mock(LambdaQueryChainWrapper.class);
-        when(qc.eq(any(), any())).thenReturn(qc);
-        when(qc.count()).thenReturn(0L);
-        doReturn(qc).when(adminService).lambdaQuery();
+        when(umsAdminMapper.selectCount(any())).thenReturn(0L);
 
         when(passwordEncoder.encode("rawPassword")).thenReturn("encodedPassword");
         doReturn(1).when(umsAdminMapper).insert(any(UmsAdmin.class));

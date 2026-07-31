@@ -9,7 +9,6 @@ import com.wealth.platform.product.entity.WeaProduct;
 import com.wealth.platform.product.mapper.ProductMapper;
 import com.wealth.platform.product.service.ProductService;
 import com.wealth.platform.product.vo.ProductVO;
-import com.wealth.common.exception.ServiceException;
 import com.wealth.common.utils.BeanConvertUtil;
 import com.wealth.common.utils.LikeUtil;
 import org.springframework.stereotype.Service;
@@ -34,10 +33,7 @@ public class ProductServiceImpl extends BaseBizServiceImpl<ProductMapper, WeaPro
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean createProduct(ProductDTO dto) {
-        long count = lambdaQuery().eq(WeaProduct::getProductCode, dto.getProductCode()).count();
-        if (count > 0) {
-            throw new ServiceException(400, "产品编码已存在");
-        }
+        checkUnique(WeaProduct::getProductCode, dto.getProductCode(), "产品编码已存在");
         WeaProduct entity = BeanConvertUtil.convert(dto, WeaProduct.class);
         return save(entity);
     }

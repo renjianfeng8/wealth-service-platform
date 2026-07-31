@@ -2,6 +2,7 @@ package com.wealth.platform.common.base;
 
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
@@ -60,6 +61,29 @@ public abstract class BaseBizServiceImpl<M extends BaseMapper<E>, E extends Base
             column = column.distinct();
         }
         return column.collect(Collectors.toList());
+    }
+
+    /**
+     * 校验指定条件是否存在匹配记录。
+     *
+     * @param wrapper 查询条件
+     * @return 存在返回 true
+     */
+    protected boolean existsBy(LambdaQueryWrapper<E> wrapper) {
+        return count(wrapper) > 0;
+    }
+
+    /**
+     * 唯一性校验：目标列存在相同值时抛 400 异常。
+     *
+     * @param column  唯一列
+     * @param value   待校验值
+     * @param message 异常消息
+     */
+    protected void checkUnique(SFunction<E, ?> column, Object value, String message) {
+        if (existsBy(new LambdaQueryWrapper<E>().eq(column, value))) {
+            throw new ServiceException(400, message);
+        }
     }
 
     /**

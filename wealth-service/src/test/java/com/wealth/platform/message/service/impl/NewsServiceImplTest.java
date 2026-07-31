@@ -2,7 +2,6 @@ package com.wealth.platform.message.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.wealth.common.exception.ServiceException;
 import com.wealth.platform.message.dto.NewsDTO;
@@ -27,7 +26,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -113,10 +111,7 @@ class NewsServiceImplTest {
         dto.setContent("新资讯内容");
         dto.setNewsType(2);
 
-        LambdaQueryChainWrapper<WeaNews> qc = mock(LambdaQueryChainWrapper.class);
-        when(qc.eq(any(), any())).thenReturn(qc);
-        when(qc.count()).thenReturn(0L);
-        doReturn(qc).when(newsService).lambdaQuery();
+        when(newsMapper.selectCount(any())).thenReturn(0L);
 
         doReturn(1).when(newsMapper).insert(any(WeaNews.class));
 

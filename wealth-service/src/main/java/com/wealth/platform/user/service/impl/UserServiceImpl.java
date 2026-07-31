@@ -3,7 +3,7 @@ package com.wealth.platform.user.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.wealth.platform.common.base.BaseBizServiceImpl;
 import com.wealth.common.contract.AdminIdentityProvider;
 import com.wealth.common.dto.AdminIdentityDTO;
 import com.wealth.common.utils.JwtUtil;
@@ -22,7 +22,7 @@ import org.springframework.util.StringUtils;
 
 @Service
 @RequiredArgsConstructor
-public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
+public class UserServiceImpl extends BaseBizServiceImpl<UserMapper, User> implements UserService {
 
     private final JwtUtil jwtUtil;
     private final BCryptPasswordEncoder passwordEncoder;
@@ -41,10 +41,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (!StringUtils.hasText(user.getUsername()) || !StringUtils.hasText(user.getPassword())) {
             throw new ServiceException(400, "用户名/密码不能为空");
         }
-        long count = lambdaQuery().eq(User::getUsername, user.getUsername()).count();
-        if (count > 0) {
-            throw new ServiceException(400, "用户名已存在");
-        }
+        checkUnique(User::getUsername, user.getUsername(), "用户名已存在");
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         return this.save(user);
     }

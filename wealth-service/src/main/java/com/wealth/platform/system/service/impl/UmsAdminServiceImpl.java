@@ -3,7 +3,7 @@ package com.wealth.platform.system.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.wealth.platform.common.base.BaseBizServiceImpl;
 import com.wealth.common.constants.AuthConstant;
 import com.wealth.common.contract.AdminIdentityProvider;
 import com.wealth.common.dto.AdminIdentityDTO;
@@ -35,7 +35,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class UmsAdminServiceImpl extends ServiceImpl<UmsAdminMapper, UmsAdmin>
+public class UmsAdminServiceImpl extends BaseBizServiceImpl<UmsAdminMapper, UmsAdmin>
         implements UmsAdminService, AdminIdentityProvider {
 
     /** 最大登录失败次数 */
@@ -252,10 +252,7 @@ public class UmsAdminServiceImpl extends ServiceImpl<UmsAdminMapper, UmsAdmin>
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean createAdmin(UmsAdmin admin) {
-        long count = lambdaQuery().eq(UmsAdmin::getUsername, admin.getUsername()).count();
-        if (count > 0) {
-            throw new ServiceException(400, "管理员用户名已存在");
-        }
+        checkUnique(UmsAdmin::getUsername, admin.getUsername(), "管理员用户名已存在");
         admin.setPassword(passwordEncoder.encode(admin.getPassword()));
         try {
             return save(admin);

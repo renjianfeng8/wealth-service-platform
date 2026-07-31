@@ -88,10 +88,7 @@ class UserServiceImplTest {
         user.setUsername("newuser");
         user.setPassword("rawPassword");
 
-        LambdaQueryChainWrapper<User> qc = mock(LambdaQueryChainWrapper.class);
-        when(qc.eq(any(), any())).thenReturn(qc);
-        when(qc.count()).thenReturn(0L);
-        doReturn(qc).when(userService).lambdaQuery();
+        when(userMapper.selectCount(any())).thenReturn(0L);
 
         when(passwordEncoder.encode("rawPassword")).thenReturn("encodedPassword");
         doReturn(1).when(userMapper).insert(any(User.class));

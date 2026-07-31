@@ -60,11 +60,9 @@ public class UserFavoriteServiceImpl extends BaseBizServiceImpl<UserFavoriteMapp
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean createFavorite(UserFavoriteDTO dto) {
-        long count = lambdaQuery()
+        if (existsBy(new LambdaQueryWrapper<WeaUserFavorite>()
                 .eq(WeaUserFavorite::getUserId, dto.getUserId())
-                .eq(WeaUserFavorite::getProductCode, dto.getProductCode())
-                .count();
-        if (count > 0) {
+                .eq(WeaUserFavorite::getProductCode, dto.getProductCode()))) {
             return false;
         }
         WeaUserFavorite entity = BeanConvertUtil.convert(dto, WeaUserFavorite.class);
