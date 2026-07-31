@@ -1,6 +1,7 @@
 package com.wealth.common.audit;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.wealth.common.constants.AuthConstant;
 import com.wealth.common.utils.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -93,10 +94,10 @@ public class AuditLogAspect {
 
     /** 从请求头提取已登录用户名（JWT） */
     private String extractUsername(HttpServletRequest request) {
-        String auth = request.getHeader("Authorization");
-        if (auth != null && auth.startsWith("Bearer ")) {
+        String token = AuthConstant.extractBearerToken(request.getHeader("Authorization"));
+        if (token != null) {
             try {
-                return jwtUtil.getUsernameFromToken(auth.substring(7));
+                return jwtUtil.getUsernameFromToken(token);
             } catch (Exception ignored) {
                 // token 可能已过期或无效，不影响审计记录
             }

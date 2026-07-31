@@ -1,5 +1,6 @@
 package com.wealth.common.audit;
 
+import com.wealth.common.constants.AuthConstant;
 import com.wealth.common.exception.ServiceException;
 import com.wealth.common.utils.JwtUtil;
 import com.wealth.common.utils.RedisUtil;
@@ -96,14 +97,13 @@ public class AntiReplayAspect {
      * 未登录或提取失败时返回 "anonymous"，避免阻断未登录场景使用 @AntiReplay。
      */
     private String extractUsername(HttpServletRequest request) {
-        String authHeader = request.getHeader("Authorization");
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+        String token = AuthConstant.extractBearerToken(request.getHeader("Authorization"));
+        if (token == null) {
             return "anonymous";
         }
         try {
             JwtUtil jwtUtil = jwtUtilProvider.getIfAvailable();
             if (jwtUtil == null) return "anonymous";
-            String token = authHeader.substring(7);
             return jwtUtil.getUsernameFromToken(token);
         } catch (Exception e) {
             log.debug("提取用户名失败，使用 anonymous | {}", e.getMessage());

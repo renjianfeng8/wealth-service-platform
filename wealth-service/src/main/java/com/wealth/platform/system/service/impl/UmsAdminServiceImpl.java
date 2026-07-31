@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.wealth.common.constants.AuthConstant;
 import com.wealth.common.contract.AdminIdentityProvider;
 import com.wealth.common.dto.AdminIdentityDTO;
 import com.wealth.common.exception.ServiceException;
@@ -112,10 +113,10 @@ public class UmsAdminServiceImpl extends ServiceImpl<UmsAdminMapper, UmsAdmin>
 
     @Override
     public TokenPair refreshToken(String authHeader) {
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+        String refreshToken = AuthConstant.extractBearerToken(authHeader);
+        if (refreshToken == null) {
             throw new ServiceException(401, "无效的 refreshToken");
         }
-        String refreshToken = authHeader.substring(7);
         if (!StringUtils.hasText(refreshToken)) {
             throw new ServiceException(400, "refreshToken 不能为空");
         }
@@ -182,10 +183,10 @@ public class UmsAdminServiceImpl extends ServiceImpl<UmsAdminMapper, UmsAdmin>
      */
     @Override
     public void logout(String authHeader) {
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+        String refreshToken = AuthConstant.extractBearerToken(authHeader);
+        if (refreshToken == null) {
             return;
         }
-        String refreshToken = authHeader.substring(7);
         try {
             String jti = jwtUtil.getTokenIdFromToken(refreshToken);
             redisUtil.set(KEY_REFRESH_BLACKLIST + jti, "1", 7, TimeUnit.DAYS);
@@ -313,10 +314,10 @@ public class UmsAdminServiceImpl extends ServiceImpl<UmsAdminMapper, UmsAdmin>
 
     @Override
     public boolean checkPermission(String uri, String authHeader) {
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+        String token = AuthConstant.extractBearerToken(authHeader);
+        if (token == null) {
             return false;
         }
-        String token = authHeader.substring(7);
         if (!jwtUtil.validateToken(token)) {
             return false;
         }

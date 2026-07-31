@@ -46,12 +46,10 @@ public class JwtAuthGlobalFilter implements GlobalFilter, Ordered {
         }
 
         // 从请求头或 httpOnly Cookie 中获取 Token
-        String authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
-        String token = null;
+        String token = AuthConstant.extractBearerToken(
+                exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION));
 
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            token = authHeader.substring(7);
-        } else {
+        if (token == null) {
             // 降级：从 httpOnly Cookie 获取（防 XSS 窃取 JWT）
             HttpCookie tokenCookie = exchange.getRequest().getCookies().getFirst(AuthConstant.TOKEN_COOKIE_NAME);
             if (tokenCookie != null) {
