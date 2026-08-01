@@ -1,14 +1,11 @@
 package com.wealth.platform.user.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.wealth.platform.common.base.BaseBizServiceImpl;
 import com.wealth.common.contract.AdminIdentityProvider;
 import com.wealth.common.dto.AdminIdentityDTO;
 import com.wealth.common.utils.BeanConvertUtil;
 import com.wealth.common.utils.JwtUtil;
-import com.wealth.common.utils.LikeUtil;
 import com.wealth.common.dto.LoginDTO;
 import com.wealth.common.exception.ServiceException;
 import com.wealth.platform.user.dto.UserDTO;
@@ -116,16 +113,8 @@ public class UserServiceImpl extends BaseBizServiceImpl<UserMapper, User> implem
 
     @Override
     public IPage<User> pageWithFilter(Integer pageNum, Integer pageSize, String username, Integer status) {
-        Page<User> page = new Page<>(pageNum, pageSize);
-        LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
-        if (StringUtils.hasText(username)) {
-            wrapper.like(User::getUsername, LikeUtil.escape(username));
-        }
-        if (status != null) {
-            wrapper.eq(User::getStatus, status);
-        }
-        wrapper.orderByDesc(User::getCreateTime);
-        return baseMapper.selectPage(page, wrapper);
+        return pageWithFilter(pageNum, pageSize, orderByDesc(User::getCreateTime),
+                like(User::getUsername, username), eq(User::getStatus, status));
     }
 
     @Override

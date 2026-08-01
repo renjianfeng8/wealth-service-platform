@@ -2,7 +2,6 @@ package com.wealth.platform.system.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.wealth.platform.common.base.BaseBizServiceImpl;
 import com.wealth.platform.system.entity.UmsAdminRoleRelation;
 import com.wealth.platform.system.mapper.UmsAdminRoleRelationMapper;
@@ -19,12 +18,7 @@ public class UmsAdminRoleRelationServiceImpl
 
     @Override
     public IPage<UmsAdminRoleRelation> pageWithFilter(Integer pageNum, Integer pageSize, Long adminId) {
-        Page<UmsAdminRoleRelation> page = new Page<>(pageNum, pageSize);
-        LambdaQueryWrapper<UmsAdminRoleRelation> wrapper = new LambdaQueryWrapper<>();
-        if (adminId != null) {
-            wrapper.eq(UmsAdminRoleRelation::getAdminId, adminId);
-        }
-        return baseMapper.selectPage(page, wrapper);
+        return pageWithFilter(pageNum, pageSize, null, eq(UmsAdminRoleRelation::getAdminId, adminId));
     }
 
     @Override

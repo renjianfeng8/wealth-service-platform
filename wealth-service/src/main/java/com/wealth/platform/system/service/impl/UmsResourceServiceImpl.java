@@ -2,17 +2,14 @@ package com.wealth.platform.system.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.wealth.platform.common.base.BaseBizServiceImpl;
 import com.wealth.platform.system.dto.UmsResourceDTO;
 import com.wealth.platform.system.entity.UmsResource;
 import com.wealth.platform.system.mapper.UmsResourceMapper;
 import com.wealth.platform.system.service.UmsResourceService;
 import com.wealth.platform.system.vo.UmsResourceVO;
-import com.wealth.common.utils.LikeUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 import java.util.stream.Collectors;
 import java.util.List;
 
@@ -21,16 +18,8 @@ public class UmsResourceServiceImpl extends BaseBizServiceImpl<UmsResourceMapper
 
     @Override
     public IPage<UmsResource> pageWithFilter(Integer pageNum, Integer pageSize, String name, String url) {
-        Page<UmsResource> page = new Page<>(pageNum, pageSize);
-        LambdaQueryWrapper<UmsResource> wrapper = new LambdaQueryWrapper<>();
-        if (StringUtils.hasText(name)) {
-            wrapper.like(UmsResource::getName, LikeUtil.escape(name));
-        }
-        if (StringUtils.hasText(url)) {
-            wrapper.like(UmsResource::getUrl, LikeUtil.escape(url));
-        }
-        wrapper.orderByDesc(UmsResource::getCreateTime);
-        return baseMapper.selectPage(page, wrapper);
+        return pageWithFilter(pageNum, pageSize, orderByDesc(UmsResource::getCreateTime),
+                like(UmsResource::getName, name), like(UmsResource::getUrl, url));
     }
 
     @Override

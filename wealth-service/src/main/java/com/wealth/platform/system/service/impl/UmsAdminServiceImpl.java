@@ -1,8 +1,6 @@
 package com.wealth.platform.system.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.wealth.platform.common.base.BaseBizServiceImpl;
 import com.wealth.common.constants.AuthConstant;
 import com.wealth.common.contract.AdminIdentityProvider;
@@ -13,7 +11,6 @@ import com.wealth.common.utils.BeanConvertUtil;
 import com.wealth.common.utils.JwtUtil;
 import com.wealth.common.utils.JwtUtil.TokenPair;
 import com.wealth.common.utils.RedisUtil;
-import com.wealth.common.utils.LikeUtil;
 import com.wealth.platform.system.constant.CaptchaConstant;
 import com.wealth.platform.system.dto.UmsAdminDTO;
 import com.wealth.platform.system.entity.UmsAdmin;
@@ -270,16 +267,8 @@ public class UmsAdminServiceImpl extends BaseBizServiceImpl<UmsAdminMapper, UmsA
 
     @Override
     public IPage<UmsAdmin> pageWithFilter(Integer pageNum, Integer pageSize, String username, Integer status) {
-        Page<UmsAdmin> page = new Page<>(pageNum, pageSize);
-        LambdaQueryWrapper<UmsAdmin> wrapper = new LambdaQueryWrapper<>();
-        if (StringUtils.hasText(username)) {
-            wrapper.like(UmsAdmin::getUsername, LikeUtil.escape(username));
-        }
-        if (status != null) {
-            wrapper.eq(UmsAdmin::getStatus, status);
-        }
-        wrapper.orderByDesc(UmsAdmin::getCreateTime);
-        return baseMapper.selectPage(page, wrapper);
+        return pageWithFilter(pageNum, pageSize, orderByDesc(UmsAdmin::getCreateTime),
+                like(UmsAdmin::getUsername, username), eq(UmsAdmin::getStatus, status));
     }
 
     @Override

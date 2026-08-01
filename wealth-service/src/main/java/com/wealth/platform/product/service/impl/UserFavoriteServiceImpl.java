@@ -6,7 +6,6 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.wealth.platform.common.base.BaseBizServiceImpl;
 import com.wealth.common.exception.ServiceException;
 import com.wealth.common.utils.BeanConvertUtil;
-import com.wealth.common.utils.LikeUtil;
 import com.wealth.platform.product.dto.UserFavoriteDTO;
 import com.wealth.platform.product.entity.WeaUserFavorite;
 import com.wealth.platform.product.mapper.UserFavoriteMapper;
@@ -14,7 +13,6 @@ import com.wealth.platform.product.service.UserFavoriteService;
 import com.wealth.platform.product.vo.UserFavoriteVO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -28,16 +26,8 @@ public class UserFavoriteServiceImpl extends BaseBizServiceImpl<UserFavoriteMapp
 
     @Override
     public IPage<WeaUserFavorite> pageWithFilter(Integer pageNum, Integer pageSize, Long userId, String productCode) {
-        Page<WeaUserFavorite> page = new Page<>(pageNum, pageSize);
-        LambdaQueryWrapper<WeaUserFavorite> wrapper = new LambdaQueryWrapper<>();
-        if (userId != null && userId > 0) {
-            wrapper.eq(WeaUserFavorite::getUserId, userId);
-        }
-        if (StringUtils.hasText(productCode)) {
-            wrapper.like(WeaUserFavorite::getProductCode, LikeUtil.escape(productCode));
-        }
-        wrapper.orderByDesc(WeaUserFavorite::getCreateTime);
-        return baseMapper.selectPage(page, wrapper);
+        return pageWithFilter(pageNum, pageSize, orderByDesc(WeaUserFavorite::getCreateTime),
+                positiveEq(WeaUserFavorite::getUserId, userId), like(WeaUserFavorite::getProductCode, productCode));
     }
 
     @Override

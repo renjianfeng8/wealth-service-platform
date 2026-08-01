@@ -6,9 +6,12 @@ import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.wealth.common.entity.BaseEntity;
 import com.wealth.common.exception.ServiceException;
 import com.wealth.common.utils.BeanConvertUtil;
+import com.wealth.common.utils.LikeUtil;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.function.Function;
@@ -145,5 +148,70 @@ public abstract class BaseBizServiceImpl<M extends BaseMapper<E>, E extends Base
             throw new ServiceException(404, entityName + "不存在");
         }
         return entity;
+    }
+
+    /** 分页条件匹配类型 */
+    protected enum MatchType { LIKE, EQ }
+
+    /** 分页条件描述：列 + 值 + 匹配方式 */
+    protected record Condition<E>(SFunction<E, ?> column, Object value, MatchType type) {}
+
+    /** 分页排序描述 */
+    @FunctionalInterface
+    protected interface OrderSpec<E> {
+        void apply(LambdaQueryWrapper<E> wrapper);
+    }
+
+    /** 模糊条件：自动 hasText 守卫 + LikeUtil.escape 转义 */
+    protected static <E> Condition<E> like(SFunction<E, ?> column, String value) {
+        return new Condition<>(column, value, MatchType.LIKE);
+    }
+
+    /** 等值条件：自动 != null 守卫 */
+    protected static <E> Condition<E> eq(SFunction<E, ?> column, Object value) {
+        return new Condition<>(column, value, MatchType.EQ);
+    }
+
+    /** 正数等值条件：value 为 null 或 <= 0 时不参与过滤（如 userId，0 表示"全部"） */
+    protected static <E> Condition<E> positiveEq(SFunction<E, ?> column, Long value) {
+        return new Condition<>(column, value != null && value > 0 ? value : null, MatchType.EQ);
+    }
+
+    protected static <E> OrderSpec<E> orderByAsc(SFunction<E, ?> column) {
+        return w -> w.orderByAsc(column);
+    }
+
+    protected static <E> OrderSpec<E> orderByDesc(SFunction<E, ?> column) {
+        return w -> w.orderByDesc(column);
+    }
+
+    /**
+     * 分页查询模板：收敛 new Page → LambdaQueryWrapper → if 守卫 → orderBy → selectPage 样板。
+     * LIKE 条件自动 hasText 守卫 + LikeUtil.escape 转义；EQ 条件自动 != null 守卫。
+     *
+     * @param pageNum    页码（>=1）
+     * @param pageSize   每页条数
+     * @param order      排序，为 null 时不排序
+     * @param conditions 过滤条件（like / eq / positiveEq）
+     */
+    @SafeVarargs
+    protected final IPage<E> pageWithFilter(Integer pageNum, Integer pageSize,
+            OrderSpec<E> order, Condition<E>... conditions) {
+        Page<E> page = new Page<>(pageNum, pageSize);
+        LambdaQueryWrapper<E> wrapper = new LambdaQueryWrapper<>();
+        for (Condition<E> condition : conditions) {
+            if (condition.type() == MatchType.LIKE) {
+                String value = (String) condition.value();
+                if (StringUtils.hasText(value)) {
+                    wrapper.like(condition.column(), LikeUtil.escape(value));
+                }
+            } else if (condition.value() != null) {
+                wrapper.eq(condition.column(), condition.value());
+            }
+        }
+        if (order != null) {
+            order.apply(wrapper);
+        }
+        return baseMapper.selectPage(page, wrapper);
     }
 }
