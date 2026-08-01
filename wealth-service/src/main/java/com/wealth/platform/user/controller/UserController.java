@@ -78,8 +78,7 @@ public class UserController {
     @Operation(summary = "新增用户")
     @AuditLog(module = "用户管理", operation = "新增用户")
     public Result<Boolean> create(@Valid @RequestBody UserDTO dto) {
-        User user = BeanConvertUtil.convert(dto, User.class);
-        return Result.success(userService.createUser(user));
+        return Result.success(userService.createUser(dto));
     }
 
     @PutMapping("/{id}")
@@ -110,8 +109,7 @@ public class UserController {
     @AuditLog(module = "用户管理", operation = "用户注册")
     @AntiReplay
     public Result<Boolean> register(@Valid @RequestBody UserDTO dto) {
-        User user = BeanConvertUtil.convert(dto, User.class);
-        return Result.success(userService.register(user));
+        return Result.success(userService.register(dto));
     }
 
     @PostMapping("/login")

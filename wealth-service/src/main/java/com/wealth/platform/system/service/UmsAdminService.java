@@ -18,7 +18,7 @@ public interface UmsAdminService extends IService<UmsAdmin> {
     boolean deleteAdmin(Long id);
     TokenPair login(LoginDTO dto);
     TokenPair refreshToken(String authHeader);
-    Boolean createAdmin(UmsAdmin admin);
+    Boolean createAdmin(UmsAdminDTO dto);
 
     // 按用户名查询未删除管理员（权限校验用）
     UmsAdmin getActiveByUsername(String username);

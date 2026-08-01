@@ -1,5 +1,6 @@
 package com.wealth.common.utils;
 
+import com.wealth.common.constants.AuthConstant;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
@@ -94,6 +95,18 @@ public class JwtUtil {
     /** 从 Token 获取用户名 */
     public String getUsernameFromToken(String token) {
         return parseClaims(token).getSubject();
+    }
+
+    /** 从 Authorization 请求头提取登录用户名（JWT），未登录/解析失败统一返回 "anonymous"（供审计/防重放切面复用） */
+    public static String resolveUsernameFromHeader(String authHeader, JwtUtil jwtUtil) {
+        if (jwtUtil == null) return "anonymous";
+        String token = AuthConstant.extractBearerToken(authHeader);
+        if (token == null) return "anonymous";
+        try {
+            return jwtUtil.getUsernameFromToken(token);
+        } catch (Exception e) {
+            return "anonymous";
+        }
     }
 
     /** 从 Token 获取 jti */

@@ -14,6 +14,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -87,41 +88,62 @@ class UserServiceImplTest {
     @DisplayName("注册成功")
     @SuppressWarnings({"unchecked", "rawtypes"})
     void register_Success() {
-        User user = new User();
-        user.setUsername("newuser");
-        user.setPassword("rawPassword");
+        UserDTO dto = new UserDTO();
+        dto.setUsername("newuser");
+        dto.setPassword("rawPassword");
 
         when(userMapper.selectCount(any())).thenReturn(0L);
 
         when(passwordEncoder.encode("rawPassword")).thenReturn("encodedPassword");
         doReturn(1).when(userMapper).insert(any(User.class));
 
-        Boolean result = userService.register(user);
+        Boolean result = userService.register(dto);
 
         assertTrue(result);
-        assertEquals("encodedPassword", user.getPassword());
-        verify(userMapper).insert(any(User.class));
+        ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
+        verify(userMapper).insert(captor.capture());
+        assertEquals("newuser", captor.getValue().getUsername());
+        assertEquals("encodedPassword", captor.getValue().getPassword());
+    }
+
+    @Test
+    @DisplayName("创建用户成功-密码加密")
+    void createUser_Success() {
+        UserDTO dto = new UserDTO();
+        dto.setUsername("newuser");
+        dto.setPassword("rawPassword");
+
+        when(passwordEncoder.encode("rawPassword")).thenReturn("encodedPassword");
+        doReturn(1).when(userMapper).insert(any(User.class));
+
+        boolean result = userService.createUser(dto);
+
+        assertTrue(result);
+        ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
+        verify(userMapper).insert(captor.capture());
+        assertEquals("newuser", captor.getValue().getUsername());
+        assertEquals("encodedPassword", captor.getValue().getPassword());
     }
 
     @Test
     @DisplayName("注册失败-用户名为空")
     void register_EmptyUsername() {
-        User user = new User();
-        user.setUsername("");
-        user.setPassword("password");
+        UserDTO dto = new UserDTO();
+        dto.setUsername("");
+        dto.setPassword("password");
 
-        assertThrows(ServiceException.class, () -> userService.register(user));
+        assertThrows(ServiceException.class, () -> userService.register(dto));
         verify(userMapper, never()).insert(isA(User.class));
     }
 
     @Test
     @DisplayName("注册失败-密码为空")
     void register_EmptyPassword() {
-        User user = new User();
-        user.setUsername("testuser");
-        user.setPassword("");
+        UserDTO dto = new UserDTO();
+        dto.setUsername("testuser");
+        dto.setPassword("");
 
-        assertThrows(ServiceException.class, () -> userService.register(user));
+        assertThrows(ServiceException.class, () -> userService.register(dto));
         verify(userMapper, never()).insert(isA(User.class));
     }
 

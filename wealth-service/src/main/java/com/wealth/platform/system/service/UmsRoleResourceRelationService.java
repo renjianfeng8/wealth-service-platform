@@ -2,6 +2,7 @@ package com.wealth.platform.system.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.wealth.platform.system.dto.UmsRoleResourceRelationDTO;
 import com.wealth.platform.system.entity.UmsRoleResourceRelation;
 import com.wealth.platform.system.vo.UmsRoleResourceRelationVO;
 import java.util.List;
@@ -19,6 +20,10 @@ public interface UmsRoleResourceRelationService extends IService<UmsRoleResource
 
     UmsRoleResourceRelationVO getRoleResourceRelationById(Long id);
 
-    UmsRoleResourceRelation getRoleResourceRelationEntityOrThrow(Long id);
+    boolean createRelation(UmsRoleResourceRelationDTO dto);
+
+    boolean updateRelation(Long id, UmsRoleResourceRelationDTO dto);
+
+    boolean deleteRelation(Long id);
 }
 

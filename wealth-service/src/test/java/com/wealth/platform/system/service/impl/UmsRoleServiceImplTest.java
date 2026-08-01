@@ -9,6 +9,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -98,6 +99,25 @@ class UmsRoleServiceImplTest {
 
         assertEquals(404, exception.getCode());
         verify(umsRoleMapper, never()).updateById(isA(UmsRole.class));
+    }
+
+    @Test
+    @DisplayName("创建角色成功")
+    void createRole_Success() {
+        UmsRoleDTO dto = new UmsRoleDTO();
+        dto.setName("新角色");
+        dto.setStatus(1);
+        dto.setSort(1);
+
+        when(umsRoleMapper.insert(any(UmsRole.class))).thenReturn(1);
+
+        boolean result = umsRoleService.createRole(dto);
+
+        assertTrue(result);
+        ArgumentCaptor<UmsRole> captor = ArgumentCaptor.forClass(UmsRole.class);
+        verify(umsRoleMapper).insert(captor.capture());
+        assertEquals("新角色", captor.getValue().getName());
+        assertEquals(1, captor.getValue().getStatus());
     }
 
     @Test

@@ -97,8 +97,7 @@ public class UmsAdminController {
     @AuditLog(module = "系统管理", operation = "新增管理员")
     @AntiReplay
     public Result<Boolean> create(@Valid @RequestBody UmsAdminDTO dto) {
-        UmsAdmin admin = BeanConvertUtil.convert(dto, UmsAdmin.class);
-        return Result.success(umsAdminService.createAdmin(admin));
+        return Result.success(umsAdminService.createAdmin(dto));
     }
 
     @PutMapping("/{id}")

@@ -359,7 +359,7 @@ public class LoginInterceptor implements HandlerInterceptor {
 
     // 1. static final 常量
     private static final String TOKEN_COOKIE_NAME = "wealth_token";
-    private static final AntPathMatcher PATH_MATCHER = new AntPathMatcher();
+    private static final AntPathMatcher PATH_MATCHER = PathMatchers.INSTANCE;
 
     // 2. final 注入字段
     private final JwtUtil jwtUtil;

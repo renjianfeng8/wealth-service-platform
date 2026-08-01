@@ -19,6 +19,8 @@ public interface UmsResourceService extends IService<UmsResource> {
 
     UmsResourceVO getResourceById(Long id);
 
+    boolean createResource(UmsResourceDTO dto);
+
     boolean updateResource(Long id, UmsResourceDTO dto);
 
     boolean deleteResource(Long id);

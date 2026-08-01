@@ -1,8 +1,11 @@
 package com.wealth.gateway.filter;
 
 import com.wealth.common.constants.AuthConstant;
+import com.wealth.common.result.Result;
 import com.wealth.common.result.ResultCode;
 import com.wealth.common.utils.JwtUtil;
+import com.wealth.common.utils.PathMatchers;
+import com.wealth.common.utils.ResultJson;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,7 +18,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
-import org.springframework.util.AntPathMatcher;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
@@ -32,8 +34,6 @@ public class JwtAuthGlobalFilter implements GlobalFilter, Ordered {
 
     private final JwtUtil jwtUtil;
 
-    private final AntPathMatcher pathMatcher = new AntPathMatcher();
-
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         String path = exchange.getRequest().getURI().getPath();
@@ -41,7 +41,7 @@ public class JwtAuthGlobalFilter implements GlobalFilter, Ordered {
 
         // 白名单路径直接放行（引用 AuthConstant，与 Service 层保持一致）
         for (String permitUrl : AuthConstant.PERMIT_ALL_URLS) {
-            if (pathMatcher.match(permitUrl, path)) {
+            if (PathMatchers.INSTANCE.match(permitUrl, path)) {
                 return chain.filter(exchange);
             }
         }
@@ -88,7 +88,7 @@ public class JwtAuthGlobalFilter implements GlobalFilter, Ordered {
     private Mono<Void> unauthorized(ServerWebExchange exchange, String message) {
         exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
         exchange.getResponse().getHeaders().setContentType(MediaType.APPLICATION_JSON);
-        String body = String.format("{\"code\":401,\"message\":\"%s\"}", message);
+        String body = ResultJson.write(Result.error(401, message));
         byte[] bytes = body.getBytes(StandardCharsets.UTF_8);
         DataBuffer buffer = exchange.getResponse().bufferFactory().wrap(bytes);
         return exchange.getResponse().writeWith(Mono.just(buffer));

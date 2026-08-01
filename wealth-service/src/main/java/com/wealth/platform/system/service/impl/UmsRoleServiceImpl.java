@@ -1,6 +1,7 @@
 package com.wealth.platform.system.service.impl;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.wealth.common.utils.BeanConvertUtil;
 import com.wealth.platform.common.base.BaseBizServiceImpl;
 import com.wealth.platform.system.dto.UmsRoleDTO;
 import com.wealth.platform.system.entity.UmsRole;
@@ -22,6 +23,12 @@ public class UmsRoleServiceImpl extends BaseBizServiceImpl<UmsRoleMapper, UmsRol
     @Override
     public UmsRoleVO getRoleById(Long id) {
         return getVoByIdOrThrow(id, UmsRoleVO.class, "角色");
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean createRole(UmsRoleDTO dto) {
+        return save(BeanConvertUtil.convert(dto, UmsRole.class));
     }
 
     @Override

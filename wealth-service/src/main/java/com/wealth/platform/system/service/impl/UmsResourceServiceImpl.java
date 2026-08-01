@@ -2,6 +2,7 @@ package com.wealth.platform.system.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.wealth.common.utils.BeanConvertUtil;
 import com.wealth.platform.common.base.BaseBizServiceImpl;
 import com.wealth.platform.system.dto.UmsResourceDTO;
 import com.wealth.platform.system.entity.UmsResource;
@@ -36,6 +37,12 @@ public class UmsResourceServiceImpl extends BaseBizServiceImpl<UmsResourceMapper
     @Override
     public UmsResourceVO getResourceById(Long id) {
         return getVoByIdOrThrow(id, UmsResourceVO.class, "后台资源");
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean createResource(UmsResourceDTO dto) {
+        return save(BeanConvertUtil.convert(dto, UmsResource.class));
     }
 
     @Override

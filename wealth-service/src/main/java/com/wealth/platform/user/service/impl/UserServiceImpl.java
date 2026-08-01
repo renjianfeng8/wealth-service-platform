@@ -31,18 +31,20 @@ public class UserServiceImpl extends BaseBizServiceImpl<UserMapper, User> implem
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public boolean createUser(User user) {
+    public boolean createUser(UserDTO dto) {
+        User user = BeanConvertUtil.convert(dto, User.class);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         return save(user);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Boolean register(User user) {
-        if (!StringUtils.hasText(user.getUsername()) || !StringUtils.hasText(user.getPassword())) {
+    public Boolean register(UserDTO dto) {
+        if (!StringUtils.hasText(dto.getUsername()) || !StringUtils.hasText(dto.getPassword())) {
             throw new ServiceException(400, "用户名/密码不能为空");
         }
-        checkUnique(User::getUsername, user.getUsername(), "用户名已存在");
+        checkUnique(User::getUsername, dto.getUsername(), "用户名已存在");
+        User user = BeanConvertUtil.convert(dto, User.class);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         return this.save(user);
     }
@@ -121,9 +123,7 @@ public class UserServiceImpl extends BaseBizServiceImpl<UserMapper, User> implem
         }
 
         // 验证旧密码
-        if (!passwordEncoder.matches(oldPassword, dbUser.getPassword())) {
-            throw new ServiceException(400, "旧密码不正确");
-        }
+        AuthSupport.verifyOldPasswordOrThrow(passwordEncoder, oldPassword, dbUser.getPassword(), "旧密码不正确");
 
         return this.lambdaUpdate()
                 .eq(User::getId, dbUser.getId())

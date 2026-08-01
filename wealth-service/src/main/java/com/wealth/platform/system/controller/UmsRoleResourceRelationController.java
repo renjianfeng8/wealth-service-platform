@@ -8,8 +8,6 @@ import com.wealth.common.result.Result;
 import com.wealth.common.utils.BeanConvertUtil;
 import com.wealth.platform.system.dto.UmsRoleResourceRelationDTO;
 import com.wealth.platform.system.entity.UmsRoleResourceRelation;
-import com.wealth.platform.system.service.UmsAdminRoleRelationService;
-import com.wealth.platform.system.service.UmsAdminService;
 import com.wealth.platform.system.service.UmsRoleResourceRelationService;
 import com.wealth.platform.system.vo.UmsRoleResourceRelationVO;
 import io.swagger.v3.oas.annotations.Operation;
@@ -39,8 +37,6 @@ import java.util.List;
 public class UmsRoleResourceRelationController {
 
     private final UmsRoleResourceRelationService umsRoleResourceRelationService;
-    private final UmsAdminService umsAdminService;
-    private final UmsAdminRoleRelationService umsAdminRoleRelationService;
 
     @Operation(summary = "根据ID查询")
     @GetMapping("/{id}")
@@ -72,10 +68,7 @@ public class UmsRoleResourceRelationController {
     @AuditLog(module = "系统管理", operation = "创建角色-资源关联")
     @AntiReplay
     public Result<Boolean> create(@Valid @RequestBody UmsRoleResourceRelationDTO dto) {
-        UmsRoleResourceRelation relation = BeanConvertUtil.convert(dto, UmsRoleResourceRelation.class);
-        boolean saved = umsRoleResourceRelationService.save(relation);
-        clearCacheByRoleId(dto.getRoleId());
-        return Result.success(saved);
+        return Result.success(umsRoleResourceRelationService.createRelation(dto));
     }
 
     @Operation(summary = "更新")
@@ -83,16 +76,7 @@ public class UmsRoleResourceRelationController {
     @AuditLog(module = "系统管理", operation = "更新角色-资源关联")
     @AntiReplay
     public Result<Boolean> update(@PathVariable Long id, @Valid @RequestBody UmsRoleResourceRelationDTO dto) {
-        UmsRoleResourceRelation existing = umsRoleResourceRelationService.getRoleResourceRelationEntityOrThrow(id);
-        BeanConvertUtil.copyNonNullProperties(dto, existing);
-        existing.setId(id);
-        boolean updated = umsRoleResourceRelationService.updateById(existing);
-        // 清除新旧角色的权限缓存
-        clearCacheByRoleId(existing.getRoleId());
-        if (dto.getRoleId() != null && !dto.getRoleId().equals(existing.getRoleId())) {
-            clearCacheByRoleId(dto.getRoleId());
-        }
-        return Result.success(updated);
+        return Result.success(umsRoleResourceRelationService.updateRelation(id, dto));
     }
 
     @Operation(summary = "删除")
@@ -100,18 +84,6 @@ public class UmsRoleResourceRelationController {
     @AuditLog(module = "系统管理", operation = "删除角色-资源关联")
     @AntiReplay
     public Result<Boolean> delete(@PathVariable Long id) {
-        UmsRoleResourceRelation existing = umsRoleResourceRelationService.getRoleResourceRelationEntityOrThrow(id);
-        boolean removed = umsRoleResourceRelationService.removeById(id);
-        clearCacheByRoleId(existing.getRoleId());
-        return Result.success(removed);
-    }
-
-    /** 清除拥有指定角色的所有管理员的权限缓存 */
-    private void clearCacheByRoleId(Long roleId) {
-        if (roleId == null) return;
-        List<Long> adminIds = umsAdminRoleRelationService.getAdminIdByRoleId(roleId);
-        for (Long adminId : adminIds) {
-            umsAdminService.clearPermissionCache(adminId);
-        }
+        return Result.success(umsRoleResourceRelationService.deleteRelation(id));
     }
 }

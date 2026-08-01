@@ -16,6 +16,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -195,20 +196,22 @@ class UmsAdminServiceImplTest {
     @DisplayName("创建管理员成功")
     @SuppressWarnings({"unchecked", "rawtypes"})
     void createAdmin_Success() {
-        UmsAdmin admin = new UmsAdmin();
-        admin.setUsername("newadmin");
-        admin.setPassword("rawPassword");
+        UmsAdminDTO dto = new UmsAdminDTO();
+        dto.setUsername("newadmin");
+        dto.setPassword("rawPassword");
 
         when(umsAdminMapper.selectCount(any())).thenReturn(0L);
 
         when(passwordEncoder.encode("rawPassword")).thenReturn("encodedPassword");
         doReturn(1).when(umsAdminMapper).insert(any(UmsAdmin.class));
 
-        Boolean result = adminService.createAdmin(admin);
+        Boolean result = adminService.createAdmin(dto);
 
         assertTrue(result);
-        assertEquals("encodedPassword", admin.getPassword());
-        verify(umsAdminMapper).insert(any(UmsAdmin.class));
+        ArgumentCaptor<UmsAdmin> captor = ArgumentCaptor.forClass(UmsAdmin.class);
+        verify(umsAdminMapper).insert(captor.capture());
+        assertEquals("newadmin", captor.getValue().getUsername());
+        assertEquals("encodedPassword", captor.getValue().getPassword());
     }
 
     @Test

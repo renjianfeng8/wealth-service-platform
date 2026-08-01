@@ -3,6 +3,8 @@ package com.wealth.gateway.config;
 import com.alibaba.csp.sentinel.adapter.gateway.common.rule.GatewayFlowRule;
 import com.alibaba.csp.sentinel.adapter.gateway.common.rule.GatewayRuleManager;
 import com.alibaba.csp.sentinel.adapter.gateway.sc.callback.GatewayCallbackManager;
+import com.wealth.common.result.Result;
+import com.wealth.common.utils.ResultJson;
 import jakarta.annotation.PostConstruct;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
@@ -29,7 +31,7 @@ public class SentinelGatewayConfig {
         GatewayCallbackManager.setBlockHandler((exchange, t) ->
                 ServerResponse.status(HttpStatus.TOO_MANY_REQUESTS)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .body(BodyInserters.fromValue("{\"code\":429,\"message\":\"请求过于频繁，请稍后再试\"}"))
+                        .body(BodyInserters.fromValue(ResultJson.write(Result.error(429, "请求过于频繁，请稍后再试"))))
         );
     }
 }

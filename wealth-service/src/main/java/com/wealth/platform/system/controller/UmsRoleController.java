@@ -70,8 +70,7 @@ public class UmsRoleController {
     @AuditLog(module = "系统管理", operation = "创建角色")
     @AntiReplay
     public Result<Boolean> create(@Valid @RequestBody UmsRoleDTO dto) {
-        UmsRole role = BeanConvertUtil.convert(dto, UmsRole.class);
-        return Result.success(umsRoleService.save(role));
+        return Result.success(umsRoleService.createRole(dto));
     }
 
     @PutMapping("/{id}")

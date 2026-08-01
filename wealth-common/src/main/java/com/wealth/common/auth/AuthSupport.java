@@ -33,4 +33,12 @@ public final class AuthSupport {
             throw new ServiceException(401, "用户名或密码错误");
         }
     }
+
+    /** 校验旧密码：不匹配抛 400（供重置密码场景复用）。 */
+    public static void verifyOldPasswordOrThrow(BCryptPasswordEncoder encoder, String oldPassword,
+                                                String storedPassword, String message) {
+        if (!encoder.matches(oldPassword, storedPassword)) {
+            throw new ServiceException(400, message);
+        }
+    }
 }

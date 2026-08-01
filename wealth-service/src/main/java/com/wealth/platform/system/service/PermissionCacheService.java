@@ -1,10 +1,10 @@
 package com.wealth.platform.system.service;
 
+import com.wealth.common.utils.PathMatchers;
 import com.wealth.common.utils.RedisUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.util.AntPathMatcher;
 
 import java.util.Collections;
 import java.util.List;
@@ -20,13 +20,14 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class PermissionCacheService {
 
-    private static final String CACHE_KEY_PREFIX = "permission:urls:";
+    private static final String CACHE_KEY_PREFIX = PermissionCacheCleaner.CACHE_KEY_PREFIX;
     private static final long CACHE_TTL_HOURS = 1;
 
     private final UmsAdminRoleRelationService adminRoleRelationService;
     private final UmsRoleResourceRelationService roleResourceRelationService;
     private final UmsResourceService resourceService;
     private final RedisUtil redisUtil;
+    private final PermissionCacheCleaner cacheCleaner;
 
     /**
      * 获取指定管理员的权限 URL 列表（优先缓存，降级到数据库）。
@@ -64,15 +65,14 @@ public class PermissionCacheService {
      */
     public boolean hasPermission(Long adminId, String uri) {
         List<String> urls = getAllowedUrls(adminId);
-        AntPathMatcher pathMatcher = new AntPathMatcher();
-        return urls.stream().anyMatch(pattern -> pathMatcher.match(pattern, uri));
+        return urls.stream().anyMatch(pattern -> PathMatchers.INSTANCE.match(pattern, uri));
     }
 
     /**
      * 清除指定管理员的权限缓存。
      */
     public void clearCache(Long adminId) {
-        redisUtil.safeExecuteVoid(() -> redisUtil.delete(CACHE_KEY_PREFIX + adminId), "无法清除权限缓存");
+        cacheCleaner.clear(adminId);
     }
 
     private List<String> getCached(String cacheKey) {

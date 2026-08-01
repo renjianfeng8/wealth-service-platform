@@ -72,9 +72,7 @@ public class UmsResourceController {
     @AuditLog(module = "系统管理", operation = "创建资源")
     @AntiReplay
     public Result<Boolean> create(@Valid @RequestBody UmsResourceDTO dto) {
-        UmsResource resource = BeanConvertUtil.convert(dto, UmsResource.class);
-        boolean saved = umsResourceService.save(resource);
-        return Result.success(saved);
+        return Result.success(umsResourceService.createResource(dto));
     }
 
     @Operation(summary = "更新后台资源信息")

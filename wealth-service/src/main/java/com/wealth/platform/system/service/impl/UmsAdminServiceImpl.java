@@ -248,7 +248,8 @@ public class UmsAdminServiceImpl extends BaseBizServiceImpl<UmsAdminMapper, UmsA
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Boolean createAdmin(UmsAdmin admin) {
+    public Boolean createAdmin(UmsAdminDTO dto) {
+        UmsAdmin admin = BeanConvertUtil.convert(dto, UmsAdmin.class);
         checkUnique(UmsAdmin::getUsername, admin.getUsername(), "管理员用户名已存在");
         admin.setPassword(passwordEncoder.encode(admin.getPassword()));
         try {
@@ -276,9 +277,7 @@ public class UmsAdminServiceImpl extends BaseBizServiceImpl<UmsAdminMapper, UmsA
         if (admin == null) {
             throw new ServiceException(404, "管理员不存在");
         }
-        if (!passwordEncoder.matches(oldPassword, admin.getPassword())) {
-            throw new ServiceException(400, "原密码错误");
-        }
+        AuthSupport.verifyOldPasswordOrThrow(passwordEncoder, oldPassword, admin.getPassword(), "原密码错误");
         admin.setPassword(passwordEncoder.encode(newPassword));
         return updateById(admin);
     }

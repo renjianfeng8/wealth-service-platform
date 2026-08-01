@@ -13,6 +13,8 @@ public interface UmsRoleService extends IService<UmsRole> {
 
     UmsRoleVO getRoleById(Long id);
 
+    boolean createRole(UmsRoleDTO dto);
+
     boolean updateRole(Long id, UmsRoleDTO dto);
 
     boolean deleteRole(Long id);

@@ -9,6 +9,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -98,6 +99,23 @@ class UmsResourceServiceImplTest {
 
         assertEquals(404, exception.getCode());
         verify(umsResourceMapper, never()).updateById(isA(UmsResource.class));
+    }
+
+    @Test
+    @DisplayName("创建资源成功")
+    void createResource_Success() {
+        UmsResourceDTO dto = new UmsResourceDTO();
+        dto.setName("新资源");
+        dto.setUrl("/api/v1/new/**");
+
+        when(umsResourceMapper.insert(any(UmsResource.class))).thenReturn(1);
+
+        boolean result = umsResourceService.createResource(dto);
+
+        assertTrue(result);
+        ArgumentCaptor<UmsResource> captor = ArgumentCaptor.forClass(UmsResource.class);
+        verify(umsResourceMapper).insert(captor.capture());
+        assertEquals("新资源", captor.getValue().getName());
     }
 
     @Test

@@ -11,10 +11,10 @@ import com.wealth.platform.user.vo.UserVO;
 public interface UserService extends IService<User> {
 
     // 新增用户（含密码加密）
-    boolean createUser(User user);
+    boolean createUser(UserDTO dto);
 
     // 用户注册
-    Boolean register(User user);
+    Boolean register(UserDTO dto);
 
     // 用户登录
     LoginVO login(LoginDTO dto);

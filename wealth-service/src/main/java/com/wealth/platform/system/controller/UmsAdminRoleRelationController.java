@@ -9,7 +9,6 @@ import com.wealth.common.utils.BeanConvertUtil;
 import com.wealth.platform.system.dto.UmsAdminRoleRelationDTO;
 import com.wealth.platform.system.entity.UmsAdminRoleRelation;
 import com.wealth.platform.system.service.UmsAdminRoleRelationService;
-import com.wealth.platform.system.service.UmsAdminService;
 import com.wealth.platform.system.vo.UmsAdminRoleRelationVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -38,7 +37,6 @@ import java.util.List;
 public class UmsAdminRoleRelationController {
 
     private final UmsAdminRoleRelationService umsAdminRoleRelationService;
-    private final UmsAdminService umsAdminService;
 
     @Operation(summary = "根据ID查询")
     @GetMapping("/{id}")
@@ -70,11 +68,7 @@ public class UmsAdminRoleRelationController {
     @AuditLog(module = "系统管理", operation = "创建管理员-角色关联")
     @AntiReplay
     public Result<Boolean> create(@Valid @RequestBody UmsAdminRoleRelationDTO dto) {
-        UmsAdminRoleRelation relation = BeanConvertUtil.convert(dto, UmsAdminRoleRelation.class);
-        boolean saved = umsAdminRoleRelationService.save(relation);
-        // 清除该管理员的权限缓存，使新角色立即生效
-        umsAdminService.clearPermissionCache(dto.getAdminId());
-        return Result.success(saved);
+        return Result.success(umsAdminRoleRelationService.createRelation(dto));
     }
 
     @Operation(summary = "更新")
@@ -82,16 +76,7 @@ public class UmsAdminRoleRelationController {
     @AuditLog(module = "系统管理", operation = "更新管理员-角色关联")
     @AntiReplay
     public Result<Boolean> update(@PathVariable Long id, @Valid @RequestBody UmsAdminRoleRelationDTO dto) {
-        UmsAdminRoleRelation existing = umsAdminRoleRelationService.getAdminRoleRelationEntityOrThrow(id);
-        BeanConvertUtil.copyNonNullProperties(dto, existing);
-        existing.setId(id);
-        boolean updated = umsAdminRoleRelationService.updateById(existing);
-        // 清除新旧管理员的权限缓存
-        umsAdminService.clearPermissionCache(existing.getAdminId());
-        if (dto.getAdminId() != null && !dto.getAdminId().equals(existing.getAdminId())) {
-            umsAdminService.clearPermissionCache(dto.getAdminId());
-        }
-        return Result.success(updated);
+        return Result.success(umsAdminRoleRelationService.updateRelation(id, dto));
     }
 
     @Operation(summary = "删除")
@@ -99,10 +84,6 @@ public class UmsAdminRoleRelationController {
     @AuditLog(module = "系统管理", operation = "删除管理员-角色关联")
     @AntiReplay
     public Result<Boolean> delete(@PathVariable Long id) {
-        UmsAdminRoleRelation existing = umsAdminRoleRelationService.getAdminRoleRelationEntityOrThrow(id);
-        boolean removed = umsAdminRoleRelationService.removeById(id);
-        // 清除该管理员的权限缓存，使角色移除立即生效
-        umsAdminService.clearPermissionCache(existing.getAdminId());
-        return Result.success(removed);
+        return Result.success(umsAdminRoleRelationService.deleteRelation(id));
     }
 }

@@ -4,18 +4,16 @@ import com.wealth.common.constants.AuthConstant;
 import com.wealth.common.result.ResultCode;
 import com.wealth.common.utils.HttpResponseUtil;
 import com.wealth.common.utils.JwtUtil;
+import com.wealth.common.utils.PathMatchers;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.AntPathMatcher;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 @Slf4j
 @RequiredArgsConstructor
 public class LoginInterceptor implements HandlerInterceptor {
-
-    private static final AntPathMatcher PATH_MATCHER = new AntPathMatcher();
 
     private final JwtUtil jwtUtil;
 
@@ -26,7 +24,7 @@ public class LoginInterceptor implements HandlerInterceptor {
 
         // 使用 PathMatcher 匹配放行路径（支持 Ant 风格通配符）
         for (String permitUrl : AuthConstant.PERMIT_ALL_URLS) {
-            if (PATH_MATCHER.match(permitUrl, uri)) {
+            if (PathMatchers.INSTANCE.match(permitUrl, uri)) {
                 return true;
             }
         }
