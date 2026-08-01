@@ -60,4 +60,16 @@ public class AuthConstant {
             "/v3/api-docs/**",
             "/*/v3/api-docs",
     };
+
+    /**
+     * 后台权限拦截器（PermissionInterceptor）放行路径：需登录（LoginInterceptor 仍校验 Token）
+     * 但免权限校验的路径。与 PERMIT_ALL_URLS 语义不同，此清单仅用于权限校验放行，不得并入公共白名单。
+     */
+    public static final String[] PERMISSION_BYPASS_URLS = {
+            "/system/umsAdmin/checkPermission",
+            "/system/dashboard/**",
+            "/error",
+            "/actuator/**",
+            "/system/v3/api-docs",
+    };
 }

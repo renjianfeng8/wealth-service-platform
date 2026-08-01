@@ -7,6 +7,7 @@ import com.wealth.common.result.Result;
 import com.wealth.common.audit.AntiReplay;
 import com.wealth.common.audit.AuditLog;
 import com.wealth.common.utils.BeanConvertUtil;
+import com.wealth.common.utils.CookieUtil;
 import com.wealth.common.utils.JwtUtil.TokenPair;
 import com.wealth.platform.system.dto.UmsAdminDTO;
 import com.wealth.platform.system.dto.UmsAdminResetPasswordDTO;
@@ -52,11 +53,7 @@ public class UmsAdminController {
     public ResponseEntity<Result<TokenPair>> login(@Valid @RequestBody LoginDTO dto) {
         TokenPair tokenPair = umsAdminService.login(dto);
 
-        ResponseCookie cookie = ResponseCookie.from("wealth_token", tokenPair.accessToken())
-                .httpOnly(true)
-                .path("/")
-                .maxAge(tokenPair.expiresIn() / 1000)
-                .build();
+        ResponseCookie cookie = CookieUtil.buildTokenCookie(tokenPair.accessToken(), tokenPair.expiresIn() / 1000);
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())

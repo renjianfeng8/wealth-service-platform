@@ -1,13 +1,11 @@
 package com.wealth.platform.message.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.wealth.platform.common.base.BaseBizServiceImpl;
 import com.wealth.common.dto.MessageFeignDTO;
 import com.wealth.common.exception.ServiceException;
 import com.wealth.common.utils.BeanConvertUtil;
-import com.wealth.common.utils.LikeUtil;
 import com.wealth.platform.message.dto.MessageDTO;
 import com.wealth.platform.message.entity.WeaMessage;
 import com.wealth.platform.message.mapper.MessageMapper;
@@ -15,7 +13,6 @@ import com.wealth.platform.message.service.MessageService;
 import com.wealth.platform.message.vo.MessageVO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
 import java.util.List;
 
@@ -49,21 +46,11 @@ public class MessageServiceImpl extends BaseBizServiceImpl<MessageMapper, WeaMes
 
     @Override
     public IPage<MessageVO> pageMessages(Page<WeaMessage> page, Long userId, String msgTitle, Integer msgType, Integer readFlag) {
-        LambdaQueryWrapper<WeaMessage> wrapper = new LambdaQueryWrapper<>();
-        if (userId != null) {
-            wrapper.eq(WeaMessage::getUserId, userId);
-        }
-        if (StringUtils.hasText(msgTitle)) {
-            wrapper.like(WeaMessage::getMsgTitle, LikeUtil.escape(msgTitle));
-        }
-        if (msgType != null) {
-            wrapper.eq(WeaMessage::getMsgType, msgType);
-        }
-        if (readFlag != null) {
-            wrapper.eq(WeaMessage::getReadFlag, readFlag);
-        }
-        wrapper.orderByDesc(WeaMessage::getCreateTime);
-        return BeanConvertUtil.convertPage(baseMapper.selectPage(page, wrapper), MessageVO.class);
+        return pageVoWithFilter(page, MessageVO.class, orderByDesc(WeaMessage::getCreateTime),
+                eq(WeaMessage::getUserId, userId),
+                like(WeaMessage::getMsgTitle, msgTitle),
+                eq(WeaMessage::getMsgType, msgType),
+                eq(WeaMessage::getReadFlag, readFlag));
     }
 
     @Override

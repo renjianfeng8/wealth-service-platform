@@ -30,6 +30,7 @@ import com.wealth.common.audit.AuditLog;
 import com.wealth.common.dto.LoginDTO;
 import com.wealth.common.result.Result;
 import com.wealth.common.utils.BeanConvertUtil;
+import com.wealth.common.utils.CookieUtil;
 import com.wealth.platform.user.dto.ResetPasswordDTO;
 import com.wealth.platform.user.dto.UserDTO;
 import com.wealth.platform.user.entity.User;
@@ -43,9 +44,6 @@ import com.wealth.platform.user.vo.UserVO;
 @Validated
 @RequiredArgsConstructor
 public class UserController {
-
-    /** Cookie 有效期（秒），与 jwt.access-expire=1800000ms 对应（30分钟） */
-    private static final int COOKIE_MAX_AGE_SECONDS = 1800;
 
     private final UserService userService;
 
@@ -122,11 +120,7 @@ public class UserController {
     @AntiReplay
     public ResponseEntity<Result<LoginVO>> login(@Valid @RequestBody LoginDTO dto) {
         LoginVO loginVO = userService.login(dto);
-        ResponseCookie cookie = ResponseCookie.from("wealth_token", loginVO.getToken())
-                .httpOnly(true)
-                .path("/")
-                .maxAge(COOKIE_MAX_AGE_SECONDS)
-                .build();
+        ResponseCookie cookie = CookieUtil.buildTokenCookie(loginVO.getToken(), loginVO.getExpiresInSeconds());
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())
                 .body(Result.success(loginVO));
@@ -138,11 +132,7 @@ public class UserController {
     @AntiReplay
     public ResponseEntity<Result<LoginVO>> identifyLogin(@Valid @RequestBody LoginDTO dto) {
         LoginVO loginVO = userService.identifyLogin(dto);
-        ResponseCookie cookie = ResponseCookie.from("wealth_token", loginVO.getToken())
-                .httpOnly(true)
-                .path("/")
-                .maxAge(COOKIE_MAX_AGE_SECONDS)
-                .build();
+        ResponseCookie cookie = CookieUtil.buildTokenCookie(loginVO.getToken(), loginVO.getExpiresInSeconds());
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())
                 .body(Result.success(loginVO));

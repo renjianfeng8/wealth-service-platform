@@ -214,4 +214,21 @@ public abstract class BaseBizServiceImpl<M extends BaseMapper<E>, E extends Base
         }
         return baseMapper.selectPage(page, wrapper);
     }
+
+    /**
+     * 分页查询并转换为 VO：复用 pageWithFilter 的条件守卫/转义/排序，再经 convertPage 转 VO。
+     * 收敛"手写 LambdaQueryWrapper + convertPage"的分页样板（pageOrders / pageNews / pageMessages）。
+     *
+     * @param page       分页参数（current/size 传递给 pageWithFilter）
+     * @param voClass    VO 类型
+     * @param order      排序，为 null 时不排序
+     * @param conditions 过滤条件（like / eq / positiveEq）
+     */
+    @SafeVarargs
+    protected final <V> IPage<V> pageVoWithFilter(Page<E> page, Class<V> voClass,
+            OrderSpec<E> order, Condition<E>... conditions) {
+        return BeanConvertUtil.convertPage(
+                pageWithFilter(Math.toIntExact(page.getCurrent()), Math.toIntExact(page.getSize()), order, conditions),
+                voClass);
+    }
 }

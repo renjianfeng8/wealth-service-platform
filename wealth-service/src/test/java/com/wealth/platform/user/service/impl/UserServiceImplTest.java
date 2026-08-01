@@ -137,6 +137,7 @@ class UserServiceImplTest {
 
         when(passwordEncoder.matches("rawPassword", "encodedPassword")).thenReturn(true);
         when(jwtUtil.generateToken("testuser", "user")).thenReturn("jwt.token.here");
+        when(jwtUtil.getAccessExpire()).thenReturn(1800000L);
 
         LoginVO result = userService.login(dto);
 
@@ -144,6 +145,7 @@ class UserServiceImplTest {
         assertEquals("jwt.token.here", result.getToken());
         assertEquals(1L, result.getUserId());
         assertEquals("测试用户", result.getNickname());
+        assertEquals(1800, result.getExpiresInSeconds());
     }
 
     @Test

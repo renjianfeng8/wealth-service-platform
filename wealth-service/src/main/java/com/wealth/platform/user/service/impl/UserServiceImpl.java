@@ -61,7 +61,7 @@ public class UserServiceImpl extends BaseBizServiceImpl<UserMapper, User> implem
 
         AuthSupport.verifyCredentials(passwordEncoder, dbUser.getStatus(), dbUser.getPassword(), dto.getPassword());
 
-        return new LoginVO(jwtUtil.generateToken(dbUser.getUsername(), "user"), dbUser.getId(), dbUser.getNickname(), "user");
+        return new LoginVO(jwtUtil.generateToken(dbUser.getUsername(), "user"), dbUser.getId(), dbUser.getNickname(), "user", jwtUtil.getAccessExpire() / 1000);
     }
 
     @Override
@@ -73,7 +73,7 @@ public class UserServiceImpl extends BaseBizServiceImpl<UserMapper, User> implem
         if (admin != null) {
             AuthSupport.verifyCredentials(passwordEncoder, admin.getStatus(), admin.getPassword(), dto.getPassword());
             String token = jwtUtil.generateToken(admin.getUsername(), "admin");
-            return new LoginVO(token, admin.getId(), admin.getNickname(), "admin");
+            return new LoginVO(token, admin.getId(), admin.getNickname(), "admin", jwtUtil.getAccessExpire() / 1000);
         }
 
         // 2. 再查 user 表 — 判断是否为普通用户
@@ -83,7 +83,7 @@ public class UserServiceImpl extends BaseBizServiceImpl<UserMapper, User> implem
         if (user != null) {
             AuthSupport.verifyCredentials(passwordEncoder, user.getStatus(), user.getPassword(), dto.getPassword());
             String token = jwtUtil.generateToken(user.getUsername(), "user");
-            return new LoginVO(token, user.getId(), user.getNickname(), "user");
+            return new LoginVO(token, user.getId(), user.getNickname(), "user", jwtUtil.getAccessExpire() / 1000);
         }
 
         // 3. 都没找到

@@ -61,6 +61,7 @@ class IdentifyLoginTest {
         when(adminIdentityProvider.findByUsername("admin")).thenReturn(admin);
         when(passwordEncoder.matches("admin123", "encodedAdminPwd")).thenReturn(true);
         when(jwtUtil.generateToken("admin", "admin")).thenReturn("admin.jwt.token");
+        when(jwtUtil.getAccessExpire()).thenReturn(1800000L);
 
         LoginDTO dto = new LoginDTO();
         dto.setUsername("admin");
@@ -72,6 +73,7 @@ class IdentifyLoginTest {
         assertEquals("admin", result.getUserType());
         assertEquals("admin.jwt.token", result.getToken());
         assertEquals(1L, result.getUserId());
+        assertEquals(1800, result.getExpiresInSeconds());
         verify(adminIdentityProvider).findByUsername("admin");
     }
 
@@ -96,6 +98,7 @@ class IdentifyLoginTest {
 
         when(passwordEncoder.matches("user123", "encodedUserPwd")).thenReturn(true);
         when(jwtUtil.generateToken("testuser", "user")).thenReturn("user.jwt.token");
+        when(jwtUtil.getAccessExpire()).thenReturn(1800000L);
 
         LoginDTO dto = new LoginDTO();
         dto.setUsername("testuser");
@@ -107,6 +110,7 @@ class IdentifyLoginTest {
         assertEquals("user", result.getUserType());
         assertEquals("user.jwt.token", result.getToken());
         assertEquals(2L, result.getUserId());
+        assertEquals(1800, result.getExpiresInSeconds());
     }
 
     @Test

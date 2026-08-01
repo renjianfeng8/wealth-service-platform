@@ -1,6 +1,5 @@
 package com.wealth.platform.trade.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.wealth.platform.common.base.BaseBizServiceImpl;
@@ -11,7 +10,6 @@ import com.wealth.common.dto.MessageFeignDTO;
 import com.wealth.common.exception.ServiceException;
 import com.wealth.common.utils.BeanConvertUtil;
 import com.wealth.common.utils.RedisUtil;
-import com.wealth.common.utils.LikeUtil;
 import com.wealth.platform.trade.constant.OrderStatusEnum;
 import com.wealth.platform.trade.dto.TradeOrderDTO;
 import com.wealth.platform.trade.dto.TradeOrderStatusDTO;
@@ -24,7 +22,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -101,21 +98,11 @@ public class TradeOrderServiceImpl extends BaseBizServiceImpl<TradeOrderMapper, 
 
     @Override
     public IPage<TradeOrderVO> pageOrders(Page<WeaTradeOrder> page, Long userId, String orderNo, String productCode, Integer orderStatus) {
-        LambdaQueryWrapper<WeaTradeOrder> wrapper = new LambdaQueryWrapper<>();
-        if (userId != null) {
-            wrapper.eq(WeaTradeOrder::getUserId, userId);
-        }
-        if (StringUtils.hasText(orderNo)) {
-            wrapper.like(WeaTradeOrder::getOrderNo, LikeUtil.escape(orderNo));
-        }
-        if (StringUtils.hasText(productCode)) {
-            wrapper.like(WeaTradeOrder::getProductCode, LikeUtil.escape(productCode));
-        }
-        if (orderStatus != null) {
-            wrapper.eq(WeaTradeOrder::getOrderStatus, orderStatus);
-        }
-        wrapper.orderByDesc(WeaTradeOrder::getCreateTime);
-        return BeanConvertUtil.convertPage(baseMapper.selectPage(page, wrapper), TradeOrderVO.class);
+        return pageVoWithFilter(page, TradeOrderVO.class, orderByDesc(WeaTradeOrder::getCreateTime),
+                eq(WeaTradeOrder::getUserId, userId),
+                like(WeaTradeOrder::getOrderNo, orderNo),
+                like(WeaTradeOrder::getProductCode, productCode),
+                eq(WeaTradeOrder::getOrderStatus, orderStatus));
     }
 
     @Override

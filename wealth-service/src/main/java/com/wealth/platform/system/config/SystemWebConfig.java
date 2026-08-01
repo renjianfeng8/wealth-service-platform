@@ -1,5 +1,6 @@
 package com.wealth.platform.system.config;
 
+import com.wealth.common.constants.AuthConstant;
 import com.wealth.common.interceptor.LoginInterceptor;
 import com.wealth.common.utils.JwtUtil;
 import com.wealth.platform.system.interceptor.PermissionInterceptor;
@@ -36,21 +37,10 @@ public class SystemWebConfig implements WebMvcConfigurer {
                 .addPathPatterns("/**");
 
         // 2. RBAC 权限校验 — 仅拦截 /system/** 后台管理路径
+        //    放行清单收敛自 AuthConstant：公共白名单 + 需登录但免权限校验的后台路径
         registry.addInterceptor(permissionInterceptor)
                 .addPathPatterns("/system/**")
-                .excludePathPatterns(
-                        "/system/umsAdmin/login",
-                        "/system/umsAdmin/refresh",
-                        "/system/umsAdmin/checkPermission",
-                        "/system/captcha",
-                        "/system/dashboard/**",
-                        "/error",
-                        "/actuator/**",
-                        /* Knife4j / Swagger 文档路径 */
-                        "/system/v3/api-docs",
-                        "/doc.html",
-                        "/webjars/**",
-                        "/v3/api-docs/**"
-                );
+                .excludePathPatterns(AuthConstant.PERMIT_ALL_URLS)
+                .excludePathPatterns(AuthConstant.PERMISSION_BYPASS_URLS);
     }
 }

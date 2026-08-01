@@ -86,6 +86,11 @@ public class JwtUtil {
         return new TokenPair(accessToken, refreshToken, accessExpire);
     }
 
+    /** access_token 有效期（毫秒），供 Cookie 有效期等调用方读取 */
+    public long getAccessExpire() {
+        return accessExpire;
+    }
+
     /** 从 Token 获取用户名 */
     public String getUsernameFromToken(String token) {
         return parseClaims(token).getSubject();

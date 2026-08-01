@@ -1,11 +1,9 @@
 package com.wealth.platform.message.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.wealth.platform.common.base.BaseBizServiceImpl;
 import com.wealth.common.utils.BeanConvertUtil;
-import com.wealth.common.utils.LikeUtil;
 import com.wealth.platform.message.dto.NewsDTO;
 import com.wealth.platform.message.entity.WeaNews;
 import com.wealth.platform.message.mapper.NewsMapper;
@@ -13,7 +11,6 @@ import com.wealth.platform.message.service.NewsService;
 import com.wealth.platform.message.vo.NewsVO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
 import java.util.List;
 
@@ -41,18 +38,10 @@ public class NewsServiceImpl extends BaseBizServiceImpl<NewsMapper, WeaNews>
 
     @Override
     public IPage<NewsVO> pageNews(Page<WeaNews> page, String title, String source, Integer newsType) {
-        LambdaQueryWrapper<WeaNews> wrapper = new LambdaQueryWrapper<>();
-        if (StringUtils.hasText(title)) {
-            wrapper.like(WeaNews::getTitle, LikeUtil.escape(title));
-        }
-        if (StringUtils.hasText(source)) {
-            wrapper.like(WeaNews::getSource, LikeUtil.escape(source));
-        }
-        if (newsType != null) {
-            wrapper.eq(WeaNews::getNewsType, newsType);
-        }
-        wrapper.orderByDesc(WeaNews::getPublishTime);
-        return BeanConvertUtil.convertPage(baseMapper.selectPage(page, wrapper), NewsVO.class);
+        return pageVoWithFilter(page, NewsVO.class, orderByDesc(WeaNews::getPublishTime),
+                like(WeaNews::getTitle, title),
+                like(WeaNews::getSource, source),
+                eq(WeaNews::getNewsType, newsType));
     }
 
     @Override

@@ -19,4 +19,7 @@ public class LoginVO {
 
     @Schema(description = "用户类型 admin/user")
     private String userType;
+
+    @Schema(description = "Token 有效期（秒）")
+    private long expiresInSeconds;
 }
