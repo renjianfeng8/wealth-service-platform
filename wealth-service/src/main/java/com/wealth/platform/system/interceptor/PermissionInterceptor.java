@@ -4,35 +4,25 @@ import com.wealth.common.constants.AuthConstant;
 import com.wealth.common.result.ResultCode;
 import com.wealth.common.utils.HttpResponseUtil;
 import com.wealth.common.utils.JwtUtil;
-import com.wealth.platform.system.entity.UmsAdmin;
-import com.wealth.platform.system.service.PermissionCacheService;
 import com.wealth.platform.system.service.UmsAdminService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.springframework.util.AntPathMatcher;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import java.io.IOException;
-import java.util.List;
 
 @Slf4j
 @Component
 public class PermissionInterceptor implements HandlerInterceptor {
 
-    private static final AntPathMatcher PATH_MATCHER = new AntPathMatcher();
-
     private final JwtUtil jwtUtil;
     private final UmsAdminService adminService;
-    private final PermissionCacheService permissionCacheService;
 
-    public PermissionInterceptor(JwtUtil jwtUtil,
-                                 UmsAdminService adminService,
-                                 PermissionCacheService permissionCacheService) {
+    public PermissionInterceptor(JwtUtil jwtUtil, UmsAdminService adminService) {
         this.jwtUtil = jwtUtil;
         this.adminService = adminService;
-        this.permissionCacheService = permissionCacheService;
     }
 
     @Override
@@ -53,30 +43,13 @@ public class PermissionInterceptor implements HandlerInterceptor {
             return false;
         }
 
-        String username = jwtUtil.getUsernameFromToken(token);
-        UmsAdmin admin = adminService.getActiveByUsername(username);
-
-        if (admin == null) {
-            log.warn("用户不存在，username={}", username);
-            writeError(response, HttpServletResponse.SC_UNAUTHORIZED, "用户不存在");
-            return false;
-        }
-
-        List<String> allowedUrls = permissionCacheService.getAllowedUrls(admin.getId());
-        if (allowedUrls.isEmpty()) {
-            log.warn("用户无可用资源权限，adminId={}", admin.getId());
+        if (!adminService.checkPermissionForToken(token, uri)) {
+            log.warn("权限校验未通过, uri={}", uri);
             writeError(response, HttpServletResponse.SC_FORBIDDEN, "无权限访问");
             return false;
         }
 
-        boolean hasPermission = allowedUrls.stream().anyMatch(pattern -> PATH_MATCHER.match(pattern, uri));
-        if (!hasPermission) {
-            log.warn("权限校验未通过，adminId={}, uri={}", admin.getId(), uri);
-            writeError(response, HttpServletResponse.SC_FORBIDDEN, "无权限访问");
-            return false;
-        }
-
-        log.info("权限校验通过，adminId={}, uri={}", admin.getId(), uri);
+        log.info("权限校验通过, uri={}", uri);
         return true;
     }
 

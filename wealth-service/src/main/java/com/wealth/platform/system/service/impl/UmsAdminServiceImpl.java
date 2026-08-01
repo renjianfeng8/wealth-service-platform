@@ -2,6 +2,7 @@ package com.wealth.platform.system.service.impl;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.wealth.platform.common.base.BaseBizServiceImpl;
+import com.wealth.common.auth.AuthSupport;
 import com.wealth.common.constants.AuthConstant;
 import com.wealth.common.contract.AdminIdentityProvider;
 import com.wealth.common.dto.AdminIdentityDTO;
@@ -59,9 +60,7 @@ public class UmsAdminServiceImpl extends BaseBizServiceImpl<UmsAdminMapper, UmsA
 
     @Override
     public TokenPair login(LoginDTO dto) {
-        if (!StringUtils.hasText(dto.getUsername()) || !StringUtils.hasText(dto.getPassword())) {
-            throw new ServiceException(401, "用户名密码不能为空");
-        }
+        AuthSupport.assertCredentialsPresent(dto.getUsername(), dto.getPassword());
 
         // 1. 校验验证码（如果提供了 captchaKey）
         if (StringUtils.hasText(dto.getCaptchaKey())) {
@@ -75,20 +74,19 @@ public class UmsAdminServiceImpl extends BaseBizServiceImpl<UmsAdminMapper, UmsA
             throw new ServiceException(401, "账号已被锁定，请" + LOCK_DURATION_MINUTES + "分钟后再试");
         }
 
-        // 3. 查询用户
-        UmsAdmin admin = lambdaQuery()
-                .eq(UmsAdmin::getUsername, dto.getUsername())
-                .one();
-
+        // 3. 查询未删除管理员（delFlag=0）
+        UmsAdmin admin = getActiveByUsername(dto.getUsername());
         if (admin == null) {
             recordFailedAttempt(dto.getUsername());
             throw new ServiceException(401, "用户名或密码错误");
         }
 
-        // 4. 校验密码
-        if (!passwordEncoder.matches(dto.getPassword(), admin.getPassword())) {
+        // 4. 校验账号状态与密码，失败记录一次登录失败
+        try {
+            AuthSupport.verifyCredentials(passwordEncoder, admin.getStatus(), admin.getPassword(), dto.getPassword());
+        } catch (ServiceException e) {
             recordFailedAttempt(dto.getUsername());
-            throw new ServiceException(401, "用户名或密码错误");
+            throw e;
         }
 
         // 5. 登录成功，清除失败记录
@@ -299,12 +297,14 @@ public class UmsAdminServiceImpl extends BaseBizServiceImpl<UmsAdminMapper, UmsA
         if (!jwtUtil.validateToken(token)) {
             return false;
         }
+        return checkPermissionForToken(token, uri);
+    }
+
+    @Override
+    public boolean checkPermissionForToken(String token, String uri) {
         String username = jwtUtil.getUsernameFromToken(token);
         UmsAdmin admin = getActiveByUsername(username);
-        if (admin == null) {
-            return false;
-        }
-        return hasPermission(admin.getId(), uri);
+        return admin != null && permissionCacheService.hasPermission(admin.getId(), uri);
     }
 
     @Override
@@ -317,9 +317,7 @@ public class UmsAdminServiceImpl extends BaseBizServiceImpl<UmsAdminMapper, UmsA
 
     @Override
     public AdminIdentityDTO findByUsername(String username) {
-        UmsAdmin admin = lambdaQuery()
-                .eq(UmsAdmin::getUsername, username)
-                .one();
+        UmsAdmin admin = getActiveByUsername(username);
         if (admin == null) {
             return null;
         }

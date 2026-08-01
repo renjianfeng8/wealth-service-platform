@@ -9,6 +9,7 @@ import com.wealth.common.utils.RedisUtil;
 import com.wealth.platform.system.dto.UmsAdminDTO;
 import com.wealth.platform.system.entity.UmsAdmin;
 import com.wealth.platform.system.mapper.UmsAdminMapper;
+import com.wealth.platform.system.service.PermissionCacheService;
 import com.wealth.platform.system.service.UmsResourceService;
 import com.wealth.platform.system.vo.UmsAdminVO;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,6 +25,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -50,6 +52,9 @@ class UmsAdminServiceImplTest {
     private UmsResourceService resourceService;
 
     @Mock
+    private PermissionCacheService permissionCacheService;
+
+    @Mock
     private BCryptPasswordEncoder passwordEncoder;
 
     @Mock
@@ -64,6 +69,7 @@ class UmsAdminServiceImplTest {
         adminService = mock(UmsAdminServiceImpl.class, CALLS_REAL_METHODS);
         ReflectionTestUtils.setField(adminService, "jwtUtil", jwtUtil);
         ReflectionTestUtils.setField(adminService, "resourceService", resourceService);
+        ReflectionTestUtils.setField(adminService, "permissionCacheService", permissionCacheService);
         ReflectionTestUtils.setField(adminService, "passwordEncoder", passwordEncoder);
         ReflectionTestUtils.setField(adminService, "baseMapper", umsAdminMapper);
         ReflectionTestUtils.setField(adminService, "redisUtil", redisUtil);
@@ -142,6 +148,47 @@ class UmsAdminServiceImplTest {
         when(passwordEncoder.matches("wrongPassword", "encodedPassword")).thenReturn(false);
 
         assertThrows(ServiceException.class, () -> adminService.login(dto));
+    }
+
+    @Test
+    @DisplayName("管理员登录失败-账号被禁用")
+    void login_DisabledAccount() {
+        LambdaQueryChainWrapper<UmsAdmin> qc = setupLoginMocks();
+        when(qc.one()).thenReturn(mockAdmin);
+
+        LoginDTO dto = new LoginDTO();
+        dto.setUsername("admin");
+        dto.setPassword("rawPassword");
+
+        mockAdmin.setStatus(0);
+
+        ServiceException exception = assertThrows(ServiceException.class, () -> adminService.login(dto));
+        assertEquals(401, exception.getCode());
+    }
+
+    @Test
+    @DisplayName("checkPermissionForToken-有效token且有权限")
+    void checkPermissionForToken_ShouldReturnTrue() {
+        when(jwtUtil.getUsernameFromToken("valid.token")).thenReturn("admin");
+        LambdaQueryChainWrapper<UmsAdmin> qc = setupLoginMocks();
+        when(qc.one()).thenReturn(mockAdmin);
+        when(permissionCacheService.hasPermission(1L, "/system/umsRole/page")).thenReturn(true);
+
+        boolean result = adminService.checkPermissionForToken("valid.token", "/system/umsRole/page");
+
+        assertTrue(result);
+    }
+
+    @Test
+    @DisplayName("checkPermissionForToken-管理员已删除返回false")
+    void checkPermissionForToken_ShouldReturnFalseWhenAdminDeleted() {
+        when(jwtUtil.getUsernameFromToken("deleted.token")).thenReturn("deletedadmin");
+        LambdaQueryChainWrapper<UmsAdmin> qc = setupLoginMocks();
+        when(qc.one()).thenReturn(null);
+
+        boolean result = adminService.checkPermissionForToken("deleted.token", "/system/umsRole/page");
+
+        assertFalse(result);
     }
 
     @Test

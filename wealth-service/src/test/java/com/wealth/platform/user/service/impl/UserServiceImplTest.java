@@ -136,7 +136,7 @@ class UserServiceImplTest {
         dto.setPassword("rawPassword");
 
         when(passwordEncoder.matches("rawPassword", "encodedPassword")).thenReturn(true);
-        when(jwtUtil.generateToken("testuser")).thenReturn("jwt.token.here");
+        when(jwtUtil.generateToken("testuser", "user")).thenReturn("jwt.token.here");
 
         LoginVO result = userService.login(dto);
 

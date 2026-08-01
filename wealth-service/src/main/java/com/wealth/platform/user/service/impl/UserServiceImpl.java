@@ -2,6 +2,7 @@ package com.wealth.platform.user.service.impl;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.wealth.platform.common.base.BaseBizServiceImpl;
+import com.wealth.common.auth.AuthSupport;
 import com.wealth.common.contract.AdminIdentityProvider;
 import com.wealth.common.dto.AdminIdentityDTO;
 import com.wealth.common.utils.BeanConvertUtil;
@@ -48,45 +49,29 @@ public class UserServiceImpl extends BaseBizServiceImpl<UserMapper, User> implem
 
     @Override
     public LoginVO login(LoginDTO dto) {
-        if (!StringUtils.hasText(dto.getUsername()) || !StringUtils.hasText(dto.getPassword())) {
-            throw new ServiceException(400, "用户名/密码不能为空");
-        }
+        AuthSupport.assertCredentialsPresent(dto.getUsername(), dto.getPassword());
 
         User dbUser = this.lambdaQuery()
                 .eq(User::getUsername, dto.getUsername())
                 .one();
 
         if (dbUser == null) {
-            throw new ServiceException(401, "用户不存在");
+            throw new ServiceException(401, "用户名或密码错误");
         }
 
-        if (dbUser.getStatus() != null && dbUser.getStatus() == 0) {
-            throw new ServiceException(401, "账号已被禁用");
-        }
+        AuthSupport.verifyCredentials(passwordEncoder, dbUser.getStatus(), dbUser.getPassword(), dto.getPassword());
 
-        if (!passwordEncoder.matches(dto.getPassword(), dbUser.getPassword())) {
-            throw new ServiceException(401, "密码错误");
-        }
-
-        return new LoginVO(jwtUtil.generateToken(dbUser.getUsername()), dbUser.getId(), dbUser.getNickname(), "user");
+        return new LoginVO(jwtUtil.generateToken(dbUser.getUsername(), "user"), dbUser.getId(), dbUser.getNickname(), "user");
     }
 
     @Override
     public LoginVO identifyLogin(LoginDTO dto) {
-        if (!StringUtils.hasText(dto.getUsername()) || !StringUtils.hasText(dto.getPassword())) {
-            throw new ServiceException(400, "用户名/密码不能为空");
-        }
+        AuthSupport.assertCredentialsPresent(dto.getUsername(), dto.getPassword());
 
-        // 1. 先查 ums_admin 表 — 判断是否为管理员
+        // 1. 先查 ums_admin 表 — 判断是否为管理员（delFlag=0）
         AdminIdentityDTO admin = adminIdentityProvider.findByUsername(dto.getUsername());
-
         if (admin != null) {
-            if (admin.getStatus() != null && admin.getStatus() == 0) {
-                throw new ServiceException(401, "账号已被禁用");
-            }
-            if (!passwordEncoder.matches(dto.getPassword(), admin.getPassword())) {
-                throw new ServiceException(401, "密码错误");
-            }
+            AuthSupport.verifyCredentials(passwordEncoder, admin.getStatus(), admin.getPassword(), dto.getPassword());
             String token = jwtUtil.generateToken(admin.getUsername(), "admin");
             return new LoginVO(token, admin.getId(), admin.getNickname(), "admin");
         }
@@ -95,14 +80,8 @@ public class UserServiceImpl extends BaseBizServiceImpl<UserMapper, User> implem
         User user = this.lambdaQuery()
                 .eq(User::getUsername, dto.getUsername())
                 .one();
-
         if (user != null) {
-            if (user.getStatus() != null && user.getStatus() == 0) {
-                throw new ServiceException(401, "账号已被禁用");
-            }
-            if (!passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
-                throw new ServiceException(401, "密码错误");
-            }
+            AuthSupport.verifyCredentials(passwordEncoder, user.getStatus(), user.getPassword(), dto.getPassword());
             String token = jwtUtil.generateToken(user.getUsername(), "user");
             return new LoginVO(token, user.getId(), user.getNickname(), "user");
         }

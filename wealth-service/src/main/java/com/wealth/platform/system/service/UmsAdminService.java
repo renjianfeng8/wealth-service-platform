@@ -32,6 +32,9 @@ public interface UmsAdminService extends IService<UmsAdmin> {
     // 校验请求权限（从 Authorization 头解析 token 并校验）
     boolean checkPermission(String uri, String authHeader);
 
+    // 校验已认证 Token 是否有权访问指定 URI（供拦截器复用，权限判定单一来源）
+    boolean checkPermissionForToken(String token, String uri);
+
     // 分页条件查询
     IPage<UmsAdmin> pageWithFilter(Integer pageNum, Integer pageSize, String username, Integer status);
 
