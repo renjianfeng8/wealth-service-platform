@@ -29,7 +29,7 @@ public class MarketDataServiceImpl extends BaseBizServiceImpl<MarketDataMapper, 
 
     @Override
     public MarketDataVO getMarketDataById(Long id) {
-        return getVoById(id, MarketDataVO.class);
+        return getVoByIdOrThrow(id, MarketDataVO.class, "行情数据");
     }
 
     @Override

@@ -4,11 +4,18 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.wealth.common.dto.LoginDTO;
 import com.wealth.common.utils.JwtUtil.TokenPair;
+import com.wealth.platform.system.dto.UmsAdminDTO;
 import com.wealth.platform.system.entity.UmsAdmin;
+import com.wealth.platform.system.vo.UmsAdminVO;
 
 import java.util.List;
 
 public interface UmsAdminService extends IService<UmsAdmin> {
+    UmsAdminVO getAdminById(Long id);
+
+    boolean updateAdmin(Long id, UmsAdminDTO dto);
+
+    boolean deleteAdmin(Long id);
     TokenPair login(LoginDTO dto);
     TokenPair refreshToken(String authHeader);
     Boolean createAdmin(UmsAdmin admin);

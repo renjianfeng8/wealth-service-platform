@@ -15,11 +15,13 @@ import com.wealth.common.utils.JwtUtil.TokenPair;
 import com.wealth.common.utils.RedisUtil;
 import com.wealth.common.utils.LikeUtil;
 import com.wealth.platform.system.constant.CaptchaConstant;
+import com.wealth.platform.system.dto.UmsAdminDTO;
 import com.wealth.platform.system.entity.UmsAdmin;
 import com.wealth.platform.system.mapper.UmsAdminMapper;
 import com.wealth.platform.system.service.PermissionCacheService;
 import com.wealth.platform.system.service.UmsAdminService;
 import com.wealth.platform.system.service.UmsResourceService;
+import com.wealth.platform.system.vo.UmsAdminVO;
 import lombok.extern.slf4j.Slf4j;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -335,5 +337,26 @@ public class UmsAdminServiceImpl extends BaseBizServiceImpl<UmsAdminMapper, UmsA
         AdminIdentityDTO dto = BeanConvertUtil.convert(admin, AdminIdentityDTO.class);
         dto.setNickname(admin.getNickName());
         return dto;
+    }
+
+    @Override
+    public UmsAdminVO getAdminById(Long id) {
+        return getVoByIdOrThrow(id, UmsAdminVO.class, "管理员");
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean updateAdmin(Long id, UmsAdminDTO dto) {
+        UmsAdmin entity = getEntityOrThrow(id, "管理员");
+        BeanConvertUtil.copyNonNullProperties(dto, entity);
+        entity.setPassword(null);
+        entity.setId(id);
+        return updateById(entity);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean deleteAdmin(Long id) {
+        return deleteWithCheck(id, "管理员");
     }
 }

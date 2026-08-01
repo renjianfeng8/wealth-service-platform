@@ -7,6 +7,7 @@ import com.wealth.platform.common.base.BaseBizServiceImpl;
 import com.wealth.platform.system.entity.UmsRoleResourceRelation;
 import com.wealth.platform.system.mapper.UmsRoleResourceRelationMapper;
 import com.wealth.platform.system.service.UmsRoleResourceRelationService;
+import com.wealth.platform.system.vo.UmsRoleResourceRelationVO;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -34,5 +35,15 @@ public class UmsRoleResourceRelationServiceImpl
         LambdaQueryWrapper<UmsRoleResourceRelation> wrapper = new LambdaQueryWrapper<>();
         wrapper.in(UmsRoleResourceRelation::getRoleId, roleIds);
         return listColumn(wrapper, UmsRoleResourceRelation::getResourceId);
+    }
+
+    @Override
+    public UmsRoleResourceRelationVO getRoleResourceRelationById(Long id) {
+        return getVoByIdOrThrow(id, UmsRoleResourceRelationVO.class, "角色资源关联");
+    }
+
+    @Override
+    public UmsRoleResourceRelation getRoleResourceRelationEntityOrThrow(Long id) {
+        return getEntityOrThrow(id, "角色资源关联");
     }
 }

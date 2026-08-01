@@ -6,14 +6,17 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.wealth.platform.common.base.BaseBizServiceImpl;
 import com.wealth.common.contract.AdminIdentityProvider;
 import com.wealth.common.dto.AdminIdentityDTO;
+import com.wealth.common.utils.BeanConvertUtil;
 import com.wealth.common.utils.JwtUtil;
 import com.wealth.common.utils.LikeUtil;
 import com.wealth.common.dto.LoginDTO;
 import com.wealth.common.exception.ServiceException;
+import com.wealth.platform.user.dto.UserDTO;
 import com.wealth.platform.user.entity.User;
 import com.wealth.platform.user.mapper.UserMapper;
 import com.wealth.platform.user.service.UserService;
 import com.wealth.platform.user.vo.LoginVO;
+import com.wealth.platform.user.vo.UserVO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -158,5 +161,26 @@ public class UserServiceImpl extends BaseBizServiceImpl<UserMapper, User> implem
                 .eq(User::getId, dbUser.getId())
                 .set(User::getPassword, passwordEncoder.encode(user.getPassword()))
                 .update();
+    }
+
+    @Override
+    public UserVO getUserById(Long id) {
+        return getVoByIdOrThrow(id, UserVO.class, "用户");
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean updateUser(Long id, UserDTO dto) {
+        User entity = getEntityOrThrow(id, "用户");
+        BeanConvertUtil.copyNonNullProperties(dto, entity);
+        entity.setPassword(null);
+        entity.setId(id);
+        return updateById(entity);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean deleteUser(Long id) {
+        return deleteWithCheck(id, "用户");
     }
 }

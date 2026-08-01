@@ -42,11 +42,7 @@ public class MessageController {
     @Operation(summary = "根据ID查询站内消息推送信息")
     @GetMapping("/{id}")
     public Result<MessageVO> getById(@PathVariable Long id) {
-        MessageVO vo = messageService.getMessageById(id);
-        if (vo == null) {
-            return Result.error(ResultCode.NOT_FOUND);
-        }
-        return Result.success(vo);
+        return Result.success(messageService.getMessageById(id));
     }
 
     @Operation(summary = "查询站内消息推送列表")
@@ -83,21 +79,13 @@ public class MessageController {
     @AuditLog(module = "消息管理", operation = "更新消息")
     @AntiReplay
     public Result<Boolean> update(@PathVariable Long id, @Valid @RequestBody MessageDTO dto) {
-        boolean success = messageService.updateMessage(id, dto);
-        if (!success) {
-            return Result.error(ResultCode.NOT_FOUND);
-        }
-        return Result.success(true);
+        return Result.success(messageService.updateMessage(id, dto));
     }
 
     @Operation(summary = "标记消息为已读")
     @PutMapping("/{id}/read")
     public Result<Boolean> markAsRead(@PathVariable Long id) {
-        boolean success = messageService.markAsRead(id);
-        if (!success) {
-            return Result.error(ResultCode.NOT_FOUND);
-        }
-        return Result.success(true);
+        return Result.success(messageService.markAsRead(id));
     }
 
     @Operation(summary = "批量标记消息为已读")
@@ -115,10 +103,6 @@ public class MessageController {
     @AuditLog(module = "消息管理", operation = "删除消息")
     @AntiReplay
     public Result<Boolean> delete(@PathVariable Long id) {
-        boolean success = messageService.deleteMessage(id);
-        if (!success) {
-            return Result.error(ResultCode.NOT_FOUND);
-        }
-        return Result.success(true);
+        return Result.success(messageService.deleteMessage(id));
     }
 }

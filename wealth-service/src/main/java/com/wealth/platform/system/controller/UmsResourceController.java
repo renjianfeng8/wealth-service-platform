@@ -5,7 +5,6 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.wealth.common.audit.AntiReplay;
 import com.wealth.common.audit.AuditLog;
 import com.wealth.common.result.Result;
-import com.wealth.common.result.ResultCode;
 import com.wealth.common.utils.BeanConvertUtil;
 import com.wealth.platform.system.dto.UmsResourceDTO;
 import com.wealth.platform.system.entity.UmsResource;
@@ -45,11 +44,7 @@ public class UmsResourceController {
     @Operation(summary = "根据ID查询后台资源信息")
     @GetMapping("/{id}")
     public Result<UmsResourceVO> getById(@PathVariable Long id) {
-        UmsResource resource = umsResourceService.getById(id);
-        if (resource == null) {
-            return Result.error(ResultCode.NOT_FOUND);
-        }
-        return Result.success(BeanConvertUtil.convert(resource, UmsResourceVO.class));
+        return Result.success(umsResourceService.getResourceById(id));
     }
 
     @Operation(summary = "查询后台资源列表")
@@ -87,13 +82,7 @@ public class UmsResourceController {
     @AuditLog(module = "系统管理", operation = "更新资源")
     @AntiReplay
     public Result<Boolean> update(@PathVariable Long id, @Valid @RequestBody UmsResourceDTO dto) {
-        UmsResource existing = umsResourceService.getById(id);
-        if (existing == null) {
-            return Result.error(ResultCode.NOT_FOUND);
-        }
-        BeanConvertUtil.copyNonNullProperties(dto, existing);
-        existing.setId(id);
-        return Result.success(umsResourceService.updateById(existing));
+        return Result.success(umsResourceService.updateResource(id, dto));
     }
 
     @Operation(summary = "删除后台资源")
@@ -101,11 +90,6 @@ public class UmsResourceController {
     @AuditLog(module = "系统管理", operation = "删除资源")
     @AntiReplay
     public Result<Boolean> delete(@PathVariable Long id) {
-        UmsResource existing = umsResourceService.getById(id);
-        if (existing == null) {
-            return Result.error(ResultCode.NOT_FOUND);
-        }
-        boolean removed = umsResourceService.removeById(id);
-        return Result.success(removed);
+        return Result.success(umsResourceService.deleteResource(id));
     }
 }

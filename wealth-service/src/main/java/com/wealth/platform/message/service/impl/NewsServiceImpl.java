@@ -23,7 +23,7 @@ public class NewsServiceImpl extends BaseBizServiceImpl<NewsMapper, WeaNews>
 
     @Override
     public NewsVO getNewsById(Long id) {
-        return getVoById(id, NewsVO.class);
+        return getVoByIdOrThrow(id, NewsVO.class, "资讯");
     }
 
     @Override

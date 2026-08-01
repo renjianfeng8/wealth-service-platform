@@ -29,7 +29,6 @@ import com.wealth.common.audit.AntiReplay;
 import com.wealth.common.audit.AuditLog;
 import com.wealth.common.dto.LoginDTO;
 import com.wealth.common.result.Result;
-import com.wealth.common.result.ResultCode;
 import com.wealth.common.utils.BeanConvertUtil;
 import com.wealth.platform.user.dto.ResetPasswordDTO;
 import com.wealth.platform.user.dto.UserDTO;
@@ -53,11 +52,7 @@ public class UserController {
     @GetMapping("/{id}")
     @Operation(summary = "根据ID查询用户")
     public Result<UserVO> getById(@PathVariable Long id) {
-        User user = userService.getById(id);
-        if (user == null) {
-            return Result.error(ResultCode.NOT_FOUND);
-        }
-        return Result.success(BeanConvertUtil.convert(user, UserVO.class));
+        return Result.success(userService.getUserById(id));
     }
 
     @GetMapping
@@ -95,30 +90,14 @@ public class UserController {
     public Result<Boolean> update(
             @PathVariable Long id,
             @Valid @RequestBody UserDTO dto) {
-        User user = userService.getById(id);
-        if (user == null) {
-            return Result.error(ResultCode.NOT_FOUND);
-        }
-        BeanConvertUtil.copyNonNullProperties(dto, user);
-        clearPasswordForUpdate(user);
-        user.setId(id);
-        return Result.success(userService.updateById(user));
-    }
-
-    /** 通用更新接口中置空密码，防止通过 update 接口修改密码 */
-    private void clearPasswordForUpdate(User user) {
-        user.setPassword(null);
+        return Result.success(userService.updateUser(id, dto));
     }
 
     @DeleteMapping("/{id}")
     @Operation(summary = "删除用户")
     @AuditLog(module = "用户管理", operation = "删除用户")
     public Result<Boolean> delete(@PathVariable Long id) {
-        User existing = userService.getById(id);
-        if (existing == null) {
-            return Result.error(ResultCode.NOT_FOUND);
-        }
-        return Result.success(userService.removeById(id));
+        return Result.success(userService.deleteUser(id));
     }
 
     @DeleteMapping("/batch")

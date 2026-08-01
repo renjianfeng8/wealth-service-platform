@@ -2,7 +2,9 @@ package com.wealth.platform.system.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.wealth.platform.system.dto.UmsResourceDTO;
 import com.wealth.platform.system.entity.UmsResource;
+import com.wealth.platform.system.vo.UmsResourceVO;
 import java.util.List;
 
 /**
@@ -14,5 +16,11 @@ public interface UmsResourceService extends IService<UmsResource> {
 
     // 分页条件查询
     IPage<UmsResource> pageWithFilter(Integer pageNum, Integer pageSize, String name, String url);
+
+    UmsResourceVO getResourceById(Long id);
+
+    boolean updateResource(Long id, UmsResourceDTO dto);
+
+    boolean deleteResource(Long id);
 }
 

@@ -51,7 +51,7 @@ public class TradeOrderServiceImpl extends BaseBizServiceImpl<TradeOrderMapper, 
 
     @Override
     public TradeOrderVO getOrderById(Long id) {
-        return getVoById(id, TradeOrderVO.class);
+        return getVoByIdOrThrow(id, TradeOrderVO.class, "交易委托单");
     }
 
     @Override

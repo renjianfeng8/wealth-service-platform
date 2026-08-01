@@ -25,7 +25,7 @@ public class MessageServiceImpl extends BaseBizServiceImpl<MessageMapper, WeaMes
 
     @Override
     public MessageVO getMessageById(Long id) {
-        return getVoById(id, MessageVO.class);
+        return getVoByIdOrThrow(id, MessageVO.class, "消息");
     }
 
     @Override
@@ -69,8 +69,7 @@ public class MessageServiceImpl extends BaseBizServiceImpl<MessageMapper, WeaMes
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean markAsRead(Long id) {
-        WeaMessage entity = getById(id);
-        if (entity == null) return false;
+        WeaMessage entity = getEntityOrThrow(id, "消息");
         entity.setReadFlag(1);
         return updateById(entity);
     }

@@ -5,7 +5,6 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.wealth.common.audit.AntiReplay;
 import com.wealth.common.audit.AuditLog;
 import com.wealth.common.result.Result;
-import com.wealth.common.result.ResultCode;
 import com.wealth.platform.product.dto.ProductDTO;
 import com.wealth.platform.product.entity.WeaProduct;
 import com.wealth.platform.product.service.ProductService;
@@ -41,11 +40,7 @@ public class ProductController {
     @Operation(summary = "根据ID查询产品")
     @GetMapping("/{id}")
     public Result<ProductVO> getById(@PathVariable Long id) {
-        ProductVO vo = productService.getProductById(id);
-        if (vo == null) {
-            return Result.error(ResultCode.NOT_FOUND);
-        }
-        return Result.success(vo);
+        return Result.success(productService.getProductById(id));
     }
 
     @Operation(summary = "查询产品列表")

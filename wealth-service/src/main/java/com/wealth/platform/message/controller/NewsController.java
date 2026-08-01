@@ -5,7 +5,6 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.wealth.common.audit.AntiReplay;
 import com.wealth.common.audit.AuditLog;
 import com.wealth.common.result.Result;
-import com.wealth.common.result.ResultCode;
 import com.wealth.platform.message.dto.NewsDTO;
 import com.wealth.platform.message.entity.WeaNews;
 import com.wealth.platform.message.service.NewsService;
@@ -41,11 +40,7 @@ public class NewsController {
     @Operation(summary = "根据ID查询财经资讯公告")
     @GetMapping("/{id}")
     public Result<NewsVO> getById(@PathVariable Long id) {
-        NewsVO vo = newsService.getNewsById(id);
-        if (vo == null) {
-            return Result.error(ResultCode.NOT_FOUND);
-        }
-        return Result.success(vo);
+        return Result.success(newsService.getNewsById(id));
     }
 
     @Operation(summary = "查询财经资讯公告列表")
@@ -81,11 +76,7 @@ public class NewsController {
     @AuditLog(module = "资讯管理", operation = "更新资讯")
     @AntiReplay
     public Result<Boolean> update(@PathVariable Long id, @Valid @RequestBody NewsDTO dto) {
-        boolean success = newsService.updateNews(id, dto);
-        if (!success) {
-            return Result.error(ResultCode.NOT_FOUND);
-        }
-        return Result.success(true);
+        return Result.success(newsService.updateNews(id, dto));
     }
 
     @Operation(summary = "删除财经资讯公告（逻辑删除）")
@@ -93,10 +84,6 @@ public class NewsController {
     @AuditLog(module = "资讯管理", operation = "删除资讯")
     @AntiReplay
     public Result<Boolean> delete(@PathVariable Long id) {
-        boolean success = newsService.deleteNews(id);
-        if (!success) {
-            return Result.error(ResultCode.NOT_FOUND);
-        }
-        return Result.success(true);
+        return Result.success(newsService.deleteNews(id));
     }
 }

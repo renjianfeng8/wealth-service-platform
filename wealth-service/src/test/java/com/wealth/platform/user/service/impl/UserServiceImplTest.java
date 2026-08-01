@@ -5,9 +5,11 @@ import com.baomidou.mybatisplus.extension.conditions.update.LambdaUpdateChainWra
 import com.wealth.common.dto.LoginDTO;
 import com.wealth.common.exception.ServiceException;
 import com.wealth.common.utils.JwtUtil;
+import com.wealth.platform.user.dto.UserDTO;
 import com.wealth.platform.user.entity.User;
 import com.wealth.platform.user.mapper.UserMapper;
 import com.wealth.platform.user.vo.LoginVO;
+import com.wealth.platform.user.vo.UserVO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -22,6 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.doReturn;
@@ -234,5 +237,84 @@ class UserServiceImplTest {
         user.setPassword("");
 
         assertThrows(ServiceException.class, () -> userService.resetPassword(user, "oldPassword"));
+    }
+
+    @Test
+    @DisplayName("根据ID查询用户-成功")
+    void getUserById_Found() {
+        when(userMapper.selectById(1L)).thenReturn(mockUser);
+
+        UserVO result = userService.getUserById(1L);
+
+        assertNotNull(result);
+        assertEquals("testuser", result.getUsername());
+        assertEquals("测试用户", result.getNickname());
+    }
+
+    @Test
+    @DisplayName("根据ID查询用户-不存在抛404")
+    void getUserById_NotFound() {
+        when(userMapper.selectById(99L)).thenReturn(null);
+
+        ServiceException exception = assertThrows(ServiceException.class, () ->
+                userService.getUserById(99L));
+
+        assertEquals(404, exception.getCode());
+    }
+
+    @Test
+    @DisplayName("更新用户成功-密码被清空")
+    void updateUser_Success() {
+        UserDTO dto = new UserDTO();
+        dto.setNickname("更新后的昵称");
+        dto.setPassword("newPassword");
+
+        when(userMapper.selectById(1L)).thenReturn(mockUser);
+        when(userMapper.updateById(any(User.class))).thenReturn(1);
+
+        boolean result = userService.updateUser(1L, dto);
+
+        assertTrue(result);
+        verify(userMapper).updateById(argThat((User user) ->
+                user.getId() == 1L &&
+                "更新后的昵称".equals(user.getNickname()) &&
+                user.getPassword() == null
+        ));
+    }
+
+    @Test
+    @DisplayName("更新用户-不存在抛404")
+    void updateUser_NotFound() {
+        when(userMapper.selectById(99L)).thenReturn(null);
+
+        ServiceException exception = assertThrows(ServiceException.class, () ->
+                userService.updateUser(99L, new UserDTO()));
+
+        assertEquals(404, exception.getCode());
+        verify(userMapper, never()).updateById(isA(User.class));
+    }
+
+    @Test
+    @DisplayName("删除用户成功")
+    void deleteUser_Success() {
+        when(userMapper.selectById(1L)).thenReturn(mockUser);
+        when(userMapper.deleteById(1L)).thenReturn(1);
+
+        boolean result = userService.deleteUser(1L);
+
+        assertTrue(result);
+        verify(userMapper).deleteById(1L);
+    }
+
+    @Test
+    @DisplayName("删除用户-不存在抛404")
+    void deleteUser_NotFound() {
+        when(userMapper.selectById(99L)).thenReturn(null);
+
+        ServiceException exception = assertThrows(ServiceException.class, () ->
+                userService.deleteUser(99L));
+
+        assertEquals(404, exception.getCode());
+        verify(userMapper, never()).deleteById(isA(User.class));
     }
 }

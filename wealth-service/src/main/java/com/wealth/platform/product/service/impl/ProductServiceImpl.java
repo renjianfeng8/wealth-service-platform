@@ -22,7 +22,7 @@ public class ProductServiceImpl extends BaseBizServiceImpl<ProductMapper, WeaPro
 
     @Override
     public ProductVO getProductById(Long id) {
-        return getVoById(id, ProductVO.class);
+        return getVoByIdOrThrow(id, ProductVO.class, "产品");
     }
 
     @Override

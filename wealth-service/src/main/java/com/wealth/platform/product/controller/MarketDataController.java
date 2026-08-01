@@ -5,7 +5,6 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.wealth.common.audit.AntiReplay;
 import com.wealth.common.audit.AuditLog;
 import com.wealth.common.result.Result;
-import com.wealth.common.result.ResultCode;
 import com.wealth.common.utils.BeanConvertUtil;
 import com.wealth.platform.product.dto.MarketDataDTO;
 import com.wealth.platform.product.entity.WeaMarketData;
@@ -49,11 +48,7 @@ public class MarketDataController {
     @Operation(summary = "根据ID查询行情数据")
     @GetMapping("/{id}")
     public Result<MarketDataVO> getById(@PathVariable Long id) {
-        MarketDataVO vo = marketDataService.getMarketDataById(id);
-        if (vo == null) {
-            return Result.error(ResultCode.NOT_FOUND);
-        }
-        return Result.success(vo);
+        return Result.success(marketDataService.getMarketDataById(id));
     }
 
     @Operation(summary = "查询行情数据列表")

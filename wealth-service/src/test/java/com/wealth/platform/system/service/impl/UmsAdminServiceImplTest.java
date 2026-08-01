@@ -6,9 +6,11 @@ import com.wealth.common.exception.ServiceException;
 import com.wealth.common.utils.JwtUtil;
 import com.wealth.common.utils.JwtUtil.TokenPair;
 import com.wealth.common.utils.RedisUtil;
+import com.wealth.platform.system.dto.UmsAdminDTO;
 import com.wealth.platform.system.entity.UmsAdmin;
 import com.wealth.platform.system.mapper.UmsAdminMapper;
 import com.wealth.platform.system.service.UmsResourceService;
+import com.wealth.platform.system.vo.UmsAdminVO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -26,9 +28,12 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -193,5 +198,84 @@ class UmsAdminServiceImplTest {
 
         assertNotNull(admin);
         assertEquals("admin", admin.getUsername());
+    }
+
+    @Test
+    @DisplayName("根据ID查询管理员-成功")
+    void getAdminById_Found() {
+        when(umsAdminMapper.selectById(1L)).thenReturn(mockAdmin);
+
+        UmsAdminVO result = adminService.getAdminById(1L);
+
+        assertNotNull(result);
+        assertEquals("admin", result.getUsername());
+        assertEquals(1, result.getStatus());
+    }
+
+    @Test
+    @DisplayName("根据ID查询管理员-不存在抛404")
+    void getAdminById_NotFound() {
+        when(umsAdminMapper.selectById(99L)).thenReturn(null);
+
+        ServiceException exception = assertThrows(ServiceException.class, () ->
+                adminService.getAdminById(99L));
+
+        assertEquals(404, exception.getCode());
+    }
+
+    @Test
+    @DisplayName("更新管理员成功-密码被清空")
+    void updateAdmin_Success() {
+        UmsAdminDTO dto = new UmsAdminDTO();
+        dto.setNickName("更新后的昵称");
+        dto.setPassword("newPassword");
+
+        when(umsAdminMapper.selectById(1L)).thenReturn(mockAdmin);
+        when(umsAdminMapper.updateById(any(UmsAdmin.class))).thenReturn(1);
+
+        boolean result = adminService.updateAdmin(1L, dto);
+
+        assertTrue(result);
+        verify(umsAdminMapper).updateById(argThat((UmsAdmin admin) ->
+                admin.getId() == 1L &&
+                "更新后的昵称".equals(admin.getNickName()) &&
+                admin.getPassword() == null
+        ));
+    }
+
+    @Test
+    @DisplayName("更新管理员-不存在抛404")
+    void updateAdmin_NotFound() {
+        when(umsAdminMapper.selectById(99L)).thenReturn(null);
+
+        ServiceException exception = assertThrows(ServiceException.class, () ->
+                adminService.updateAdmin(99L, new UmsAdminDTO()));
+
+        assertEquals(404, exception.getCode());
+        verify(umsAdminMapper, never()).updateById(isA(UmsAdmin.class));
+    }
+
+    @Test
+    @DisplayName("删除管理员成功")
+    void deleteAdmin_Success() {
+        when(umsAdminMapper.selectById(1L)).thenReturn(mockAdmin);
+        when(umsAdminMapper.deleteById(1L)).thenReturn(1);
+
+        boolean result = adminService.deleteAdmin(1L);
+
+        assertTrue(result);
+        verify(umsAdminMapper).deleteById(1L);
+    }
+
+    @Test
+    @DisplayName("删除管理员-不存在抛404")
+    void deleteAdmin_NotFound() {
+        when(umsAdminMapper.selectById(99L)).thenReturn(null);
+
+        ServiceException exception = assertThrows(ServiceException.class, () ->
+                adminService.deleteAdmin(99L));
+
+        assertEquals(404, exception.getCode());
+        verify(umsAdminMapper, never()).deleteById(isA(UmsAdmin.class));
     }
 }

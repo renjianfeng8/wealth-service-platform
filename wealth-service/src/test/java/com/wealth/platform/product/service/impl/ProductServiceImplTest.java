@@ -20,7 +20,6 @@ import java.util.List;
 import com.wealth.common.exception.ServiceException;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -70,13 +69,14 @@ class ProductServiceImplTest {
     }
 
     @Test
-    @DisplayName("根据ID查询产品-不存在返回null")
+    @DisplayName("根据ID查询产品-不存在抛404")
     void getProductById_NotFound() {
         when(productMapper.selectById(99L)).thenReturn(null);
 
-        ProductVO result = productService.getProductById(99L);
+        ServiceException exception = assertThrows(ServiceException.class, () ->
+                productService.getProductById(99L));
 
-        assertNull(result);
+        assertEquals(404, exception.getCode());
     }
 
     @Test

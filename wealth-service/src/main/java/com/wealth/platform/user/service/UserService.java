@@ -3,8 +3,10 @@ package com.wealth.platform.user.service;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.wealth.common.dto.LoginDTO;
+import com.wealth.platform.user.dto.UserDTO;
 import com.wealth.platform.user.entity.User;
 import com.wealth.platform.user.vo.LoginVO;
+import com.wealth.platform.user.vo.UserVO;
 
 public interface UserService extends IService<User> {
 
@@ -25,4 +27,10 @@ public interface UserService extends IService<User> {
 
     // 分页条件查询
     IPage<User> pageWithFilter(Integer pageNum, Integer pageSize, String username, Integer status);
+
+    UserVO getUserById(Long id);
+
+    boolean updateUser(Long id, UserDTO dto);
+
+    boolean deleteUser(Long id);
 }

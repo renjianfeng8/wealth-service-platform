@@ -5,7 +5,6 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.wealth.common.audit.AntiReplay;
 import com.wealth.common.audit.AuditLog;
 import com.wealth.common.result.Result;
-import com.wealth.common.result.ResultCode;
 import com.wealth.common.utils.BeanConvertUtil;
 import com.wealth.platform.system.dto.UmsRoleDTO;
 import com.wealth.platform.system.entity.UmsRole;
@@ -42,11 +41,7 @@ public class UmsRoleController {
     @Operation(summary = "根据ID查询角色信息")
     @GetMapping("/{id}")
     public Result<UmsRoleVO> getById(@PathVariable Long id) {
-        UmsRole role = umsRoleService.getById(id);
-        if (role == null) {
-            return Result.error(ResultCode.NOT_FOUND);
-        }
-        return Result.success(BeanConvertUtil.convert(role, UmsRoleVO.class));
+        return Result.success(umsRoleService.getRoleById(id));
     }
 
     @Operation(summary = "查询角色列表")
@@ -84,13 +79,7 @@ public class UmsRoleController {
     @AuditLog(module = "系统管理", operation = "更新角色")
     @AntiReplay
     public Result<Boolean> update(@PathVariable Long id, @Valid @RequestBody UmsRoleDTO dto) {
-        UmsRole existing = umsRoleService.getById(id);
-        if (existing == null) {
-            return Result.error(ResultCode.NOT_FOUND);
-        }
-        BeanConvertUtil.copyNonNullProperties(dto, existing);
-        existing.setId(id);
-        return Result.success(umsRoleService.updateById(existing));
+        return Result.success(umsRoleService.updateRole(id, dto));
     }
 
     @DeleteMapping("/{id}")
@@ -98,10 +87,6 @@ public class UmsRoleController {
     @AuditLog(module = "系统管理", operation = "删除角色")
     @AntiReplay
     public Result<Boolean> delete(@PathVariable Long id) {
-        UmsRole existing = umsRoleService.getById(id);
-        if (existing == null) {
-            return Result.error(ResultCode.NOT_FOUND);
-        }
-        return Result.success(umsRoleService.removeById(id));
+        return Result.success(umsRoleService.deleteRole(id));
     }
 }

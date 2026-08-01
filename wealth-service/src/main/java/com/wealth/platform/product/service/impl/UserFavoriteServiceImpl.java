@@ -42,7 +42,7 @@ public class UserFavoriteServiceImpl extends BaseBizServiceImpl<UserFavoriteMapp
 
     @Override
     public UserFavoriteVO getFavoriteById(Long id) {
-        return getVoById(id, UserFavoriteVO.class);
+        return getVoByIdOrThrow(id, UserFavoriteVO.class, "自选关注");
     }
 
     @Override

@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.wealth.common.dto.LoginDTO;
 import com.wealth.common.result.Result;
-import com.wealth.common.result.ResultCode;
 import com.wealth.common.audit.AntiReplay;
 import com.wealth.common.audit.AuditLog;
 import com.wealth.common.utils.BeanConvertUtil;
@@ -73,11 +72,7 @@ public class UmsAdminController {
     @GetMapping("/{id}")
     @Operation(summary = "根据ID查询")
     public Result<UmsAdminVO> getById(@PathVariable Long id) {
-        UmsAdmin admin = umsAdminService.getById(id);
-        if (admin == null) {
-            return Result.error(ResultCode.NOT_FOUND);
-        }
-        return Result.success(BeanConvertUtil.convert(admin, UmsAdminVO.class));
+        return Result.success(umsAdminService.getAdminById(id));
     }
 
     @GetMapping
@@ -114,14 +109,7 @@ public class UmsAdminController {
     @AuditLog(module = "系统管理", operation = "修改管理员")
     @AntiReplay
     public Result<Boolean> update(@PathVariable Long id, @Valid @RequestBody UmsAdminDTO dto) {
-        UmsAdmin existing = umsAdminService.getById(id);
-        if (existing == null) {
-            return Result.error(ResultCode.NOT_FOUND);
-        }
-        BeanConvertUtil.copyNonNullProperties(dto, existing);
-        clearPasswordForUpdate(existing);
-        existing.setId(id);
-        return Result.success(umsAdminService.updateById(existing));
+        return Result.success(umsAdminService.updateAdmin(id, dto));
     }
 
     @DeleteMapping("/{id}")
@@ -129,11 +117,7 @@ public class UmsAdminController {
     @AuditLog(module = "系统管理", operation = "删除管理员")
     @AntiReplay
     public Result<Boolean> delete(@PathVariable Long id) {
-        UmsAdmin existing = umsAdminService.getById(id);
-        if (existing == null) {
-            return Result.error(ResultCode.NOT_FOUND);
-        }
-        return Result.success(umsAdminService.removeById(id));
+        return Result.success(umsAdminService.deleteAdmin(id));
     }
 
     @GetMapping("/checkPermission")
@@ -157,10 +141,5 @@ public class UmsAdminController {
     @AntiReplay
     public Result<Boolean> resetPassword(@Valid @RequestBody UmsAdminResetPasswordDTO dto) {
         return Result.success(umsAdminService.resetPassword(dto.getId(), dto.getOldPassword(), dto.getPassword()));
-    }
-
-    /** 通用更新接口中置空密码，防止通过 update 接口修改密码 */
-    private void clearPasswordForUpdate(UmsAdmin admin) {
-        admin.setPassword(null);
     }
 }

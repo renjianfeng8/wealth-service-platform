@@ -20,7 +20,6 @@ import java.util.List;
 import com.wealth.common.exception.ServiceException;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -89,13 +88,40 @@ class MessageServiceImplTest {
     }
 
     @Test
-    @DisplayName("根据ID查询消息-不存在返回null")
+    @DisplayName("根据ID查询消息-不存在抛404")
     void getMessageById_NotFound() {
         when(messageMapper.selectById(99L)).thenReturn(null);
 
-        MessageVO result = messageService.getMessageById(99L);
+        ServiceException exception = assertThrows(ServiceException.class, () ->
+                messageService.getMessageById(99L));
 
-        assertNull(result);
+        assertEquals(404, exception.getCode());
+    }
+
+    @Test
+    @DisplayName("标记消息已读-成功")
+    void markAsRead_Success() {
+        when(messageMapper.selectById(1L)).thenReturn(mockMessage);
+        when(messageMapper.updateById(any(WeaMessage.class))).thenReturn(1);
+
+        boolean result = messageService.markAsRead(1L);
+
+        assertTrue(result);
+        verify(messageMapper).updateById(argThat((WeaMessage msg) ->
+                msg.getId() == 1L && msg.getReadFlag() == 1
+        ));
+    }
+
+    @Test
+    @DisplayName("标记消息已读-不存在抛404")
+    void markAsRead_NotFound() {
+        when(messageMapper.selectById(99L)).thenReturn(null);
+
+        ServiceException exception = assertThrows(ServiceException.class, () ->
+                messageService.markAsRead(99L));
+
+        assertEquals(404, exception.getCode());
+        verify(messageMapper, never()).updateById(isA(WeaMessage.class));
     }
 
     @Test

@@ -5,7 +5,6 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.wealth.common.audit.AntiReplay;
 import com.wealth.common.audit.AuditLog;
 import com.wealth.common.result.Result;
-import com.wealth.common.result.ResultCode;
 import com.wealth.common.utils.BeanConvertUtil;
 import com.wealth.platform.system.dto.UmsRoleResourceRelationDTO;
 import com.wealth.platform.system.entity.UmsRoleResourceRelation;
@@ -46,11 +45,7 @@ public class UmsRoleResourceRelationController {
     @Operation(summary = "根据ID查询")
     @GetMapping("/{id}")
     public Result<UmsRoleResourceRelationVO> getById(@PathVariable Long id) {
-        UmsRoleResourceRelation relation = umsRoleResourceRelationService.getById(id);
-        if (relation == null) {
-            return Result.error(ResultCode.NOT_FOUND);
-        }
-        return Result.success(BeanConvertUtil.convert(relation, UmsRoleResourceRelationVO.class));
+        return Result.success(umsRoleResourceRelationService.getRoleResourceRelationById(id));
     }
 
     @Operation(summary = "列表")
@@ -88,10 +83,7 @@ public class UmsRoleResourceRelationController {
     @AuditLog(module = "系统管理", operation = "更新角色-资源关联")
     @AntiReplay
     public Result<Boolean> update(@PathVariable Long id, @Valid @RequestBody UmsRoleResourceRelationDTO dto) {
-        UmsRoleResourceRelation existing = umsRoleResourceRelationService.getById(id);
-        if (existing == null) {
-            return Result.error(ResultCode.NOT_FOUND);
-        }
+        UmsRoleResourceRelation existing = umsRoleResourceRelationService.getRoleResourceRelationEntityOrThrow(id);
         BeanConvertUtil.copyNonNullProperties(dto, existing);
         existing.setId(id);
         boolean updated = umsRoleResourceRelationService.updateById(existing);
@@ -108,10 +100,7 @@ public class UmsRoleResourceRelationController {
     @AuditLog(module = "系统管理", operation = "删除角色-资源关联")
     @AntiReplay
     public Result<Boolean> delete(@PathVariable Long id) {
-        UmsRoleResourceRelation existing = umsRoleResourceRelationService.getById(id);
-        if (existing == null) {
-            return Result.error(ResultCode.NOT_FOUND);
-        }
+        UmsRoleResourceRelation existing = umsRoleResourceRelationService.getRoleResourceRelationEntityOrThrow(id);
         boolean removed = umsRoleResourceRelationService.removeById(id);
         clearCacheByRoleId(existing.getRoleId());
         return Result.success(removed);

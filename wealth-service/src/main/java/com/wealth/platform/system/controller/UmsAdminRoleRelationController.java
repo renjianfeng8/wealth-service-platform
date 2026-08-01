@@ -5,7 +5,6 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.wealth.common.audit.AntiReplay;
 import com.wealth.common.audit.AuditLog;
 import com.wealth.common.result.Result;
-import com.wealth.common.result.ResultCode;
 import com.wealth.common.utils.BeanConvertUtil;
 import com.wealth.platform.system.dto.UmsAdminRoleRelationDTO;
 import com.wealth.platform.system.entity.UmsAdminRoleRelation;
@@ -44,11 +43,7 @@ public class UmsAdminRoleRelationController {
     @Operation(summary = "根据ID查询")
     @GetMapping("/{id}")
     public Result<UmsAdminRoleRelationVO> getById(@PathVariable Long id) {
-        UmsAdminRoleRelation relation = umsAdminRoleRelationService.getById(id);
-        if (relation == null) {
-            return Result.error(ResultCode.NOT_FOUND);
-        }
-        return Result.success(BeanConvertUtil.convert(relation, UmsAdminRoleRelationVO.class));
+        return Result.success(umsAdminRoleRelationService.getAdminRoleRelationById(id));
     }
 
     @Operation(summary = "列表")
@@ -87,10 +82,7 @@ public class UmsAdminRoleRelationController {
     @AuditLog(module = "系统管理", operation = "更新管理员-角色关联")
     @AntiReplay
     public Result<Boolean> update(@PathVariable Long id, @Valid @RequestBody UmsAdminRoleRelationDTO dto) {
-        UmsAdminRoleRelation existing = umsAdminRoleRelationService.getById(id);
-        if (existing == null) {
-            return Result.error(ResultCode.NOT_FOUND);
-        }
+        UmsAdminRoleRelation existing = umsAdminRoleRelationService.getAdminRoleRelationEntityOrThrow(id);
         BeanConvertUtil.copyNonNullProperties(dto, existing);
         existing.setId(id);
         boolean updated = umsAdminRoleRelationService.updateById(existing);
@@ -107,10 +99,7 @@ public class UmsAdminRoleRelationController {
     @AuditLog(module = "系统管理", operation = "删除管理员-角色关联")
     @AntiReplay
     public Result<Boolean> delete(@PathVariable Long id) {
-        UmsAdminRoleRelation existing = umsAdminRoleRelationService.getById(id);
-        if (existing == null) {
-            return Result.error(ResultCode.NOT_FOUND);
-        }
+        UmsAdminRoleRelation existing = umsAdminRoleRelationService.getAdminRoleRelationEntityOrThrow(id);
         boolean removed = umsAdminRoleRelationService.removeById(id);
         // 清除该管理员的权限缓存，使角色移除立即生效
         umsAdminService.clearPermissionCache(existing.getAdminId());

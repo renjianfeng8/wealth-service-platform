@@ -7,6 +7,7 @@ import com.wealth.platform.common.base.BaseBizServiceImpl;
 import com.wealth.platform.system.entity.UmsAdminRoleRelation;
 import com.wealth.platform.system.mapper.UmsAdminRoleRelationMapper;
 import com.wealth.platform.system.service.UmsAdminRoleRelationService;
+import com.wealth.platform.system.vo.UmsAdminRoleRelationVO;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -38,5 +39,15 @@ public class UmsAdminRoleRelationServiceImpl
         LambdaQueryWrapper<UmsAdminRoleRelation> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(UmsAdminRoleRelation::getRoleId, roleId);
         return listColumn(wrapper, UmsAdminRoleRelation::getAdminId, true);
+    }
+
+    @Override
+    public UmsAdminRoleRelationVO getAdminRoleRelationById(Long id) {
+        return getVoByIdOrThrow(id, UmsAdminRoleRelationVO.class, "管理员角色关联");
+    }
+
+    @Override
+    public UmsAdminRoleRelation getAdminRoleRelationEntityOrThrow(Long id) {
+        return getEntityOrThrow(id, "管理员角色关联");
     }
 }

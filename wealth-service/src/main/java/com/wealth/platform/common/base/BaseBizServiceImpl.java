@@ -117,4 +117,33 @@ public abstract class BaseBizServiceImpl<M extends BaseMapper<E>, E extends Base
         }
         return removeById(id);
     }
+
+    /**
+     * 根据 ID 查询并转换为 VO，不存在时抛 404（与 updateDto/deleteWithCheck 统一 404 语义）。
+     *
+     * @param id         主键
+     * @param voClass    VO 类型
+     * @param entityName 实体中文名（异常消息用）
+     */
+    protected <V> V getVoByIdOrThrow(Long id, Class<V> voClass, String entityName) {
+        V vo = getVoById(id, voClass);
+        if (vo == null) {
+            throw new ServiceException(404, entityName + "不存在");
+        }
+        return vo;
+    }
+
+    /**
+     * 根据 ID 查询实体，不存在时抛 404（供更新/删除后仍需原实体的场景使用）。
+     *
+     * @param id         主键
+     * @param entityName 实体中文名（异常消息用）
+     */
+    protected E getEntityOrThrow(Long id, String entityName) {
+        E entity = getById(id);
+        if (entity == null) {
+            throw new ServiceException(404, entityName + "不存在");
+        }
+        return entity;
+    }
 }

@@ -5,7 +5,6 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.wealth.common.audit.AntiReplay;
 import com.wealth.common.audit.AuditLog;
 import com.wealth.common.result.Result;
-import com.wealth.common.result.ResultCode;
 import com.wealth.platform.trade.dto.TradeOrderDTO;
 import com.wealth.platform.trade.dto.TradeOrderStatusDTO;
 import com.wealth.platform.trade.entity.WeaTradeOrder;
@@ -42,11 +41,7 @@ public class TradeOrderController {
     @Operation(summary = "根据ID查询交易委托单")
     @GetMapping("/{id}")
     public Result<TradeOrderVO> getById(@PathVariable Long id) {
-        TradeOrderVO vo = tradeOrderService.getOrderById(id);
-        if (vo == null) {
-            return Result.error(ResultCode.NOT_FOUND);
-        }
-        return Result.success(vo);
+        return Result.success(tradeOrderService.getOrderById(id));
     }
 
     @Operation(summary = "查询交易委托单列表")

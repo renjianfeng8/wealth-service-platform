@@ -44,11 +44,7 @@ public class UserFavoriteController {
     @Operation(summary = "根据ID查询用户自选关注信息")
     @GetMapping("/{id}")
     public Result<UserFavoriteVO> getById(@PathVariable Long id) {
-        UserFavoriteVO vo = userFavoriteService.getFavoriteById(id);
-        if (vo == null) {
-            return Result.error(ResultCode.NOT_FOUND);
-        }
-        return Result.success(vo);
+        return Result.success(userFavoriteService.getFavoriteById(id));
     }
 
     @Operation(summary = "查询用户自选关注列表")
