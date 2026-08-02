@@ -15,8 +15,8 @@ spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://${MYSQL_HOST:localhost}:3306/wealth?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
-    username: root
-    password: ${MYSQL_ROOT_PASSWORD:123456}
+    username: ${MYSQL_USER:root}
+    password: ${MYSQL_ROOT_PASSWORD:change-me-to-a-strong-password}
     hikari:
       maximum-pool-size: 30
       minimum-idle: 10
@@ -27,7 +27,7 @@ spring:
     redis:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
-      password: ${REDIS_PASSWORD:WealthPlatform@Redis2026}
+      password: ${REDIS_PASSWORD:change-me-to-a-strong-password}
       timeout: 2000ms
       lettuce:
         pool:
@@ -43,9 +43,9 @@ spring:
 
 # JWT 配置（密钥来自 .env 或环境变量）
 jwt:
-  secret: ${JWT_SECRET:wealth-micro-service-20260501-very-safe-secret-key-123456789}
-  access-expire: 1800000
-  refresh-expire: 604800000
+  secret: ${JWT_SECRET:change-me-to-a-random-256-bit-key}
+  access-expire: ${JWT_ACCESS_EXPIRE:1800000}
+  refresh-expire: ${JWT_REFRESH_EXPIRE:604800000}
 
 mybatis-plus:
   configuration:

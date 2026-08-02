@@ -184,10 +184,11 @@ application.yml              # 1. 本地配置 —— 端口、数据源、Redis
 ```yaml
 jwt:
   secret: ${JWT_SECRET}
-  expire: ${JWT_EXPIRE:604800000}
+  access-expire: ${JWT_ACCESS_EXPIRE:1800000}
+  refresh-expire: ${JWT_REFRESH_EXPIRE:604800000}
 ```
 
-JWT 密钥值来自模块 `.env` 文件（已在 `.gitignore` 中排除）。`JwtUtil` 在 `@PostConstruct` 中校验密钥字节≥32，启动时即失败而非运行时。
+JWT 密钥值来自模块 `.env` 文件（已在 `.gitignore` 中排除）。`JwtUtil` 在 `@PostConstruct` 中校验密钥字节≥32，启动时即失败而非运行时。`JwtUtil` 读取 `jwt.access-expire` / `jwt.refresh-expire` 控制 access/refresh 双 token 时效。
 
 ### Nacos 配置中心（已禁用）
 

@@ -12,8 +12,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class JwtUtilTest {
 
-    /** 与 application.yml 默认密钥一致（长度 ≥32 字节） */
-    private static final String SECRET = "wealth-micro-service-20260501-very-safe-secret-key-123456789";
+    /** 测试专用占位密钥（≥32 字节即可，无需与运行时 .env 一致） */
+    private static final String SECRET = "change-me-to-a-random-256-bit-key";
 
     private JwtUtil jwtUtil;
 

@@ -3,8 +3,9 @@ server:
 
 # JWT 配置（注入到 JwtAuthGlobalFilter）
 jwt:
-  secret: ${JWT_SECRET:wealth-micro-service-20260501-very-safe-secret-key-123456789}
-  expire: ${JWT_EXPIRE:604800000}
+  secret: ${JWT_SECRET:change-me-to-a-random-256-bit-key}
+  access-expire: ${JWT_ACCESS_EXPIRE:1800000}
+  refresh-expire: ${JWT_REFRESH_EXPIRE:604800000}
 
 spring:
   cloud:

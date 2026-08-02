@@ -5,7 +5,8 @@
 # JWT 配置（原 Nacos wealth-shared.yaml 内联，通过环境变量注入避免明文入 Git）
 jwt:
   secret: ${JWT_SECRET}
-  expire: ${JWT_EXPIRE:604800000}
+  access-expire: ${JWT_ACCESS_EXPIRE:1800000}
+  refresh-expire: ${JWT_REFRESH_EXPIRE:604800000}
 
 management:
   endpoints:
