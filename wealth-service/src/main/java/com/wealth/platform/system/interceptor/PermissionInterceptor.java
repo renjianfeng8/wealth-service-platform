@@ -4,7 +4,7 @@ import com.wealth.common.constants.AuthConstant;
 import com.wealth.common.result.ResultCode;
 import com.wealth.common.utils.HttpResponseUtil;
 import com.wealth.common.utils.JwtUtil;
-import com.wealth.platform.system.service.UmsAdminService;
+import com.wealth.platform.system.service.PermissionQueryService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -18,11 +18,11 @@ import java.io.IOException;
 public class PermissionInterceptor implements HandlerInterceptor {
 
     private final JwtUtil jwtUtil;
-    private final UmsAdminService adminService;
+    private final PermissionQueryService permissionQueryService;
 
-    public PermissionInterceptor(JwtUtil jwtUtil, UmsAdminService adminService) {
+    public PermissionInterceptor(JwtUtil jwtUtil, PermissionQueryService permissionQueryService) {
         this.jwtUtil = jwtUtil;
-        this.adminService = adminService;
+        this.permissionQueryService = permissionQueryService;
     }
 
     @Override
@@ -43,7 +43,7 @@ public class PermissionInterceptor implements HandlerInterceptor {
             return false;
         }
 
-        if (!adminService.checkPermissionForToken(token, uri)) {
+        if (!permissionQueryService.checkPermissionForToken(token, uri)) {
             log.warn("权限校验未通过, uri={}", uri);
             writeError(response, HttpServletResponse.SC_FORBIDDEN, "无权限访问");
             return false;

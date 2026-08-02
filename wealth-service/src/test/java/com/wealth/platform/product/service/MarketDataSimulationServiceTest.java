@@ -1,7 +1,6 @@
 package com.wealth.platform.product.service;
 
 import com.wealth.platform.product.entity.WeaMarketData;
-import com.wealth.platform.product.mapper.MarketDataMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -20,7 +19,7 @@ import static org.mockito.Mockito.verify;
 class MarketDataSimulationServiceTest {
 
     @Mock
-    private MarketDataMapper marketDataMapper;
+    private MarketDataService marketDataService;
 
     @Mock
     private MarketDataPushService pushService;
@@ -29,7 +28,7 @@ class MarketDataSimulationServiceTest {
 
     @BeforeEach
     void setUp() {
-        simulationService = new MarketDataSimulationService(marketDataMapper, pushService);
+        simulationService = new MarketDataSimulationService(marketDataService, pushService);
     }
 
     @Test
@@ -50,7 +49,7 @@ class MarketDataSimulationServiceTest {
         assertNotNull(data.getRiseFallRate());
         assertNotNull(data.getHighestPrice());
         assertNotNull(data.getLowestPrice());
-        verify(marketDataMapper).updateById(any(WeaMarketData.class));
+        verify(marketDataService).updateById(any(WeaMarketData.class));
     }
 
     @Test
@@ -67,6 +66,6 @@ class MarketDataSimulationServiceTest {
         assertNotNull(data.getCurrentPrice());
         assertNotNull(data.getHighestPrice());
         assertNotNull(data.getLowestPrice());
-        verify(marketDataMapper).updateById(any(WeaMarketData.class));
+        verify(marketDataService).updateById(any(WeaMarketData.class));
     }
 }

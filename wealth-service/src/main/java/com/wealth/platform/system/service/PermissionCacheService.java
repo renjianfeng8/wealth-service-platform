@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 
 /**
  * 权限缓存服务，统一管理权限的加载、缓存与校验。
- * 收敛 PermissionInterceptor 和 UmsAdminServiceImpl.hasPermission() 中两套独立的权限加载逻辑。
+ * 收敛 PermissionInterceptor 和 PermissionQueryServiceImpl 中两套独立的权限加载逻辑。
  */
 @Slf4j
 @Service

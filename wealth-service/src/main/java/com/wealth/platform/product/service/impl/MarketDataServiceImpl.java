@@ -60,6 +60,11 @@ public class MarketDataServiceImpl extends BaseBizServiceImpl<MarketDataMapper, 
     }
 
     @Override
+    public List<WeaMarketData> findSimulationData() {
+        return baseMapper.findSimulationData();
+    }
+
+    @Override
     public BigDecimal sumPrice() {
         return baseMapper.sumPrice();
     }

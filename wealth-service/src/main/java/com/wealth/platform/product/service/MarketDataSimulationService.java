@@ -2,7 +2,6 @@ package com.wealth.platform.product.service;
 
 import com.wealth.common.utils.BeanConvertUtil;
 import com.wealth.platform.product.entity.WeaMarketData;
-import com.wealth.platform.product.mapper.MarketDataMapper;
 import com.wealth.platform.product.vo.MarketDataVO;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
@@ -28,7 +27,7 @@ import java.util.Random;
 @RequiredArgsConstructor
 public class MarketDataSimulationService {
 
-    private final MarketDataMapper marketDataMapper;
+    private final MarketDataService marketDataService;
     private final MarketDataPushService pushService;
 
     /** 自注入代理，解决 @Transactional 自调用失效问题 */
@@ -46,7 +45,7 @@ public class MarketDataSimulationService {
     }
 
     private void loadMarketData() {
-        List<WeaMarketData> records = marketDataMapper.findSimulationData();
+        List<WeaMarketData> records = marketDataService.findSimulationData();
         cachedMarketData = records != null ? records : Collections.emptyList();
     }
 
@@ -106,7 +105,7 @@ public class MarketDataSimulationService {
             data.setHighestPrice(newPrice.compareTo(highestPrice) > 0 ? newPrice : highestPrice);
             data.setLowestPrice(newPrice.compareTo(lowestPrice) < 0 ? newPrice : lowestPrice);
 
-            marketDataMapper.updateById(data);
+            marketDataService.updateById(data);
         }
     }
 

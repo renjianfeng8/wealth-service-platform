@@ -29,4 +29,7 @@ public interface MarketDataService extends IService<WeaMarketData> {
 
     // 分页查询（带产品代码筛选）
     IPage<WeaMarketData> pageWithFilter(Integer pageNum, Integer pageSize, String productCode);
+
+    // 查询行情模拟与 SSE 快照所需的全量行情数据
+    List<WeaMarketData> findSimulationData();
 }

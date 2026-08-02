@@ -32,7 +32,7 @@ import com.wealth.platform.system.service.*;
 
 // ✅ 正确
 import java.util.List;
-import com.wealth.platform.system.service.UmsAdminService;
+import com.wealth.platform.system.service.UmsAdminAuthService;
 ```
 
 ### 1.2 导入顺序
@@ -196,7 +196,7 @@ Controller **只做三件事**：
 // ✅ 正确 — Controller 仅路由
 @PostMapping("/refresh")
 public Result<TokenPair> refresh(@RequestHeader("Authorization") String authHeader) {
-    return Result.success(umsAdminService.refreshToken(authHeader));
+    return Result.success(umsAdminAuthService.refreshToken(authHeader));
 }
 ```
 
@@ -207,7 +207,7 @@ public Result<TokenPair> refresh(@RequestHeader("Authorization") String authHead
         return Result.error(ResultCode.TOKEN_INVALID);
     }
     String refreshToken = authHeader.substring(7);
-    return Result.success(umsAdminService.refreshToken(refreshToken));
+    return Result.success(umsAdminAuthService.refreshToken(refreshToken));
 }
 ```
 

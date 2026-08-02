@@ -12,7 +12,9 @@ import com.wealth.common.utils.JwtUtil.TokenPair;
 import com.wealth.platform.system.dto.UmsAdminDTO;
 import com.wealth.platform.system.dto.UmsAdminResetPasswordDTO;
 import com.wealth.platform.system.entity.UmsAdmin;
-import com.wealth.platform.system.service.UmsAdminService;
+import com.wealth.platform.system.service.PermissionQueryService;
+import com.wealth.platform.system.service.UmsAdminAuthService;
+import com.wealth.platform.system.service.UmsAdminCrudService;
 import com.wealth.platform.system.vo.UmsAdminVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -44,14 +46,16 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UmsAdminController {
 
-    private final UmsAdminService umsAdminService;
+    private final UmsAdminAuthService umsAdminAuthService;
+    private final UmsAdminCrudService umsAdminCrudService;
+    private final PermissionQueryService permissionQueryService;
 
     @PostMapping("/login")
     @Operation(summary = "管理员登录（返回 access_token + refresh_token）")
     @AuditLog(module = "系统管理", operation = "管理员登录")
     @AntiReplay
     public ResponseEntity<Result<TokenPair>> login(@Valid @RequestBody LoginDTO dto) {
-        TokenPair tokenPair = umsAdminService.login(dto);
+        TokenPair tokenPair = umsAdminAuthService.login(dto);
 
         ResponseCookie cookie = CookieUtil.buildTokenCookie(tokenPair.accessToken(), tokenPair.expiresIn() / 1000);
 
@@ -63,13 +67,13 @@ public class UmsAdminController {
     @PostMapping("/refresh")
     @Operation(summary = "刷新 Token（用 refresh_token 换取新的 access_token + refresh_token）")
     public Result<TokenPair> refresh(@RequestHeader("Authorization") String authHeader) {
-        return Result.success(umsAdminService.refreshToken(authHeader));
+        return Result.success(umsAdminAuthService.refreshToken(authHeader));
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "根据ID查询")
     public Result<UmsAdminVO> getById(@PathVariable Long id) {
-        return Result.success(umsAdminService.getAdminById(id));
+        return Result.success(umsAdminCrudService.getAdminById(id));
     }
 
     @GetMapping
@@ -77,7 +81,7 @@ public class UmsAdminController {
     public Result<List<UmsAdminVO>> list(
             @Min(1) @RequestParam(defaultValue = "1") Integer pageNum,
             @Min(1) @Max(200) @RequestParam(defaultValue = "20") Integer pageSize) {
-        List<UmsAdmin> list = umsAdminService.page(new Page<>(pageNum, pageSize)).getRecords();
+        List<UmsAdmin> list = umsAdminCrudService.page(new Page<>(pageNum, pageSize)).getRecords();
         return Result.success(BeanConvertUtil.convertList(list, UmsAdminVO.class));
     }
 
@@ -88,7 +92,7 @@ public class UmsAdminController {
             @Min(1) @Max(100) @RequestParam(defaultValue = "10") Integer pageSize,
             @RequestParam(required = false) String username,
             @RequestParam(required = false) Integer status) {
-        IPage<UmsAdmin> page = umsAdminService.pageWithFilter(pageNum, pageSize, username, status);
+        IPage<UmsAdmin> page = umsAdminCrudService.pageWithFilter(pageNum, pageSize, username, status);
         return Result.success(BeanConvertUtil.convertPage(page, UmsAdminVO.class));
     }
 
@@ -97,7 +101,7 @@ public class UmsAdminController {
     @AuditLog(module = "系统管理", operation = "新增管理员")
     @AntiReplay
     public Result<Boolean> create(@Valid @RequestBody UmsAdminDTO dto) {
-        return Result.success(umsAdminService.createAdmin(dto));
+        return Result.success(umsAdminCrudService.createAdmin(dto));
     }
 
     @PutMapping("/{id}")
@@ -105,7 +109,7 @@ public class UmsAdminController {
     @AuditLog(module = "系统管理", operation = "修改管理员")
     @AntiReplay
     public Result<Boolean> update(@PathVariable Long id, @Valid @RequestBody UmsAdminDTO dto) {
-        return Result.success(umsAdminService.updateAdmin(id, dto));
+        return Result.success(umsAdminCrudService.updateAdmin(id, dto));
     }
 
     @DeleteMapping("/{id}")
@@ -113,7 +117,7 @@ public class UmsAdminController {
     @AuditLog(module = "系统管理", operation = "删除管理员")
     @AntiReplay
     public Result<Boolean> delete(@PathVariable Long id) {
-        return Result.success(umsAdminService.deleteAdmin(id));
+        return Result.success(umsAdminCrudService.deleteAdmin(id));
     }
 
     @GetMapping("/checkPermission")
@@ -121,13 +125,13 @@ public class UmsAdminController {
     public Result<Boolean> checkPermission(
             @RequestParam String uri,
             @RequestHeader("Authorization") String authHeader) {
-        return Result.success(umsAdminService.checkPermission(uri, authHeader));
+        return Result.success(permissionQueryService.checkPermission(uri, authHeader));
     }
 
     @PostMapping("/logout")
     @Operation(summary = "退出登录（将 refresh_token 加入黑名单）")
     public Result<Void> logout(@RequestHeader("Authorization") String authHeader) {
-        umsAdminService.logout(authHeader);
+        umsAdminAuthService.logout(authHeader);
         return Result.success(null);
     }
 
@@ -136,6 +140,6 @@ public class UmsAdminController {
     @AuditLog(module = "系统管理", operation = "重置密码")
     @AntiReplay
     public Result<Boolean> resetPassword(@Valid @RequestBody UmsAdminResetPasswordDTO dto) {
-        return Result.success(umsAdminService.resetPassword(dto.getId(), dto.getOldPassword(), dto.getPassword()));
+        return Result.success(umsAdminAuthService.resetPassword(dto.getId(), dto.getOldPassword(), dto.getPassword()));
     }
 }

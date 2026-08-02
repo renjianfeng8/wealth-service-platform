@@ -1,7 +1,7 @@
 package com.wealth.platform.system.interceptor;
 
 import com.wealth.common.utils.JwtUtil;
-import com.wealth.platform.system.service.UmsAdminService;
+import com.wealth.platform.system.service.PermissionQueryService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,13 +20,13 @@ class PermissionInterceptorTest {
     private JwtUtil jwtUtil;
 
     @Mock
-    private UmsAdminService adminService;
+    private PermissionQueryService permissionQueryService;
 
     private PermissionInterceptor interceptor;
 
     @BeforeEach
     void setUp() {
-        interceptor = new PermissionInterceptor(jwtUtil, adminService);
+        interceptor = new PermissionInterceptor(jwtUtil, permissionQueryService);
     }
 
     @Test
@@ -49,7 +49,7 @@ class PermissionInterceptorTest {
         MockHttpServletResponse response = new MockHttpServletResponse();
 
         when(jwtUtil.validateToken("valid.token")).thenReturn(true);
-        when(adminService.checkPermissionForToken("valid.token", "/system/admin")).thenReturn(false);
+        when(permissionQueryService.checkPermissionForToken("valid.token", "/system/admin")).thenReturn(false);
 
         boolean allowed = interceptor.preHandle(request, response, new Object());
 
@@ -65,7 +65,7 @@ class PermissionInterceptorTest {
         MockHttpServletResponse response = new MockHttpServletResponse();
 
         when(jwtUtil.validateToken("valid.token")).thenReturn(true);
-        when(adminService.checkPermissionForToken("valid.token", "/system/admin")).thenReturn(true);
+        when(permissionQueryService.checkPermissionForToken("valid.token", "/system/admin")).thenReturn(true);
 
         boolean allowed = interceptor.preHandle(request, response, new Object());
 

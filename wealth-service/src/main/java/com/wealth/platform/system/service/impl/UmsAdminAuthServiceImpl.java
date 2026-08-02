@@ -1,42 +1,34 @@
 package com.wealth.platform.system.service.impl;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.wealth.platform.common.base.BaseBizServiceImpl;
 import com.wealth.common.auth.AuthSupport;
 import com.wealth.common.constants.AuthConstant;
-import com.wealth.common.contract.AdminIdentityProvider;
-import com.wealth.common.dto.AdminIdentityDTO;
-import com.wealth.common.exception.ServiceException;
 import com.wealth.common.dto.LoginDTO;
-import com.wealth.common.utils.BeanConvertUtil;
+import com.wealth.common.exception.ServiceException;
 import com.wealth.common.utils.JwtUtil;
 import com.wealth.common.utils.JwtUtil.TokenPair;
 import com.wealth.common.utils.RedisUtil;
 import com.wealth.platform.system.constant.CaptchaConstant;
-import com.wealth.platform.system.dto.UmsAdminDTO;
 import com.wealth.platform.system.entity.UmsAdmin;
-import com.wealth.platform.system.mapper.UmsAdminMapper;
-import com.wealth.platform.system.service.PermissionCacheService;
-import com.wealth.platform.system.service.UmsAdminService;
-import com.wealth.platform.system.service.UmsResourceService;
-import com.wealth.platform.system.vo.UmsAdminVO;
-import lombok.extern.slf4j.Slf4j;
+import com.wealth.platform.system.service.UmsAdminAuthService;
+import com.wealth.platform.system.service.UmsAdminCrudService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataIntegrityViolationException;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * 管理员认证与令牌生命周期实现：登录（含验证码/失败锁定）、refresh_token 轮换、退出、重置密码。
+ * 访问 ums_admin 数据统一经由 {@link UmsAdminCrudService}，本类不直接触碰存储。
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class UmsAdminServiceImpl extends BaseBizServiceImpl<UmsAdminMapper, UmsAdmin>
-        implements UmsAdminService, AdminIdentityProvider {
+public class UmsAdminAuthServiceImpl implements UmsAdminAuthService {
 
     /** 最大登录失败次数 */
     private static final int MAX_LOGIN_ATTEMPTS = 5;
@@ -52,9 +44,8 @@ public class UmsAdminServiceImpl extends BaseBizServiceImpl<UmsAdminMapper, UmsA
     private static final String KEY_REFRESH_BLACKLIST = "refresh:blacklist:";
     private static final String KEY_REFRESH_LOCK = "refresh:lock:";
 
+    private final UmsAdminCrudService umsAdminCrudService;
     private final JwtUtil jwtUtil;
-    private final UmsResourceService resourceService;
-    private final PermissionCacheService permissionCacheService;
     private final BCryptPasswordEncoder passwordEncoder;
     private final RedisUtil redisUtil;
 
@@ -75,7 +66,7 @@ public class UmsAdminServiceImpl extends BaseBizServiceImpl<UmsAdminMapper, UmsA
         }
 
         // 3. 查询未删除管理员（delFlag=0）
-        UmsAdmin admin = getActiveByUsername(dto.getUsername());
+        UmsAdmin admin = umsAdminCrudService.getActiveByUsername(dto.getUsername());
         if (admin == null) {
             recordFailedAttempt(dto.getUsername());
             throw new ServiceException(401, "用户名或密码错误");
@@ -94,7 +85,7 @@ public class UmsAdminServiceImpl extends BaseBizServiceImpl<UmsAdminMapper, UmsA
 
         // 6. 更新最后登录时间
         admin.setLoginTime(LocalDateTime.now());
-        updateById(admin);
+        umsAdminCrudService.updateById(admin);
 
         // 7. 生成双 Token（access_token + refresh_token）
         TokenPair pair = jwtUtil.generateTokenPair(admin.getUsername());
@@ -190,14 +181,6 @@ public class UmsAdminServiceImpl extends BaseBizServiceImpl<UmsAdminMapper, UmsA
     }
 
     /**
-     * 清除指定管理员的权限缓存，下次请求重新从数据库加载。
-     */
-    @Override
-    public void clearPermissionCache(Long adminId) {
-        permissionCacheService.clearCache(adminId);
-    }
-
-    /**
      * 记录登录失败次数，达到阈值时锁定账号。
      * Redis 不可用时跳过计数，不阻塞登录。
      */
@@ -248,101 +231,13 @@ public class UmsAdminServiceImpl extends BaseBizServiceImpl<UmsAdminMapper, UmsA
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Boolean createAdmin(UmsAdminDTO dto) {
-        UmsAdmin admin = BeanConvertUtil.convert(dto, UmsAdmin.class);
-        checkUnique(UmsAdmin::getUsername, admin.getUsername(), "管理员用户名已存在");
-        admin.setPassword(passwordEncoder.encode(admin.getPassword()));
-        try {
-            return save(admin);
-        } catch (DataIntegrityViolationException e) {
-            throw new ServiceException(400, "管理员用户名已存在");
-        }
-    }
-
-    @Override
-    public List<String> getResourceUrlsByIds(List<Long> resourceIds) {
-        return resourceService.getUrlByResourceIds(resourceIds);
-    }
-
-    @Override
-    public IPage<UmsAdmin> pageWithFilter(Integer pageNum, Integer pageSize, String username, Integer status) {
-        return pageWithFilter(pageNum, pageSize, orderByDesc(UmsAdmin::getCreateTime),
-                like(UmsAdmin::getUsername, username), eq(UmsAdmin::getStatus, status));
-    }
-
-    @Override
-    @Transactional(rollbackFor = Exception.class)
     public Boolean resetPassword(Long id, String oldPassword, String newPassword) {
-        UmsAdmin admin = getById(id);
+        UmsAdmin admin = umsAdminCrudService.getById(id);
         if (admin == null) {
             throw new ServiceException(404, "管理员不存在");
         }
         AuthSupport.verifyOldPasswordOrThrow(passwordEncoder, oldPassword, admin.getPassword(), "原密码错误");
         admin.setPassword(passwordEncoder.encode(newPassword));
-        return updateById(admin);
-    }
-
-    @Override
-    public boolean hasPermission(Long adminId, String uri) {
-        return permissionCacheService.hasPermission(adminId, uri);
-    }
-
-    @Override
-    public boolean checkPermission(String uri, String authHeader) {
-        String token = AuthConstant.extractBearerToken(authHeader);
-        if (token == null) {
-            return false;
-        }
-        if (!jwtUtil.validateToken(token)) {
-            return false;
-        }
-        return checkPermissionForToken(token, uri);
-    }
-
-    @Override
-    public boolean checkPermissionForToken(String token, String uri) {
-        String username = jwtUtil.getUsernameFromToken(token);
-        UmsAdmin admin = getActiveByUsername(username);
-        return admin != null && permissionCacheService.hasPermission(admin.getId(), uri);
-    }
-
-    @Override
-    public UmsAdmin getActiveByUsername(String username) {
-        return lambdaQuery()
-                .eq(UmsAdmin::getUsername, username)
-                .eq(UmsAdmin::getDelFlag, 0)
-                .one();
-    }
-
-    @Override
-    public AdminIdentityDTO findByUsername(String username) {
-        UmsAdmin admin = getActiveByUsername(username);
-        if (admin == null) {
-            return null;
-        }
-        AdminIdentityDTO dto = BeanConvertUtil.convert(admin, AdminIdentityDTO.class);
-        dto.setNickname(admin.getNickName());
-        return dto;
-    }
-
-    @Override
-    public UmsAdminVO getAdminById(Long id) {
-        return getVoByIdOrThrow(id, UmsAdminVO.class, "管理员");
-    }
-
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public boolean updateAdmin(Long id, UmsAdminDTO dto) {
-        UmsAdmin entity = getEntityOrThrow(id, "管理员");
-        BeanConvertUtil.copyNonNullProperties(dto, entity);
-        entity.setPassword(null);
-        entity.setId(id);
-        return updateById(entity);
-    }
-
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public boolean deleteAdmin(Long id) {
-        return deleteWithCheck(id, "管理员");
+        return umsAdminCrudService.updateById(admin);
     }
 }
