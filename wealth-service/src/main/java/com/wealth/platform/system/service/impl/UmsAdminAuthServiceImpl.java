@@ -7,8 +7,8 @@ import com.wealth.common.exception.ServiceException;
 import com.wealth.common.utils.JwtUtil;
 import com.wealth.common.utils.JwtUtil.TokenPair;
 import com.wealth.common.utils.RedisUtil;
-import com.wealth.platform.system.constant.CaptchaConstant;
 import com.wealth.platform.system.entity.UmsAdmin;
+import com.wealth.platform.system.service.CaptchaService;
 import com.wealth.platform.system.service.UmsAdminAuthService;
 import com.wealth.platform.system.service.UmsAdminCrudService;
 import lombok.RequiredArgsConstructor;
@@ -48,6 +48,7 @@ public class UmsAdminAuthServiceImpl implements UmsAdminAuthService {
     private final JwtUtil jwtUtil;
     private final BCryptPasswordEncoder passwordEncoder;
     private final RedisUtil redisUtil;
+    private final CaptchaService captchaService;
 
     @Override
     public TokenPair login(LoginDTO dto) {
@@ -55,7 +56,7 @@ public class UmsAdminAuthServiceImpl implements UmsAdminAuthService {
 
         // 1. 校验验证码（如果提供了 captchaKey）
         if (StringUtils.hasText(dto.getCaptchaKey())) {
-            validateCaptcha(dto.getCaptchaKey(), dto.getCaptchaCode());
+            captchaService.verify(dto.getCaptchaKey(), dto.getCaptchaCode());
         }
 
         // 2. 检查账号是否被锁定（Redis 不可用时不阻塞登录）
@@ -207,26 +208,6 @@ public class UmsAdminAuthServiceImpl implements UmsAdminAuthService {
             redisUtil.delete(KEY_LOGIN_FAIL_COUNT + username);
             redisUtil.delete(KEY_LOGIN_LOCKED + username);
         }, "无法清除登录失败记录");
-    }
-
-    private void validateCaptcha(String captchaKey, String captchaCode) {
-        if (!StringUtils.hasText(captchaKey) || !StringUtils.hasText(captchaCode)) {
-            throw new ServiceException(400, "验证码不能为空");
-        }
-        String redisKey = CaptchaConstant.KEY_CAPTCHA + captchaKey;
-        // Redis 不可用时降级跳过校验（不阻塞登录）
-        Boolean keyExists = redisUtil.safeExecute(() -> redisUtil.hasKey(redisKey), null, "跳过验证码校验");
-        if (keyExists == null) {
-            return;
-        }
-        String stored = Boolean.TRUE.equals(keyExists) ? (String) redisUtil.get(redisKey) : null;
-        if (stored == null) {
-            throw new ServiceException(400, "验证码已过期，请重新获取");
-        }
-        redisUtil.delete(redisKey);
-        if (!stored.equalsIgnoreCase(captchaCode.trim())) {
-            throw new ServiceException(400, "验证码错误");
-        }
     }
 
     @Override

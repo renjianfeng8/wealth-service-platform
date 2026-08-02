@@ -6,6 +6,7 @@ import com.wealth.common.utils.JwtUtil;
 import com.wealth.common.utils.JwtUtil.TokenPair;
 import com.wealth.common.utils.RedisUtil;
 import com.wealth.platform.system.entity.UmsAdmin;
+import com.wealth.platform.system.service.CaptchaService;
 import com.wealth.platform.system.service.UmsAdminCrudService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -36,13 +37,16 @@ class UmsAdminAuthServiceImplTest {
     @Mock
     private RedisUtil redisUtil;
 
+    @Mock
+    private CaptchaService captchaService;
+
     private UmsAdminAuthServiceImpl authService;
 
     private UmsAdmin mockAdmin;
 
     @BeforeEach
     void setUp() {
-        authService = new UmsAdminAuthServiceImpl(crudService, jwtUtil, passwordEncoder, redisUtil);
+        authService = new UmsAdminAuthServiceImpl(crudService, jwtUtil, passwordEncoder, redisUtil, captchaService);
 
         mockAdmin = new UmsAdmin();
         mockAdmin.setId(1L);
