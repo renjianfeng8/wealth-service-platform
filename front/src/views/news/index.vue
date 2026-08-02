@@ -68,15 +68,11 @@
       />
     </div>
 
-    <!-- 详情弹窗 -->
-    <el-dialog v-model="detailVisible" :title="detailItem?.title" width="700" destroy-on-close>
-      <div class="detail-meta">
-        <el-tag size="small" effect="plain">{{ newsTypeText(detailItem?.newsType) }}</el-tag>
-        <span v-if="detailItem?.source" class="detail-source">来源：{{ detailItem.source }}</span>
-        <span class="detail-time">{{ formatDateTime(detailItem?.publishTime) }}</span>
-      </div>
-      <div class="detail-content">{{ detailItem?.content }}</div>
-    </el-dialog>
+    <!-- 详情弹窗（实时拉取） -->
+    <NewsDetailDialog
+      v-model="detailVisible"
+      :news-id="selectedNewsId"
+    />
   </div>
 </template>
 
@@ -85,6 +81,7 @@ import { ref, onMounted } from 'vue'
 import { getNewsPage } from '@/api/message'
 import { NEWS_TYPE_OPTIONS } from '@/types'
 import { formatDateTime, newsTypeText } from '@/utils/format'
+import NewsDetailDialog from '@/components/NewsDetailDialog.vue'
 import type { WeaNews } from '@/types'
 
 const newsList = ref<WeaNews[]>([])
@@ -95,7 +92,7 @@ const pageNum = ref(1)
 const pageSize = ref(10)
 const filterType = ref(0)
 const detailVisible = ref(false)
-const detailItem = ref<WeaNews | null>(null)
+const selectedNewsId = ref<number | null>(null)
 
 function truncate(text: string | undefined, len: number): string {
   if (!text) return ''
@@ -125,7 +122,8 @@ function handleFilter() {
 }
 
 function showDetail(item: WeaNews) {
-  detailItem.value = item
+  if (!item.id) return
+  selectedNewsId.value = item.id
   detailVisible.value = true
 }
 
@@ -194,34 +192,6 @@ onMounted(fetchNews)
   font-size: 13px;
   color: var(--primary);
   font-weight: 500;
-}
-
-/* 详情 */
-.detail-meta {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 20px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.detail-source {
-  font-size: 14px;
-  color: var(--text-secondary);
-}
-
-.detail-time {
-  font-size: 13px;
-  color: var(--text-placeholder);
-  margin-left: auto;
-}
-
-.detail-content {
-  font-size: 15px;
-  color: var(--text-regular);
-  line-height: 1.8;
-  white-space: pre-wrap;
 }
 
 .pagination-wrap {

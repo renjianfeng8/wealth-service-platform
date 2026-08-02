@@ -100,63 +100,23 @@
       />
     </div>
 
-    <!-- 详情弹窗 -->
-    <el-dialog v-model="detailVisible" :title="detailItem?.productName" width="520" destroy-on-close>
-      <div v-if="detailItem" class="detail-body">
-        <div class="detail-row">
-          <span class="detail-label">产品代码</span>
-          <span class="detail-value">{{ detailItem.productCode }}</span>
-        </div>
-        <div class="detail-row">
-          <span class="detail-label">产品类型</span>
-          <span class="detail-value">{{ productTypeText(detailItem.productType) }}</span>
-        </div>
-        <div class="detail-row">
-          <span class="detail-label">当前价格</span>
-          <span class="detail-value price">{{ formatPrice(detailItem.price) }}</span>
-        </div>
-        <div class="detail-row">
-          <span class="detail-label">涨跌额</span>
-          <span class="detail-value" :class="(detailItem.riseFall || 0) >= 0 ? 'rise-text' : 'fall-text'">
-            {{ detailItem.riseFall != null ? formatPrice(detailItem.riseFall) : '-' }}
-          </span>
-        </div>
-        <div class="detail-row">
-          <span class="detail-label">涨跌幅</span>
-          <span class="detail-value" :class="(detailItem.riseFallRate || 0) >= 0 ? 'rise-text' : 'fall-text'">
-            {{ formatRate(detailItem.riseFallRate) }}
-          </span>
-        </div>
-        <div class="detail-row">
-          <span class="detail-label">状态</span>
-          <el-tag :type="detailItem.status === 1 ? 'success' : 'danger'" size="small">
-            {{ detailItem.status === 1 ? '在售' : '停售' }}
-          </el-tag>
-        </div>
-      </div>
-      <template #footer>
-        <el-button @click="detailVisible = false">关闭</el-button>
-        <el-button :icon="isFavorited ? StarFilled : Star" :disabled="detailItem?.status !== 1" :type="isFavorited ? 'warning' : ''" @click="handleFavorite(detailItem)">{{ isFavorited ? '已收藏' : '收藏' }}</el-button>
-        <el-button type="primary" :disabled="detailItem?.status !== 1" @click="goTrade(detailItem)">去交易</el-button>
-      </template>
-    </el-dialog>
+    <!-- 详情弹窗（实时拉取） -->
+    <ProductDetailDialog
+      v-model="detailVisible"
+      :product-id="selectedProductId"
+      :fallback-name="detailFallbackName"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { useUserStore } from '@/store/index'
+import { ref, onMounted } from 'vue'
 import { getProductPage } from '@/api/product'
-import { createFavorite, getFavoritePage, deleteFavorite } from '@/api/favorite'
 import { PRODUCT_TYPE_OPTIONS } from '@/types'
 import { formatPrice, formatRate, productTypeText } from '@/utils/format'
-import { CaretTop, CaretBottom, Star, StarFilled } from '@element-plus/icons-vue'
-import { ElMessage } from 'element-plus'
-import type { WeaProduct, WeaUserFavorite } from '@/types'
-
-const router = useRouter()
-const userStore = useUserStore()
+import { CaretTop, CaretBottom } from '@element-plus/icons-vue'
+import ProductDetailDialog from '@/components/ProductDetailDialog.vue'
+import type { WeaProduct } from '@/types'
 
 const products = ref<WeaProduct[]>([])
 const loading = ref(false)
@@ -168,12 +128,8 @@ const filterType = ref(0)
 const keyword = ref('')
 const sortBy = ref('')
 const detailVisible = ref(false)
-const detailItem = ref<WeaProduct | null>(null)
-const favoritedMap = ref<Record<string, number>>({}) // productCode -> favoriteId
-
-const isFavorited = computed(() => {
-  return detailItem.value ? detailItem.value.productCode! in favoritedMap.value : false
-})
+const selectedProductId = ref<number | null>(null)
+const detailFallbackName = ref('')
 
 async function fetchProducts() {
   hasError.value = false
@@ -220,66 +176,13 @@ function handleSearch() {
 }
 
 function showDetail(item: WeaProduct) {
-  detailItem.value = item
+  detailFallbackName.value = item.productName
+  selectedProductId.value = item.id ?? null
   detailVisible.value = true
-}
-
-function goTrade(item: WeaProduct | null) {
-  if (!item) return
-  detailVisible.value = false
-  router.push({ path: '/user/trade', query: { productCode: item.productCode } })
-}
-
-async function fetchFavorites() {
-  if (!userStore.userId) {
-    favoritedMap.value = {}
-    return
-  }
-  try {
-    const res = await getFavoritePage({ pageNum: 1, pageSize: 100, userId: userStore.userId })
-    const map: Record<string, number> = {}
-    for (const fav of (res.data?.records || []) as WeaUserFavorite[]) {
-      if (fav.productCode) map[fav.productCode] = fav.id!
-    }
-    favoritedMap.value = map
-  } catch (err) {
-    console.warn('[products] fetchFavorites 失败:', err)
-  }
-}
-
-async function handleFavorite(item: WeaProduct | null) {
-  if (!item || !item.productCode) return
-  if (!userStore.userId) {
-    ElMessage.warning('请先登录')
-    return
-  }
-  const favId = favoritedMap.value[item.productCode]
-  if (favId) {
-    // 已收藏 -> 取消收藏
-    try {
-      await deleteFavorite(favId)
-      const newMap = { ...favoritedMap.value }
-      delete newMap[item.productCode]
-      favoritedMap.value = newMap
-      ElMessage.success('已取消收藏')
-    } catch {
-      // handled globally
-    }
-  } else {
-    // 未收藏 -> 添加收藏
-    try {
-      await createFavorite({ userId: userStore.userId, productCode: item.productCode })
-      await fetchFavorites()
-      ElMessage.success('已添加自选')
-    } catch {
-      // handled globally
-    }
-  }
 }
 
 onMounted(() => {
   fetchProducts()
-  fetchFavorites()
 })
 </script>
 
@@ -381,41 +284,6 @@ onMounted(() => {
 
 .change-row.rise { color: var(--rise-color); }
 .change-row.fall { color: var(--fall-color); }
-
-/* 详情弹窗 */
-.detail-body {
-  padding: 8px 0;
-}
-
-.detail-row {
-  display: flex;
-  align-items: center;
-  padding: 12px 0;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.detail-row:last-child {
-  border-bottom: none;
-}
-
-.detail-label {
-  width: 100px;
-  font-size: 14px;
-  color: var(--text-secondary);
-  flex-shrink: 0;
-}
-
-.detail-value {
-  font-size: 14px;
-  color: var(--text-primary);
-  font-weight: 500;
-}
-
-.detail-value.price {
-  font-size: 20px;
-  font-weight: 700;
-  font-family: 'DIN Pro', monospace;
-}
 
 .pagination-wrap {
   display: flex;

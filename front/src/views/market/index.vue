@@ -24,7 +24,7 @@
         </template>
       </el-result>
       <template v-else>
-        <el-table :data="marketList" stripe v-loading="loading" empty-text="暂无行情数据">
+        <el-table :data="marketList" stripe v-loading="loading" empty-text="暂无行情数据" @row-click="showDetail">
         <el-table-column type="index" label="#" width="60" />
         <el-table-column prop="productCode" label="产品代码" width="120">
           <template #default="{ row }">
@@ -91,6 +91,11 @@
         </template>
     </el-card>
   </div>
+
+    <MarketDetailDialog
+      v-model="detailVisible"
+      :market="selectedMarket"
+    />
 </template>
 
 <script setup lang="ts">
@@ -100,6 +105,7 @@ import { formatPrice, formatRate, formatDateTime } from '@/utils/format'
 import { Refresh } from '@element-plus/icons-vue'
 import type { WeaMarketData } from '@/types'
 import { useMarketSSEStore } from '@/store/marketSSE'
+import MarketDetailDialog from './MarketDetailDialog.vue'
 
 const marketList = ref<WeaMarketData[]>([])
 const loading = ref(false)
@@ -110,6 +116,13 @@ const pageNum = ref(1)
 const pageSize = ref(20)
 const marketSSE = useMarketSSEStore()
 const sseConnected = computed(() => marketSSE.connected)
+const detailVisible = ref(false)
+const selectedMarket = ref<WeaMarketData | null>(null)
+
+function showDetail(row: WeaMarketData) {
+  selectedMarket.value = row
+  detailVisible.value = true
+}
 
 async function fetchData() {
   hasError.value = false

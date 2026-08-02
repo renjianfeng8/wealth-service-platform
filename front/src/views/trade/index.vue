@@ -126,7 +126,7 @@
             <el-table-column label="时间" width="160">
               <template #default="{ row }">{{ formatDateTime(row.createTime) }}</template>
             </el-table-column>
-            <el-table-column label="操作" width="80" fixed="right">
+            <el-table-column label="操作" width="130" fixed="right">
               <template #default="{ row }">
                 <el-button
                   v-if="row.orderStatus === 0"
@@ -137,7 +137,7 @@
                 >
                   撤销
                 </el-button>
-                <span v-else class="text-muted">-</span>
+                <el-button text type="primary" size="small" @click="handleDetail(row)">详情</el-button>
               </template>
             </el-table-column>
           </el-table>
@@ -157,6 +157,58 @@
         </el-card>
       </el-col>
     </el-row>
+
+    <!-- 委托单详情弹窗 -->
+    <el-dialog v-model="detailVisible" :title="`委托单 ${detailItem?.orderNo || ''}`" width="480" destroy-on-close>
+      <div v-loading="detailLoading" class="order-detail-body">
+        <template v-if="detailItem">
+          <div class="od-row">
+            <span class="od-label">订单号</span>
+            <span class="od-value code">{{ detailItem.orderNo }}</span>
+          </div>
+          <div class="od-row">
+            <span class="od-label">产品代码</span>
+            <span class="od-value code">{{ detailItem.productCode }}</span>
+          </div>
+          <div class="od-row">
+            <span class="od-label">交易方向</span>
+            <el-tag :type="detailItem.tradeType === 1 ? 'danger' : 'success'" size="small" effect="plain">
+              {{ tradeTypeText(detailItem.tradeType) }}
+            </el-tag>
+          </div>
+          <div class="od-row">
+            <span class="od-label">委托价格</span>
+            <span class="od-value price">{{ formatPrice(detailItem.entrustPrice) }}</span>
+          </div>
+          <div class="od-row">
+            <span class="od-label">委托数量</span>
+            <span class="od-value">{{ detailItem.entrustNum }}</span>
+          </div>
+          <div class="od-row">
+            <span class="od-label">委托金额</span>
+            <span class="od-value price">
+              {{ detailItem.entrustPrice != null && detailItem.entrustNum != null
+                ? formatPrice(detailItem.entrustPrice * detailItem.entrustNum)
+                : '-' }}
+            </span>
+          </div>
+          <div class="od-row">
+            <span class="od-label">订单状态</span>
+            <el-tag :type="orderStatusTag(detailItem.orderStatus)" size="small">
+              {{ orderStatusText(detailItem.orderStatus) }}
+            </el-tag>
+          </div>
+          <div class="od-row">
+            <span class="od-label">下单时间</span>
+            <span class="od-value">{{ formatDateTime(detailItem.createTime) }}</span>
+          </div>
+        </template>
+        <el-empty v-else-if="!detailLoading" description="订单不存在" :image-size="64" />
+      </div>
+      <template #footer>
+        <el-button @click="detailVisible = false">关闭</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -164,7 +216,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useUserStore } from '@/store/index'
-import { getTradeOrderPage, createTradeOrder, cancelTradeOrder } from '@/api/trade'
+import { getTradeOrderPage, createTradeOrder, getTradeOrderById, cancelTradeOrder } from '@/api/trade'
 import { ORDER_STATUS_OPTIONS } from '@/types'
 import { formatPrice, formatDateTime, tradeTypeText, orderStatusText, orderStatusTag } from '@/utils/format'
 import { Refresh } from '@element-plus/icons-vue'
@@ -301,6 +353,25 @@ async function handleCancel(order: WeaTradeOrder) {
   } catch { /* cancelled */ }
 }
 
+const detailVisible = ref(false)
+const detailLoading = ref(false)
+const detailItem = ref<WeaTradeOrder | null>(null)
+
+async function handleDetail(order: WeaTradeOrder) {
+  if (!order.id) return
+  detailVisible.value = true
+  detailLoading.value = true
+  detailItem.value = null
+  try {
+    const res = await getTradeOrderById(order.id)
+    detailItem.value = (res.data || null) as WeaTradeOrder | null
+  } catch {
+    detailItem.value = null
+  } finally {
+    detailLoading.value = false
+  }
+}
+
 onMounted(() => {
   // 从产品中心带过来的产品代码
   if (route.query.productCode) {
@@ -339,11 +410,6 @@ onMounted(() => {
   font-family: 'DIN Pro', monospace;
   font-size: 13px;
   color: var(--text-secondary);
-}
-
-.text-muted {
-  color: var(--text-placeholder);
-  font-size: 13px;
 }
 
 .pagination-wrap {
@@ -388,6 +454,20 @@ onMounted(() => {
   font-weight: 700;
   color: var(--el-color-danger);
 }
+
+/* 委托单详情弹窗 */
+.order-detail-body { min-height: 60px; padding: 4px 0; }
+.od-row {
+  display: flex;
+  align-items: center;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--border-color);
+}
+.od-row:last-child { border-bottom: none; }
+.od-label { width: 90px; font-size: 14px; color: var(--text-secondary); flex-shrink: 0; }
+.od-value { font-size: 14px; color: var(--text-primary); font-weight: 500; }
+.od-value.code { font-family: 'DIN Pro', monospace; }
+.od-value.price { font-weight: 700; font-family: 'DIN Pro', monospace; }
 
 @media (max-width: 768px) {
   .card-header {

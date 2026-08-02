@@ -73,7 +73,7 @@
 
       <el-row :gutter="16" v-else>
         <el-col :xs="24" :sm="12" :md="8" v-for="item in productList" :key="item.id" class="product-col">
-          <el-card shadow="never" class="product-card" @click="router.push('/products')">
+          <el-card shadow="never" class="product-card" @click="showProductDetail(item)">
             <div class="product-tag" :class="'type-' + (item.productType || 1)">{{ productTypeLabel(item.productType) }}</div>
             <div class="product-name">{{ item.productName }}</div>
             <div class="product-code">{{ item.productCode }}</div>
@@ -146,7 +146,7 @@
       <el-empty v-else-if="newsList.length === 0" description="暂无资讯" />
 
       <div v-else class="news-list">
-        <div class="news-item" v-for="item in newsList" :key="item.id" @click="router.push('/news')">
+        <div class="news-item" v-for="item in newsList" :key="item.id" @click="showNewsDetail(item)">
           <div class="news-left">
             <span class="news-type-tag" :class="'nt-' + (item.newsType || 1)">{{ newsTypeLabel(item.newsType) }}</span>
           </div>
@@ -171,6 +171,16 @@
         <el-button type="primary" size="large" @click="router.push('/auth/login')">立即登录 / 注册</el-button>
       </div>
     </section>
+
+    <ProductDetailDialog
+      v-model="productDetailVisible"
+      :product-id="selectedProductId"
+      :fallback-name="selectedProductName"
+    />
+    <NewsDetailDialog
+      v-model="newsDetailVisible"
+      :news-id="selectedNewsId"
+    />
   </div>
 </template>
 
@@ -183,6 +193,8 @@ import { getProductPage, getMarketDataPage } from '@/api/product'
 import { getNewsPage } from '@/api/message'
 import { formatPrice, formatRate } from '@/utils/format'
 import type { WeaProduct, WeaMarketData, WeaNews } from '@/types'
+import ProductDetailDialog from '@/components/ProductDetailDialog.vue'
+import NewsDetailDialog from '@/components/NewsDetailDialog.vue'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -220,6 +232,24 @@ const newsList = ref<WeaNews[]>([])
 
 const NEWS_TYPE_LABELS: Record<number, string> = { 1: '行情快讯', 2: '行业公告', 3: '理财资讯' }
 function newsTypeLabel(v?: number) { return v ? NEWS_TYPE_LABELS[v] || '资讯' : '资讯' }
+
+/* ---- 详情弹窗 ---- */
+const productDetailVisible = ref(false)
+const selectedProductId = ref<number | null>(null)
+const selectedProductName = ref('')
+const newsDetailVisible = ref(false)
+const selectedNewsId = ref<number | null>(null)
+
+function showProductDetail(item: WeaProduct) {
+  selectedProductName.value = item.productName
+  selectedProductId.value = item.id ?? null
+  productDetailVisible.value = true
+}
+
+function showNewsDetail(item: WeaNews) {
+  selectedNewsId.value = item.id ?? null
+  newsDetailVisible.value = true
+}
 
 function formatTime(t?: string) {
   if (!t) return ''

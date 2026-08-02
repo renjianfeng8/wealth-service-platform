@@ -70,12 +70,21 @@
             </div>
             <div class="fav-footer">
               <span class="fav-time">添加于 {{ formatDate(item.createTime) }}</span>
-              <el-button type="primary" size="small" @click="goTrade(item)">交易</el-button>
+              <div class="fav-actions">
+                <el-button size="small" @click="showDetail(item)">详情</el-button>
+                <el-button type="primary" size="small" @click="goTrade(item)">交易</el-button>
+              </div>
             </div>
           </el-card>
         </el-col>
       </el-row>
     </div>
+
+    <ProductDetailDialog
+      v-model="detailVisible"
+      :product-id="selectedProductId"
+      :fallback-name="detailFallbackName"
+    />
 
     <div class="pagination-wrap">
       <el-pagination
@@ -101,11 +110,13 @@ import { getProductPage } from '@/api/product'
 import { formatPrice, formatRate, formatDate } from '@/utils/format'
 import { Delete } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import ProductDetailDialog from '@/components/ProductDetailDialog.vue'
 import type { WeaUserFavorite, WeaProduct, WeaMarketData } from '@/types'
 import { useMarketSSEStore } from '@/store/marketSSE'
 
 interface FavoriteItem extends WeaUserFavorite {
   productName?: string
+  productId?: number
   currentPrice?: number
   riseFallRate?: number
 }
@@ -120,26 +131,33 @@ const total = ref(0)
 const pageNum = ref(1)
 const pageSize = ref(12)
 const newProductCode = ref('')
+const detailVisible = ref(false)
+const selectedProductId = ref<number | null>(null)
+const detailFallbackName = ref('')
 const marketSSE = useMarketSSEStore()
 const sseConnected = computed(() => marketSSE.connected)
 
 async function enrichFavorites(records: WeaUserFavorite[]): Promise<FavoriteItem[]> {
   // 仅查当前页自选对应的 productCode，避免全表扫描
   const codes = [...new Set(records.map((r) => r.productCode))]
-  const productMap = new Map<string, string>()
+  const productMap = new Map<string, { name: string; id?: number }>()
 
   await Promise.all(codes.map(async (code) => {
     try {
       const res = await getProductPage({ pageNum: 1, pageSize: 1, productCode: code })
       const p = (res.data?.records || [])[0] as WeaProduct | undefined
-      if (p) productMap.set(code, p.productName)
+      if (p) productMap.set(code, { name: p.productName, id: p.id })
     } catch { /* 单个查询失败不影响其他 */ }
   }))
 
-  return records.map((fav) => ({
-    ...fav,
-    productName: productMap.get(fav.productCode) || fav.productCode,
-  }))
+  return records.map((fav) => {
+    const meta = productMap.get(fav.productCode)
+    return {
+      ...fav,
+      productName: meta?.name || fav.productCode,
+      productId: meta?.id,
+    }
+  })
 }
 
 function handleMarketUpdate(data: WeaMarketData[]) {
@@ -208,6 +226,16 @@ function goTrade(item: FavoriteItem) {
   router.push({ path: '/user/trade', query: { productCode: item.productCode } })
 }
 
+function showDetail(item: FavoriteItem) {
+  if (!item.productId) {
+    ElMessage.warning('该产品信息缺失，请前往产品中心查看')
+    return
+  }
+  detailFallbackName.value = item.productName || item.productCode
+  selectedProductId.value = item.productId
+  detailVisible.value = true
+}
+
 onMounted(() => {
   if (userStore.userId) {
     fetchFavorites()
@@ -241,6 +269,7 @@ onUnmounted(() => {
 .fav-change.fall { color: var(--fall-color); }
 .no-price { font-size: 14px; color: var(--text-secondary); }
 .fav-footer { display: flex; align-items: center; justify-content: space-between; padding-top: 12px; border-top: 1px solid var(--border-color); }
+.fav-actions { display: flex; align-items: center; gap: 8px; }
 .fav-time { font-size: 12px; color: var(--text-placeholder); }
 .pagination-wrap { display: flex; justify-content: center; padding: 20px 0; }
 

@@ -146,7 +146,7 @@
 
         <el-row :gutter="16" v-else>
           <el-col :xs="24" :sm="12" :md="8" v-for="item in productList" :key="item.id">
-            <el-card shadow="never" class="prod-card" @click="router.push('/products')">
+            <el-card shadow="never" class="prod-card" @click="showProductDetail(item)">
               <div class="prod-tag" :class="'t-' + (item.productType || 1)">{{ productTypeLabel(item.productType) }}</div>
               <div class="prod-name">{{ item.productName }}</div>
               <div class="prod-code">{{ item.productCode }}</div>
@@ -187,7 +187,7 @@
         <el-empty v-else-if="newsList.length === 0" description="暂无资讯" :image-size="64" />
 
         <div v-else class="news-list">
-          <div class="news-item" v-for="item in newsList" :key="item.id" @click="router.push('/news')">
+          <div class="news-item" v-for="item in newsList" :key="item.id" @click="showNewsDetail(item)">
             <span class="news-tag" :class="'nt-' + (item.newsType || 1)">{{ newsTypeLabel(item.newsType) }}</span>
             <span class="news-title">{{ item.title }}</span>
             <span class="news-date">{{ formatTime(item.publishTime) }}</span>
@@ -195,6 +195,16 @@
         </div>
       </el-card>
     </template>
+
+    <ProductDetailDialog
+      v-model="productDetailVisible"
+      :product-id="selectedProductId"
+      :fallback-name="selectedProductName"
+    />
+    <NewsDetailDialog
+      v-model="newsDetailVisible"
+      :news-id="selectedNewsId"
+    />
   </div>
 </template>
 
@@ -211,6 +221,8 @@ import { getMessagePage } from '@/api/message'
 import { getNewsPage } from '@/api/message'
 import { formatPrice, formatRate } from '@/utils/format'
 import type { WeaProduct, WeaNews, WeaMarketData } from '@/types'
+import ProductDetailDialog from '@/components/ProductDetailDialog.vue'
+import NewsDetailDialog from '@/components/NewsDetailDialog.vue'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -236,6 +248,24 @@ const productList = ref<WeaProduct[]>([])
 /* ---- 资讯 ---- */
 const newsLoading = ref(false)
 const newsList = ref<WeaNews[]>([])
+
+/* ---- 详情弹窗 ---- */
+const productDetailVisible = ref(false)
+const selectedProductId = ref<number | null>(null)
+const selectedProductName = ref('')
+const newsDetailVisible = ref(false)
+const selectedNewsId = ref<number | null>(null)
+
+function showProductDetail(item: WeaProduct) {
+  selectedProductName.value = item.productName
+  selectedProductId.value = item.id ?? null
+  productDetailVisible.value = true
+}
+
+function showNewsDetail(item: WeaNews) {
+  selectedNewsId.value = item.id ?? null
+  newsDetailVisible.value = true
+}
 
 const displayName = computed(() => userStore.nickname || userStore.username || '用户')
 
