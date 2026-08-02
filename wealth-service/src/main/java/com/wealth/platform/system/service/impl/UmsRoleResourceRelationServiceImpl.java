@@ -42,6 +42,11 @@ public class UmsRoleResourceRelationServiceImpl
     }
 
     @Override
+    public List<UmsRoleResourceRelationVO> getRoleResourceRelationList(Integer pageNum, Integer pageSize) {
+        return pageVoList(pageNum, pageSize, UmsRoleResourceRelationVO.class);
+    }
+
+    @Override
     public UmsRoleResourceRelationVO getRoleResourceRelationById(Long id) {
         return getVoByIdOrThrow(id, UmsRoleResourceRelationVO.class, "角色资源关联");
     }

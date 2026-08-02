@@ -24,7 +24,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.wealth.common.audit.AntiReplay;
 import com.wealth.common.audit.AuditLog;
 import com.wealth.common.dto.LoginDTO;
@@ -58,9 +57,7 @@ public class UserController {
     public Result<List<UserVO>> list(
             @Min(1) @RequestParam(defaultValue = "1") Integer pageNum,
             @Min(1) @Max(100) @RequestParam(defaultValue = "10") Integer pageSize) {
-        List<User> list = userService.page(new Page<>(pageNum, pageSize)).getRecords();
-        List<UserVO> voList = BeanConvertUtil.convertList(list, UserVO.class);
-        return Result.success(voList);
+        return Result.success(userService.getUserList(pageNum, pageSize));
     }
 
     @GetMapping("/page")

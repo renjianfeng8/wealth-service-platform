@@ -6,6 +6,8 @@ import com.wealth.platform.system.dto.UmsAdminDTO;
 import com.wealth.platform.system.entity.UmsAdmin;
 import com.wealth.platform.system.vo.UmsAdminVO;
 
+import java.util.List;
+
 /**
  * 管理员实体 CRUD 与查询服务，只负责 ums_admin 表的数据读写。
  * 认证/令牌生命周期由 {@link UmsAdminAuthService} 承担，权限判定由 {@link PermissionQueryService} 承担。
@@ -13,6 +15,8 @@ import com.wealth.platform.system.vo.UmsAdminVO;
 public interface UmsAdminCrudService extends IService<UmsAdmin> {
 
     UmsAdminVO getAdminById(Long id);
+
+    List<UmsAdminVO> getAdminList(Integer pageNum, Integer pageSize);
 
     Boolean createAdmin(UmsAdminDTO dto);
 

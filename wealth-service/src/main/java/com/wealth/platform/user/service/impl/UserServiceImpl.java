@@ -21,6 +21,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.util.StringUtils;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl extends BaseBizServiceImpl<UserMapper, User> implements UserService {
@@ -129,6 +131,11 @@ public class UserServiceImpl extends BaseBizServiceImpl<UserMapper, User> implem
                 .eq(User::getId, dbUser.getId())
                 .set(User::getPassword, passwordEncoder.encode(user.getPassword()))
                 .update();
+    }
+
+    @Override
+    public List<UserVO> getUserList(Integer pageNum, Integer pageSize) {
+        return pageVoList(pageNum, pageSize, UserVO.class);
     }
 
     @Override

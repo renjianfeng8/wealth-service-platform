@@ -53,7 +53,7 @@ public class UserFavoriteServiceImpl extends BaseBizServiceImpl<UserFavoriteMapp
         if (existsBy(new LambdaQueryWrapper<WeaUserFavorite>()
                 .eq(WeaUserFavorite::getUserId, dto.getUserId())
                 .eq(WeaUserFavorite::getProductCode, dto.getProductCode()))) {
-            return false;
+            throw new ServiceException(400, "已关注该产品，请勿重复添加");
         }
         WeaUserFavorite entity = BeanConvertUtil.convert(dto, WeaUserFavorite.class);
         return save(entity);

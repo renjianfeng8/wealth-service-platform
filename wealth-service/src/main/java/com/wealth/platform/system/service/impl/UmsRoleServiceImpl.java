@@ -11,6 +11,8 @@ import com.wealth.platform.system.vo.UmsRoleVO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 public class UmsRoleServiceImpl extends BaseBizServiceImpl<UmsRoleMapper, UmsRole> implements UmsRoleService {
 
@@ -18,6 +20,11 @@ public class UmsRoleServiceImpl extends BaseBizServiceImpl<UmsRoleMapper, UmsRol
     public IPage<UmsRole> pageWithFilter(Integer pageNum, Integer pageSize, String name, Integer status) {
         return pageWithFilter(pageNum, pageSize, orderByAsc(UmsRole::getSort),
                 like(UmsRole::getName, name), eq(UmsRole::getStatus, status));
+    }
+
+    @Override
+    public List<UmsRoleVO> getRoleList(Integer pageNum, Integer pageSize) {
+        return pageVoList(pageNum, pageSize, UmsRoleVO.class);
     }
 
     @Override

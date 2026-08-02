@@ -11,18 +11,23 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class MarketDataPushServiceTest {
 
     private MarketDataPushService pushService;
 
+    private MarketDataSimulationService marketDataSimulationService;
+
     @BeforeEach
     void setUp() {
-        pushService = new MarketDataPushService();
+        marketDataSimulationService = mock(MarketDataSimulationService.class);
+        pushService = new MarketDataPushService(marketDataSimulationService);
         ReflectionTestUtils.setField(pushService, "sseTimeout", 1000L);
     }
 
@@ -39,5 +44,25 @@ class MarketDataPushServiceTest {
 
         assertEquals(0, emitters.size());
         verify(emitter).completeWithError(any(IOException.class));
+    }
+
+    @Test
+    void subscribe_should_return_emitter_and_fetch_snapshot() {
+        when(marketDataSimulationService.getAllMarketData()).thenReturn(List.of(new MarketDataVO()));
+
+        SseEmitter result = pushService.subscribe();
+
+        assertNotNull(result);
+        verify(marketDataSimulationService).getAllMarketData();
+    }
+
+    @Test
+    void subscribe_should_return_emitter_when_snapshot_fetch_fails() {
+        when(marketDataSimulationService.getAllMarketData())
+                .thenThrow(new IllegalStateException("redis down"));
+
+        SseEmitter result = pushService.subscribe();
+
+        assertNotNull(result);
     }
 }

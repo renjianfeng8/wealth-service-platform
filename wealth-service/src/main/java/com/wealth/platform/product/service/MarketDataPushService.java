@@ -4,6 +4,7 @@ import com.wealth.platform.product.vo.MarketDataVO;
 import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -25,6 +26,33 @@ public class MarketDataPushService {
     private Long sseTimeout;
 
     private final CopyOnWriteArrayList<SseEmitter> emitters = new CopyOnWriteArrayList<>();
+
+    private final MarketDataSimulationService marketDataSimulationService;
+
+    /**
+     * 与 {@link MarketDataSimulationService} 互为依赖（订阅首推快照），
+     * 故通过 @Lazy 注入该依赖以打破构造器循环依赖。
+     */
+    public MarketDataPushService(@Lazy MarketDataSimulationService marketDataSimulationService) {
+        this.marketDataSimulationService = marketDataSimulationService;
+    }
+
+    /**
+     * 建立 SSE 订阅：创建连接并推送一次全量快照（快照取自行情模拟服务缓存）。
+     * 快照获取或首推失败均不中断连接建立，由 Controller 一行委托。
+     */
+    public SseEmitter subscribe() {
+        SseEmitter emitter = createEmitter();
+        try {
+            List<MarketDataVO> snapshot = marketDataSimulationService.getAllMarketData();
+            emitter.send(SseEmitter.event()
+                    .name("market-update")
+                    .data(snapshot));
+        } catch (Exception e) {
+            log.warn("SSE 首次推送快照异常", e);
+        }
+        return emitter;
+    }
 
     /**
      * 创建 SSE 连接，超时 86400 秒（24 小时）。

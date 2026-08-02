@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.wealth.common.audit.AntiReplay;
 import com.wealth.common.audit.AuditLog;
 import com.wealth.common.result.Result;
-import com.wealth.common.result.ResultCode;
 import com.wealth.common.utils.BeanConvertUtil;
 import com.wealth.platform.product.dto.UserFavoriteDTO;
 import com.wealth.platform.product.entity.WeaUserFavorite;
@@ -72,11 +71,7 @@ public class UserFavoriteController {
     @AuditLog(module = "自选管理", operation = "添加自选关注")
     @AntiReplay
     public Result<Boolean> create(@Valid @RequestBody UserFavoriteDTO dto) {
-        boolean success = userFavoriteService.createFavorite(dto);
-        if (!success) {
-            return Result.error(ResultCode.FAIL.getCode(), "已关注该产品，请勿重复添加");
-        }
-        return Result.success(true);
+        return Result.success(userFavoriteService.createFavorite(dto));
     }
 
     @Operation(summary = "更新用户自选关注信息")

@@ -1,6 +1,7 @@
 package com.wealth.platform.product.service.impl;
 
 import com.wealth.common.exception.ServiceException;
+import com.wealth.platform.product.dto.UserFavoriteDTO;
 import com.wealth.platform.product.entity.WeaUserFavorite;
 import com.wealth.platform.product.mapper.UserFavoriteMapper;
 import com.wealth.platform.product.vo.UserFavoriteVO;
@@ -15,6 +16,8 @@ import org.springframework.test.util.ReflectionTestUtils;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
@@ -60,5 +63,35 @@ class UserFavoriteServiceImplTest {
                 userFavoriteService.getFavoriteById(99L));
 
         assertEquals(404, exception.getCode());
+    }
+
+    @Test
+    @DisplayName("创建自选-重复关注抛400")
+    void createFavorite_Duplicate() {
+        UserFavoriteDTO dto = new UserFavoriteDTO();
+        dto.setUserId(100L);
+        dto.setProductCode("P001");
+
+        when(userFavoriteMapper.selectCount(any())).thenReturn(1L);
+
+        ServiceException exception = assertThrows(ServiceException.class, () ->
+                userFavoriteService.createFavorite(dto));
+
+        assertEquals(400, exception.getCode());
+    }
+
+    @Test
+    @DisplayName("创建自选-成功保存")
+    void createFavorite_Success() {
+        UserFavoriteDTO dto = new UserFavoriteDTO();
+        dto.setUserId(100L);
+        dto.setProductCode("P001");
+
+        when(userFavoriteMapper.selectCount(any())).thenReturn(0L);
+        when(userFavoriteMapper.insert(any(WeaUserFavorite.class))).thenReturn(1);
+
+        boolean result = userFavoriteService.createFavorite(dto);
+
+        assertTrue(result);
     }
 }

@@ -8,6 +8,8 @@ import com.wealth.platform.user.entity.User;
 import com.wealth.platform.user.vo.LoginVO;
 import com.wealth.platform.user.vo.UserVO;
 
+import java.util.List;
+
 public interface UserService extends IService<User> {
 
     // 新增用户（含密码加密）
@@ -27,6 +29,8 @@ public interface UserService extends IService<User> {
 
     // 分页条件查询
     IPage<User> pageWithFilter(Integer pageNum, Integer pageSize, String username, Integer status);
+
+    List<UserVO> getUserList(Integer pageNum, Integer pageSize);
 
     UserVO getUserById(Long id);
 

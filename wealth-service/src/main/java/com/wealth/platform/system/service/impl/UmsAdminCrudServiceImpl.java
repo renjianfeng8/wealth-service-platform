@@ -17,6 +17,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 /**
  * 管理员 CRUD 与身份查询实现。同时承担 {@link AdminIdentityProvider} 身份读取契约，
  * 供 user 域统一登录识别管理员身份。
@@ -31,6 +33,11 @@ public class UmsAdminCrudServiceImpl extends BaseBizServiceImpl<UmsAdminMapper, 
     @Override
     public UmsAdminVO getAdminById(Long id) {
         return getVoByIdOrThrow(id, UmsAdminVO.class, "管理员");
+    }
+
+    @Override
+    public List<UmsAdminVO> getAdminList(Integer pageNum, Integer pageSize) {
+        return pageVoList(pageNum, pageSize, UmsAdminVO.class);
     }
 
     @Override

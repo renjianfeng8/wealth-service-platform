@@ -35,6 +35,11 @@ public class UmsResourceServiceImpl extends BaseBizServiceImpl<UmsResourceMapper
     }
 
     @Override
+    public List<UmsResourceVO> getResourceList(Integer pageNum, Integer pageSize) {
+        return pageVoList(pageNum, pageSize, UmsResourceVO.class);
+    }
+
+    @Override
     public UmsResourceVO getResourceById(Long id) {
         return getVoByIdOrThrow(id, UmsResourceVO.class, "后台资源");
     }

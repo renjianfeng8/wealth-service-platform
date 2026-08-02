@@ -1,7 +1,6 @@
 package com.wealth.platform.system.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.wealth.common.audit.AntiReplay;
 import com.wealth.common.audit.AuditLog;
 import com.wealth.common.result.Result;
@@ -49,8 +48,7 @@ public class UmsRoleController {
     public Result<List<UmsRoleVO>> list(
             @Min(1) @RequestParam(defaultValue = "1") Integer pageNum,
             @Min(1) @Max(200) @RequestParam(defaultValue = "20") Integer pageSize) {
-        List<UmsRole> list = umsRoleService.page(new Page<>(pageNum, pageSize)).getRecords();
-        return Result.success(BeanConvertUtil.convertList(list, UmsRoleVO.class));
+        return Result.success(umsRoleService.getRoleList(pageNum, pageSize));
     }
 
     @Operation(summary = "分页查询角色列表")

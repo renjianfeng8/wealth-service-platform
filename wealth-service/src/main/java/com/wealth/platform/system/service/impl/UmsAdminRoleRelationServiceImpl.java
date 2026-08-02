@@ -44,6 +44,11 @@ public class UmsAdminRoleRelationServiceImpl
     }
 
     @Override
+    public List<UmsAdminRoleRelationVO> getAdminRoleRelationList(Integer pageNum, Integer pageSize) {
+        return pageVoList(pageNum, pageSize, UmsAdminRoleRelationVO.class);
+    }
+
+    @Override
     public UmsAdminRoleRelationVO getAdminRoleRelationById(Long id) {
         return getVoByIdOrThrow(id, UmsAdminRoleRelationVO.class, "管理员角色关联");
     }

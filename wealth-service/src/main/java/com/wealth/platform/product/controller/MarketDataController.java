@@ -10,7 +10,6 @@ import com.wealth.platform.product.dto.MarketDataDTO;
 import com.wealth.platform.product.entity.WeaMarketData;
 import com.wealth.platform.product.service.MarketDataService;
 import com.wealth.platform.product.service.MarketDataPushService;
-import com.wealth.platform.product.service.MarketDataSimulationService;
 import com.wealth.platform.product.vo.MarketDataVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -19,7 +18,6 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -33,7 +31,6 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.List;
 
-@Slf4j
 @RestController
 @Tag(name = "行情管理", description = "行情数据相关接口")
 @RequestMapping("/product/wea-market-data")
@@ -43,7 +40,6 @@ public class MarketDataController {
 
     private final MarketDataService marketDataService;
     private final MarketDataPushService marketDataPushService;
-    private final MarketDataSimulationService marketDataSimulationService;
 
     @Operation(summary = "根据ID查询行情数据")
     @GetMapping("/{id}")
@@ -63,17 +59,7 @@ public class MarketDataController {
     @GetMapping("/sse")
     public SseEmitter subscribe() {
         // JWT 身份认证由 Gateway 统一处理，此处不再单独校验
-        // 先推送全量快照
-        List<MarketDataVO> snapshot = marketDataSimulationService.getAllMarketData();
-        SseEmitter emitter = marketDataPushService.createEmitter();
-        try {
-            emitter.send(SseEmitter.event()
-                    .name("market-update")
-                    .data(snapshot));
-        } catch (Exception e) {
-            log.warn("SSE 首次推送快照异常, emitterId: {}", emitter, e);
-        }
-        return emitter;
+        return marketDataPushService.subscribe();
     }
 
     @Operation(summary = "分页查询行情数据")

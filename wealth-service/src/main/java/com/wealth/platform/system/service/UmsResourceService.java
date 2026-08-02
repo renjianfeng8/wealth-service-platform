@@ -17,6 +17,8 @@ public interface UmsResourceService extends IService<UmsResource> {
     // 分页条件查询
     IPage<UmsResource> pageWithFilter(Integer pageNum, Integer pageSize, String name, String url);
 
+    List<UmsResourceVO> getResourceList(Integer pageNum, Integer pageSize);
+
     UmsResourceVO getResourceById(Long id);
 
     boolean createResource(UmsResourceDTO dto);

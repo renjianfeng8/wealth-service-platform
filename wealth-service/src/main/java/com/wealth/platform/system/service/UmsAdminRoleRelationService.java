@@ -21,6 +21,8 @@ public interface UmsAdminRoleRelationService extends IService<UmsAdminRoleRelati
     // 分页条件查询
     IPage<UmsAdminRoleRelation> pageWithFilter(Integer pageNum, Integer pageSize, Long adminId);
 
+    List<UmsAdminRoleRelationVO> getAdminRoleRelationList(Integer pageNum, Integer pageSize);
+
     UmsAdminRoleRelationVO getAdminRoleRelationById(Long id);
 
     boolean createRelation(UmsAdminRoleRelationDTO dto);

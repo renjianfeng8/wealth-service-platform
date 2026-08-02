@@ -18,6 +18,8 @@ public interface UmsRoleResourceRelationService extends IService<UmsRoleResource
     // 分页条件查询
     IPage<UmsRoleResourceRelation> pageWithFilter(Integer pageNum, Integer pageSize, Long roleId);
 
+    List<UmsRoleResourceRelationVO> getRoleResourceRelationList(Integer pageNum, Integer pageSize);
+
     UmsRoleResourceRelationVO getRoleResourceRelationById(Long id);
 
     boolean createRelation(UmsRoleResourceRelationDTO dto);

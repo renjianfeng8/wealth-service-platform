@@ -1,7 +1,6 @@
 package com.wealth.platform.system.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.wealth.common.audit.AntiReplay;
 import com.wealth.common.audit.AuditLog;
 import com.wealth.common.result.Result;
@@ -52,8 +51,7 @@ public class UmsResourceController {
     public Result<List<UmsResourceVO>> list(
             @Min(1) @RequestParam(defaultValue = "1") Integer pageNum,
             @Min(1) @Max(200) @RequestParam(defaultValue = "20") Integer pageSize) {
-        List<UmsResource> list = umsResourceService.page(new Page<>(pageNum, pageSize)).getRecords();
-        return Result.success(BeanConvertUtil.convertList(list, UmsResourceVO.class));
+        return Result.success(umsResourceService.getResourceList(pageNum, pageSize));
     }
 
     @Operation(summary = "分页查询后台资源列表")
