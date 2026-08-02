@@ -22,4 +22,7 @@ public class LoginVO {
 
     @Schema(description = "Token 有效期（秒）")
     private long expiresInSeconds;
+
+    @Schema(description = "refresh_token（用于静默续期与登出黑名单）")
+    private String refreshToken;
 }

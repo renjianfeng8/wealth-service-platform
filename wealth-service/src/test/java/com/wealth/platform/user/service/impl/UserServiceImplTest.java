@@ -9,6 +9,7 @@ import com.wealth.platform.user.dto.UserDTO;
 import com.wealth.platform.user.entity.User;
 import com.wealth.platform.user.mapper.UserMapper;
 import com.wealth.platform.user.vo.LoginVO;
+import com.wealth.platform.system.service.CaptchaService;
 import com.wealth.platform.user.vo.UserVO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -46,6 +47,9 @@ class UserServiceImplTest {
     @Mock
     private BCryptPasswordEncoder passwordEncoder;
 
+    @Mock
+    private CaptchaService captchaService;
+
     private UserServiceImpl userService;
 
     private User mockUser;
@@ -55,6 +59,7 @@ class UserServiceImplTest {
         userService = mock(UserServiceImpl.class, CALLS_REAL_METHODS);
         ReflectionTestUtils.setField(userService, "jwtUtil", jwtUtil);
         ReflectionTestUtils.setField(userService, "passwordEncoder", passwordEncoder);
+        ReflectionTestUtils.setField(userService, "captchaService", captchaService);
         ReflectionTestUtils.setField(userService, "baseMapper", userMapper);
 
         mockUser = new User();
@@ -104,6 +109,26 @@ class UserServiceImplTest {
         verify(userMapper).insert(captor.capture());
         assertEquals("newuser", captor.getValue().getUsername());
         assertEquals("encodedPassword", captor.getValue().getPassword());
+    }
+
+    @Test
+    @DisplayName("注册-提供验证码时校验")
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    void register_should_verify_captcha_when_provided() {
+        UserDTO dto = new UserDTO();
+        dto.setUsername("newuser");
+        dto.setPassword("rawPassword");
+        dto.setCaptchaKey("k-123");
+        dto.setCaptchaCode("abcd");
+
+        when(userMapper.selectCount(any())).thenReturn(0L);
+        when(passwordEncoder.encode("rawPassword")).thenReturn("encodedPassword");
+        doReturn(1).when(userMapper).insert(any(User.class));
+
+        Boolean result = userService.register(dto);
+
+        assertTrue(result);
+        verify(captchaService).verify("k-123", "abcd");
     }
 
     @Test

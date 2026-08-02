@@ -48,6 +48,10 @@
             />
           </el-form-item>
 
+          <el-form-item prop="captchaCode">
+            <CaptchaField ref="captchaRef" v-model="form.captchaCode" />
+          </el-form-item>
+
           <el-form-item>
             <el-button
               type="primary"
@@ -78,6 +82,12 @@ import { ElMessage } from 'element-plus'
 import { User, Lock, TrendCharts } from '@element-plus/icons-vue'
 import type { FormInstance, FormRules } from 'element-plus'
 import { identifyLogin } from '@/api/user'
+import CaptchaField from '@/components/CaptchaField.vue'
+
+interface CaptchaFieldExpose {
+  reload: () => void
+  getCaptchaKey: () => string
+}
 
 // B1: 为 KeepAlive exclude 提供组件名
 defineOptions({ name: 'LoginPage' })
@@ -87,16 +97,19 @@ const route = useRoute()
 const userStore = useUserStore()
 
 const formRef = ref<FormInstance>()
+const captchaRef = ref<CaptchaFieldExpose>()
 const loading = ref(false)
 
 const form = reactive({
   username: '',
   password: '',
+  captchaCode: '',
 })
 
 const rules: FormRules = {
   username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
   password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
+  captchaCode: [{ required: true, message: '请输入验证码', trigger: 'blur' }],
 }
 
 async function handleLogin() {
@@ -105,13 +118,19 @@ async function handleLogin() {
 
   loading.value = true
   try {
-    const res = await identifyLogin({ username: form.username, password: form.password })
-    const { userId, nickname, userType } = res.data || {}
+    const res = await identifyLogin({
+      username: form.username,
+      password: form.password,
+      captchaKey: captchaRef.value?.getCaptchaKey() || '',
+      captchaCode: form.captchaCode,
+    })
+    const { userId, nickname, userType, refreshToken } = res.data || {}
     userStore.setLoginInfo({
       username: form.username,
       userId: userId || 0,
       nickname: nickname || '',
       role: userType === 'admin' ? 'admin' : 'user',
+      refreshToken,
     })
     if (userType === 'admin') {
       ElMessage.success('登录成功')
@@ -125,7 +144,9 @@ async function handleLogin() {
       router.push(redirect)
     }
   } catch {
-    // 错误已由拦截器展示
+    // 错误已由拦截器展示；登录失败刷新验证码
+    captchaRef.value?.reload()
+    form.captchaCode = ''
   } finally {
     loading.value = false
   }

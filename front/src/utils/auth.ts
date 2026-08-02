@@ -2,6 +2,7 @@ const LOGIN_KEY = 'wealth_logged_in'
 const USER_KEY = 'wealth_user'
 const ROLE_KEY = 'wealth_role'
 const LOGIN_TIME_KEY = 'wealth_login_time' // S2: 记录登录时间用于过期检测
+const REFRESH_KEY = 'wealth_refresh' // refresh_token 存储（静默续期 / 登出黑名单用）
 
 // 令牌过期时间（30分钟），与后端 jwt.access-expire=1800000 对齐
 const TOKEN_EXPIRY_MS = 30 * 60 * 1000
@@ -40,6 +41,28 @@ export function removeToken() {
   sessionStorage.removeItem(USER_KEY)
   sessionStorage.removeItem(ROLE_KEY)
   sessionStorage.removeItem(LOGIN_TIME_KEY) // S2: 同时清除登录时间
+  sessionStorage.removeItem(REFRESH_KEY) // 同时清除 refresh_token
+}
+
+/**
+ * 存储 refresh_token（用于静默续期与登出黑名单）
+ */
+export function setRefreshToken(token: string) {
+  sessionStorage.setItem(REFRESH_KEY, token)
+}
+
+/**
+ * 读取 refresh_token，无则返回 null
+ */
+export function getRefreshToken(): string | null {
+  return sessionStorage.getItem(REFRESH_KEY)
+}
+
+/**
+ * 续期成功后刷新登录时间戳，避免被本地 30 分钟过期标记强制登出
+ */
+export function bumpLoginTime() {
+  sessionStorage.setItem(LOGIN_TIME_KEY, String(Date.now()))
 }
 
 export interface StoredUser {

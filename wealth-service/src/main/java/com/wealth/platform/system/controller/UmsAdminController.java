@@ -65,8 +65,12 @@ public class UmsAdminController {
 
     @PostMapping("/refresh")
     @Operation(summary = "刷新 Token（用 refresh_token 换取新的 access_token + refresh_token）")
-    public Result<TokenPair> refresh(@RequestHeader("Authorization") String authHeader) {
-        return Result.success(umsAdminAuthService.refreshToken(authHeader));
+    public ResponseEntity<Result<TokenPair>> refresh(@RequestHeader("Authorization") String authHeader) {
+        TokenPair pair = umsAdminAuthService.refreshToken(authHeader);
+        ResponseCookie cookie = CookieUtil.buildTokenCookie(pair.accessToken(), pair.expiresIn() / 1000);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .body(Result.success(pair));
     }
 
     @GetMapping("/{id}")

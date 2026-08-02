@@ -39,7 +39,7 @@ public class UmsAdminAuthServiceImpl implements UmsAdminAuthService {
 
     private static final String KEY_LOGIN_FAIL_COUNT = "login:fail:count:";
     private static final String KEY_LOGIN_LOCKED = "login:locked:";
-    private static final String KEY_REFRESH_JTI = "refresh:jti:";
+    private static final String KEY_REFRESH_JTI = AuthConstant.REFRESH_JTI_KEY_PREFIX;
     private static final String KEY_REFRESH_COMPROMISED = "refresh:compromised:";
     private static final String KEY_REFRESH_BLACKLIST = "refresh:blacklist:";
     private static final String KEY_REFRESH_LOCK = "refresh:lock:";

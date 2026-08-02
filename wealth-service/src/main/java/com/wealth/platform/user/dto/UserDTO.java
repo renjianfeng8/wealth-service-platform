@@ -42,4 +42,10 @@ public class UserDTO {
 
     @Schema(description = "旧密码（重置密码时用于身份验证）")
     private String oldPassword;
+
+    @Schema(description = "验证码 KEY（需先调用 /system/captcha 获取）")
+    private String captchaKey;
+
+    @Schema(description = "验证码（4 位数字/字母）")
+    private String captchaCode;
 }

@@ -65,7 +65,7 @@ export function deleteUserBatch(ids: number[]) {
  * @param data - 注册信息
  * @returns 注册结果
  */
-export function registerUser(data: { username: string; password: string }) {
+export function registerUser(data: { username: string; password: string; captchaKey?: string; captchaCode?: string }) {
   return request.post('/user/register', data)
 }
 
@@ -92,6 +92,6 @@ export function userLogin(data: { username: string; password: string }) {
  * @param data - 登录参数（username、password）
  * @returns 登录结果包含 token、userId、nickname 及角色
  */
-export function identifyLogin(data: { username: string; password: string }) {
+export function identifyLogin(data: { username: string; password: string; captchaKey?: string; captchaCode?: string }) {
   return request.post('/user/identify-login', data)
 }

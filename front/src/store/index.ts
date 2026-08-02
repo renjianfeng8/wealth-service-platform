@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
-import { getToken, setToken, removeToken, setStoredUser, getStoredUser } from '@/utils/auth'
+import { getToken, setToken, removeToken, setStoredUser, getStoredUser, setRefreshToken, getRefreshToken, bumpLoginTime } from '@/utils/auth'
+import { logoutApi } from '@/api/system'
 
 export interface LoginInfo {
   username: string
@@ -7,6 +8,7 @@ export interface LoginInfo {
   nickname?: string
   avatar?: string
   role: 'admin' | 'user'
+  refreshToken?: string
 }
 
 export const DEFAULT_AVATAR = '/default-avatar.svg'
@@ -19,6 +21,7 @@ export const useUserStore = defineStore('user', {
     nickname: getStoredUser()?.nickname || '',
     avatar: getStoredUser()?.avatar || DEFAULT_AVATAR,
     role: (sessionStorage.getItem('wealth_role') as 'admin' | 'user' | null) || null,
+    refreshToken: getRefreshToken() || '',
   }),
   getters: {
     isLoggedIn: (state) => !!state.token,
@@ -30,7 +33,7 @@ export const useUserStore = defineStore('user', {
      * @param info - 用户信息及角色
      */
     setLoginInfo(info: LoginInfo) {
-      const { username, userId, nickname, avatar, role } = info
+      const { username, userId, nickname, avatar, role, refreshToken } = info
       setToken()
       sessionStorage.setItem('wealth_role', role)
       setStoredUser({ username, userId, nickname, avatar })
@@ -40,6 +43,10 @@ export const useUserStore = defineStore('user', {
       this.nickname = nickname || ''
       this.avatar = avatar || DEFAULT_AVATAR
       this.role = role
+      if (refreshToken) {
+        setRefreshToken(refreshToken)
+        this.refreshToken = refreshToken
+      }
     },
     /**
      * 更新当前登录用户的个人信息
@@ -66,15 +73,38 @@ export const useUserStore = defineStore('user', {
       return false
     },
     /**
-     * 登出，清除所有登录状态、用户信息和角色
+     * 用户主动登出：先通知后端将 refresh_token 加入黑名单（fire-and-forget，失败静默），再清除本地状态
      */
     logout() {
+      const refreshToken = this.refreshToken || getRefreshToken()
+      if (refreshToken) {
+        logoutApi(refreshToken)
+      }
+      this.clearLocal()
+    },
+    /**
+     * 强制登出（仅清本地，不调后端）：供响应拦截器续期失败路径复用，避免 401 → 登出 → 401 递归
+     */
+    forceLogout() {
+      this.clearLocal()
+    },
+    /**
+     * 静默续期成功后更新 refresh_token 并刷新登录时间戳（access token 由后端 Set-Cookie 写入，前端无需存储）
+     * @param pair - 后端返回的 token 对（accessToken 由 httpOnly Cookie 承载）
+     */
+    applyRefreshedPair(pair: { refreshToken: string }) {
+      setRefreshToken(pair.refreshToken)
+      this.refreshToken = pair.refreshToken
+      bumpLoginTime()
+    },
+    clearLocal() {
       this.token = ''
       this.username = ''
       this.userId = 0
       this.nickname = ''
       this.avatar = DEFAULT_AVATAR
       this.role = null
+      this.refreshToken = ''
       removeToken()
     },
   },

@@ -3,12 +3,16 @@ package com.wealth.platform.user.service.impl;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.wealth.platform.common.base.BaseBizServiceImpl;
 import com.wealth.common.auth.AuthSupport;
+import com.wealth.common.constants.AuthConstant;
 import com.wealth.common.contract.AdminIdentityProvider;
 import com.wealth.common.dto.AdminIdentityDTO;
 import com.wealth.common.utils.BeanConvertUtil;
 import com.wealth.common.utils.JwtUtil;
+import com.wealth.common.utils.JwtUtil.TokenPair;
+import com.wealth.common.utils.RedisUtil;
 import com.wealth.common.dto.LoginDTO;
 import com.wealth.common.exception.ServiceException;
+import com.wealth.platform.system.service.CaptchaService;
 import com.wealth.platform.user.dto.UserDTO;
 import com.wealth.platform.user.entity.User;
 import com.wealth.platform.user.mapper.UserMapper;
@@ -22,6 +26,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -30,6 +35,8 @@ public class UserServiceImpl extends BaseBizServiceImpl<UserMapper, User> implem
     private final JwtUtil jwtUtil;
     private final BCryptPasswordEncoder passwordEncoder;
     private final AdminIdentityProvider adminIdentityProvider;
+    private final CaptchaService captchaService;
+    private final RedisUtil redisUtil;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -44,6 +51,10 @@ public class UserServiceImpl extends BaseBizServiceImpl<UserMapper, User> implem
     public Boolean register(UserDTO dto) {
         if (!StringUtils.hasText(dto.getUsername()) || !StringUtils.hasText(dto.getPassword())) {
             throw new ServiceException(400, "用户名/密码不能为空");
+        }
+        // 可选验证码校验（提供 captchaKey 才校验，向后兼容）
+        if (StringUtils.hasText(dto.getCaptchaKey())) {
+            captchaService.verify(dto.getCaptchaKey(), dto.getCaptchaCode());
         }
         checkUnique(User::getUsername, dto.getUsername(), "用户名已存在");
         User user = BeanConvertUtil.convert(dto, User.class);
@@ -65,19 +76,26 @@ public class UserServiceImpl extends BaseBizServiceImpl<UserMapper, User> implem
 
         AuthSupport.verifyCredentials(passwordEncoder, dbUser.getStatus(), dbUser.getPassword(), dto.getPassword());
 
-        return new LoginVO(jwtUtil.generateToken(dbUser.getUsername(), "user"), dbUser.getId(), dbUser.getNickname(), "user", jwtUtil.getAccessExpire() / 1000);
+        // /user/login 为兼容遗留端点，仅签 access token（refreshToken 为空）；统一登录走 identifyLogin
+        return new LoginVO(jwtUtil.generateToken(dbUser.getUsername(), "user"), dbUser.getId(), dbUser.getNickname(), "user", jwtUtil.getAccessExpire() / 1000, null);
     }
 
     @Override
     public LoginVO identifyLogin(LoginDTO dto) {
         AuthSupport.assertCredentialsPresent(dto.getUsername(), dto.getPassword());
 
+        // 0. 可选验证码校验（提供 captchaKey 才校验，向后兼容）
+        if (StringUtils.hasText(dto.getCaptchaKey())) {
+            captchaService.verify(dto.getCaptchaKey(), dto.getCaptchaCode());
+        }
+
         // 1. 先查 ums_admin 表 — 判断是否为管理员（delFlag=0）
         AdminIdentityDTO admin = adminIdentityProvider.findByUsername(dto.getUsername());
         if (admin != null) {
             AuthSupport.verifyCredentials(passwordEncoder, admin.getStatus(), admin.getPassword(), dto.getPassword());
-            String token = jwtUtil.generateToken(admin.getUsername(), "admin");
-            return new LoginVO(token, admin.getId(), admin.getNickname(), "admin", jwtUtil.getAccessExpire() / 1000);
+            TokenPair pair = issueUserTokenPair(admin.getUsername(), "admin");
+            return new LoginVO(pair.accessToken(), admin.getId(), admin.getNickname(), "admin",
+                    jwtUtil.getAccessExpire() / 1000, pair.refreshToken());
         }
 
         // 2. 再查 user 表 — 判断是否为普通用户
@@ -86,12 +104,27 @@ public class UserServiceImpl extends BaseBizServiceImpl<UserMapper, User> implem
                 .one();
         if (user != null) {
             AuthSupport.verifyCredentials(passwordEncoder, user.getStatus(), user.getPassword(), dto.getPassword());
-            String token = jwtUtil.generateToken(user.getUsername(), "user");
-            return new LoginVO(token, user.getId(), user.getNickname(), "user", jwtUtil.getAccessExpire() / 1000);
+            TokenPair pair = issueUserTokenPair(user.getUsername(), "user");
+            return new LoginVO(pair.accessToken(), user.getId(), user.getNickname(), "user",
+                    jwtUtil.getAccessExpire() / 1000, pair.refreshToken());
         }
 
         // 3. 都没找到
         throw new ServiceException(401, "用户名或密码错误");
+    }
+
+    /**
+     * 统一登录签发 token 对：access 保留 userType claim（供前端/审计），refresh 走标准长时效签发，
+     * 并持久化 jti 到 Redis（与管理端登录同前缀），使现有 /system/umsAdmin/refresh 可对统一登录用户续期。
+     */
+    private TokenPair issueUserTokenPair(String username, String userType) {
+        String accessToken = jwtUtil.generateToken(username, userType);
+        String refreshToken = jwtUtil.generateRefreshToken(username);
+        String jti = jwtUtil.getTokenIdFromToken(refreshToken);
+        redisUtil.safeExecuteVoid(() -> redisUtil.set(
+                AuthConstant.REFRESH_JTI_KEY_PREFIX + jti, username, 7, TimeUnit.DAYS),
+                "refresh_token 未持久化");
+        return new TokenPair(accessToken, refreshToken, jwtUtil.getAccessExpire());
     }
 
     @Override

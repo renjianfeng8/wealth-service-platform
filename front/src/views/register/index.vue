@@ -59,6 +59,10 @@
             />
           </el-form-item>
 
+          <el-form-item prop="captchaCode">
+            <CaptchaField ref="captchaRef" v-model="form.captchaCode" />
+          </el-form-item>
+
           <el-form-item>
             <el-button
               type="primary"
@@ -89,6 +93,12 @@ import { User, Lock, TrendCharts } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
 import { useFormGuard } from '@/composables/useFormGuard'
+import CaptchaField from '@/components/CaptchaField.vue'
+
+interface CaptchaFieldExpose {
+  reload: () => void
+  getCaptchaKey: () => string
+}
 
 // B1: 为 KeepAlive exclude 提供组件名
 defineOptions({ name: 'RegisterPage' })
@@ -96,12 +106,14 @@ defineOptions({ name: 'RegisterPage' })
 const router = useRouter()
 
 const formRef = ref<FormInstance>()
+const captchaRef = ref<CaptchaFieldExpose>()
 const loading = ref(false)
 
 const form = reactive({
   username: '',
   password: '',
   confirmPassword: '',
+  captchaCode: '',
 })
 
 const { isDirty, reset } = useFormGuard(form)
@@ -133,6 +145,7 @@ onUnmounted(() => {
 const rules: FormRules = {
   username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
   password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
+  captchaCode: [{ required: true, message: '请输入验证码', trigger: 'blur' }],
   confirmPassword: [
     { required: true, message: '请确认密码', trigger: 'blur' },
     {
@@ -151,12 +164,19 @@ async function handleRegister() {
 
   loading.value = true
   try {
-    await registerUser({ username: form.username, password: form.password })
+    await registerUser({
+      username: form.username,
+      password: form.password,
+      captchaKey: captchaRef.value?.getCaptchaKey() || '',
+      captchaCode: form.captchaCode,
+    })
     ElMessage.success('注册成功，请登录')
     reset()
     router.push('/auth/login')
   } catch {
-    // error already handled by interceptor
+    // error already handled by interceptor；注册失败刷新验证码
+    captchaRef.value?.reload()
+    form.captchaCode = ''
   } finally {
     loading.value = false
   }

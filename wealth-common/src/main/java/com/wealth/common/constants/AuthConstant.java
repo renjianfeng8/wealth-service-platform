@@ -12,6 +12,9 @@ public class AuthConstant {
     // 开发环境 Swagger/Knife4j 路径加入白名单
     public static final String TOKEN_COOKIE_NAME = "wealth_token";
 
+    /** refresh_token jti 在 Redis 中的 key 前缀（管理端/统一登录共用，供 refresh 接口校验与登出黑名单） */
+    public static final String REFRESH_JTI_KEY_PREFIX = "refresh:jti:";
+
     /**
      * 从 Authorization: Bearer 头中提取 Token。
      * 头缺失或不以 "Bearer " 开头时返回 null（仅提取，不校验 Token 有效性）。

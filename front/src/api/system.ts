@@ -1,3 +1,4 @@
+import axios from 'axios'
 import request from './index'
 import type { PageParam, UmsAdmin, UmsRole, UmsResource } from '@/types'
 
@@ -8,6 +9,25 @@ import type { PageParam, UmsAdmin, UmsRole, UmsResource } from '@/types'
  */
 export function loginApi(data: { username: string; password: string }) {
   return request.post('/system/umsAdmin/login', data)
+}
+
+/**
+ * 获取图形验证码（登录/注册使用）
+ * @returns 验证码 KEY 与 Base64 图片
+ */
+export function getCaptcha() {
+  return request.get<{ captchaKey: string; captchaImage: string }>('/system/captcha')
+}
+
+/**
+ * 登出（fire-and-forget）：用裸 axios 绕过 request 拦截器，避免 refresh token 失效时
+ * 401 → 拦截器再次登出/跳转的递归循环；调用方无需关心结果
+ * @param refreshToken - refresh_token
+ */
+export function logoutApi(refreshToken: string) {
+  return axios.post('/api/v1/system/umsAdmin/logout', null, {
+    headers: { Authorization: `Bearer ${refreshToken}` },
+  }).catch(() => undefined)
 }
 
 /**
