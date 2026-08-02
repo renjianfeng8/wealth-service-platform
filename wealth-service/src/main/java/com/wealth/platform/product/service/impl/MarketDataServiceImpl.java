@@ -12,7 +12,6 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.wealth.platform.common.base.BaseBizServiceImpl;
 import com.wealth.common.contract.DashboardMarketDataProvider;
 import com.wealth.common.dto.DashboardMarketDataDTO;
-import com.wealth.common.exception.ServiceException;
 import com.wealth.common.utils.BeanConvertUtil;
 import com.wealth.platform.product.dto.MarketDataDTO;
 import com.wealth.platform.product.entity.WeaMarketData;

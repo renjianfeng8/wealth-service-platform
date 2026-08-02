@@ -110,15 +110,9 @@ public class MarketDataPushService {
         }
     }
 
-    /** 当前客户端连接数 */
-    public int getEmitterCount() {
-        removeDeadEmitters();
-        return emitters.size();
-    }
-
     /**
      * 遍历并移除已断开的 emitter（通过 send ping 检测）。
-     * 仅在 createEmitter 和 getEmitterCount 时调用，不干扰高频广播路径。
+     * 仅在 createEmitter 时调用，不干扰高频广播路径。
      */
     private void removeDeadEmitters() {
         emitters.removeIf(emitter -> {

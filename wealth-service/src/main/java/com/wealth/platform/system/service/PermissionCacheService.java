@@ -27,7 +27,6 @@ public class PermissionCacheService {
     private final UmsRoleResourceRelationService roleResourceRelationService;
     private final UmsResourceService resourceService;
     private final RedisUtil redisUtil;
-    private final PermissionCacheCleaner cacheCleaner;
 
     /**
      * 获取指定管理员的权限 URL 列表（优先缓存，降级到数据库）。
@@ -66,13 +65,6 @@ public class PermissionCacheService {
     public boolean hasPermission(Long adminId, String uri) {
         List<String> urls = getAllowedUrls(adminId);
         return urls.stream().anyMatch(pattern -> PathMatchers.INSTANCE.match(pattern, uri));
-    }
-
-    /**
-     * 清除指定管理员的权限缓存。
-     */
-    public void clearCache(Long adminId) {
-        cacheCleaner.clear(adminId);
     }
 
     private List<String> getCached(String cacheKey) {

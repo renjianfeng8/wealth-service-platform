@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.wealth.platform.common.base.BaseBizServiceImpl;
 import com.wealth.common.dto.MessageFeignDTO;
-import com.wealth.common.exception.ServiceException;
 import com.wealth.common.utils.BeanConvertUtil;
 import com.wealth.platform.message.dto.MessageDTO;
 import com.wealth.platform.message.entity.WeaMessage;
