@@ -77,12 +77,12 @@
       </el-row>
       <el-row :gutter="20">
         <el-col :span="12">
-          <el-form-item label="最高价">
+          <el-form-item label="最高价" prop="highestPrice">
             <el-input-number v-model="form.highestPrice" :min="0" :precision="2" controls-position="right" style="width: 100%" />
           </el-form-item>
         </el-col>
         <el-col :span="12">
-          <el-form-item label="最低价">
+          <el-form-item label="最低价" prop="lowestPrice">
             <el-input-number v-model="form.lowestPrice" :min="0" :precision="2" controls-position="right" style="width: 100%" />
           </el-form-item>
         </el-col>
@@ -154,6 +154,22 @@ const { loading, saving, tableData, total, dialogVisible, isEdit, handleSearch, 
 const rules: FormRules = {
   productCode: [{ required: true, message: '请输入产品编码', trigger: 'blur' }],
   currentPrice: [{ required: true, message: '请输入当前价', trigger: 'blur' }],
+  highestPrice: [{
+    validator: (_rule: unknown, value: number, callback: (error?: Error) => void) => {
+      const lowest = form.lowestPrice ?? 0
+      if (value > 0 && lowest > 0 && value < lowest) callback(new Error('最高价不能低于最低价'))
+      else callback()
+    },
+    trigger: 'blur',
+  }],
+  lowestPrice: [{
+    validator: (_rule: unknown, value: number, callback: (error?: Error) => void) => {
+      const highest = form.highestPrice ?? 0
+      if (value > 0 && highest > 0 && value > highest) callback(new Error('最低价不能高于最高价'))
+      else callback()
+    },
+    trigger: 'blur',
+  }],
 }
 
 async function fetchData() {

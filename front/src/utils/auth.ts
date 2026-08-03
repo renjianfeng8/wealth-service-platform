@@ -1,3 +1,5 @@
+import { randomUUID } from '@/utils/uuid'
+
 const LOGIN_KEY = 'wealth_logged_in'
 const USER_KEY = 'wealth_user'
 const ROLE_KEY = 'wealth_role'
@@ -29,7 +31,7 @@ export function getToken(): string | null {
  * @param _token - 登录 token（实际未使用，仅标记登录状态为 true）
  */
 export function setToken() {
-  sessionStorage.setItem(LOGIN_KEY, crypto.randomUUID())
+  sessionStorage.setItem(LOGIN_KEY, randomUUID())
   sessionStorage.setItem(LOGIN_TIME_KEY, String(Date.now())) // S2: 记录登录时间
 }
 

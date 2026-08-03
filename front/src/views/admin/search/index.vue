@@ -22,7 +22,7 @@
       :total="total"
       :pagination="query"
       empty-text="请输入关键词搜索"
-      @page-change="handleSearch"
+      @page-change="fetchPage"
     >
       <template #toolbar>
         <div class="search-result-info" v-if="total > 0">共找到 {{ total }} 条结果</div>
@@ -86,14 +86,8 @@ const query = reactive<SearchQuery>({ keyword: '', pageNum: 1, pageSize: 10 })
 const route = useRoute()
 const routeKeyword = computed(() => (route.query.keyword as string) || '')
 
-async function handleSearch() {
-  if (!query.keyword.trim()) {
-    ElMessage.warning('请输入关键词')
-    return
-  }
-  query.pageNum = 1
+async function doFetch() {
   loading.value = true
-  searched.value = true
   try {
     const res = await getProductPage({
       pageNum: query.pageNum,
@@ -109,6 +103,25 @@ async function handleSearch() {
   } finally {
     loading.value = false
   }
+}
+
+async function handleSearch() {
+  if (!query.keyword.trim()) {
+    ElMessage.warning('请输入关键词')
+    return
+  }
+  query.pageNum = 1
+  searched.value = true
+  await doFetch()
+}
+
+/** 分页事件（翻页/切每页条数）：保持当前 pageNum，不重置回第一页 */
+async function fetchPage() {
+  if (!query.keyword.trim()) {
+    ElMessage.warning('请输入关键词')
+    return
+  }
+  await doFetch()
 }
 
 function handleReset() {

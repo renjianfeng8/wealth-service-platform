@@ -99,7 +99,7 @@
               <template v-else>
                 <el-tabs v-model="activeTab" class="profile-tabs">
                   <el-tab-pane label="基本信息" name="basic">
-                    <el-form ref="basicFormRef" :model="userInfo" label-position="top" class="profile-form">
+                    <el-form ref="basicFormRef" :model="userInfo" :rules="basicRules" label-position="top" class="profile-form">
                       <el-form-item label="用户名" prop="username">
                         <el-input v-model="userInfo.username" disabled>
                           <template #prefix><el-icon><User /></el-icon></template>
@@ -202,6 +202,12 @@ const lastUpdateTime = ref('')
 const statFavorites = ref(0)
 const statOrders = ref(0)
 const statMessages = ref(0)
+
+/* ---- Basic form ---- */
+const basicFormRef = ref<FormInstance>()
+const basicRules: FormRules = {
+  phone: [{ pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号', trigger: 'blur' }],
+}
 
 /* ---- Password form ---- */
 const pwdFormRef = ref<FormInstance>()
@@ -310,6 +316,8 @@ async function fetchStats() {
 /* ---- Save ---- */
 async function handleSave() {
   if (!userStore.userId) return
+  const valid = await basicFormRef.value?.validate().catch(() => false)
+  if (!valid) return
   saving.value = true
   try {
     await updateUser(userStore.userId, { nickname: userInfo.nickname, phone: userInfo.phone })
@@ -342,16 +350,8 @@ function handleFileSelected(e: Event) {
   const input = e.target as HTMLInputElement
   const file = input.files?.[0]
   if (!file) return
-  const reader = new FileReader()
-  reader.onload = () => {
-    userStore.setUserInfo({
-      userId: userStore.userId,
-      nickname: userInfo.nickname || '',
-      avatar: reader.result as string,
-    })
-    ElMessage.success('头像已更新（仅本地预览）')
-  }
-  reader.readAsDataURL(file)
+  // 头像上传接口未接入：不写入 localStorage（DataURL 有配额超限风险），不谎报已更新
+  ElMessage.warning('头像上传功能暂未开放，无法保存')
   input.value = ''
 }
 

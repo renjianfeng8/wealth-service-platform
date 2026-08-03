@@ -30,8 +30,8 @@ import PageLoading from '@/components/PageLoading.vue'
 
 const route = useRoute()
 
-// B1: 基于路由 meta 的动态缓存 key
-// keepAlive !== false → 稳定 key（group || path）→ 缓存命中
+// 基于路由 meta 的动态缓存 key
+// keepAlive !== false → 稳定 key（route.path，每个路由唯一，避免 group 同键串页）
 // keepAlive === false → 递增 nonce → 组件每次重建
 let nonceCounter = 0
 const routeKey = ref('')
@@ -41,9 +41,8 @@ watch(() => [route.path, route.query._ref], () => {
     nonceCounter++
     routeKey.value = route.fullPath + '__nc_' + nonceCounter
   } else {
-    const base = (route.meta.group as string) || route.path
     const ref = route.query._ref as string | undefined
-    routeKey.value = ref ? base + '__ref_' + ref : base
+    routeKey.value = ref ? route.path + '__ref_' + ref : route.path
   }
 }, { immediate: true })
 

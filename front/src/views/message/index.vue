@@ -52,7 +52,7 @@
           :page-sizes="[10, 20, 50]"
           layout="total, sizes, prev, pager, next"
           @current-change="fetchMessages"
-          @size-change="fetchMessages"
+          @size-change="handleSizeChange"
         />
       </div>
     </el-card>
@@ -71,7 +71,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/store/index'
 import { getMessagePage, getMessageById, readMessage, batchReadMessage } from '@/api/message'
@@ -87,8 +87,7 @@ const pageNum = ref(1)
 const pageSize = ref(15)
 const detailVisible = ref(false)
 const detailItem = ref<WeaMessage | null>(null)
-
-const unreadCount = computed(() => messages.value.filter((m) => m.readFlag !== 1).length)
+const unreadCount = ref(0)
 
 function truncate(text: string | undefined, len: number): string {
   if (!text) return ''
@@ -134,8 +133,23 @@ async function handleRead(item: WeaMessage) {
     try {
       await readMessage(item.id)
       item.readFlag = 1
+      if (unreadCount.value > 0) unreadCount.value -= 1
     } catch (err) { console.warn('[message] readMessage 失败:', err) }
   }
+}
+
+/** 未读数走后端统计（pageSize=1 仅取 total），避免仅统计当前页造成误导 */
+async function fetchUnreadCount() {
+  if (!userStore.userId) return
+  try {
+    const res = await getMessagePage({ pageNum: 1, pageSize: 1, userId: userStore.userId, readFlag: 0 })
+    unreadCount.value = Number(res.data?.total || 0)
+  } catch { /* handled globally */ }
+}
+
+function handleSizeChange() {
+  pageNum.value = 1
+  fetchMessages()
 }
 
 async function handleMarkAllRead() {
@@ -144,6 +158,7 @@ async function handleMarkAllRead() {
   try {
     await batchReadMessage(unreadIds)
     messages.value.forEach(m => { m.readFlag = 1 })
+    unreadCount.value = 0
     ElMessage.success('已全部标为已读')
   } catch {
     // handled globally
@@ -151,7 +166,10 @@ async function handleMarkAllRead() {
 }
 
 onMounted(() => {
-  if (userStore.userId) fetchMessages()
+  if (userStore.userId) {
+    fetchMessages()
+    fetchUnreadCount()
+  }
 })
 </script>
 

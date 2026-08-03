@@ -64,7 +64,7 @@
         :page-sizes="[10, 20, 50]"
         layout="total, sizes, prev, pager, next"
         @current-change="fetchNews"
-        @size-change="fetchNews"
+        @size-change="handlePageSizeChange"
       />
     </div>
 
@@ -117,6 +117,11 @@ async function fetchNews() {
 }
 
 function handleFilter() {
+  pageNum.value = 1
+  fetchNews()
+}
+
+function handlePageSizeChange() {
   pageNum.value = 1
   fetchNews()
 }

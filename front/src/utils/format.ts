@@ -1,13 +1,19 @@
 import dayjs from 'dayjs'
 
+function parseDayjs(time: string | undefined | null) {
+  if (!time) return null
+  const d = dayjs(time)
+  return d.isValid() ? d : null
+}
+
 export function formatDateTime(time: string | undefined | null): string {
-  if (!time) return '-'
-  return dayjs(time).format('YYYY-MM-DD HH:mm:ss')
+  const d = parseDayjs(time)
+  return d ? d.format('YYYY-MM-DD HH:mm:ss') : '-'
 }
 
 export function formatDate(time: string | undefined | null): string {
-  if (!time) return '-'
-  return dayjs(time).format('YYYY-MM-DD')
+  const d = parseDayjs(time)
+  return d ? d.format('YYYY-MM-DD') : '-'
 }
 
 export function statusTag(status: number | undefined | null): string {
@@ -19,7 +25,7 @@ export function statusText(status: number | undefined | null): string {
 }
 
 export function formatPrice(val: number | undefined | null): string {
-  if (val === null || val === undefined) return '-'
+  if (val === null || val === undefined || !Number.isFinite(val)) return '-'
   return val.toFixed(2)
 }
 
@@ -32,7 +38,7 @@ export function formatNumber(val: number | null | undefined): string {
 }
 
 export function formatRate(val: number | undefined | null): string {
-  if (val === null || val === undefined) return '-'
+  if (val === null || val === undefined || !Number.isFinite(val)) return '-'
   const sign = val >= 0 ? '+' : ''
   return `${sign}${(val * 100).toFixed(2)}%`
 }

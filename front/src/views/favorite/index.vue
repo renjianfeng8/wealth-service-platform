@@ -95,7 +95,7 @@
         :page-sizes="[12, 24, 48]"
         layout="total, sizes, prev, pager, next"
         @current-change="fetchFavorites"
-        @size-change="fetchFavorites"
+        @size-change="handlePageSizeChange"
       />
     </div>
   </div>
@@ -187,6 +187,11 @@ async function fetchFavorites() {
   } finally {
     loading.value = false
   }
+}
+
+function handlePageSizeChange() {
+  pageNum.value = 1
+  fetchFavorites()
 }
 
 async function handleAdd() {

@@ -96,7 +96,7 @@
         :page-sizes="[12, 24, 48]"
         layout="total, sizes, prev, pager, next"
         @current-change="fetchProducts"
-        @size-change="fetchProducts"
+        @size-change="handlePageSizeChange"
       />
     </div>
 
@@ -166,6 +166,11 @@ async function fetchProducts() {
 }
 
 function handleFilter() {
+  pageNum.value = 1
+  fetchProducts()
+}
+
+function handlePageSizeChange() {
   pageNum.value = 1
   fetchProducts()
 }

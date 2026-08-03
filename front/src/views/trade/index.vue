@@ -219,6 +219,7 @@ import { useUserStore } from '@/store/index'
 import { getTradeOrderPage, createTradeOrder, getTradeOrderById, cancelTradeOrder } from '@/api/trade'
 import { ORDER_STATUS_OPTIONS } from '@/types'
 import { formatPrice, formatDateTime, tradeTypeText, orderStatusText, orderStatusTag } from '@/utils/format'
+import { randomUUID } from '@/utils/uuid'
 import { Refresh } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
@@ -245,7 +246,7 @@ function resolveIdempotentKey(): string {
     orderForm.entrustNum,
   ].join('|')
   if (hash !== lastOrderHash || !currentIdempotentKey) {
-    currentIdempotentKey = crypto.randomUUID()
+    currentIdempotentKey = randomUUID()
     lastOrderHash = hash
   }
   return currentIdempotentKey

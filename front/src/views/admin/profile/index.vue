@@ -360,18 +360,8 @@ function handleFileSelected(e: Event) {
   const input = e.target as HTMLInputElement
   const file = input.files?.[0]
   if (!file) return
-  // Preview locally only – no upload API
-  const reader = new FileReader()
-  reader.onload = () => {
-    const url = reader.result as string
-    userStore.setUserInfo({
-      userId: userStore.userId,
-      nickname: adminInfo.nickName || '',
-      avatar: url,
-    })
-    ElMessage.success('头像已更新（仅本地预览）')
-  }
-  reader.readAsDataURL(file)
+  // 头像上传接口未接入：不写入 localStorage（DataURL 有配额超限风险），不谎报已更新
+  ElMessage.warning('头像上传功能暂未开放，无法保存')
   input.value = ''
 }
 

@@ -22,7 +22,7 @@
 import { ref } from 'vue'
 import type { FormInstance, FormRules } from 'element-plus'
 
-withDefaults(defineProps<{
+const props = withDefaults(defineProps<{
   modelValue: boolean
   title: string
   model: Record<string, any>
@@ -47,6 +47,7 @@ const emit = defineEmits<{
 const formRef = ref<FormInstance>()
 
 async function handleSubmit() {
+  if (props.saving) return
   const valid = await formRef.value?.validate().catch(() => false)
   if (valid) {
     emit('submit')

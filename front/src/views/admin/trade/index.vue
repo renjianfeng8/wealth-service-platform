@@ -97,6 +97,7 @@ import { useCrudPage } from '@/composables/useCrudPage'
 import { getTradeOrderPage, createTradeOrder, updateTradeOrder, deleteTradeOrder } from '@/api/trade'
 import { ORDER_STATUS_OPTIONS } from '@/types'
 import { orderStatusText, orderStatusTag } from '@/utils/format'
+import { randomUUID } from '@/utils/uuid'
 import type { DictItem, WeaTradeOrder } from '@/types'
 import type { AdminFilterField } from '@/components/admin/AdminFilterBar.vue'
 
@@ -194,8 +195,24 @@ function resetForm() {
   })
 }
 
+/** 基于业务参数生成稳定幂等键：相同参数复用同一 key，参数变更自动重算，抵御重复提交 */
+let lastOrderHash = ''
+let currentIdempotentKey = ''
+function resolveIdempotentKey(): string {
+  const hash = [form.userId, form.productCode, form.tradeType, form.entrustPrice, form.entrustNum].join('|')
+  if (hash !== lastOrderHash || !currentIdempotentKey) {
+    currentIdempotentKey = randomUUID()
+    lastOrderHash = hash
+  }
+  return currentIdempotentKey
+}
+
 async function handleSave() {
-  if (!form.userId) return
+  if (saving.value) return
+  if (!form.userId) {
+    ElMessage.warning('请输入用户ID')
+    return
+  }
 
   saving.value = true
   try {
@@ -205,10 +222,12 @@ async function handleSave() {
       await createTradeOrder({
         ...form,
         userId: form.userId,
-        idempotentKey: crypto.randomUUID(),
+        idempotentKey: resolveIdempotentKey(),
       })
     }
     ElMessage.success(isEdit.value ? '更新成功' : '创建成功')
+    lastOrderHash = ''
+    currentIdempotentKey = ''
     reset()
     dialogVisible.value = false
     fetchData()

@@ -5,6 +5,8 @@ import type { WeaMarketData } from '@/types'
 export const useMarketSSEStore = defineStore('marketSSE', () => {
   const connected = ref(false)
   let eventSource: EventSource | null = null
+  let retryDelay = 1000
+  let retryTimer: ReturnType<typeof setTimeout> | null = null
   const handlers = new Set<(data: WeaMarketData[]) => void>()
 
   function onMessage(e: MessageEvent) {
@@ -19,10 +21,18 @@ export const useMarketSSEStore = defineStore('marketSSE', () => {
   function connect() {
     if (eventSource) return
     eventSource = new EventSource('/api/v1/product/wea-market-data/sse')
-    eventSource.onopen = () => { connected.value = true }
+    eventSource.onopen = () => {
+      connected.value = true
+      retryDelay = 1000
+    }
     eventSource.onerror = () => {
-      console.warn('[SSE] 连接异常，浏览器将自动重连')
       connected.value = false
+      // 主动 close 接管重连，按指数退避（1s→30s），避免浏览器固定频率重连风暴
+      eventSource?.close()
+      eventSource = null
+      if (retryTimer) clearTimeout(retryTimer)
+      retryTimer = setTimeout(() => connect(), retryDelay)
+      retryDelay = Math.min(retryDelay * 2, 30000)
     }
     eventSource.addEventListener('market-update', onMessage)
   }
@@ -30,6 +40,10 @@ export const useMarketSSEStore = defineStore('marketSSE', () => {
   function disconnect() {
     eventSource?.close()
     eventSource = null
+    if (retryTimer) {
+      clearTimeout(retryTimer)
+      retryTimer = null
+    }
     connected.value = false
   }
 
