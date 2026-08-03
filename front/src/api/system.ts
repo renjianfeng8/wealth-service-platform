@@ -3,15 +3,6 @@ import request from './index'
 import type { PageParam, UmsAdmin, UmsRole, UmsResource } from '@/types'
 
 /**
- * 管理员登录
- * @param data - 登录参数（username、password）
- * @returns 登录结果包含 JWT token
- */
-export function loginApi(data: { username: string; password: string }) {
-  return request.post('/system/umsAdmin/login', data)
-}
-
-/**
  * 获取图形验证码（登录/注册使用）
  * @returns 验证码 KEY 与 Base64 图片
  */
@@ -111,15 +102,6 @@ export function getRoleList() {
 }
 
 /**
- * 根据 ID 查询角色
- * @param id - 角色 ID
- * @returns 角色信息
- */
-export function getRoleById(id: number) {
-  return request.get(`/system/umsRole/${id}`)
-}
-
-/**
  * 创建角色
  * @param data - 角色信息
  * @returns 创建结果
@@ -162,15 +144,6 @@ export function getResourcePage(params: { pageNum: number; pageSize: number; nam
  */
 export function getResourceList() {
   return request.get('/system/umsResource')
-}
-
-/**
- * 根据 ID 查询资源
- * @param id - 资源 ID
- * @returns 资源信息
- */
-export function getResourceById(id: number) {
-  return request.get(`/system/umsResource/${id}`)
 }
 
 /**

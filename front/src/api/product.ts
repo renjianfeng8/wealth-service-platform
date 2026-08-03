@@ -57,15 +57,6 @@ export function getMarketDataPage(params: { pageNum: number; pageSize: number })
 }
 
 /**
- * 根据 ID 查询行情数据
- * @param id - 行情数据 ID
- * @returns 行情数据信息
- */
-export function getMarketDataById(id: number) {
-  return request.get(`/product/wea-market-data/${id}`)
-}
-
-/**
  * 创建行情数据
  * @param data - 行情数据信息
  * @returns 创建结果

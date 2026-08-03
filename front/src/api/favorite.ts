@@ -11,15 +11,6 @@ export function getFavoritePage(params: PageParam & { userId?: number; productCo
 }
 
 /**
- * 根据 ID 查询用户自选
- * @param id - 自选 ID
- * @returns 用户自选信息
- */
-export function getFavoriteById(id: number) {
-  return request.get(`/product/wea-user-favorite/${id}`)
-}
-
-/**
  * 创建用户自选
  * @param data - 自选信息
  * @returns 创建结果

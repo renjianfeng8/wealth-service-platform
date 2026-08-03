@@ -11,11 +11,9 @@ const redirectLogin = () => {
 
 // 公开认证路径：业务 401（如密码错误）只提示，不触发续期/登出
 const PUBLIC_AUTH_PATHS = [
-  '/user/login',
   '/user/register',
   '/user/identify-login',
   '/system/captcha',
-  '/system/umsAdmin/login',
   '/system/umsAdmin/refresh',
   '/system/umsAdmin/logout',
 ]

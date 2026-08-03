@@ -79,15 +79,6 @@ export function resetPassword(data: { id: number; oldPassword: string; password:
 }
 
 /**
- * 用户登录
- * @param data - 登录参数（username、password）
- * @returns 登录结果包含用户信息
- */
-export function userLogin(data: { username: string; password: string }) {
-  return request.post('/user/login', data)
-}
-
-/**
  * 统一登录（自动识别管理员/普通用户）
  * @param data - 登录参数（username、password）
  * @returns 登录结果包含 token、userId、nickname 及角色
