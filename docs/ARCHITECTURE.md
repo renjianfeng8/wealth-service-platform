@@ -64,6 +64,8 @@ front/
   → 退出登录清除 sessionStorage，跳转回 /auth/login
 ```
 
+> 接口例外约定：SSE `/product/wea-market-data/sse` 为全站唯一不包 `Result` 信封的接口，事件载荷为裸 `List<MarketDataVO>` 数组。
+
 ---
 
 ## 架构演进
