@@ -49,7 +49,7 @@ public class MarketDataPushService {
                     .name("market-update")
                     .data(snapshot));
         } catch (Exception e) {
-            log.warn("SSE 首次推送快照异常", e);
+            log.warn("[product:marketData] SSE 首次推送快照异常", e);
         }
         return emitter;
     }
@@ -62,7 +62,7 @@ public class MarketDataPushService {
         removeDeadEmitters();
 
         if (emitters.size() >= MAX_EMITTERS) {
-            log.warn("SSE 连接数已达上限 {}, 拒绝新连接", MAX_EMITTERS);
+            log.warn("[product:marketData] SSE 连接数已达上限 {}, 拒绝新连接", MAX_EMITTERS);
             throw new com.wealth.common.exception.ServiceException(503, "SSE 连接数已达上限，请稍后重试");
         }
 
@@ -71,18 +71,18 @@ public class MarketDataPushService {
 
         emitter.onCompletion(() -> {
             emitters.remove(emitter);
-            log.info("SSE 连接完成，当前连接数: {}", emitters.size());
+            log.debug("[product:marketData] SSE 连接完成, 当前连接数={}", emitters.size());
         });
         emitter.onTimeout(() -> {
             emitters.remove(emitter);
-            log.info("SSE 连接超时，当前连接数: {}", emitters.size());
+            log.debug("[product:marketData] SSE 连接超时, 当前连接数={}", emitters.size());
         });
         emitter.onError(e -> {
             emitters.remove(emitter);
-            log.warn("SSE 连接异常: {}", e.getMessage());
+            log.warn("[product:marketData] SSE 连接异常", e);
         });
 
-        log.info("新建 SSE 连接，当前连接数: {}", emitters.size());
+        log.debug("[product:marketData] 新建 SSE 连接, 当前连接数={}", emitters.size());
         return emitter;
     }
 
@@ -93,6 +93,8 @@ public class MarketDataPushService {
     public void broadcastMarketUpdate(List<MarketDataVO> marketDataList) {
         if (emitters.isEmpty()) return;
 
+        int removedCount = 0;
+        IOException firstFailure = null;
         for (SseEmitter emitter : emitters) {
             try {
                 emitter.send(SseEmitter.event()
@@ -100,13 +102,19 @@ public class MarketDataPushService {
                         .data(marketDataList));
             } catch (IOException e) {
                 emitters.remove(emitter);
-                log.warn("SSE 推送失败，已移除连接: {}", e.getMessage());
+                if (firstFailure == null) {
+                    firstFailure = e;
+                }
+                removedCount++;
                 try {
                     emitter.completeWithError(e);
                 } catch (Exception ex) {
-                    log.warn("SSE emitter.completeWithError() 异常", ex);
+                    log.warn("[product:marketData] SSE emitter.completeWithError() 异常", ex);
                 }
             }
+        }
+        if (removedCount > 0) {
+            log.warn("[product:marketData] SSE 广播完成, 移除 {} 个失效连接, 首个失败原因", removedCount, firstFailure);
         }
     }
 
@@ -131,10 +139,10 @@ public class MarketDataPushService {
             try {
                 emitter.complete();
             } catch (Exception e) {
-                log.warn("SSE shutdown 关闭 emitter 异常", e);
+                log.warn("[product:marketData] SSE shutdown 关闭 emitter 异常", e);
             }
         }
         emitters.clear();
-        log.info("SSE 推送服务关闭，已清理所有连接");
+        log.info("[product:marketData] SSE 推送服务关闭, 已清理所有连接");
     }
 }

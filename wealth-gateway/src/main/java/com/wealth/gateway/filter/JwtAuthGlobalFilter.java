@@ -37,7 +37,7 @@ public class JwtAuthGlobalFilter implements GlobalFilter, Ordered {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         String path = exchange.getRequest().getURI().getPath();
-        log.debug("Gateway 认证过滤器 | 请求路径：{}", path);
+        log.debug("[gateway:auth] 认证过滤器, 请求路径={}", path);
 
         // 白名单路径直接放行（引用 AuthConstant，与 Service 层保持一致）
         for (String permitUrl : AuthConstant.PERMIT_ALL_URLS) {
@@ -59,7 +59,7 @@ public class JwtAuthGlobalFilter implements GlobalFilter, Ordered {
         }
 
         if (token == null) {
-            log.warn("无Token，返回401 | 路径：{}", path);
+            log.warn("[gateway:auth] 未携带 Token, 路径={}", path);
             return unauthorized(exchange, "未登录");
         }
 
@@ -73,13 +73,13 @@ public class JwtAuthGlobalFilter implements GlobalFilter, Ordered {
                                    .header("X-User-Jti", claims.getId()))
                     .build();
 
-            log.debug("Token校验通过 | 路径：{} | 用户：{}", path, claims.getSubject());
+            log.debug("[gateway:auth] Token 校验通过, 路径={}, 用户={}", path, claims.getSubject());
             return chain.filter(mutatedExchange);
         } catch (io.jsonwebtoken.ExpiredJwtException e) {
-            log.warn("Token已过期 | 路径：{}", path);
+            log.warn("[gateway:auth] Token 已过期, 路径={}", path);
             return unauthorized(exchange, ResultCode.TOKEN_EXPIRED.getMessage());
         } catch (Exception e) {
-            log.warn("Token无效 | 路径：{}, 错误：{}", path, e.getMessage());
+            log.warn("[gateway:auth] Token 无效, 路径={}, 错误={}", path, e.getMessage());
             return unauthorized(exchange, ResultCode.TOKEN_INVALID.getMessage());
         }
     }

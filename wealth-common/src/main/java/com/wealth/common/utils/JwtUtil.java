@@ -135,15 +135,15 @@ public class JwtUtil {
             parseClaims(token);
             return true;
         } catch (ExpiredJwtException e) {
-            log.warn("JWT验证失败：Token 已过期");
+            log.warn("[common:jwt] 验证失败, Token 已过期");
         } catch (io.jsonwebtoken.security.SecurityException e) {
-            log.warn("JWT验证失败：签名错误（密钥不匹配）");
+            log.warn("[common:jwt] 验证失败, 签名错误（密钥不匹配）");
         } catch (io.jsonwebtoken.MalformedJwtException e) {
-            log.warn("JWT验证失败：Token 格式错误/被篡改");
+            log.warn("[common:jwt] 验证失败, Token 格式错误/被篡改");
         } catch (io.jsonwebtoken.UnsupportedJwtException e) {
-            log.warn("JWT验证失败：不支持的Token算法");
+            log.warn("[common:jwt] 验证失败, 不支持的Token算法");
         } catch (Exception e) {
-            log.error("JWT验证失败：{}", e.getMessage());
+            log.error("[common:jwt] 验证失败", e);
         }
         return false;
     }

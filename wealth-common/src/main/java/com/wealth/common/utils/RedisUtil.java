@@ -76,7 +76,7 @@ public class RedisUtil {
         try {
             return operation.get();
         } catch (DataAccessException e) {
-            log.warn("Redis 不可用，{}: {}", warnMsg, e.getMessage());
+            log.warn("[common:redis] 不可用, {}", warnMsg, e);
             return fallback;
         }
     }
@@ -91,7 +91,7 @@ public class RedisUtil {
         try {
             operation.run();
         } catch (DataAccessException e) {
-            log.warn("Redis 不可用，{}: {}", warnMsg, e.getMessage());
+            log.warn("[common:redis] 不可用, {}", warnMsg, e);
         }
     }
 }

@@ -125,7 +125,7 @@ public class UmsAdminAuthServiceImpl implements UmsAdminAuthService {
         // 3. 检查该用户是否被标记为"疑似被盗"，Redis 不可用时跳过检查
         Boolean compromised = redisUtil.safeExecute(() -> redisUtil.hasKey(KEY_REFRESH_COMPROMISED + username), false, "跳过被盗检测");
         if (Boolean.TRUE.equals(compromised)) {
-            log.warn("用户 {} 的 refresh_token 疑似被盗，已禁止所有 refresh 操作", username);
+            log.warn("[system:admin] refresh_token 疑似被盗, 已禁止刷新, username={}", username);
             throw new ServiceException(401, "账户存在安全风险，请重新登录");
         }
 
@@ -144,7 +144,7 @@ public class UmsAdminAuthServiceImpl implements UmsAdminAuthService {
         if (Boolean.FALSE.equals(exists)) {
             // 已被轮换过的 refresh_token 再次被使用 → 疑似被盗
             // 标记该用户，禁用该用户所有 refresh_token
-            log.warn("检测到已轮换的 refresh_token 被再次使用，用户 {} 疑似被盗", username);
+            log.warn("[system:admin] refresh_token 被重复使用, 用户疑似被盗, username={}", username);
             redisUtil.safeExecuteVoid(() -> redisUtil.set(KEY_REFRESH_COMPROMISED + username, "1", 7, TimeUnit.DAYS), "无法标记被盗状态");
             throw new ServiceException(401, "refreshToken 已吊销，请重新登录");
         }
@@ -175,9 +175,9 @@ public class UmsAdminAuthServiceImpl implements UmsAdminAuthService {
         try {
             String jti = jwtUtil.getTokenIdFromToken(refreshToken);
             redisUtil.set(KEY_REFRESH_BLACKLIST + jti, "1", 7, TimeUnit.DAYS);
-            log.info("refresh_token 已加入黑名单，jti={}", jti);
+            log.info("[system:admin] refresh_token 已加入黑名单, jti={}", jti);
         } catch (Exception e) {
-            log.warn("退出登录处理异常: {}", e.getMessage());
+            log.warn("[system:admin] 退出登录处理异常", e);
         }
     }
 

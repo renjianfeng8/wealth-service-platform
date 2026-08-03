@@ -20,7 +20,7 @@ public class LoginInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         String uri = request.getRequestURI();
-        log.info("进入拦截器 | 请求地址：{}", uri);
+        log.debug("[common:login] 拦截请求, uri={}", uri);
 
         // 使用 PathMatcher 匹配放行路径（支持 Ant 风格通配符）
         for (String permitUrl : AuthConstant.PERMIT_ALL_URLS) {
@@ -31,18 +31,18 @@ public class LoginInterceptor implements HandlerInterceptor {
 
         String token = AuthConstant.extractToken(request);
         if (token == null) {
-            log.warn("无Token，返回401");
+            log.warn("[common:login] 未携带 Token");
             HttpResponseUtil.writeJson(response, 401, 401, "未登录");
             return false;
         }
 
         if (!jwtUtil.validateToken(token)) {
-            log.warn("Token无效，返回401");
+            log.warn("[common:login] Token 无效");
             HttpResponseUtil.writeJson(response, 401, ResultCode.TOKEN_INVALID.getCode(), ResultCode.TOKEN_INVALID.getMessage());
             return false;
         }
 
-        log.info("Token校验通过，放行！");
+        log.debug("[common:login] Token 校验通过");
         return true;
     }
 

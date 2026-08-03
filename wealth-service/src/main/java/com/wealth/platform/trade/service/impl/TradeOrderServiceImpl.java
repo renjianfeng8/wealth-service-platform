@@ -148,7 +148,7 @@ public class TradeOrderServiceImpl extends BaseBizServiceImpl<TradeOrderMapper, 
             return; // 未传幂等键，跳过校验（兼容旧客户端）
         }
         if (redisUtil == null) {
-            log.warn("RedisUtil 不可用，跳过幂等性校验");
+            log.warn("[trade:order] RedisUtil 不可用, 跳过幂等性校验");
             return;
         }
 

@@ -66,3 +66,9 @@ management:
     web:
       exposure:
         include: health,info
+  tracing:
+    sampling:
+      probability: 0.1
+  zipkin:
+    tracing:
+      endpoint: http://localhost:9411/api/v2/spans

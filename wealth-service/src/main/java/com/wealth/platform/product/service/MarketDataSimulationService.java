@@ -41,7 +41,7 @@ public class MarketDataSimulationService {
     @PostConstruct
     public void init() {
         loadMarketData();
-        log.info("行情模拟服务初始化完成，加载 {} 条产品行情", cachedMarketData.size());
+        log.info("[product:marketData] 行情模拟服务初始化完成, 加载 {} 条产品行情", cachedMarketData.size());
     }
 
     private void loadMarketData() {
@@ -68,7 +68,7 @@ public class MarketDataSimulationService {
         try {
             pushService.broadcastMarketUpdate(voList);
         } catch (Exception e) {
-            log.error("行情广播失败", e);
+            log.error("[product:marketData] 行情广播失败", e);
         }
     }
 

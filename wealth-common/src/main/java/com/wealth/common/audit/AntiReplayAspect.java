@@ -68,7 +68,7 @@ public class AntiReplayAspect {
 
         long diff = Math.abs(now - timestamp);
         if (diff > timeWindow * 1000L) {
-            log.warn("防重放校验失败：时间戳超出窗口 | diff={}ms | window={}s", diff, timeWindow);
+            log.warn("[common:antiReplay] 校验失败, 时间戳超出窗口, diff={}ms, window={}s", diff, timeWindow);
             throw new ServiceException(400, "请求已过期，请重新发送");
         }
 
@@ -79,7 +79,7 @@ public class AntiReplayAspect {
         String redisKey = NONCE_KEY_PREFIX + username + ":" + nonce;
         Boolean success = redisUtil.setIfAbsent(redisKey, "1", timeWindow, TimeUnit.SECONDS);
         if (Boolean.FALSE.equals(success)) {
-            log.warn("防重放校验失败：nonce 重复使用 | nonce={}", nonce);
+            log.warn("[common:antiReplay] 校验失败, nonce 重复使用, nonce={}", nonce);
             throw new ServiceException(400, "请勿重复提交");
         }
 

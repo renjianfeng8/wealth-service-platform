@@ -87,7 +87,7 @@ public class AuditLogAspect {
 
             auditLog.info(mapper.writeValueAsString(logEntry));
         } catch (Exception e) {
-            auditLog.error("审计日志记录失败", e);
+            auditLog.error("[common:audit] 审计日志记录失败", e);
         }
     }
 

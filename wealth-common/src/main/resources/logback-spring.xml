@@ -8,7 +8,7 @@
     <!-- 控制台输出 -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{traceId:-},%X{spanId:-}] %logger{36} - %msg%n</pattern>
         </encoder>
     </appender>
 
@@ -22,7 +22,7 @@
             <totalSizeCap>3GB</totalSizeCap>
         </rollingPolicy>
         <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{traceId:-},%X{spanId:-}] %logger{36} - %msg%n</pattern>
         </encoder>
     </appender>
 
@@ -36,7 +36,7 @@
             <totalSizeCap>1GB</totalSizeCap>
         </rollingPolicy>
         <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{traceId:-},%X{spanId:-}] %logger{36} - %msg%n</pattern>
         </encoder>
         <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
             <level>WARN</level>
@@ -62,16 +62,16 @@
         <appender-ref ref="AUDIT_FILE" />
     </logger>
 
-    <!-- 项目包级别：开发环境 DEBUG，生产环境通过 profile 覆盖为 INFO -->
-    <logger name="com.wealth" level="DEBUG" additivity="false">
+    <!-- 项目包级别：默认 INFO，避免 DEBUG 日志撑爆磁盘；生产沿用默认 -->
+    <logger name="com.wealth" level="INFO" additivity="false">
         <appender-ref ref="CONSOLE" />
         <appender-ref ref="FILE" />
         <appender-ref ref="ERROR_FILE" />
     </logger>
 
-    <!-- 生产环境覆盖：com.wealth 改为 INFO，避免 DEBUG 日志撑爆磁盘 -->
-    <springProfile name="prod">
-        <logger name="com.wealth" level="INFO" additivity="false">
+    <!-- 开发环境覆盖：com.wealth 开启 DEBUG，便于本地排查 -->
+    <springProfile name="dev">
+        <logger name="com.wealth" level="DEBUG" additivity="false">
             <appender-ref ref="CONSOLE" />
             <appender-ref ref="FILE" />
             <appender-ref ref="ERROR_FILE" />
