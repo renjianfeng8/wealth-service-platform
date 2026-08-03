@@ -91,12 +91,12 @@ type UserQuery = {
 }
 
 type UserForm = {
-  id?: number
+  id?: number | string
   username: string
   password?: string
   nickname?: string
   phone?: string
-  status: number
+  status?: number
 }
 
 const filterFields: AdminFilterField[] = [
@@ -142,8 +142,8 @@ async function fetchData() {
     if (query.username) params.username = query.username
     if (query.status !== '') params.status = query.status
     const res = await getUserPage(params)
-    tableData.value = res.data.records || []
-    total.value = res.data.total || 0
+    tableData.value = res.records || []
+    total.value = res.total || 0
   } finally {
     loading.value = false
   }

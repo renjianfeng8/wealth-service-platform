@@ -69,7 +69,7 @@ export function bumpLoginTime() {
 
 export interface StoredUser {
   username: string
-  userId: number
+  userId: number | string
   nickname?: string
   avatar?: string
 }

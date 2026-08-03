@@ -74,7 +74,7 @@ const products = computed<WeaProduct[]>(() =>
 async function loadKline(code: string, period = '1M') {
   try {
     const res = await getDashboardKline(code, period)
-    klineData.value = (res.data?.candles || []) as Candle[]
+    klineData.value = (res?.candles || []) as Candle[]
   } catch {
     klineData.value = []
   }

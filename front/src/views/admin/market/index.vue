@@ -94,13 +94,13 @@
           </el-form-item>
         </el-col>
         <el-col :span="12">
-          <el-form-item label="涨跌幅">
+          <el-form-item label="涨跌幅（小数，如 0.05=5%）">
             <el-input-number v-model="form.riseFallRate" :precision="4" :step="0.001" controls-position="right" style="width: 100%" />
           </el-form-item>
         </el-col>
       </el-row>
       <el-form-item label="行情时间">
-        <el-date-picker v-model="form.marketTime" type="datetime" style="width: 100%" value-format="YYYY-MM-DDTHH:mm:ss" />
+        <el-date-picker v-model="form.marketTime" type="datetime" style="width: 100%" value-format="YYYY-MM-DD HH:mm:ss" />
       </el-form-item>
     </AdminFormDialog>
   </AdminPageShell>
@@ -181,8 +181,8 @@ async function fetchData() {
     }
     if (query.productCode) params.productCode = query.productCode
     const res = await getMarketDataPage(params)
-    tableData.value = res.data.records || []
-    total.value = res.data.total || 0
+    tableData.value = res.records || []
+    total.value = res.total || 0
   } finally {
     loading.value = false
   }

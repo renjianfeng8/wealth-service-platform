@@ -128,7 +128,7 @@ const filterType = ref(0)
 const keyword = ref('')
 const sortBy = ref('')
 const detailVisible = ref(false)
-const selectedProductId = ref<number | null>(null)
+const selectedProductId = ref<number | string | null>(null)
 const detailFallbackName = ref('')
 
 async function fetchProducts() {
@@ -155,8 +155,8 @@ async function fetchProducts() {
       params.orderDir = parts[1]
     }
     const res = await getProductPage(params)
-    products.value = (res.data?.records || []) as WeaProduct[]
-    total.value = res.data?.total || 0
+    products.value = (res?.records || []) as WeaProduct[]
+    total.value = res?.total || 0
   } catch {
     hasError.value = true
     products.value = []

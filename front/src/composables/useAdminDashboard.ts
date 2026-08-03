@@ -37,21 +37,21 @@ export function useAdminDashboard() {
       getProductPage({ pageNum: 1, pageSize: 1 }),
       getTradeOrderPage({ pageNum: 1, pageSize: 1 }),
     ])
-    if (userRes.status === 'fulfilled') totalUsers.value = (userRes.value as any).data?.total || 0
-    if (productRes.status === 'fulfilled') totalProducts.value = (productRes.value as any).data?.total || 0
-    if (orderRes.status === 'fulfilled') totalOrders.value = (orderRes.value as any).data?.total || 0
+    if (userRes.status === 'fulfilled') totalUsers.value = (userRes.value as any)?.total || 0
+    if (productRes.status === 'fulfilled') totalProducts.value = (productRes.value as any)?.total || 0
+    if (orderRes.status === 'fulfilled') totalOrders.value = (orderRes.value as any)?.total || 0
   }
 
   async function loadProducts() {
     const res = await getProductPage({ pageNum: 1, pageSize: 100 })
-    const list = (res.data?.records || []) as WeaProduct[]
+    const list = (res?.records || []) as WeaProduct[]
     marketProducts.value = list
     disabledProducts.value = list.filter(p => p.status === 0).length
   }
 
   async function loadLatestOrders() {
     const res = await getTradeOrderPage({ pageNum: 1, pageSize: 5 })
-    latestOrders.value = (res.data?.records || []) as WeaTradeOrder[]
+    latestOrders.value = (res?.records || []) as WeaTradeOrder[]
     pendingOrders.value = latestOrders.value.filter(o => o.orderStatus === 1).length
   }
 
@@ -60,7 +60,7 @@ export function useAdminDashboard() {
     const uid = useUserStore().userId
     if (uid) params.userId = uid
     const res = await getMessagePage(params)
-    unreadMessages.value = Number(res.data?.total || 0)
+    unreadMessages.value = Number(res?.total || 0)
   }
 
   async function loadRecentMessages() {
@@ -68,18 +68,18 @@ export function useAdminDashboard() {
     const uid = useUserStore().userId
     if (uid) params.userId = uid
     const res = await getMessagePage(params)
-    recentMessages.value = (res.data?.records || []) as WeaMessage[]
+    recentMessages.value = (res?.records || []) as WeaMessage[]
   }
 
   async function loadTrend(period = '7D') {
     const res = await getDashboardTrend(period)
-    if (res.data) trendData.value = res.data
+    if (res) trendData.value = res
   }
 
   async function loadOverview() {
     try {
       const res = await getDashboardOverview()
-      overview.value = res.data
+      overview.value = res
     } catch {
       // 失败静默，指标卡保持 --（全局拦截器已提示）
     }

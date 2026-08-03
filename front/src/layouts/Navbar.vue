@@ -149,8 +149,8 @@ async function fetchSearchResults(keyword: string) {
       productName: keyword,
       productCode: keyword,
     })
-    searchResults.value = res.data?.records || []
-    searchTotal.value = res.data?.total || 0
+    searchResults.value = res?.records || []
+    searchTotal.value = res?.total || 0
   } catch {
     searchResults.value = []
     searchTotal.value = 0

@@ -42,7 +42,7 @@ export function useCrudPage<T extends Record<string, any>>(fetchData: () => Prom
     }
   }
 
-  async function handleDelete(id: number | undefined, api: (id: number) => Promise<unknown>) {
+  async function handleDelete(id: number | string | undefined, api: (id: number | string) => Promise<unknown>) {
     if (!id) return
     try {
       await api(id)

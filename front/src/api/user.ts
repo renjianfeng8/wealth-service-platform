@@ -1,5 +1,15 @@
 import request from './index'
-import type { UserInfo } from '@/types'
+import type { PageResult, UserInfo } from '@/types'
+
+/**
+ * 统一登录结果
+ */
+export interface LoginResult {
+  userId: number | string
+  nickname: string
+  userType: string
+  refreshToken: string
+}
 
 /**
  * 分页查询用户列表
@@ -7,7 +17,7 @@ import type { UserInfo } from '@/types'
  * @returns 分页结果包含用户列表
  */
 export function getUserPage(params: { pageNum: number; pageSize: number; username?: string; status?: number }) {
-  return request.get('/user/page', { params })
+  return request.get<PageResult<UserInfo>>('/user/page', { params })
 }
 
 /**
@@ -15,8 +25,8 @@ export function getUserPage(params: { pageNum: number; pageSize: number; usernam
  * @param id - 用户 ID
  * @returns 用户信息
  */
-export function getUserById(id: number) {
-  return request.get(`/user/${id}`)
+export function getUserById(id: number | string) {
+  return request.get<UserInfo>(`/user/${id}`)
 }
 
 /** getUserInfo 是 getUserById 的别名，兼容用户前台 profile 视图 */
@@ -28,7 +38,7 @@ export { getUserById as getUserInfo }
  * @returns 创建结果
  */
 export function createUser(data: { username: string; password?: string; nickname?: string; phone?: string; status?: number }) {
-  return request.post('/user', data)
+  return request.post<boolean>('/user', data)
 }
 
 /**
@@ -37,8 +47,8 @@ export function createUser(data: { username: string; password?: string; nickname
  * @param data - 待更新的用户信息
  * @returns 更新结果
  */
-export function updateUser(id: number, data: Partial<UserInfo>) {
-  return request.put(`/user/${id}`, data)
+export function updateUser(id: number | string, data: Partial<UserInfo>) {
+  return request.put<boolean>(`/user/${id}`, data)
 }
 
 /**
@@ -46,8 +56,8 @@ export function updateUser(id: number, data: Partial<UserInfo>) {
  * @param id - 用户 ID
  * @returns 删除结果
  */
-export function deleteUser(id: number) {
-  return request.delete(`/user/${id}`)
+export function deleteUser(id: number | string) {
+  return request.delete<boolean>(`/user/${id}`)
 }
 
 /**
@@ -57,7 +67,7 @@ export function deleteUser(id: number) {
  */
 export function deleteUserBatch(ids: number[]) {
   // D1: 包裹为 { ids } 格式，避免 DELETE 请求裸数组 body 不被后端解析
-  return request.delete('/user/batch', { data: { ids } })
+  return request.delete<boolean>('/user/batch', { data: { ids } })
 }
 
 /**
@@ -66,7 +76,7 @@ export function deleteUserBatch(ids: number[]) {
  * @returns 注册结果
  */
 export function registerUser(data: { username: string; password: string; captchaKey?: string; captchaCode?: string }) {
-  return request.post('/user/register', data)
+  return request.post<boolean>('/user/register', data)
 }
 
 /**
@@ -74,8 +84,8 @@ export function registerUser(data: { username: string; password: string; captcha
  * @param data - 重置密码参数
  * @returns 重置结果
  */
-export function resetPassword(data: { id: number; oldPassword: string; password: string }) {
-  return request.post('/user/resetPassword', data)
+export function resetPassword(data: { id: number | string; oldPassword: string; password: string }) {
+  return request.post<boolean>('/user/resetPassword', data)
 }
 
 /**
@@ -84,5 +94,5 @@ export function resetPassword(data: { id: number; oldPassword: string; password:
  * @returns 登录结果包含 token、userId、nickname 及角色
  */
 export function identifyLogin(data: { username: string; password: string; captchaKey?: string; captchaCode?: string }) {
-  return request.post('/user/identify-login', data)
+  return request.post<LoginResult>('/user/identify-login', data)
 }

@@ -1,13 +1,13 @@
 import request from './index'
-import type { PageParam, WeaMessage, WeaNews } from '@/types'
+import type { PageParam, PageResult, WeaMessage, WeaNews } from '@/types'
 
 /**
  * 分页查询站内消息列表
  * @param params - 查询参数
  * @returns 分页结果包含站内消息列表
  */
-export function getMessagePage(params: PageParam & { msgTitle?: string; msgType?: number; userId?: number; readFlag?: number }) {
-  return request.get('/message/wea-message/page', { params })
+export function getMessagePage(params: PageParam & { msgTitle?: string; msgType?: number; userId?: number | string; readFlag?: number }) {
+  return request.get<PageResult<WeaMessage>>('/message/wea-message/page', { params })
 }
 
 /**
@@ -15,8 +15,8 @@ export function getMessagePage(params: PageParam & { msgTitle?: string; msgType?
  * @param id - 消息 ID
  * @returns 站内消息信息
  */
-export function getMessageById(id: number) {
-  return request.get(`/message/wea-message/${id}`)
+export function getMessageById(id: number | string) {
+  return request.get<WeaMessage>(`/message/wea-message/${id}`)
 }
 
 /**
@@ -25,7 +25,7 @@ export function getMessageById(id: number) {
  * @returns 创建结果
  */
 export function createMessage(data: Partial<WeaMessage>) {
-  return request.post('/message/wea-message', data)
+  return request.post<boolean>('/message/wea-message', data)
 }
 
 /**
@@ -34,8 +34,8 @@ export function createMessage(data: Partial<WeaMessage>) {
  * @param data - 待更新的消息信息
  * @returns 更新结果
  */
-export function updateMessage(id: number, data: Partial<WeaMessage>) {
-  return request.put(`/message/wea-message/${id}`, data)
+export function updateMessage(id: number | string, data: Partial<WeaMessage>) {
+  return request.put<boolean>(`/message/wea-message/${id}`, data)
 }
 
 /**
@@ -43,8 +43,8 @@ export function updateMessage(id: number, data: Partial<WeaMessage>) {
  * @param id - 消息 ID
  * @returns 删除结果
  */
-export function deleteMessage(id: number) {
-  return request.delete(`/message/wea-message/${id}`)
+export function deleteMessage(id: number | string) {
+  return request.delete<boolean>(`/message/wea-message/${id}`)
 }
 
 /**
@@ -53,7 +53,7 @@ export function deleteMessage(id: number) {
  * @returns 分页结果包含资讯列表
  */
 export function getNewsPage(params: PageParam & { title?: string; source?: string; newsType?: number }) {
-  return request.get('/message/wea-news/page', { params })
+  return request.get<PageResult<WeaNews>>('/message/wea-news/page', { params })
 }
 
 /**
@@ -61,8 +61,8 @@ export function getNewsPage(params: PageParam & { title?: string; source?: strin
  * @param id - 资讯 ID
  * @returns 资讯信息
  */
-export function getNewsById(id: number) {
-  return request.get(`/message/wea-news/${id}`)
+export function getNewsById(id: number | string) {
+  return request.get<WeaNews>(`/message/wea-news/${id}`)
 }
 
 /**
@@ -71,7 +71,7 @@ export function getNewsById(id: number) {
  * @returns 创建结果
  */
 export function createNews(data: Partial<WeaNews>) {
-  return request.post('/message/wea-news', data)
+  return request.post<boolean>('/message/wea-news', data)
 }
 
 /**
@@ -80,8 +80,8 @@ export function createNews(data: Partial<WeaNews>) {
  * @param data - 待更新的资讯信息
  * @returns 更新结果
  */
-export function updateNews(id: number, data: Partial<WeaNews>) {
-  return request.put(`/message/wea-news/${id}`, data)
+export function updateNews(id: number | string, data: Partial<WeaNews>) {
+  return request.put<boolean>(`/message/wea-news/${id}`, data)
 }
 
 /**
@@ -89,8 +89,8 @@ export function updateNews(id: number, data: Partial<WeaNews>) {
  * @param id - 资讯 ID
  * @returns 删除结果
  */
-export function deleteNews(id: number) {
-  return request.delete(`/message/wea-news/${id}`)
+export function deleteNews(id: number | string) {
+  return request.delete<boolean>(`/message/wea-news/${id}`)
 }
 
 /**
@@ -98,8 +98,8 @@ export function deleteNews(id: number) {
  * @param id - 消息 ID
  * @returns 更新结果
  */
-export function readMessage(id: number) {
-  return request.put(`/message/wea-message/${id}/read`)
+export function readMessage(id: number | string) {
+  return request.put<boolean>(`/message/wea-message/${id}/read`)
 }
 
 /**
@@ -107,6 +107,6 @@ export function readMessage(id: number) {
  * @param ids - 消息 ID 列表
  * @returns 更新结果
  */
-export function batchReadMessage(ids: number[]) {
-  return request.put('/message/wea-message/batch-read', { ids })
+export function batchReadMessage(ids: (number | string)[]) {
+  return request.put<boolean>('/message/wea-message/batch-read', { ids })
 }

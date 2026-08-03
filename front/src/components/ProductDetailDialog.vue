@@ -70,7 +70,7 @@ import type { WeaProduct } from '@/types'
 
 const props = defineProps<{
   modelValue: boolean
-  productId: number | null
+  productId: number | string | null
   fallbackName?: string
 }>()
 const emit = defineEmits<{
@@ -94,7 +94,7 @@ async function load() {
   loading.value = true
   try {
     const res = await getProductById(props.productId)
-    item.value = (res.data || null) as WeaProduct | null
+    item.value = (res || null) as WeaProduct | null
     await loadFavoriteState()
   } catch {
     item.value = null
@@ -108,7 +108,7 @@ async function loadFavoriteState() {
   if (!userStore.userId || !item.value?.productCode) return
   try {
     const res = await getFavoritePage({ pageNum: 1, pageSize: 1, userId: userStore.userId, productCode: item.value.productCode })
-    const first = (res.data?.records || [])[0] as { id: number } | undefined
+    const first = (res?.records || [])[0] as { id: number } | undefined
     favoriteId.value = first?.id ?? null
   } catch { /* 单个查询失败静默 */ }
 }

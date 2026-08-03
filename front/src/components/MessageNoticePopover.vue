@@ -117,8 +117,8 @@ async function fetchUnread() {
       userId: userStore.userId,
       readFlag: 0,
     })
-    unreadList.value = (res.data?.records || []) as WeaMessage[]
-    unreadCount.value = res.data?.total || 0
+    unreadList.value = (res?.records || []) as WeaMessage[]
+    unreadCount.value = res?.total || 0
   } catch {
     // Global request handler owns user-facing errors.
   } finally {
@@ -142,7 +142,7 @@ async function handleRead(msg: WeaMessage) {
 }
 
 async function markAllRead() {
-  const ids = unreadList.value.map(item => item.id).filter(Boolean) as number[]
+  const ids = unreadList.value.map(item => item.id).filter(Boolean) as (number | string)[]
   if (ids.length === 0) return
 
   try {

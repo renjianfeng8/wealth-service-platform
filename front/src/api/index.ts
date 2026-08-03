@@ -4,6 +4,7 @@ import { useUserStore } from '@/store'
 import router from '@/router'
 import { getRefreshToken } from '@/utils/auth'
 import { randomUUID } from '@/utils/uuid'
+import type { AxiosRequestConfig } from 'axios'
 
 const redirectLogin = () => {
   const loginPath = '/auth/login'
@@ -18,6 +19,18 @@ const PUBLIC_AUTH_PATHS = [
   '/system/umsAdmin/refresh',
   '/system/umsAdmin/logout',
 ]
+
+/**
+ * 业务方法类型：拦截器已解析 res.data，get/post/put/delete 返回 Promise<T>
+ * （而非 AxiosResponse<T>），与运行期一致。
+ */
+export interface ApiClient {
+  <T = unknown>(config: AxiosRequestConfig): Promise<T>
+  get<T = unknown>(url: string, config?: AxiosRequestConfig): Promise<T>
+  post<T = unknown>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T>
+  put<T = unknown>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T>
+  delete<T = unknown>(url: string, config?: AxiosRequestConfig): Promise<T>
+}
 
 const request = axios.create({
   baseURL: '/api/v1',
@@ -69,8 +82,9 @@ request.interceptors.request.use((config) => {
   return config
 })
 
+// 成功分支返回 res.data（业务载荷），type 标注为 any 以兼容 axios 对 onFulfilled 的 AxiosResponse 约束
 request.interceptors.response.use(
-  async (response) => {
+  async (response): Promise<any> => {
     const res = response.data
     if (res.code === 401) {
       const config = response.config as { url?: string; _refreshed?: boolean }
@@ -94,7 +108,7 @@ request.interceptors.response.use(
       ElMessage.error(res.message || '请求失败')
       return Promise.reject(new Error(res.message))
     }
-    return res
+    return res.data
   },
   async (error) => {
     const status = error.response?.status
@@ -123,4 +137,4 @@ request.interceptors.response.use(
   },
 )
 
-export default request
+export default request as unknown as ApiClient

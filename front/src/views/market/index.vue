@@ -129,8 +129,8 @@ async function fetchData() {
   loading.value = true
   try {
     const res = await getMarketDataPage({ pageNum: pageNum.value, pageSize: pageSize.value })
-    marketList.value = (res.data?.records || []) as WeaMarketData[]
-    total.value = res.data?.total || 0
+    marketList.value = (res?.records || []) as WeaMarketData[]
+    total.value = res?.total || 0
   } catch {
     hasError.value = true
     marketList.value = []

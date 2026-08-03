@@ -116,7 +116,7 @@ import { useMarketSSEStore } from '@/store/marketSSE'
 
 interface FavoriteItem extends WeaUserFavorite {
   productName?: string
-  productId?: number
+  productId?: number | string
   currentPrice?: number
   riseFallRate?: number
 }
@@ -132,7 +132,7 @@ const pageNum = ref(1)
 const pageSize = ref(12)
 const newProductCode = ref('')
 const detailVisible = ref(false)
-const selectedProductId = ref<number | null>(null)
+const selectedProductId = ref<number | string | null>(null)
 const detailFallbackName = ref('')
 const marketSSE = useMarketSSEStore()
 const sseConnected = computed(() => marketSSE.connected)
@@ -140,12 +140,12 @@ const sseConnected = computed(() => marketSSE.connected)
 async function enrichFavorites(records: WeaUserFavorite[]): Promise<FavoriteItem[]> {
   // 仅查当前页自选对应的 productCode，避免全表扫描
   const codes = [...new Set(records.map((r) => r.productCode))]
-  const productMap = new Map<string, { name: string; id?: number }>()
+  const productMap = new Map<string, { name: string; id?: number | string }>()
 
   await Promise.all(codes.map(async (code) => {
     try {
       const res = await getProductPage({ pageNum: 1, pageSize: 1, productCode: code })
-      const p = (res.data?.records || [])[0] as WeaProduct | undefined
+      const p = (res?.records || [])[0] as WeaProduct | undefined
       if (p) productMap.set(code, { name: p.productName, id: p.id })
     } catch { /* 单个查询失败不影响其他 */ }
   }))
@@ -178,8 +178,8 @@ async function fetchFavorites() {
       pageSize: pageSize.value,
       userId: userStore.userId || undefined,
     })
-    const records = (res.data?.records || []) as WeaUserFavorite[]
-    total.value = res.data?.total || 0
+    const records = (res?.records || []) as WeaUserFavorite[]
+    total.value = res?.total || 0
     favorites.value = await enrichFavorites(records)
   } catch (err) {
     console.warn('[favorite] fetchFavorites 失败:', err)

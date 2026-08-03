@@ -95,8 +95,8 @@ async function doFetch() {
       productName: query.keyword,
       productCode: query.keyword,
     })
-    tableData.value = res.data?.records || []
-    total.value = res.data?.total || 0
+    tableData.value = res?.records || []
+    total.value = res?.total || 0
   } catch {
     tableData.value = []
     total.value = 0

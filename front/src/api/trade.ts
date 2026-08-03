@@ -1,13 +1,13 @@
 import request from './index'
-import type { PageParam, WeaTradeOrder } from '@/types'
+import type { PageParam, PageResult, WeaTradeOrder } from '@/types'
 
 /**
  * 分页查询交易委托列表
  * @param params - 查询参数（pageNum、pageSize，可选 userId、orderStatus）
  * @returns 分页结果包含交易委托列表
  */
-export function getTradeOrderPage(params: PageParam & { userId?: number; productCode?: string; orderStatus?: number }) {
-  return request.get('/trade/wea-trade-order/page', { params })
+export function getTradeOrderPage(params: PageParam & { userId?: number | string; productCode?: string; orderStatus?: number }) {
+  return request.get<PageResult<WeaTradeOrder>>('/trade/wea-trade-order/page', { params })
 }
 
 /**
@@ -15,8 +15,8 @@ export function getTradeOrderPage(params: PageParam & { userId?: number; product
  * @param id - 交易委托 ID
  * @returns 交易委托信息
  */
-export function getTradeOrderById(id: number) {
-  return request.get(`/trade/wea-trade-order/${id}`)
+export function getTradeOrderById(id: number | string) {
+  return request.get<WeaTradeOrder>(`/trade/wea-trade-order/${id}`)
 }
 
 /**
@@ -25,7 +25,7 @@ export function getTradeOrderById(id: number) {
  * @returns 创建结果
  */
 export function createTradeOrder(data: Omit<WeaTradeOrder, 'id' | 'orderNo' | 'orderStatus' | 'createTime'> & { idempotentKey?: string }) {
-  return request.post('/trade/wea-trade-order', data)
+  return request.post<boolean>('/trade/wea-trade-order', data)
 }
 
 /**
@@ -34,8 +34,8 @@ export function createTradeOrder(data: Omit<WeaTradeOrder, 'id' | 'orderNo' | 'o
  * @param data - 待更新的交易委托信息
  * @returns 更新结果
  */
-export function updateTradeOrder(id: number, data: Partial<WeaTradeOrder>) {
-  return request.put(`/trade/wea-trade-order/${id}`, data)
+export function updateTradeOrder(id: number | string, data: Partial<WeaTradeOrder>) {
+  return request.put<boolean>(`/trade/wea-trade-order/${id}`, data)
 }
 
 /**
@@ -43,8 +43,8 @@ export function updateTradeOrder(id: number, data: Partial<WeaTradeOrder>) {
  * @param id - 交易委托 ID
  * @returns 删除结果
  */
-export function deleteTradeOrder(id: number) {
-  return request.delete(`/trade/wea-trade-order/${id}`)
+export function deleteTradeOrder(id: number | string) {
+  return request.delete<boolean>(`/trade/wea-trade-order/${id}`)
 }
 
 /**
@@ -52,6 +52,6 @@ export function deleteTradeOrder(id: number) {
  * @param id - 交易委托 ID
  * @returns 取消结果
  */
-export function cancelTradeOrder(id: number) {
-  return request.put(`/trade/wea-trade-order/${id}/status`, { orderStatus: 3 })
+export function cancelTradeOrder(id: number | string) {
+  return request.put<boolean>(`/trade/wea-trade-order/${id}/status`, { orderStatus: 3 })
 }

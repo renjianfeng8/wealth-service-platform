@@ -283,7 +283,7 @@ async function fetchProfile() {
   fetchProfilePromise = (async () => {
     try {
       const res = await getAdminById(userStore.userId)
-      const data = res.data
+      const data = res
       if (data) {
         adminInfo.username = data.username || userStore.username
         adminInfo.nickName = data.nickName || ''

@@ -102,11 +102,11 @@ function msgTagType(msgType: number | undefined): string {
 async function fetchMessages() {
   loading.value = true
   try {
-    const params: { pageNum: number; pageSize: number; userId?: number } = { pageNum: pageNum.value, pageSize: pageSize.value }
+    const params: { pageNum: number; pageSize: number; userId?: number | string } = { pageNum: pageNum.value, pageSize: pageSize.value }
     if (userStore.userId) params.userId = userStore.userId
     const res = await getMessagePage(params)
-    messages.value = (res.data?.records || []) as WeaMessage[]
-    total.value = res.data?.total || 0
+    messages.value = (res?.records || []) as WeaMessage[]
+    total.value = res?.total || 0
   } catch (err) {
     console.warn('[message] fetchMessages 失败:', err)
     messages.value = []
@@ -120,7 +120,7 @@ async function handleRead(item: WeaMessage) {
   if (item.id) {
     try {
       const res = await getMessageById(item.id)
-      detailItem.value = res.data ?? item
+      detailItem.value = res ?? item
     } catch (err) {
       console.warn('[message] getMessageById 失败，回退列表摘要:', err)
       detailItem.value = item
@@ -143,7 +143,7 @@ async function fetchUnreadCount() {
   if (!userStore.userId) return
   try {
     const res = await getMessagePage({ pageNum: 1, pageSize: 1, userId: userStore.userId, readFlag: 0 })
-    unreadCount.value = Number(res.data?.total || 0)
+    unreadCount.value = Number(res?.total || 0)
   } catch { /* handled globally */ }
 }
 
@@ -153,7 +153,7 @@ function handleSizeChange() {
 }
 
 async function handleMarkAllRead() {
-  const unreadIds = messages.value.filter(m => m.readFlag !== 1 && m.id).map(m => m.id as number)
+  const unreadIds = messages.value.filter(m => m.readFlag !== 1 && m.id).map(m => m.id as number | string)
   if (unreadIds.length === 0) return
   try {
     await batchReadMessage(unreadIds)

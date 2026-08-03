@@ -129,8 +129,8 @@ async function fetchData() {
     if (query.username) params.username = query.username
     if (query.status !== '') params.status = query.status
     const res = await getAdminPage(params)
-    tableData.value = res.data.records || []
-    total.value = res.data.total || 0
+    tableData.value = res.records || []
+    total.value = res.total || 0
   } finally {
     loading.value = false
   }

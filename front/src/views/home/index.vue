@@ -235,10 +235,10 @@ function newsTypeLabel(v?: number) { return v ? NEWS_TYPE_LABELS[v] || '资讯' 
 
 /* ---- 详情弹窗 ---- */
 const productDetailVisible = ref(false)
-const selectedProductId = ref<number | null>(null)
+const selectedProductId = ref<number | string | null>(null)
 const selectedProductName = ref('')
 const newsDetailVisible = ref(false)
-const selectedNewsId = ref<number | null>(null)
+const selectedNewsId = ref<number | string | null>(null)
 
 function showProductDetail(item: WeaProduct) {
   selectedProductName.value = item.productName
@@ -262,8 +262,8 @@ async function fetchProducts() {
   prodLoading.value = true
   try {
     const res = await getProductPage({ pageNum: 1, pageSize: 6, orderBy: 'sort', orderDir: 'asc' })
-    productList.value = res.data?.records || []
-    productTotalCount.value = res.data?.total || 0
+    productList.value = res?.records || []
+    productTotalCount.value = res?.total || 0
     trustStats[0].value = productTotalCount
   } catch {
     productList.value = []
@@ -276,7 +276,7 @@ async function fetchMarketData() {
   marketLoading.value = true
   try {
     const res = await getMarketDataPage({ pageNum: 1, pageSize: 4 })
-    marketList.value = (res.data?.records || []) as WeaMarketData[]
+    marketList.value = (res?.records || []) as WeaMarketData[]
   } catch {
     marketList.value = []
   } finally {
@@ -288,7 +288,7 @@ async function fetchNews() {
   newsLoading.value = true
   try {
     const res = await getNewsPage({ pageNum: 1, pageSize: 5 })
-    newsList.value = res.data?.records || []
+    newsList.value = res?.records || []
   } catch {
     newsList.value = []
   } finally {

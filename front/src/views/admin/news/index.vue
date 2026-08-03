@@ -76,7 +76,7 @@
         <el-input v-model="form.content" type="textarea" :rows="4" />
       </el-form-item>
       <el-form-item label="发布时间">
-        <el-date-picker v-model="form.publishTime" type="datetime" style="width: 100%" value-format="YYYY-MM-DDTHH:mm:ss" />
+        <el-date-picker v-model="form.publishTime" type="datetime" style="width: 100%" value-format="YYYY-MM-DD HH:mm:ss" />
       </el-form-item>
     </AdminFormDialog>
   </AdminPageShell>
@@ -129,8 +129,8 @@ async function fetchData() {
     if (query.title) params.title = query.title
     if (query.source) params.source = query.source
     const res = await getNewsPage(params)
-    tableData.value = res.data.records || []
-    total.value = res.data.total || 0
+    tableData.value = res.records || []
+    total.value = res.total || 0
   } finally {
     loading.value = false
   }

@@ -251,10 +251,10 @@ const newsList = ref<WeaNews[]>([])
 
 /* ---- 详情弹窗 ---- */
 const productDetailVisible = ref(false)
-const selectedProductId = ref<number | null>(null)
+const selectedProductId = ref<number | string | null>(null)
 const selectedProductName = ref('')
 const newsDetailVisible = ref(false)
-const selectedNewsId = ref<number | null>(null)
+const selectedNewsId = ref<number | string | null>(null)
 
 function showProductDetail(item: WeaProduct) {
   selectedProductName.value = item.productName
@@ -304,9 +304,9 @@ async function fetchOverview() {
       getTradeOrderPage({ pageNum: 1, pageSize: 1, userId: userStore.userId }),
       getMessagePage({ pageNum: 1, pageSize: 1, userId: userStore.userId, readFlag: 0 }),
     ])
-    favoriteCount.value = fr.data?.total || 0
-    orderCount.value = tr.data?.total || 0
-    unreadCount.value = mr.data?.total || 0
+    favoriteCount.value = fr?.total || 0
+    orderCount.value = tr?.total || 0
+    unreadCount.value = mr?.total || 0
   } catch {
     // 静默失败，保持 0
   } finally {
@@ -319,7 +319,7 @@ async function fetchFavoriteMarket() {
   favMarketLoading.value = true
   try {
     const favRes = await getFavoritePage({ pageNum: 1, pageSize: 4, userId: userStore.userId })
-    const favList = (favRes.data?.records || []) as { productCode: string }[]
+    const favList = (favRes?.records || []) as { productCode: string }[]
     if (favList.length === 0) {
       favoriteItems.value = []
       return
@@ -331,7 +331,7 @@ async function fetchFavoriteMarket() {
     await Promise.all(codes.map(async (code) => {
       try {
         const res = await getProductPage({ pageNum: 1, pageSize: 1, productCode: code })
-        const p = (res.data?.records || [])[0] as WeaProduct | undefined
+        const p = (res?.records || [])[0] as WeaProduct | undefined
         if (p) {
           productMap.set(code, {
             name: p.productName || code,
@@ -372,7 +372,7 @@ async function fetchProducts() {
   prodLoading.value = true
   try {
     const res = await getProductPage({ pageNum: 1, pageSize: 6, orderBy: 'sort', orderDir: 'asc' })
-    productList.value = res.data?.records || []
+    productList.value = res?.records || []
   } catch {
     productList.value = []
   } finally {
@@ -384,7 +384,7 @@ async function fetchNews() {
   newsLoading.value = true
   try {
     const res = await getNewsPage({ pageNum: 1, pageSize: 4 })
-    newsList.value = res.data?.records || []
+    newsList.value = res?.records || []
   } catch {
     newsList.value = []
   } finally {

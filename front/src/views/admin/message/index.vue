@@ -119,8 +119,8 @@ async function fetchData() {
     if (query.msgTitle) params.msgTitle = query.msgTitle
     if (query.msgType !== '') params.msgType = query.msgType
     const res = await getMessagePage(params)
-    tableData.value = res.data.records || []
-    total.value = res.data.total || 0
+    tableData.value = res.records || []
+    total.value = res.total || 0
   } finally {
     loading.value = false
   }

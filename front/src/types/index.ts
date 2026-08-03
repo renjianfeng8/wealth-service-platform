@@ -7,8 +7,8 @@ export interface Result<T = any> {
 export interface PageResult<T = any> {
   records: T[]
   total: number
-  size: number
-  current: number
+  pageNum: number
+  pageSize: number
   pages: number
 }
 
@@ -28,7 +28,7 @@ export interface DictItem {
 }
 
 export interface UserInfo {
-  id?: number
+  id?: number | string
   username: string
   nickname?: string
   phone?: string
@@ -37,17 +37,19 @@ export interface UserInfo {
 }
 
 export interface UmsAdmin {
-  id?: number
+  id?: number | string
   username: string
   password?: string
   email?: string
   nickName?: string
   status?: number
   avatar?: string
+  createTime?: string
+  updateTime?: string
 }
 
 export interface UmsRole {
-  id?: number
+  id?: number | string
   name: string
   description?: string
   status?: number
@@ -55,7 +57,7 @@ export interface UmsRole {
 }
 
 export interface UmsResource {
-  id?: number
+  id?: number | string
   name: string
   url: string
   description?: string
@@ -63,7 +65,7 @@ export interface UmsResource {
 }
 
 export interface WeaProduct {
-  id?: number
+  id?: number | string
   productName: string
   productCode: string
   productType?: number
@@ -76,7 +78,7 @@ export interface WeaProduct {
 }
 
 export interface WeaMarketData {
-  id?: number
+  id?: number | string
   productCode: string
   currentPrice: number
   openPrice?: number
@@ -89,9 +91,9 @@ export interface WeaMarketData {
 }
 
 export interface WeaTradeOrder {
-  id?: number
+  id?: number | string
   orderNo?: string
-  userId: number
+  userId: number | string
   productCode: string
   tradeType: number
   entrustPrice: number
@@ -101,14 +103,14 @@ export interface WeaTradeOrder {
 }
 
 export interface WeaUserFavorite {
-  id?: number
-  userId: number
+  id?: number | string
+  userId: number | string
   productCode: string
   createTime?: string
 }
 
 export interface WeaNews {
-  id?: number
+  id?: number | string
   title: string
   content?: string
   newsType?: number
@@ -118,8 +120,8 @@ export interface WeaNews {
 }
 
 export interface WeaMessage {
-  id?: number
-  userId: number
+  id?: number | string
+  userId: number | string
   msgType?: number
   msgTitle: string
   msgContent: string

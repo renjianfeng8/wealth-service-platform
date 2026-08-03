@@ -278,7 +278,7 @@ async function fetchProfile() {
   fetchProfilePromise = (async () => {
     try {
       const res = await getUserInfo(userStore.userId)
-      const data = res.data
+      const data = res
       if (data) {
         userInfo.username = data.username || userStore.username
         userInfo.nickname = data.nickname || userStore.nickname
@@ -304,9 +304,9 @@ async function fetchStats() {
         getTradeOrderPage({ pageNum: 1, pageSize: 1, userId: userStore.userId }),
         getMessagePage({ pageNum: 1, pageSize: 1, userId: userStore.userId }),
       ])
-      statFavorites.value = fr.data?.total || 0
-      statOrders.value = tr.data?.total || 0
-      statMessages.value = mr.data?.total || 0
+      statFavorites.value = fr?.total || 0
+      statOrders.value = tr?.total || 0
+      statMessages.value = mr?.total || 0
     } catch (err) { console.warn('[profile] fetchStats 失败:', err)
     } finally { fetchStatsPromise = null }
   })()

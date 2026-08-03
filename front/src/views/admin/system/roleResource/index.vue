@@ -87,8 +87,8 @@ const query = reactive<RelationQuery>({ pageNum: 1, pageSize: 10, roleId: '' })
 const form = reactive<RoleResourceRelation>({ roleId: undefined, resourceId: undefined })
 const { isDirty, reset } = useFormGuard(form)
 
-const roleMap = new Map<number, string>()
-const resourceMap = new Map<number, string>()
+const roleMap = new Map<number | string, string>()
+const resourceMap = new Map<number | string, string>()
 
 const filterFields = computed<AdminFilterField[]>(() => [
   { prop: 'roleId', label: '角色', type: 'select', options: roleOptions.value, width: '200px', placeholder: '选择角色' },
@@ -115,8 +115,8 @@ function getResourceName(id?: number) {
 async function loadSelectData() {
   try {
     const [roleRes, resourceRes] = await Promise.all([getRoleList(), getResourceList()])
-    roleList.value = roleRes.data || []
-    resourceList.value = resourceRes.data || []
+    roleList.value = roleRes || []
+    resourceList.value = resourceRes || []
     roleMap.clear()
     resourceMap.clear()
     roleList.value.forEach((role) => {
@@ -139,8 +139,8 @@ async function fetchData() {
     }
     if (query.roleId !== '') params.roleId = query.roleId
     const res = await getRoleResourceRelationPage(params)
-    tableData.value = res.data.records || []
-    total.value = res.data.total || 0
+    tableData.value = res.records || []
+    total.value = res.total || 0
   } finally {
     loading.value = false
   }

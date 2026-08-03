@@ -11,6 +11,7 @@ export const useMarketSSEStore = defineStore('marketSSE', () => {
 
   function onMessage(e: MessageEvent) {
     try {
+      // 载荷为原始 MarketDataVO[] 数组（非 Result 信封），见 MarketDataController.subscribe
       const data = JSON.parse(e.data) as WeaMarketData[]
       handlers.forEach(fn => fn(data))
     } catch {

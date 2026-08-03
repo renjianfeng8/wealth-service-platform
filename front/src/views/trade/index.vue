@@ -328,15 +328,15 @@ async function doSubmit() {
 async function fetchOrders() {
   loading.value = true
   try {
-    const params: { pageNum: number; pageSize: number; userId?: number; orderStatus?: number } = {
+    const params: { pageNum: number; pageSize: number; userId?: number | string; orderStatus?: number } = {
       pageNum: orderPageNum.value,
       pageSize: orderPageSize.value,
       userId: userStore.userId || undefined,
     }
     if (statusFilter.value !== undefined) params.orderStatus = statusFilter.value
     const res = await getTradeOrderPage(params)
-    orders.value = (res.data?.records || []) as WeaTradeOrder[]
-    orderTotal.value = res.data?.total || 0
+    orders.value = (res?.records || []) as WeaTradeOrder[]
+    orderTotal.value = res?.total || 0
   } catch (err) {
     console.warn('[trade] fetchOrders 失败:', err)
     orders.value = []
@@ -372,7 +372,7 @@ async function handleDetail(order: WeaTradeOrder) {
   detailItem.value = null
   try {
     const res = await getTradeOrderById(order.id)
-    detailItem.value = (res.data || null) as WeaTradeOrder | null
+    detailItem.value = (res || null) as WeaTradeOrder | null
   } catch {
     detailItem.value = null
   } finally {

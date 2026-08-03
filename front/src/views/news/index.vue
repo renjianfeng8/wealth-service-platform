@@ -92,7 +92,7 @@ const pageNum = ref(1)
 const pageSize = ref(10)
 const filterType = ref(0)
 const detailVisible = ref(false)
-const selectedNewsId = ref<number | null>(null)
+const selectedNewsId = ref<number | string | null>(null)
 
 function truncate(text: string | undefined, len: number): string {
   if (!text) return ''
@@ -106,8 +106,8 @@ async function fetchNews() {
     const params: { pageNum: number; pageSize: number; newsType?: number } = { pageNum: pageNum.value, pageSize: pageSize.value }
     if (filterType.value) params.newsType = filterType.value
     const res = await getNewsPage(params)
-    newsList.value = (res.data?.records || []) as WeaNews[]
-    total.value = res.data?.total || 0
+    newsList.value = (res?.records || []) as WeaNews[]
+    total.value = res?.total || 0
   } catch {
     hasError.value = true
     newsList.value = []

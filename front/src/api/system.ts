@@ -1,6 +1,6 @@
 import axios from 'axios'
 import request from './index'
-import type { PageParam, UmsAdmin, UmsRole, UmsResource } from '@/types'
+import type { PageParam, PageResult, UmsAdmin, UmsRole, UmsResource } from '@/types'
 
 /**
  * 获取图形验证码（登录/注册使用）
@@ -27,7 +27,7 @@ export function logoutApi(refreshToken: string) {
  * @returns 分页结果包含管理员列表
  */
 export function getAdminPage(params: { pageNum: number; pageSize: number; username?: string; status?: number }) {
-  return request.get('/system/umsAdmin/page', { params })
+  return request.get<PageResult<UmsAdmin>>('/system/umsAdmin/page', { params })
 }
 
 /**
@@ -35,7 +35,7 @@ export function getAdminPage(params: { pageNum: number; pageSize: number; userna
  * @returns 管理员列表
  */
 export function getAdminList() {
-  return request.get('/system/umsAdmin')
+  return request.get<UmsAdmin[]>('/system/umsAdmin')
 }
 
 /**
@@ -43,8 +43,8 @@ export function getAdminList() {
  * @param id - 管理员 ID
  * @returns 管理员信息
  */
-export function getAdminById(id: number) {
-  return request.get(`/system/umsAdmin/${id}`)
+export function getAdminById(id: number | string) {
+  return request.get<UmsAdmin>(`/system/umsAdmin/${id}`)
 }
 
 /**
@@ -53,7 +53,7 @@ export function getAdminById(id: number) {
  * @returns 创建结果
  */
 export function createAdmin(data: UmsAdmin) {
-  return request.post('/system/umsAdmin', data)
+  return request.post<boolean>('/system/umsAdmin', data)
 }
 
 /**
@@ -62,8 +62,8 @@ export function createAdmin(data: UmsAdmin) {
  * @param data - 待更新的管理员信息
  * @returns 更新结果
  */
-export function updateAdmin(id: number, data: Partial<UmsAdmin>) {
-  return request.put(`/system/umsAdmin/${id}`, data)
+export function updateAdmin(id: number | string, data: Partial<UmsAdmin>) {
+  return request.put<boolean>(`/system/umsAdmin/${id}`, data)
 }
 
 /**
@@ -71,8 +71,8 @@ export function updateAdmin(id: number, data: Partial<UmsAdmin>) {
  * @param id - 管理员 ID
  * @returns 删除结果
  */
-export function deleteAdmin(id: number) {
-  return request.delete(`/system/umsAdmin/${id}`)
+export function deleteAdmin(id: number | string) {
+  return request.delete<boolean>(`/system/umsAdmin/${id}`)
 }
 
 /**
@@ -80,8 +80,8 @@ export function deleteAdmin(id: number) {
  * @param data - { id, oldPassword, password }
  * @returns 重置结果
  */
-export function resetAdminPassword(data: { id: number; oldPassword: string; password: string }) {
-  return request.post('/system/umsAdmin/resetPassword', data)
+export function resetAdminPassword(data: { id: number | string; oldPassword: string; password: string }) {
+  return request.post<boolean>('/system/umsAdmin/resetPassword', data)
 }
 
 /**
@@ -90,7 +90,7 @@ export function resetAdminPassword(data: { id: number; oldPassword: string; pass
  * @returns 分页结果包含角色列表
  */
 export function getRolePage(params: { pageNum: number; pageSize: number; name?: string; status?: number }) {
-  return request.get('/system/umsRole/page', { params })
+  return request.get<PageResult<UmsRole>>('/system/umsRole/page', { params })
 }
 
 /**
@@ -98,7 +98,7 @@ export function getRolePage(params: { pageNum: number; pageSize: number; name?: 
  * @returns 角色列表
  */
 export function getRoleList() {
-  return request.get('/system/umsRole')
+  return request.get<UmsRole[]>('/system/umsRole')
 }
 
 /**
@@ -107,7 +107,7 @@ export function getRoleList() {
  * @returns 创建结果
  */
 export function createRole(data: UmsRole) {
-  return request.post('/system/umsRole', data)
+  return request.post<boolean>('/system/umsRole', data)
 }
 
 /**
@@ -116,8 +116,8 @@ export function createRole(data: UmsRole) {
  * @param data - 待更新的角色信息
  * @returns 更新结果
  */
-export function updateRole(id: number, data: Partial<UmsRole>) {
-  return request.put(`/system/umsRole/${id}`, data)
+export function updateRole(id: number | string, data: Partial<UmsRole>) {
+  return request.put<boolean>(`/system/umsRole/${id}`, data)
 }
 
 /**
@@ -125,8 +125,8 @@ export function updateRole(id: number, data: Partial<UmsRole>) {
  * @param id - 角色 ID
  * @returns 删除结果
  */
-export function deleteRole(id: number) {
-  return request.delete(`/system/umsRole/${id}`)
+export function deleteRole(id: number | string) {
+  return request.delete<boolean>(`/system/umsRole/${id}`)
 }
 
 /**
@@ -135,7 +135,7 @@ export function deleteRole(id: number) {
  * @returns 分页结果包含资源列表
  */
 export function getResourcePage(params: { pageNum: number; pageSize: number; name?: string; url?: string }) {
-  return request.get('/system/umsResource/page', { params })
+  return request.get<PageResult<UmsResource>>('/system/umsResource/page', { params })
 }
 
 /**
@@ -143,7 +143,7 @@ export function getResourcePage(params: { pageNum: number; pageSize: number; nam
  * @returns 资源列表
  */
 export function getResourceList() {
-  return request.get('/system/umsResource')
+  return request.get<UmsResource[]>('/system/umsResource')
 }
 
 /**
@@ -152,7 +152,7 @@ export function getResourceList() {
  * @returns 创建结果
  */
 export function createResource(data: UmsResource) {
-  return request.post('/system/umsResource', data)
+  return request.post<boolean>('/system/umsResource', data)
 }
 
 /**
@@ -161,8 +161,8 @@ export function createResource(data: UmsResource) {
  * @param data - 待更新的资源信息
  * @returns 更新结果
  */
-export function updateResource(id: number, data: Partial<UmsResource>) {
-  return request.put(`/system/umsResource/${id}`, data)
+export function updateResource(id: number | string, data: Partial<UmsResource>) {
+  return request.put<boolean>(`/system/umsResource/${id}`, data)
 }
 
 /**
@@ -170,8 +170,8 @@ export function updateResource(id: number, data: Partial<UmsResource>) {
  * @param id - 资源 ID
  * @returns 删除结果
  */
-export function deleteResource(id: number) {
-  return request.delete(`/system/umsResource/${id}`)
+export function deleteResource(id: number | string) {
+  return request.delete<boolean>(`/system/umsResource/${id}`)
 }
 
 /**
@@ -180,7 +180,7 @@ export function deleteResource(id: number) {
  * @returns 分页结果包含管理员-角色关联列表
  */
 export function getAdminRoleRelationPage(params: PageParam & { adminId?: number | string }) {
-  return request.get('/system/umsAdminRoleRelation/page', { params })
+  return request.get<PageResult<Record<string, any>>>('/system/umsAdminRoleRelation/page', { params })
 }
 
 /**
@@ -189,7 +189,7 @@ export function getAdminRoleRelationPage(params: PageParam & { adminId?: number 
  * @returns 创建结果
  */
 export function createAdminRoleRelation(data: { adminId?: number; roleId?: number }) {
-  return request.post('/system/umsAdminRoleRelation', data)
+  return request.post<boolean>('/system/umsAdminRoleRelation', data)
 }
 
 /**
@@ -197,8 +197,8 @@ export function createAdminRoleRelation(data: { adminId?: number; roleId?: numbe
  * @param id - 关联 ID
  * @returns 删除结果
  */
-export function deleteAdminRoleRelation(id: number) {
-  return request.delete(`/system/umsAdminRoleRelation/${id}`)
+export function deleteAdminRoleRelation(id: number | string) {
+  return request.delete<boolean>(`/system/umsAdminRoleRelation/${id}`)
 }
 
 /**
@@ -207,7 +207,7 @@ export function deleteAdminRoleRelation(id: number) {
  * @returns 分页结果包含角色-资源关联列表
  */
 export function getRoleResourceRelationPage(params: PageParam & { roleId?: number | string }) {
-  return request.get('/system/umsRoleResourceRelation/page', { params })
+  return request.get<PageResult<Record<string, any>>>('/system/umsRoleResourceRelation/page', { params })
 }
 
 /**
@@ -216,7 +216,7 @@ export function getRoleResourceRelationPage(params: PageParam & { roleId?: numbe
  * @returns 创建结果
  */
 export function createRoleResourceRelation(data: { roleId?: number; resourceId?: number }) {
-  return request.post('/system/umsRoleResourceRelation', data)
+  return request.post<boolean>('/system/umsRoleResourceRelation', data)
 }
 
 /**
@@ -224,6 +224,6 @@ export function createRoleResourceRelation(data: { roleId?: number; resourceId?:
  * @param id - 关联 ID
  * @returns 删除结果
  */
-export function deleteRoleResourceRelation(id: number) {
-  return request.delete(`/system/umsRoleResourceRelation/${id}`)
+export function deleteRoleResourceRelation(id: number | string) {
+  return request.delete<boolean>(`/system/umsRoleResourceRelation/${id}`)
 }

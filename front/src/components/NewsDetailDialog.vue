@@ -31,7 +31,7 @@ import type { WeaNews } from '@/types'
 
 const props = defineProps<{
   modelValue: boolean
-  newsId: number | null
+  newsId: number | string | null
 }>()
 const emit = defineEmits<{
   'update:modelValue': [value: boolean]
@@ -46,7 +46,7 @@ async function load() {
   loading.value = true
   try {
     const res = await getNewsById(props.newsId)
-    item.value = (res.data || null) as WeaNews | null
+    item.value = (res || null) as WeaNews | null
   } catch {
     item.value = null
   } finally {

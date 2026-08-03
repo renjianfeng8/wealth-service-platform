@@ -40,7 +40,7 @@ async function reload() {
   loading.value = true
   try {
     const res = await getCaptcha()
-    const data = res.data || {}
+    const data = res || {}
     captchaKey.value = data.captchaKey
     captchaImage.value = data.captchaImage
   } catch {

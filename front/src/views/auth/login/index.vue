@@ -124,7 +124,7 @@ async function handleLogin() {
       captchaKey: captchaRef.value?.getCaptchaKey() || '',
       captchaCode: form.captchaCode,
     })
-    const { userId, nickname, userType, refreshToken } = res.data || {}
+    const { userId, nickname, userType, refreshToken } = res || {}
     userStore.setLoginInfo({
       username: form.username,
       userId: userId || 0,

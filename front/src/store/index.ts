@@ -4,7 +4,7 @@ import { logoutApi } from '@/api/system'
 
 export interface LoginInfo {
   username: string
-  userId: number
+  userId: number | string
   nickname?: string
   avatar?: string
   role: 'admin' | 'user'
@@ -52,7 +52,7 @@ export const useUserStore = defineStore('user', {
      * 更新当前登录用户的个人信息
      * @param info - 用户信息（userId、nickname、avatar）
      */
-    setUserInfo(info: { userId: number; nickname: string; avatar: string }) {
+    setUserInfo(info: { userId: number | string; nickname: string; avatar: string }) {
       this.userId = info.userId
       this.nickname = info.nickname
       this.avatar = info.avatar || DEFAULT_AVATAR

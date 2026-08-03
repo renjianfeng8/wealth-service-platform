@@ -170,8 +170,8 @@ async function fetchData() {
     if (query.orderStatus !== '') params.orderStatus = query.orderStatus
 
     const res = await getTradeOrderPage(params)
-    tableData.value = res.data.records || []
-    total.value = res.data.total || 0
+    tableData.value = res.records || []
+    total.value = res.total || 0
   } finally {
     loading.value = false
   }

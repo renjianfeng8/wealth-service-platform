@@ -98,8 +98,8 @@ async function fetchData() {
     if (query.name) params.name = query.name
     if (query.url) params.url = query.url
     const res = await getResourcePage(params)
-    tableData.value = res.data.records || []
-    total.value = res.data.total || 0
+    tableData.value = res.records || []
+    total.value = res.total || 0
   } finally {
     loading.value = false
   }

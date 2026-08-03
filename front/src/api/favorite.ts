@@ -1,13 +1,13 @@
 import request from './index'
-import type { PageParam, WeaUserFavorite } from '@/types'
+import type { PageParam, PageResult, WeaUserFavorite } from '@/types'
 
 /**
  * 分页查询用户自选列表
  * @param params - 查询参数
  * @returns 分页结果包含用户自选列表
  */
-export function getFavoritePage(params: PageParam & { userId?: number; productCode?: string }) {
-  return request.get('/product/wea-user-favorite/page', { params })
+export function getFavoritePage(params: PageParam & { userId?: number | string; productCode?: string }) {
+  return request.get<PageResult<WeaUserFavorite>>('/product/wea-user-favorite/page', { params })
 }
 
 /**
@@ -16,7 +16,7 @@ export function getFavoritePage(params: PageParam & { userId?: number; productCo
  * @returns 创建结果
  */
 export function createFavorite(data: Partial<WeaUserFavorite>) {
-  return request.post('/product/wea-user-favorite', data)
+  return request.post<boolean>('/product/wea-user-favorite', data)
 }
 
 /**
@@ -25,8 +25,8 @@ export function createFavorite(data: Partial<WeaUserFavorite>) {
  * @param data - 待更新的自选信息
  * @returns 更新结果
  */
-export function updateFavorite(id: number, data: Partial<WeaUserFavorite>) {
-  return request.put(`/product/wea-user-favorite/${id}`, data)
+export function updateFavorite(id: number | string, data: Partial<WeaUserFavorite>) {
+  return request.put<boolean>(`/product/wea-user-favorite/${id}`, data)
 }
 
 /**
@@ -34,6 +34,6 @@ export function updateFavorite(id: number, data: Partial<WeaUserFavorite>) {
  * @param id - 自选 ID
  * @returns 删除结果
  */
-export function deleteFavorite(id: number) {
-  return request.delete(`/product/wea-user-favorite/${id}`)
+export function deleteFavorite(id: number | string) {
+  return request.delete<boolean>(`/product/wea-user-favorite/${id}`)
 }
