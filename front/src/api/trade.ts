@@ -53,5 +53,5 @@ export function deleteTradeOrder(id: number) {
  * @returns 取消结果
  */
 export function cancelTradeOrder(id: number) {
-  return request.put(`/trade/wea-trade-order/${id}`, { orderStatus: 2 })
+  return request.put(`/trade/wea-trade-order/${id}/status`, { orderStatus: 3 })
 }

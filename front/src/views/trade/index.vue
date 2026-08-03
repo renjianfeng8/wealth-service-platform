@@ -129,7 +129,7 @@
             <el-table-column label="操作" width="130" fixed="right">
               <template #default="{ row }">
                 <el-button
-                  v-if="row.orderStatus === 0"
+                  v-if="row.orderStatus === 1"
                   text
                   type="danger"
                   size="small"
@@ -347,10 +347,17 @@ async function fetchOrders() {
 async function handleCancel(order: WeaTradeOrder) {
   try {
     await ElMessageBox.confirm('确定要撤销该委托单吗？', '确认', { type: 'warning' })
+  } catch {
+    return // 用户取消确认框
+  }
+  try {
     await cancelTradeOrder(order.id!)
     ElMessage.success('已撤销')
+  } catch {
+    ElMessage.error('撤销失败，请稍后重试')
+  } finally {
     fetchOrders()
-  } catch { /* cancelled */ }
+  }
 }
 
 const detailVisible = ref(false)

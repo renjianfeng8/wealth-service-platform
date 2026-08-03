@@ -51,7 +51,7 @@ export function useAdminDashboard() {
   async function loadLatestOrders() {
     const res = await getTradeOrderPage({ pageNum: 1, pageSize: 5 })
     latestOrders.value = (res.data?.records || []) as WeaTradeOrder[]
-    pendingOrders.value = latestOrders.value.filter(o => o.orderStatus === 0).length
+    pendingOrders.value = latestOrders.value.filter(o => o.orderStatus === 1).length
   }
 
   async function loadUnreadMessages() {

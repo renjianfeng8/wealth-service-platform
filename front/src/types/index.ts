@@ -138,9 +138,9 @@ export const TRADE_TYPE_OPTIONS: DictItem[] = [
 ]
 
 export const ORDER_STATUS_OPTIONS: DictItem[] = [
-  { label: '待成交', value: 0 },
-  { label: '已成交', value: 1 },
-  { label: '已撤销', value: 2 },
+  { label: '已提交', value: 1 },
+  { label: '已成交', value: 2 },
+  { label: '已撤销', value: 3 },
 ]
 
 export const MSG_TYPE_OPTIONS: DictItem[] = [

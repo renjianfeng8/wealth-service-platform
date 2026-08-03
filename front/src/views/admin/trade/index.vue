@@ -95,6 +95,8 @@ import AdminFormDialog from '@/components/admin/AdminFormDialog.vue'
 import { useFormGuard } from '@/composables/useFormGuard'
 import { useCrudPage } from '@/composables/useCrudPage'
 import { getTradeOrderPage, createTradeOrder, updateTradeOrder, deleteTradeOrder } from '@/api/trade'
+import { ORDER_STATUS_OPTIONS } from '@/types'
+import { orderStatusText, orderStatusTag } from '@/utils/format'
 import type { DictItem, WeaTradeOrder } from '@/types'
 import type { AdminFilterField } from '@/components/admin/AdminFilterBar.vue'
 
@@ -110,12 +112,6 @@ type TradeForm = Omit<WeaTradeOrder, 'userId'> & {
   userId?: number
 }
 
-const orderStatusOptions: DictItem[] = [
-  { label: '待成交', value: 0 },
-  { label: '已成交', value: 1 },
-  { label: '已撤销', value: 2 },
-]
-
 const tradeTypeOptions: DictItem[] = [
   { label: '买入', value: 1 },
   { label: '卖出', value: 2 },
@@ -124,7 +120,7 @@ const tradeTypeOptions: DictItem[] = [
 const filterFields: AdminFilterField[] = [
   { prop: 'orderNo', label: '订单号', placeholder: '搜索订单号' },
   { prop: 'productCode', label: '产品编码', placeholder: '搜索产品编码' },
-  { prop: 'orderStatus', label: '状态', type: 'select', options: orderStatusOptions, width: '132px' },
+  { prop: 'orderStatus', label: '状态', type: 'select', options: ORDER_STATUS_OPTIONS, width: '132px' },
 ]
 
 const query = reactive<TradeQuery>({
@@ -223,16 +219,6 @@ async function handleSave() {
 
 function tradeTypeText(value?: number) {
   return tradeTypeOptions.find((item) => item.value === value)?.label || '-'
-}
-
-function orderStatusText(value?: number) {
-  return orderStatusOptions.find((item) => item.value === value)?.label || '-'
-}
-
-function orderStatusTag(value?: number) {
-  if (value === 1) return 'success'
-  if (value === 2) return 'info'
-  return 'warning'
 }
 
 onMounted(fetchData)

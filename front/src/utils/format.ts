@@ -35,12 +35,12 @@ export function tradeTypeText(type: number | undefined | null): string {
 }
 
 export function orderStatusText(status: number | undefined | null): string {
-  const map: Record<number, string> = { 0: '待成交', 1: '已成交', 2: '已撤销' }
+  const map: Record<number, string> = { 1: '已提交', 2: '已成交', 3: '已撤销' }
   return status !== null && status !== undefined ? map[status] || '-' : '-'
 }
 
 export function orderStatusTag(status: number | undefined | null): string {
-  const map: Record<number, string> = { 0: 'warning', 1: 'success', 2: 'info' }
+  const map: Record<number, string> = { 1: 'warning', 2: 'success', 3: 'info' }
   return status !== null && status !== undefined ? map[status] || '' : ''
 }
 
