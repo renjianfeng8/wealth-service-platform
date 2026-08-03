@@ -2,9 +2,16 @@
   <AdminPageShell title="用户管理" description="维护普通用户账号、联系方式与启用状态。">
     <AdminFilterBar :model="query" :fields="filterFields" @search="handleSearch(query)" @reset="handleReset" />
 
-    <AdminDataTable :data="tableData" :loading="loading" :total="total" :pagination="query" @page-change="fetchData">
+    <AdminDataTable :data="tableData" :loading="loading" :total="total" :pagination="query" selectable @selection-change="handleSelectionChange" @page-change="fetchData">
       <template #toolbar>
-        <el-button type="primary" @click="crudAdd(resetForm, reset)">新增用户</el-button>
+        <div class="toolbar-actions">
+          <el-button type="primary" @click="crudAdd(resetForm, reset)">新增用户</el-button>
+          <el-popconfirm title="确定删除所选用户？" @confirm="handleBatchDelete">
+            <template #reference>
+              <el-button type="danger" :disabled="selectedUsers.length === 0">批量删除</el-button>
+            </template>
+          </el-popconfirm>
+        </div>
       </template>
 
       <el-table-column prop="id" label="ID" width="70" />
@@ -62,7 +69,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive } from 'vue'
+import { onMounted, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import type { FormRules } from 'element-plus'
 import AdminPageShell from '@/components/admin/AdminPageShell.vue'
@@ -71,7 +78,7 @@ import AdminDataTable from '@/components/admin/AdminDataTable.vue'
 import AdminFormDialog from '@/components/admin/AdminFormDialog.vue'
 import { useFormGuard } from '@/composables/useFormGuard'
 import { useCrudPage } from '@/composables/useCrudPage'
-import { getUserPage, createUser, updateUser, deleteUser } from '@/api/user'
+import { getUserPage, createUser, updateUser, deleteUser, deleteUserBatch } from '@/api/user'
 import { statusTag, statusText } from '@/utils/format'
 import { STATUS_OPTIONS } from '@/types'
 import type { AdminFilterField } from '@/components/admin/AdminFilterBar.vue'
@@ -157,6 +164,25 @@ function handleEdit(row: UserForm) {
   form.password = ''
 }
 
+const selectedUsers = ref<UserForm[]>([])
+
+function handleSelectionChange(rows: UserForm[]) {
+  selectedUsers.value = rows
+}
+
+async function handleBatchDelete() {
+  const ids = selectedUsers.value.map(r => r.id).filter((id): id is number => id != null)
+  if (!ids.length) return
+  try {
+    await deleteUserBatch(ids)
+    ElMessage.success(`已批量删除 ${ids.length} 个用户`)
+    selectedUsers.value = []
+    fetchData()
+  } catch {
+    // handled globally
+  }
+}
+
 async function handleSave() {
   saving.value = true
   try {
@@ -178,3 +204,11 @@ async function handleSave() {
 
 onMounted(fetchData)
 </script>
+
+<style scoped>
+.toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+</style>

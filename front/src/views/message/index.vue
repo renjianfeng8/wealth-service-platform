@@ -74,7 +74,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/store/index'
-import { getMessagePage, readMessage, batchReadMessage } from '@/api/message'
+import { getMessagePage, getMessageById, readMessage, batchReadMessage } from '@/api/message'
 import { formatDateTime, formatRelativeTime, msgTypeText } from '@/utils/format'
 import type { WeaMessage } from '@/types'
 
@@ -117,7 +117,18 @@ async function fetchMessages() {
 }
 
 async function handleRead(item: WeaMessage) {
-  detailItem.value = item
+  // 列表仅展示 100 字符摘要，先拉取全文再打开详情，避免「详情=摘要」
+  if (item.id) {
+    try {
+      const res = await getMessageById(item.id)
+      detailItem.value = res.data ?? item
+    } catch (err) {
+      console.warn('[message] getMessageById 失败，回退列表摘要:', err)
+      detailItem.value = item
+    }
+  } else {
+    detailItem.value = item
+  }
   detailVisible.value = true
   if (item.readFlag !== 1 && item.id) {
     try {

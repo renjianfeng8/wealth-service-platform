@@ -53,15 +53,45 @@
         <span class="metric-value">{{ unreadMessages.toLocaleString() }}</span>
       </div>
     </div>
+
+    <div class="metric-card metric-card-static">
+      <div class="metric-icon metric-icon-purple">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="6" width="20" height="14" rx="2" />
+          <path d="M2 10h20" />
+        </svg>
+      </div>
+      <div class="metric-body">
+        <span class="metric-label">资产总值<span class="metric-tip">平台估算</span></span>
+        <span class="metric-value">{{ formatNumber(totalAsset) }}</span>
+      </div>
+    </div>
+
+    <div class="metric-card metric-card-static">
+      <div class="metric-icon metric-icon-cyan">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 1v22" />
+          <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+        </svg>
+      </div>
+      <div class="metric-body">
+        <span class="metric-label">今日收益</span>
+        <span class="metric-value">{{ formatNumber(dailyIncome) }}</span>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { formatNumber } from '@/utils/format'
+
 defineProps<{
   totalUsers: number
   totalProducts: number
   totalOrders: number
   unreadMessages: number
+  totalAsset: number | null
+  dailyIncome: number | null
 }>()
 </script>
 
@@ -113,6 +143,25 @@ defineProps<{
 .metric-icon-red {
   background: rgba(255, 59, 48, 0.08);
   color: var(--fl-fall);
+}
+.metric-icon-purple {
+  background: rgba(124, 77, 255, 0.1);
+  color: #7c4dff;
+}
+.metric-icon-cyan {
+  background: rgba(0, 191, 165, 0.1);
+  color: #00bfa5;
+}
+
+.metric-card-static {
+  cursor: default;
+}
+
+.metric-tip {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--fl-text-dim);
+  margin-left: 4px;
 }
 
 .metric-body {

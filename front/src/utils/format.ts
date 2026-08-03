@@ -23,6 +23,14 @@ export function formatPrice(val: number | undefined | null): string {
   return val.toFixed(2)
 }
 
+export function formatNumber(val: number | null | undefined): string {
+  if (val === null || val === undefined || Number.isNaN(val)) return '-'
+  const abs = Math.abs(val)
+  if (abs >= 1e8) return `${(val / 1e8).toFixed(2)}亿`
+  if (abs >= 1e4) return `${(val / 1e4).toFixed(2)}万`
+  return val.toFixed(2)
+}
+
 export function formatRate(val: number | undefined | null): string {
   if (val === null || val === undefined) return '-'
   const sign = val >= 0 ? '+' : ''

@@ -23,6 +23,8 @@
           :total-products="totalProducts"
           :total-orders="totalOrders"
           :unread-messages="unreadMessages"
+          :total-asset="overview?.totalAsset ?? null"
+          :daily-income="overview?.dailyIncome ?? null"
         />
 
         <!-- Row 3: Trend Charts + Market -->
@@ -74,6 +76,7 @@ const {
   totalUsers,
   totalProducts,
   totalOrders,
+  overview,
   trendData,
   marketProducts,
   latestOrders,

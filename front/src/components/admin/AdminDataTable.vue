@@ -4,7 +4,15 @@
       <slot name="toolbar" />
     </div>
 
-    <el-table :data="data" stripe border v-loading="loading" :empty-text="emptyText">
+    <el-table
+      :data="data"
+      stripe
+      border
+      v-loading="loading"
+      :empty-text="emptyText"
+      @selection-change="handleSelectionChange"
+    >
+      <el-table-column v-if="selectable" type="selection" width="55" />
       <slot />
     </el-table>
 
@@ -33,15 +41,23 @@ const props = withDefaults(defineProps<{
   }
   pageSizes?: number[]
   emptyText?: string
+  /** 开启后渲染首列勾选框并透传 selection-change */
+  selectable?: boolean
 }>(), {
   loading: false,
   pageSizes: () => [10, 20, 50],
   emptyText: '暂无数据',
+  selectable: false,
 })
 
 const emit = defineEmits<{
   (event: 'page-change'): void
+  (event: 'selection-change', rows: any[]): void
 }>()
+
+function handleSelectionChange(rows: any[]) {
+  emit('selection-change', rows)
+}
 
 function handleSizeChange() {
   props.pagination.pageNum = 1

@@ -4,7 +4,7 @@ import { getProductPage } from '@/api/product'
 import { getUserPage } from '@/api/user'
 import { getTradeOrderPage } from '@/api/trade'
 import { getMessagePage } from '@/api/message'
-import { getDashboardTrend } from '@/api/dashboard'
+import { getDashboardOverview, getDashboardTrend, type DashboardOverview } from '@/api/dashboard'
 import { useUserStore } from '@/store'
 import type { WeaProduct, WeaTradeOrder, WeaMessage } from '@/types'
 
@@ -21,6 +21,7 @@ export function useAdminDashboard() {
   const totalUsers = ref(0)
   const totalProducts = ref(0)
   const totalOrders = ref(0)
+  const overview = ref<DashboardOverview | null>(null)
 
   /* ---- Row 3: Charts ---- */
   const marketProducts = ref<WeaProduct[]>([])
@@ -75,6 +76,15 @@ export function useAdminDashboard() {
     if (res.data) trendData.value = res.data
   }
 
+  async function loadOverview() {
+    try {
+      const res = await getDashboardOverview()
+      overview.value = res.data
+    } catch {
+      // 失败静默，指标卡保持 --（全局拦截器已提示）
+    }
+  }
+
   function updateRefreshTime() {
     lastRefreshTime.value = dayjs().format('HH:mm:ss')
   }
@@ -88,6 +98,7 @@ export function useAdminDashboard() {
       loadLatestOrders(),
       loadUnreadMessages(),
       loadRecentMessages(),
+      loadOverview(),
     ])
     updateRefreshTime()
     loading.value = false
@@ -102,6 +113,7 @@ export function useAdminDashboard() {
     totalUsers,
     totalProducts,
     totalOrders,
+    overview,
     trendData,
     marketProducts,
     latestOrders,
