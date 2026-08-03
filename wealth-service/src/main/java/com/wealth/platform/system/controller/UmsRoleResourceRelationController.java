@@ -20,13 +20,10 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/system/umsRoleResourceRelation")
@@ -36,20 +33,6 @@ import java.util.List;
 public class UmsRoleResourceRelationController {
 
     private final UmsRoleResourceRelationService umsRoleResourceRelationService;
-
-    @Operation(summary = "根据ID查询")
-    @GetMapping("/{id}")
-    public Result<UmsRoleResourceRelationVO> getById(@PathVariable Long id) {
-        return Result.success(umsRoleResourceRelationService.getRoleResourceRelationById(id));
-    }
-
-    @Operation(summary = "列表")
-    @GetMapping
-    public Result<List<UmsRoleResourceRelationVO>> list(
-            @Min(1) @RequestParam(defaultValue = "1") Integer pageNum,
-            @Min(1) @Max(200) @RequestParam(defaultValue = "20") Integer pageSize) {
-        return Result.success(umsRoleResourceRelationService.getRoleResourceRelationList(pageNum, pageSize));
-    }
 
     @Operation(summary = "分页")
     @GetMapping("/page")
@@ -67,14 +50,6 @@ public class UmsRoleResourceRelationController {
     @AntiReplay
     public Result<Boolean> create(@Valid @RequestBody UmsRoleResourceRelationDTO dto) {
         return Result.success(umsRoleResourceRelationService.createRelation(dto));
-    }
-
-    @Operation(summary = "更新")
-    @PutMapping("/{id}")
-    @AuditLog(module = "系统管理", operation = "更新角色-资源关联")
-    @AntiReplay
-    public Result<Boolean> update(@PathVariable Long id, @Valid @RequestBody UmsRoleResourceRelationDTO dto) {
-        return Result.success(umsRoleResourceRelationService.updateRelation(id, dto));
     }
 
     @Operation(summary = "删除")

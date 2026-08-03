@@ -28,8 +28,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-
 @RestController
 @Tag(name = "消息管理", description = "wea_message 站内消息相关接口")
 @RequestMapping("/message/wea-message")
@@ -43,14 +41,6 @@ public class MessageController {
     @GetMapping("/{id}")
     public Result<MessageVO> getById(@PathVariable Long id) {
         return Result.success(messageService.getMessageById(id));
-    }
-
-    @Operation(summary = "查询站内消息推送列表")
-    @GetMapping
-    public Result<List<MessageVO>> list(
-            @Min(1) @RequestParam(defaultValue = "1") Integer pageNum,
-            @Min(1) @Max(100) @RequestParam(defaultValue = "10") Integer pageSize) {
-        return Result.success(messageService.getMessageList(pageNum, pageSize));
     }
 
     @Operation(summary = "分页查询站内消息推送")

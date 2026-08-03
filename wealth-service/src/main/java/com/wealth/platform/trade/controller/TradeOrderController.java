@@ -27,8 +27,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("/trade/wea-trade-order")
 @Tag(name = "交易委托管理", description = "wea_trade_order 交易委托相关接口")
@@ -42,14 +40,6 @@ public class TradeOrderController {
     @GetMapping("/{id}")
     public Result<TradeOrderVO> getById(@PathVariable Long id) {
         return Result.success(tradeOrderService.getOrderById(id));
-    }
-
-    @Operation(summary = "查询交易委托单列表")
-    @GetMapping
-    public Result<List<TradeOrderVO>> list(
-            @Min(1) @RequestParam(defaultValue = "1") Integer pageNum,
-            @Min(1) @Max(100) @RequestParam(defaultValue = "10") Integer pageSize) {
-        return Result.success(tradeOrderService.getOrderList(pageNum, pageSize));
     }
 
     @Operation(summary = "分页查询交易委托单")

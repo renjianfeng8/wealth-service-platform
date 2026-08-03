@@ -26,8 +26,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-
 /**
  * 用户自选关注表控制器（从 wealth-account 迁移合并）
  */
@@ -39,21 +37,6 @@ import java.util.List;
 public class UserFavoriteController {
 
     private final UserFavoriteService userFavoriteService;
-
-    @Operation(summary = "根据ID查询用户自选关注信息")
-    @GetMapping("/{id}")
-    public Result<UserFavoriteVO> getById(@PathVariable Long id) {
-        return Result.success(userFavoriteService.getFavoriteById(id));
-    }
-
-    @Operation(summary = "查询用户自选关注列表")
-    @GetMapping
-    public Result<List<UserFavoriteVO>> list(
-            @RequestParam(required = false) Long userId,
-            @Min(1) @RequestParam(defaultValue = "1") Integer pageNum,
-            @Min(1) @Max(100) @RequestParam(defaultValue = "10") Integer pageSize) {
-        return Result.success(userFavoriteService.getFavoriteList(userId, pageNum, pageSize));
-    }
 
     @Operation(summary = "分页查询用户自选关注")
     @GetMapping("/page")

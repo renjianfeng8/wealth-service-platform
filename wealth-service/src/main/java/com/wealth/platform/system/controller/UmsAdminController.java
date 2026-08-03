@@ -1,7 +1,6 @@
 package com.wealth.platform.system.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.wealth.common.dto.LoginDTO;
 import com.wealth.common.result.Result;
 import com.wealth.common.audit.AntiReplay;
 import com.wealth.common.audit.AuditLog;
@@ -11,7 +10,6 @@ import com.wealth.common.utils.JwtUtil.TokenPair;
 import com.wealth.platform.system.dto.UmsAdminDTO;
 import com.wealth.platform.system.dto.UmsAdminResetPasswordDTO;
 import com.wealth.platform.system.entity.UmsAdmin;
-import com.wealth.platform.system.service.PermissionQueryService;
 import com.wealth.platform.system.service.UmsAdminAuthService;
 import com.wealth.platform.system.service.UmsAdminCrudService;
 import com.wealth.platform.system.vo.UmsAdminVO;
@@ -47,21 +45,6 @@ public class UmsAdminController {
 
     private final UmsAdminAuthService umsAdminAuthService;
     private final UmsAdminCrudService umsAdminCrudService;
-    private final PermissionQueryService permissionQueryService;
-
-    @PostMapping("/login")
-    @Operation(summary = "管理员登录（返回 access_token + refresh_token）")
-    @AuditLog(module = "系统管理", operation = "管理员登录")
-    @AntiReplay
-    public ResponseEntity<Result<TokenPair>> login(@Valid @RequestBody LoginDTO dto) {
-        TokenPair tokenPair = umsAdminAuthService.login(dto);
-
-        ResponseCookie cookie = CookieUtil.buildTokenCookie(tokenPair.accessToken(), tokenPair.expiresIn() / 1000);
-
-        return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, cookie.toString())
-                .body(Result.success(tokenPair));
-    }
 
     @PostMapping("/refresh")
     @Operation(summary = "刷新 Token（用 refresh_token 换取新的 access_token + refresh_token）")
@@ -120,14 +103,6 @@ public class UmsAdminController {
     @AntiReplay
     public Result<Boolean> delete(@PathVariable Long id) {
         return Result.success(umsAdminCrudService.deleteAdmin(id));
-    }
-
-    @GetMapping("/checkPermission")
-    @Operation(summary = "校验权限（Feign调用）", hidden = true)
-    public Result<Boolean> checkPermission(
-            @RequestParam String uri,
-            @RequestHeader("Authorization") String authHeader) {
-        return Result.success(permissionQueryService.checkPermission(uri, authHeader));
     }
 
     @PostMapping("/logout")

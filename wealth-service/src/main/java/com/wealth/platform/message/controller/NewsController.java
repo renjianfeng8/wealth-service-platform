@@ -26,8 +26,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-
 @RestController
 @Tag(name = "资讯管理", description = "wea_news 财经资讯相关接口")
 @RequestMapping("/message/wea-news")
@@ -41,14 +39,6 @@ public class NewsController {
     @GetMapping("/{id}")
     public Result<NewsVO> getById(@PathVariable Long id) {
         return Result.success(newsService.getNewsById(id));
-    }
-
-    @Operation(summary = "查询财经资讯公告列表")
-    @GetMapping
-    public Result<List<NewsVO>> list(
-            @Min(1) @RequestParam(defaultValue = "1") Integer pageNum,
-            @Min(1) @Max(100) @RequestParam(defaultValue = "10") Integer pageSize) {
-        return Result.success(newsService.getNewsList(pageNum, pageSize));
     }
 
     @Operation(summary = "分页查询财经资讯公告")

@@ -28,8 +28,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import java.util.List;
-
 @RestController
 @Tag(name = "行情管理", description = "行情数据相关接口")
 @RequestMapping("/product/wea-market-data")
@@ -39,20 +37,6 @@ public class MarketDataController {
 
     private final MarketDataService marketDataService;
     private final MarketDataPushService marketDataPushService;
-
-    @Operation(summary = "根据ID查询行情数据")
-    @GetMapping("/{id}")
-    public Result<MarketDataVO> getById(@PathVariable Long id) {
-        return Result.success(marketDataService.getMarketDataById(id));
-    }
-
-    @Operation(summary = "查询行情数据列表")
-    @GetMapping
-    public Result<List<MarketDataVO>> list(
-            @Min(1) @RequestParam(defaultValue = "1") Integer pageNum,
-            @Min(1) @Max(100) @RequestParam(defaultValue = "10") Integer pageSize) {
-        return Result.success(marketDataService.getMarketDataList(pageNum, pageSize));
-    }
 
     @Operation(summary = "SSE 实时行情推送（JWT 由 Gateway 校验或 httpOnly Cookie 携带）")
     @GetMapping("/sse")

@@ -1,13 +1,10 @@
 package com.wealth.platform.user.controller;
 
-import java.util.List;
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
@@ -52,14 +49,6 @@ public class UserController {
         return Result.success(userService.getUserById(id));
     }
 
-    @GetMapping
-    @Operation(summary = "查询用户列表")
-    public Result<List<UserVO>> list(
-            @Min(1) @RequestParam(defaultValue = "1") Integer pageNum,
-            @Min(1) @Max(100) @RequestParam(defaultValue = "10") Integer pageSize) {
-        return Result.success(userService.getUserList(pageNum, pageSize));
-    }
-
     @GetMapping("/page")
     @Operation(summary = "分页查询用户")
     public Result<IPage<UserVO>> page(
@@ -94,31 +83,12 @@ public class UserController {
         return Result.success(userService.deleteUser(id));
     }
 
-    @DeleteMapping("/batch")
-    @Operation(summary = "批量删除")
-    @AuditLog(module = "用户管理", operation = "批量删除用户")
-    public Result<Boolean> deleteBatch(@Valid @NotEmpty(message = "ID列表不能为空") @RequestBody List<Long> ids) {
-        return Result.success(userService.removeByIds(ids));
-    }
-
     @PostMapping("/register")
     @Operation(summary = "用户注册")
     @AuditLog(module = "用户管理", operation = "用户注册")
     @AntiReplay
     public Result<Boolean> register(@Valid @RequestBody UserDTO dto) {
         return Result.success(userService.register(dto));
-    }
-
-    @PostMapping("/login")
-    @Operation(summary = "用户登录")
-    @AuditLog(module = "用户管理", operation = "用户登录")
-    @AntiReplay
-    public ResponseEntity<Result<LoginVO>> login(@Valid @RequestBody LoginDTO dto) {
-        LoginVO loginVO = userService.login(dto);
-        ResponseCookie cookie = CookieUtil.buildTokenCookie(loginVO.getToken(), loginVO.getExpiresInSeconds());
-        return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, cookie.toString())
-                .body(Result.success(loginVO));
     }
 
     @PostMapping("/identify-login")

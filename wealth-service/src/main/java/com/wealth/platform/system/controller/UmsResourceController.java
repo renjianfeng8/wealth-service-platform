@@ -40,12 +40,6 @@ public class UmsResourceController {
 
     private final UmsResourceService umsResourceService;
 
-    @Operation(summary = "根据ID查询后台资源信息")
-    @GetMapping("/{id}")
-    public Result<UmsResourceVO> getById(@PathVariable Long id) {
-        return Result.success(umsResourceService.getResourceById(id));
-    }
-
     @Operation(summary = "查询后台资源列表")
     @GetMapping
     public Result<List<UmsResourceVO>> list(

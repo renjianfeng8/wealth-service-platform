@@ -37,12 +37,6 @@ public class UmsRoleController {
 
     private final UmsRoleService umsRoleService;
 
-    @Operation(summary = "根据ID查询角色信息")
-    @GetMapping("/{id}")
-    public Result<UmsRoleVO> getById(@PathVariable Long id) {
-        return Result.success(umsRoleService.getRoleById(id));
-    }
-
     @Operation(summary = "查询角色列表")
     @GetMapping
     public Result<List<UmsRoleVO>> list(

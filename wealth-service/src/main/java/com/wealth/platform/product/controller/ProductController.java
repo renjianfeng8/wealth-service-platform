@@ -26,8 +26,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-
 @RestController
 @Tag(name = "产品管理", description = "产品相关接口")
 @RequestMapping("/product/wea-product")
@@ -41,14 +39,6 @@ public class ProductController {
     @GetMapping("/{id}")
     public Result<ProductVO> getById(@PathVariable Long id) {
         return Result.success(productService.getProductById(id));
-    }
-
-    @Operation(summary = "查询产品列表")
-    @GetMapping
-    public Result<List<ProductVO>> list(
-            @Min(1) @RequestParam(defaultValue = "1") Integer pageNum,
-            @Min(1) @Max(100) @RequestParam(defaultValue = "10") Integer pageSize) {
-        return Result.success(productService.getProductList(pageNum, pageSize));
     }
 
     @Operation(summary = "分页查询产品")

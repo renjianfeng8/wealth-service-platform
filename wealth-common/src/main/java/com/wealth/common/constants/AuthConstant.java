@@ -46,10 +46,8 @@ public class AuthConstant {
     }
 
     public static final String[] PERMIT_ALL_URLS = {
-            "/system/umsAdmin/login",
             "/system/umsAdmin/refresh",
             "/system/captcha",
-            "/user/login",
             "/user/register",
             "/user/identify-login",
             "/product/wea-product/page",
@@ -69,7 +67,6 @@ public class AuthConstant {
      * 但免权限校验的路径。与 PERMIT_ALL_URLS 语义不同，此清单仅用于权限校验放行，不得并入公共白名单。
      */
     public static final String[] PERMISSION_BYPASS_URLS = {
-            "/system/umsAdmin/checkPermission",
             "/system/dashboard/**",
             "/error",
             "/actuator/**",

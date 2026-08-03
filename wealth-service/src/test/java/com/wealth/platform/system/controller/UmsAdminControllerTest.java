@@ -2,7 +2,6 @@ package com.wealth.platform.system.controller;
 
 import com.wealth.common.result.Result;
 import com.wealth.common.utils.JwtUtil.TokenPair;
-import com.wealth.platform.system.service.PermissionQueryService;
 import com.wealth.platform.system.service.UmsAdminAuthService;
 import com.wealth.platform.system.service.UmsAdminCrudService;
 import org.junit.jupiter.api.DisplayName;
@@ -25,8 +24,6 @@ class UmsAdminControllerTest {
     private UmsAdminAuthService umsAdminAuthService;
     @Mock
     private UmsAdminCrudService umsAdminCrudService;
-    @Mock
-    private PermissionQueryService permissionQueryService;
 
     @Test
     @DisplayName("刷新token-返回新token对并写入access cookie")
@@ -34,7 +31,7 @@ class UmsAdminControllerTest {
         TokenPair pair = new TokenPair("new.access.token", "new.refresh.token", 1800000);
         when(umsAdminAuthService.refreshToken("Bearer old.refresh")).thenReturn(pair);
 
-        UmsAdminController controller = new UmsAdminController(umsAdminAuthService, umsAdminCrudService, permissionQueryService);
+        UmsAdminController controller = new UmsAdminController(umsAdminAuthService, umsAdminCrudService);
         ResponseEntity<Result<TokenPair>> response = controller.refresh("Bearer old.refresh");
 
         assertNotNull(response);
