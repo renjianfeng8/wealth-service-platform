@@ -53,7 +53,7 @@ cd front && npm install && npx vite
 <type>(<scope>): <description>
 ```
 
-type: `feat` / `fix` / `docs` / `refactor` / `test` / `chore`
+type: `feat` / `fix` / `docs` / `style` / `refactor` / `perf` / `test` / `chore` / `ci` / `build` / `revert`
 scope（可选）：`common` / `gateway` / `service`
 
 示例：

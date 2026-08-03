@@ -160,7 +160,8 @@ wealth-service-platform
 │       └── utils              # 工具函数
 ├── docs                       # 项目文档
 ├── grafana                    # Grafana 仪表盘配置
-└── mysql                      # 数据库脚本与备份
+├── scripts                    # 运维脚本（备份/恢复/本地启动，部署脚本不入库）
+└── ssl                        # TLS 证书与生成脚本（私钥/密钥库不入库）
 ```
 
 ### 路由架构
@@ -197,6 +198,7 @@ wealth-service-platform
 | **v1.8.0** | 2026-05-24 | **微服务 → 单体聚合架构**：6 个微服务合并为 1 个，简化 Gateway，移除 Nacos/OpenFeign |
 | **v1.8.1** | 2026-05-25 | **多 SPA → 单一 SPA**：3 个前端应用合并为 1 个，History 模式路由统一分发 |
 | **v1.8.2** | 2026-05-26 | 文档体系完善、CI 修复、死代码清理、Docker 容器化 |
+| **v1.9.0** | 2026-08-03 | **前端全面改版 + 工程治理**：前端改版与上线专项修复、全量查询分页优化、代码规范与 DRY 重构、接口契约兼容修复、日志与可观测性专项、docs/脚本/配置工程清理 |
 
 ---
 
@@ -230,10 +232,9 @@ wealth-service-platform
 |------|----------|
 | CI 流水线 | GitHub Actions：编译 → 测试 → Docker 构建 → 推送 ghcr.io |
 | 后端测试 | JUnit 5 + Mockito，覆盖 Service 层核心业务逻辑 |
-| 前端构建 | TypeScript 编译检查，Vite 生产构建 |
-| E2E 测试 | Playwright 自动化测试（独立项目） |
+| 前端构建 | TypeScript 编译检查（vue-tsc）+ Vite 生产构建 |
 | 监控 | Prometheus + Grafana 指标大盘，Zipkin 链路追踪 |
-| 容器化 | Docker Compose 编排 10 个容器（Gateway + Service + Frontend + 中间件） |
+| 容器化 | Docker Compose 编排 9 个容器（Gateway + Service + Frontend + 中间件） |
 
 ---
 
@@ -344,6 +345,7 @@ docker-compose up -d
 | [DATABASE-SCHEMA.md](docs/DATABASE-SCHEMA.md) | 数据库表结构与字段 |
 | [STARTUP.md](docs/STARTUP.md) | 环境搭建与启动指南 |
 | [CHANGELOG.md](docs/CHANGELOG.md) | 版本变更记录 |
+| [CODE-STANDARDS.md](docs/CODE-STANDARDS.md) | 编码规范与审计清单 |
 | [BUG.md](docs/BUG.md) | 已知问题与排查 |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | 贡献指南 |
 | [CLAUDE.md](.claude/CLAUDE.md) | 项目开发规范 |
