@@ -1,6 +1,8 @@
 package com.wealth.platform.product.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -34,6 +36,8 @@ public class ProductDTO {
     @Schema(description = "涨跌幅")
     private BigDecimal riseFall;
 
+    @DecimalMin(value = "-1", message = "涨跌幅不能低于-100%")
+    @DecimalMax(value = "1", message = "涨跌幅不能高于100%")
     @Schema(description = "涨跌率")
     private BigDecimal riseFallRate;
 

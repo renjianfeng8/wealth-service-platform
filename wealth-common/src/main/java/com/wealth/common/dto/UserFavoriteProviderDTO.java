@@ -8,8 +8,8 @@ import java.time.LocalDateTime;
  * 跨服务调用用的 DTO，仅包含必要字段，不暴露实体
  */
 @Data
-@Schema(description = "用户自选DTO")
-public class UserFavoriteDTO {
+@Schema(description = "跨服务用户自选DTO")
+public class UserFavoriteProviderDTO {
 
     @Schema(description = "ID")
     private Long id;

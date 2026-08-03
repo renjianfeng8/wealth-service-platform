@@ -99,7 +99,7 @@ public class MarketDataSimulationService {
             data.setCurrentPrice(newPrice);
             data.setRiseFall(newPrice.subtract(closePrice));
             data.setRiseFallRate(closePrice.compareTo(BigDecimal.ZERO) > 0
-                    ? data.getRiseFall().divide(closePrice, 6, RoundingMode.HALF_UP)
+                    ? data.getRiseFall().divide(closePrice, 4, RoundingMode.HALF_UP)
                     : BigDecimal.ZERO);
             data.setMarketTime(LocalDateTime.now());
             data.setHighestPrice(newPrice.compareTo(highestPrice) > 0 ? newPrice : highestPrice);

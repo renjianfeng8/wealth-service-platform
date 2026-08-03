@@ -38,7 +38,7 @@ public class MarketDataController {
     private final MarketDataService marketDataService;
     private final MarketDataPushService marketDataPushService;
 
-    @Operation(summary = "SSE 实时行情推送（JWT 由 Gateway 校验或 httpOnly Cookie 携带）")
+    @Operation(summary = "SSE 实时行情推送（返回原始 List<MarketDataVO> 数组，非 Result 信封；事件名 market-update；JWT 由 Gateway 校验或 httpOnly Cookie 携带）")
     @GetMapping("/sse")
     public SseEmitter subscribe() {
         // JWT 身份认证由 Gateway 统一处理，此处不再单独校验

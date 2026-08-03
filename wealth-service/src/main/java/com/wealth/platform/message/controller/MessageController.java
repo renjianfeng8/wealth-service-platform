@@ -5,7 +5,6 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.wealth.common.audit.AntiReplay;
 import com.wealth.common.audit.AuditLog;
 import com.wealth.common.result.Result;
-import com.wealth.common.result.ResultCode;
 import com.wealth.platform.message.dto.BatchReadDTO;
 import com.wealth.platform.message.dto.MessageDTO;
 import com.wealth.platform.message.entity.WeaMessage;
@@ -80,10 +79,7 @@ public class MessageController {
 
     @Operation(summary = "批量标记消息为已读")
     @PutMapping("/batch-read")
-    public Result<Boolean> batchMarkAsRead(@RequestBody BatchReadDTO dto) {
-        if (dto.getIds() == null || dto.getIds().isEmpty()) {
-            return Result.error(ResultCode.PARAM_ERROR);
-        }
+    public Result<Boolean> batchMarkAsRead(@Valid @RequestBody BatchReadDTO dto) {
         messageService.batchMarkAsRead(dto.getIds());
         return Result.success(true);
     }

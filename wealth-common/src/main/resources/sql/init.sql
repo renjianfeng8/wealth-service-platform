@@ -38,7 +38,7 @@ CREATE TABLE wea_product (
     product_type   TINYINT      DEFAULT NULL            COMMENT '类型 1黄金 2白银 3理财',
     price          DECIMAL(10,2) DEFAULT NULL           COMMENT '当前单价',
     rise_fall      DECIMAL(10,2) DEFAULT NULL           COMMENT '涨跌额',
-    rise_fall_rate DECIMAL(5,2)  DEFAULT NULL           COMMENT '涨跌幅',
+    rise_fall_rate DECIMAL(8,4)  DEFAULT NULL           COMMENT '涨跌幅',
     status         TINYINT      DEFAULT '1'             COMMENT '上下架 0下架 1上架',
     sort           INT          DEFAULT '0'             COMMENT '排序',
     del_flag       TINYINT      DEFAULT '0'             COMMENT '逻辑删除 0未删除 1已删除',
@@ -61,7 +61,7 @@ CREATE TABLE wea_market_data (
     highest_price  DECIMAL(10,2) DEFAULT NULL           COMMENT '最高价',
     lowest_price   DECIMAL(10,2) DEFAULT NULL           COMMENT '最低价',
     rise_fall      DECIMAL(10,2) DEFAULT NULL           COMMENT '涨跌',
-    rise_fall_rate DECIMAL(5,2)  DEFAULT NULL           COMMENT '涨跌幅',
+    rise_fall_rate DECIMAL(8,4)  DEFAULT NULL           COMMENT '涨跌幅',
     market_time    DATETIME     NOT NULL                COMMENT '行情时间',
     del_flag       TINYINT      DEFAULT '0'             COMMENT '删除标识 0未删除 1已删除',
     create_time    DATETIME     DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
@@ -268,3 +268,11 @@ CREATE UNIQUE INDEX idx_ums_admin_username ON ums_admin(username);
 CREATE INDEX idx_ums_role_name ON ums_role(name);
 CREATE INDEX idx_ums_resource_name ON ums_resource(name);
 CREATE INDEX idx_ums_resource_url ON ums_resource(url);
+
+-- ============================================================
+-- 现有库迁移记录（2026-08-03，精度对齐 M2）
+-- 涨跌幅字段精度 DECIMAL(5,2) → DECIMAL(8,4)，与代码 setScale(4) 对齐
+-- 对已初始化库执行：
+-- ============================================================
+-- ALTER TABLE wea_product MODIFY COLUMN rise_fall_rate DECIMAL(8,4) DEFAULT NULL COMMENT '涨跌幅';
+-- ALTER TABLE wea_market_data MODIFY COLUMN rise_fall_rate DECIMAL(8,4) DEFAULT NULL COMMENT '涨跌幅';
