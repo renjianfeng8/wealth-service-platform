@@ -1,7 +1,7 @@
 # 理财服务平台 — 项目指南
 
 > 项目级文档，涵盖技术栈、规范、约束与协作约定。
-> 详细代码规范手册见 [docs/CODE-STANDARDS.md](docs/CODE-STANDARDS.md)。
+> 详细代码规范手册见 [docs/CODE-STANDARDS.md](../docs/CODE-STANDARDS.md)。
 
 ---
 
@@ -77,7 +77,6 @@
 | 技术 | 版本 | 用途 |
 |------|------|------|
 | JUnit 5 + Mockito | 由 SB parent 管理 | 后端单元/集成测试 |
-| Playwright | ^1.60.0 | 前端 E2E 测试 |
 
 ---
 
@@ -137,7 +136,7 @@ mvn test -pl wealth-service -Dtest=XxxTest -DskipTests=false
 
 ## 五、编码规范（概要）
 
-> 详细规范（含示例和正误对比）请查阅 [docs/CODE-STANDARDS.md](docs/CODE-STANDARDS.md)。
+> 详细规范（含示例和正误对比）请查阅 [docs/CODE-STANDARDS.md](../docs/CODE-STANDARDS.md)。
 
 ### 5.1 实体与数据库
 - Entity 继承 `BaseEntity`，字段映射以 `init.sql` 列名为准（`@TableField("列名")`）
@@ -262,10 +261,6 @@ private static final long LOCK_DURATION_MINUTES = 15;
 - 方法命名：`{方法名}_should_{预期行为}`（如 `login_should_return_token_when_password_correct`）
 - 每个 Service 方法至少有一个正向用例
 - 分支逻辑必须覆盖异常路径（参数非法、资源不存在、状态冲突等）
-
-### 前端测试
-- E2E 框架：Playwright
-- 测试文件放在 `front/tests/`
 
 ---
 

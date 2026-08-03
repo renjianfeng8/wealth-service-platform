@@ -6,6 +6,71 @@
 
 ---
 
+## v1.9.0 (2026-08-03)
+
+> 本版本覆盖 2026-07-24 ~ 2026-08-03 的 60 次提交（此前 6-09 至 7-24 为提交空档期）。
+
+### 前端全面改版
+
+- **仪表盘重构**：首页、用户仪表盘、管理端仪表盘全面改版；管理端新增搜索下拉实时预览、默认头像支持。
+- **缺陷修复**：修复第一阶段审计 12 项阻塞性缺陷及 5 项高风险遗留问题；HTTP 401 提示、SSE 刷新、NProgress 时序、Navbar 图标等 6 项问题。
+- **代码质量**：替换全部 `any` 类型；抽取 `useCrudPage` composable 统一 CRUD 管理页逻辑；SSE 全局单例容错及死代码清理。
+
+### 全量查询分页优化
+
+- **分页约束**：分页参数上限约束、`pageSize` 超限修复。
+- **列表分页改造**：首页行情（pageSize=4）、用户仪表盘产品（8）、管理端仪表盘产品（200）、产品收藏（200）等改用分页查询。
+- **查询优化**：产品中心支持按编码搜索、LIKE 查询转义；权限缓存读写、`@Select` 补 `del_flag`、查询加 `LIMIT` 与索引。
+
+### 代码规范与 DRY 重构
+
+- **规范对齐**：通配符导入/空 catch/异常信息/Logger/构造器注入/导入顺序统一；补充测试缺失的 mock 静态导入。
+- **DRY 收敛**：JWT 解析收敛至 `JwtUtil`（网关复用）、Bearer Token 提取收敛至 `AuthConstant`、验证码 key 收敛至 `CaptchaConstant`、错误响应收敛至 `HttpResponseUtil`、Redis 降级收敛至 `RedisUtil.safeExecute`、唯一性校验收敛至 `checkUnique`、CRUD 样板收敛至 `BaseBizServiceImpl`、分页样板收敛至 `pageWithFilter`/`pageVoList`、登录权限链路收敛至 `AuthSupport`。
+- **SOLID 整改**：`UmsAdmin` 上帝类拆分至 Crud/Auth/PermissionQuery 三聚焦服务；验证码下沉 `CaptchaService`（Controller 移除 Redis 直接操作）；行情模拟依赖下沉至 `MarketDataService` 接口。
+- **清理**：移除 4 处未用 import 与死方法（`getEmitterCount`/`clearCache`）、零引用 `ResultCode` 常量。
+
+### 安全认证完善
+
+- 图形验证码（`identifyLogin` 校验并签发双 token）、登出黑名单、access token 静默续期。
+- 清除 yml 明文密钥默认值与死配置 `jwt.expire`，统一 JWT 过期键名并新增配置契约测试。
+
+### 用户端投资体验补全
+
+- 行情 K 线弹窗、委托单详情、产品/资讯实时拉取、自选详情入口、首页/个人中心卡片深链。
+- 激活闲置 GET 接口：`/product/wea-product/{id}`、`/message/wea-news/{id}`、`/trade/wea-trade-order/{id}`、`/system/dashboard/kline`，抽取 `ProductDetailDialog`/`NewsDetailDialog`/`MarketDetailDialog` 共享弹窗。
+
+### 闲置接口治理
+
+- **后端清理**：移除 20 个闲置废弃接口（认证登录 2、getById 6、无分页裸列表 9、关联表 update 2、checkPermission 内部回调 1），收敛 `AuthConstant` 白名单。
+- **前端对齐**：删除 `loginApi`/`userLogin`/`getRoleById` 等废弃封装，`PUBLIC_AUTH_PATHS` 收敛为 `user/login` 与 `umsAdmin/login`。
+- **激活接入**：消息中心详情全文、管理端批量删除（恢复 `DELETE /user/batch`）、仪表盘资产总览；`AdminDataTable` 新增 selectable 勾选能力。
+- **测试清理**：删除 13 个陈旧前端结构测试（断言旧版仪表盘设计），保留 6 个现行有效用例。
+
+### 日志与可观测性专项
+
+- 异常日志补传 `e` 输出完整堆栈（JwtUtil/RedisUtil/UmsAdminAuthServiceImpl/MarketDataPushService）。
+- 拦截器与 SSE 高频日志降级 DEBUG；logback pattern 追加 `traceId`/`spanId`，`com.wealth` 默认 INFO（dev profile 才开 DEBUG）。
+- `wealth-service` 默认开启 Micrometer Tracing；日志消息统一 `[module:operation]` 前缀。
+
+### 接口契约兼容修复
+
+- **后端**：LocalDateTime 反序列化空串容忍与统一空格格式；Page 分页序列化 `pageNum`/`pageSize`；涨跌幅改 `DECIMAL(8,4)` + 范围校验；13 个 VO 主键字符串化；`UserFavoriteDTO` 重命名 `UserFavoriteProviderDTO`；batch-read 补 `@Valid`；SSE 载荷格式文档化；Page 序列化注册加 `@ConditionalOnClass` 修复 gateway 无 mybatis-plus 启动失败。
+- **前端**：axios 拦截器返回 `res.data` 全量调用点收口；行情/资讯日期录入空格格式；分页字段对齐 `pageNum`/`pageSize`；`id`/`userId` 放宽 `number|string`；涨跌幅单位提示；SSE 载荷注释。
+
+### 前端上线专项修复
+
+- KeepAlive 缓存键改 `route.path` 杜绝同组后台页面串页；AdminFormDialog 保存重入保护 + admin/trade 参数哈希稳定幂等键；`utils/uuid` 兼容非 HTTPS 安全上下文。
+- 注册/手机号/行情价格校验补齐；后台搜索分页与 4 列表 `size-change` 页码修复；消息未读数走后端统计；头像本地预览去误导提示；SSE 断线指数退避；`format` 对 NaN/Invalid Date 兜底。
+- 交易委托订单状态 off-by-one 修复（前端字典 0/1/2 改 1/2/3、撤销走状态机端点、合并 admin 重复映射）。
+
+### 工程与文档治理
+
+- 移除被 CI 替代的 `docker-build.ps1` 与冗余 `backup-mysql.ps1`，清理已合并模块的陈旧 worktree。
+- 全量文档治理（精简/归档/修复/对齐）；更新 CLAUDE.md、新增代码规范手册 `docs/CODE-STANDARDS.md`；ARCHITECTURE.md 补 SSE 例外约定（全站唯一不包 Result 信封）。
+- 精简 docs 体系：删除 superpowers 交付物、DOCUMENTATION-GOVERNANCE，AGENTS.md 迁入 `.claude/` 修链。
+
+---
+
 ## v1.8.3 (2026-06-09)
 
 ### 管理端前端体验重构

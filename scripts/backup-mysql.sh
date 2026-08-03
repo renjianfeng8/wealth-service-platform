@@ -16,6 +16,8 @@ RETENTION_MONTHLY=3  # 保留 3 个 1 号全量
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 DOW=$(date +%u)       # 1=Mon..7=Sun
 DOM=$(date +%d)       # 01..31
+WEEK_TAG=$([ "$DOW" = "7" ] && echo "_Sun" || echo "")
+MONTH_TAG=$([ "$DOM" = "01" ] && echo "_day01" || echo "")
 PASSWORD="${MYSQL_ROOT_PASSWORD:-}"
 
 mkdir -p "$BACKUP_DIR"
@@ -31,7 +33,7 @@ if [ -z "$PASSWORD" ]; then
     exit 1
 fi
 
-BACKUP_FILE="${BACKUP_DIR}/wealth_${TIMESTAMP}.sql.gz"
+BACKUP_FILE="${BACKUP_DIR}/wealth_${TIMESTAMP}${WEEK_TAG}${MONTH_TAG}.sql.gz"
 
 echo "[$(date '+%Y-%m-%d %H:%M:%S')] Starting MySQL backup..."
 
@@ -60,17 +62,17 @@ fi
 
 # === 保留策略 ===
 
-# 日备份保留 7 天
-find "$BACKUP_DIR" -name "wealth_*.sql.gz" -mtime +$RETENTION_DAYS -not -name "*_Sun_*" -not -name "*_day01_*" -delete 2>/dev/null || true
+# 日备份保留 7 天（排除周/月档）
+find "$BACKUP_DIR" -name "wealth_*.sql.gz" -mtime +$RETENTION_DAYS -not -name "*_Sun.sql.gz" -not -name "*_day01.sql.gz" -delete 2>/dev/null || true
 
 # 周备份（周日）保留 4 周
 if [ "$DOW" = "7" ]; then
-    find "$BACKUP_DIR" -name "wealth_*_Sun_*.sql.gz" -mtime +$((RETENTION_WEEKLY * 7)) -delete 2>/dev/null || true
+    find "$BACKUP_DIR" -name "wealth_*_Sun.sql.gz" -mtime +$((RETENTION_WEEKLY * 7)) -delete 2>/dev/null || true
 fi
 
 # 月备份（1 号）保留 3 个月
 if [ "$DOM" = "01" ]; then
-    find "$BACKUP_DIR" -name "wealth_*_day01_*.sql.gz" -mtime +$((RETENTION_MONTHLY * 31)) -delete 2>/dev/null || true
+    find "$BACKUP_DIR" -name "wealth_*_day01.sql.gz" -mtime +$((RETENTION_MONTHLY * 31)) -delete 2>/dev/null || true
 fi
 
 echo "[$(date '+%Y-%m-%d %H:%M:%S')] Retention cleanup complete."

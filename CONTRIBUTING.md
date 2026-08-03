@@ -37,7 +37,7 @@ cd front && npm install && npx vite
 
 ## 代码规范
 
-所有规范以 [CLAUDE.md](CLAUDE.md) 和 [CODE-STANDARDS.md](docs/CODE-STANDARDS.md) 为准，关键约束：
+所有规范以 [CLAUDE.md](.claude/CLAUDE.md) 和 [CODE-STANDARDS.md](docs/CODE-STANDARDS.md) 为准，关键约束：
 
 - Controller 只做路由，不写业务逻辑
 - 构造器注入使用 `@RequiredArgsConstructor`

@@ -11,8 +11,7 @@ services:
     ports:
       - "127.0.0.1:3307:3306"
     command:
-      - "--binlog-expire-logs-seconds=604800"
-      - "--max-binlog-size=104857600"
+      # binlog 已按需求禁用（2026-08-03），不再挂载配置
       - "--max-connections=100"
       - "--innodb-buffer-pool-size=256M"
     environment:
@@ -26,7 +25,6 @@ services:
       - mysql-data:/var/lib/mysql
       - ./wealth-common/src/main/resources/sql/init.sql:/docker-entrypoint-initdb.d/init.sql
       - ./wealth-common/src/main/resources/sql/test-data.sql:/docker-entrypoint-initdb.d/test-data.sql
-      - ./mysql/conf.d/binlog.cnf:/etc/mysql/conf.d/binlog.cnf:ro
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
       interval: 10s
@@ -41,7 +39,7 @@ services:
       - wealth-net
 
   redis:
-    image: redis:latest
+    image: redis:7.4-alpine
     container_name: wealth-redis
     mem_limit: 96m
     memswap_limit: 128m
@@ -65,7 +63,7 @@ services:
       - wealth-net
 
   nginx:
-    image: nginx:latest
+    image: nginx:1.27-alpine
     container_name: wealth-nginx
     mem_limit: 64m
     memswap_limit: 96m
@@ -78,7 +76,7 @@ services:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
       - ./ssl:/etc/nginx/ssl:ro
     healthcheck:
-      test: ["CMD", "curl", "-sf", "http://127.0.0.1:80/"]
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/nginx-health"]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -129,6 +127,8 @@ services:
     depends_on:
       mysql:
         condition: service_healthy
+      redis:
+        condition: service_healthy
       wealth-service:
         condition: service_started
     restart: unless-stopped
@@ -146,7 +146,7 @@ services:
     memswap_limit: 1024m
     oom_score_adj: -500
     ports:
-      - "8081:8081"
+      - "127.0.0.1:8081:8081"
     environment:
       - spring.profiles.active=prod
       - JWT_SECRET=${JWT_SECRET}
@@ -204,7 +204,7 @@ services:
       - wealth-net
 
   mysql-backup:
-    image: alpine:latest
+    image: alpine:3.20
     container_name: wealth-mysql-backup
     mem_limit: 32m
     memswap_limit: 48m
@@ -231,7 +231,7 @@ services:
 
   # ====================== Monitoring (non-critical) ======================
   prometheus:
-    image: prom/prometheus:latest
+    image: prom/prometheus:v2.54.1
     container_name: wealth-prometheus
     mem_limit: 192m
     memswap_limit: 256m
@@ -260,7 +260,7 @@ services:
       - wealth-net
 
   grafana:
-    image: grafana/grafana:latest
+    image: grafana/grafana:11.3.0
     container_name: wealth-grafana
     mem_limit: 128m
     memswap_limit: 192m

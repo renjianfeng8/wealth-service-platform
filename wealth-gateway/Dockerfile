@@ -6,7 +6,7 @@ LABEL maintainer="renjianfeng8" \
 
 WORKDIR /app
 
-COPY target/wealth-gateway-1.0.0.jar app.jar
+COPY target/*.jar app.jar
 
 EXPOSE 8080
 

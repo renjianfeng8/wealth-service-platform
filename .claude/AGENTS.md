@@ -6,9 +6,9 @@
 
 **相关文档：**
 - [项目规范（CLAUDE.md）](CLAUDE.md) — 技术栈、编码规范、Git 提交、代码模式、测试规范等所有项目级规则
-- [模块架构与配置体系](docs/ARCHITECTURE.md) — 跨模块开发时引用
-- [数据库表结构与字段](docs/DATABASE-SCHEMA.md) — 写实体类时引用
-- [Bug 记录](docs/BUG.md) — 排查已知问题
+- [模块架构与配置体系](../docs/ARCHITECTURE.md) — 跨模块开发时引用
+- [数据库表结构与字段](../docs/DATABASE-SCHEMA.md) — 写实体类时引用
+- [Bug 记录](../docs/BUG.md) — 排查已知问题
 
 ---
 
@@ -53,4 +53,4 @@ Codex 在此项目中的定位是**主控端**：
 - 冒烟测试：`POST /system/umsAdmin/login` 返回 JWT
 - 前端可访问
 
-> 详细启动流程见 [CLAUDE.md §十](CLAUDE.md#十启动验证) 和 [docs/STARTUP.md](docs/STARTUP.md)。
+> 详细启动流程见 [CLAUDE.md §十](CLAUDE.md#十启动验证) 和 [../docs/STARTUP.md](../docs/STARTUP.md)。

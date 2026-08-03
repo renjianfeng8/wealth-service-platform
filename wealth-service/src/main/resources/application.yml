@@ -6,6 +6,8 @@ server:
     max-connections: 8192
 
 spring:
+  application:
+    name: wealth-service
   cloud:
     nacos:
       config:

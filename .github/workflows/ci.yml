@@ -28,14 +28,11 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Compile
-        run: mvn clean compile
+      - name: Short SHA
+        run: echo "SHA_SHORT=${GITHUB_SHA::8}" >> "$GITHUB_ENV"
 
       - name: Test
-        run: mvn test -DskipTests=false
-
-      - name: Package
-        run: mvn package -DskipTests -Dmaven.test.skip=true
+        run: mvn -B test
 
       - name: Upload test reports
         if: always()
@@ -45,6 +42,10 @@ jobs:
           path: '**/target/surefire-reports/**'
           retention-days: 7
 
+      - name: Package
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: mvn -B package -DskipTests
+
       - name: Log in to ghcr.io
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: docker/login-action@v3
@@ -53,17 +54,31 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build & push backend images
+      - name: Build & push wealth-gateway image
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: |
-          for service in gateway service; do
-            echo "=== Building wealth-$service ==="
-            docker build -f wealth-$service/Dockerfile \
-              -t ghcr.io/renjianfeng8/wealth-service-platform/wealth-$service:latest \
-              -t ghcr.io/renjianfeng8/wealth-service-platform/wealth-$service:${GITHUB_SHA::8} \
-              wealth-$service
-            docker push --all-tags ghcr.io/renjianfeng8/wealth-service-platform/wealth-$service
-          done
+        uses: docker/build-push-action@v5
+        with:
+          context: ./wealth-gateway
+          file: wealth-gateway/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/renjianfeng8/wealth-service-platform/wealth-gateway:latest
+            ghcr.io/renjianfeng8/wealth-service-platform/wealth-gateway:${{ env.SHA_SHORT }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build & push wealth-service image
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: docker/build-push-action@v5
+        with:
+          context: ./wealth-service
+          file: wealth-service/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/renjianfeng8/wealth-service-platform/wealth-service:latest
+            ghcr.io/renjianfeng8/wealth-service-platform/wealth-service:${{ env.SHA_SHORT }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
   frontend:
     runs-on: ubuntu-latest
@@ -80,6 +95,9 @@ jobs:
           node-version: 20
           cache: npm
           cache-dependency-path: front/package-lock.json
+
+      - name: Short SHA
+        run: echo "SHA_SHORT=${GITHUB_SHA::8}" >> "$GITHUB_ENV"
 
       - name: Install
         run: npm ci
@@ -105,5 +123,6 @@ jobs:
           push: true
           tags: |
             ghcr.io/renjianfeng8/wealth-service-platform/wealth-front:latest
-            ghcr.io/renjianfeng8/wealth-service-platform/wealth-front:${{ github.sha }}
-
+            ghcr.io/renjianfeng8/wealth-service-platform/wealth-front:${{ env.SHA_SHORT }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

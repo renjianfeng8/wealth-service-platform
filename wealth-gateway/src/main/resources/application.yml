@@ -8,6 +8,8 @@ jwt:
   refresh-expire: ${JWT_REFRESH_EXPIRE:604800000}
 
 spring:
+  application:
+    name: wealth-gateway
   cloud:
     nacos:
       config:

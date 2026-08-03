@@ -41,7 +41,6 @@
 ## 文档入口
 
 - [文档总索引](docs/README.md)：项目文档导航、状态口径和阅读顺序。
-- [文档治理规则](docs/DOCUMENTATION-GOVERNANCE.md)：权威来源、分类、命名、归档和更新检查清单。
 - [启动指南](docs/STARTUP.md)：本地环境、依赖服务、启动顺序和冒烟验证。
 - [架构文档](docs/ARCHITECTURE.md)：模块、路由、配置体系和部署结构。
 - [数据库结构](docs/DATABASE-SCHEMA.md)：表结构、字段和 Entity 生成依据。
@@ -110,7 +109,7 @@ wealth-gateway (8080)             →   wealth-gateway (8080)
 | Knife4j | 4.5.0 | API 文档 |
 | Sentinel | 1.8.8 | 限流熔断 |
 
-> 完整技术栈（含 Tracing、Prometheus、ES）见 [CLAUDE.md](CLAUDE.md#二技术栈)。
+> 完整技术栈（含 Tracing、Prometheus、ES）见 [CLAUDE.md](.claude/CLAUDE.md#二技术栈)。
 
 ### 前端
 
@@ -347,7 +346,7 @@ docker-compose up -d
 | [CHANGELOG.md](docs/CHANGELOG.md) | 版本变更记录 |
 | [BUG.md](docs/BUG.md) | 已知问题与排查 |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | 贡献指南 |
-| [CLAUDE.md](CLAUDE.md) | 项目开发规范 |
+| [CLAUDE.md](.claude/CLAUDE.md) | 项目开发规范 |
 
 ---
 
