@@ -28,6 +28,7 @@ import com.wealth.common.result.Result;
 import com.wealth.common.utils.BeanConvertUtil;
 import com.wealth.common.utils.CookieUtil;
 import com.wealth.platform.user.dto.ResetPasswordDTO;
+import com.wealth.platform.user.dto.UserBatchDeleteDTO;
 import com.wealth.platform.user.dto.UserDTO;
 import com.wealth.platform.user.entity.User;
 import com.wealth.platform.user.service.UserService;
@@ -81,6 +82,13 @@ public class UserController {
     @AuditLog(module = "用户管理", operation = "删除用户")
     public Result<Boolean> delete(@PathVariable Long id) {
         return Result.success(userService.deleteUser(id));
+    }
+
+    @DeleteMapping("/batch")
+    @Operation(summary = "批量删除用户")
+    @AuditLog(module = "用户管理", operation = "批量删除用户")
+    public Result<Boolean> deleteBatch(@Valid @RequestBody UserBatchDeleteDTO dto) {
+        return Result.success(userService.removeByIds(dto.getIds()));
     }
 
     @PostMapping("/register")
