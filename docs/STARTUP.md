@@ -30,11 +30,9 @@
 | ORM | MyBatis-Plus | 3.5.9 |
 | 数据库 | MySQL | 8.0 |
 | 缓存 | Redis | 5+ |
-| 搜索引擎 | Elasticsearch | 8.8.2（可选）|
 | 前端 | Vue 3 + Vite + Element Plus + Pinia + TypeScript | 3.5.13 / 6.3.1 / 2.9.7 / 2.3.1 / 5.7 |
 | API 文档 | Knife4j | 4.5.0 |
 | 认证 | JWT (jjwt) | 0.12.6 |
-| 限流熔断 | Sentinel | 1.8.8 |
 | 链路追踪 | Micrometer Tracing + Zipkin | 1.3.6 |
 | 监控 | Prometheus + Grafana | — |
 
@@ -56,10 +54,7 @@
 项目依赖 MySQL、Redis、Nginx 三个必需中间件，推荐通过 Docker 运行：
 
 ```bash
-# 启动必需中间件
-docker start mysql redis nginx
-
-# 如使用 docker-compose
+# 启动必需中间件（容器名与编排见 docker-compose.yml）
 docker compose up -d mysql redis nginx
 ```
 
@@ -70,7 +65,6 @@ docker compose up -d mysql redis nginx
 | MySQL | 3306 | ✓ | 关系型数据库 |
 | Redis | 6379 | ✓ | 缓存、暴力破解锁定 |
 | Nginx | 80 | ✓ | 反向代理 |
-| Elasticsearch | 9200 | — | 全文检索（可选，降级 MySQL LIKE）|
 | Zipkin | 9411 | — | 链路追踪 |
 | Prometheus | 9090 | — | 监控指标采集 |
 | Grafana | 3001 | — | 监控可视化 |
@@ -84,9 +78,9 @@ docker compose up -d mysql redis nginx
 项目使用 `.env` 文件管理敏感配置，需创建以下文件：
 
 ```
-根目录 .env                  # MySQL/Redis/ES 密码
+根目录 .env                  # MySQL/Redis 密码
 wealth-gateway/.env          # JWT 密钥、路由配置
-wealth-service/.env          # JWT 密钥、数据源、Redis、ES 配置
+wealth-service/.env          # JWT 密钥、数据源、Redis 配置
 ```
 
 模板参考根目录 `.env.example`。
@@ -98,7 +92,6 @@ wealth-service/.env          # JWT 密钥、数据源、Redis、ES 配置
 | `JWT_SECRET` | JWT 签名密钥（≥32 字节） | — |
 | `MYSQL_ROOT_PASSWORD` | MySQL 密码 | — |
 | `REDIS_PASSWORD` | Redis 密码 | 空 |
-| `ES_URIS` | ES 连接地址 | `http://localhost:9200` |
 
 ---
 
@@ -148,7 +141,7 @@ mvn spring-boot:run -pl wealth-gateway
 mvn spring-boot:run -pl wealth-service
 ```
 
-所有业务域（system / user / product / trade / message / search）聚合在 `wealth-service` 中，无需分别启动。
+所有业务域（system / user / product / trade / message）聚合在 `wealth-service` 中，无需分别启动。
 
 ### 查看日志
 
@@ -182,13 +175,22 @@ front/
 ├── src/
 │   ├── api/           # API 接口层（TypeScript）
 │   ├── layouts/       # 布局组件
-│   │   ├── UnifiedLayout.vue     # 顶部导航布局（用户端）
+│   │   ├── UserLayout.vue        # 顶部导航布局（用户端 + 公开页）
 │   │   └── AdminLayout.vue       # 侧栏导航布局（管理端）
 │   ├── views/         # 页面组件
-│   │   ├── home/      # 首页
-│   │   ├── auth/      # 登录 / 注册
-│   │   ├── user/      # 用户端页面（行情、交易、自选等）
-│   │   └── admin/     # 管理端页面（用户管理、产品管理、权限等）
+│   │   ├── home/      # 首页（公开）
+│   │   ├── auth/      # 登录
+│   │   ├── register/  # 注册
+│   │   ├── market/    # 行情
+│   │   ├── trade/     # 交易委托
+│   │   ├── products/  # 产品列表
+│   │   ├── news/      # 财经资讯
+│   │   ├── message/   # 站内消息
+│   │   ├── dashboard/ # 仪表盘（用户/管理）
+│   │   ├── profile/   # 个人中心
+│   │   ├── favorite/  # 我的自选
+│   │   ├── error/     # 404 / 403
+│   │   └── admin/     # 管理端（用户/产品/权限等）
 │   ├── router/        # 路由配置（History 模式）
 │   ├── store/         # Pinia 状态管理
 │   └── utils/         # 工具函数（auth、request 等）
@@ -200,11 +202,11 @@ front/
 |------|------|------|------|
 | `/auth/login` | — | 公开 | 登录页 |
 | `/auth/register` | — | 公开 | 注册页 |
-| `/home` | UnifiedLayout | 公开 | 首页 |
-| `/products` | UnifiedLayout | 公开 | 产品列表 |
-| `/market/:code` | UnifiedLayout | 公开 | 行情详情 |
-| `/news` | UnifiedLayout | 公开 | 资讯列表 |
-| `/user/*` | UnifiedLayout | 用户 | 用户端页面 |
+| `/home` | UserLayout | 公开 | 首页 |
+| `/products` | UserLayout | 公开 | 产品列表 |
+| `/market/:code` | UserLayout | 公开 | 行情详情 |
+| `/news` | UserLayout | 公开 | 资讯列表 |
+| `/user/*` | UserLayout | 用户 | 用户端页面 |
 | `/admin/*` | AdminLayout | 管理员 | 管理端页面 |
 
 ---
@@ -214,13 +216,13 @@ front/
 ### 命令行验证
 
 ```bash
-# 管理员登录测试
-curl -s -X POST "http://localhost:8080/system/umsAdmin/login" \
+# 统一登录（自动识别管理员/用户）
+curl -s -X POST "http://localhost:8080/user/identify-login" \
   -H "Content-Type: application/json" \
   -d '{"username":"admin","password":"admin123"}'
 
-# 预期返回（HTTP 200 + JWT Token）：
-# {"code":200,"message":"success","data":{"accessToken":"eyJ...","refreshToken":"eyJ...","expireIn":604800000}}
+# 预期返回（HTTP 200 + JWT Token + Set-Cookie）：
+# {"code":200,"message":"success","data":{"token":"eyJ...","userId":"1","nickname":"...","userType":"admin","refreshToken":"eyJ..."}}
 ```
 
 ### 页面访问
@@ -249,10 +251,6 @@ curl -s -H "Authorization: Bearer $TOKEN" \
 # 交易订单
 curl -s -H "Authorization: Bearer $TOKEN" \
   "http://localhost:8080/trade/wea-trade-order/page?pageNum=1&pageSize=10"
-
-# 产品搜索
-curl -s -H "Authorization: Bearer $TOKEN" \
-  "http://localhost:8080/search/product/search?keyword=黄金&page=1&size=10"
 ```
 
 ---
@@ -265,7 +263,6 @@ curl -s -H "Authorization: Bearer $TOKEN" \
 | MySQL | 3306 | 数据库 |
 | Redis | 6379 | 缓存 |
 | Nginx | 80 | 反向代理 |
-| Elasticsearch | 9200 / 9300 | 搜索引擎（可选）|
 | **后端** | | |
 | wealth-gateway | **8080** | 网关（统一入口）|
 | wealth-service | **8081** | 业务聚合服务 |
@@ -325,7 +322,7 @@ taskkill /PID <PID> /F
 ```
 Docker 容器
   mysql → redis → nginx
-  （可选：elasticsearch / zipkin / prometheus / grafana）
+  （可选：zipkin / prometheus / grafana）
        ↓
 mvn install -pl wealth-common（必须先编译公共依赖）
        ↓

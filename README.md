@@ -7,7 +7,6 @@
   <img src="https://img.shields.io/badge/Redis-5-DC382D?logo=redis" alt="Redis 5">
   <br>
   <img src="https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker" alt="Docker Compose">
-  <img src="https://img.shields.io/badge/Elasticsearch-8.8.2-005571?logo=elasticsearch" alt="Elasticsearch 8.8.2">
   <img src="https://img.shields.io/badge/JWT_Auth-0.12.6-black?logo=jsonwebtokens" alt="JWT">
   <img src="https://img.shields.io/github/last-commit/renjianfeng8/wealth-service-platform?logo=git" alt="Last Commit">
   <img src="https://img.shields.io/github/actions/workflow/status/renjianfeng8/wealth-service-platform/ci.yml?logo=github" alt="CI Build">
@@ -59,14 +58,8 @@
 ### SSE 实时行情推送
 基于 Server-Sent Events 实现每 2 秒推送行情快照，单节点支持 500+ 并发长连接。服务端使用 ScheduledExecutorService 定时发布，前端通过 EventSource 原生接收，无需 WebSocket 复杂握手，专为**单向实时数据流**场景设计。
 
-### Sentinel 限流熔断
-接入 Alibaba Sentinel，对交易核心接口（下单、撤单）配置限流规则，保障高并发场景下服务稳定性。
-
 ### 全链路追踪与监控
 集成 Micrometer Tracing + Zipkin 实现请求链路可视化，Prometheus + Grafana 覆盖 JVM 指标、接口 QPS、响应时间、业务指标大盘。Gateway 与 Service 双端点暴露 /actuator/prometheus。
-
-### 产品全文检索
-基于 Elasticsearch 8.8.2 实现产品多字段模糊搜索，支持精确匹配与分词查询。ES 不可用时通过 AOP 降级为 MySQL LIKE 查询，保证搜索功能可用。
 
 ---
 
@@ -79,7 +72,7 @@
 wealth-system (8082)             →
 wealth-user (8083)                →   wealth-service (8081)
 wealth-product (8084)             →   （所有业务域合并为一个服务
-wealth-trade (8085)               →     + 6 个业务域包）
+wealth-trade (8085)               →     + 5 个业务域包）
 wealth-message (8087)             →
 wealth-search (8089)              →
 
@@ -107,9 +100,8 @@ wealth-gateway (8080)             →   wealth-gateway (8080)
 | Redis | 5+ | 缓存、权限、暴力破解锁定 |
 | JWT (jjwt) | 0.12.6 | 无状态认证 |
 | Knife4j | 4.5.0 | API 文档 |
-| Sentinel | 1.8.8 | 限流熔断 |
 
-> 完整技术栈（含 Tracing、Prometheus、ES）见 [CLAUDE.md](.claude/CLAUDE.md#二技术栈)。
+> 完整技术栈（含 Tracing、Prometheus）见 [CLAUDE.md](.claude/CLAUDE.md#二技术栈)。
 
 ### 前端
 
@@ -128,7 +120,6 @@ wealth-gateway (8080)             →   wealth-gateway (8080)
 | MySQL | 3306 |
 | Redis | 6379 |
 | Nginx | 80 |
-| Elasticsearch | 9200（可选）|
 | Prometheus | 9090 |
 | Grafana | 3001 |
 | Zipkin | 9411（可选）|
@@ -143,18 +134,17 @@ wealth-gateway (8080)             →   wealth-gateway (8080)
 wealth-service-platform
 ├── wealth-common              # 公共模块：工具类、全局配置、统一返回、异常处理、Contract 接口
 ├── wealth-gateway (8080)      # 网关层：统一入口、路由、CORS、白名单
-├── wealth-service (8081)      # 业务服务：6 个业务域聚合
+├── wealth-service (8081)      # 业务服务：5 个业务域聚合
 │   ├── system                 # 后台权限管理（管理员、角色、资源）
 │   ├── user                   # 前端用户管理（注册、登录、个人信息）
 │   ├── product                # 产品管理、行情数据、用户自选
 │   ├── trade                  # 交易委托（下单、撤单、查询）
-│   ├── message                # 财经资讯、站内消息
-│   └── search                 # 产品全文检索
+│   └── message                # 财经资讯、站内消息
 ├── front                      # 前端 SPA（Vue 3 + Element Plus + TypeScript）
 │   └── src
 │       ├── api                # API 接口层
 │       ├── layouts            # 布局组件（UserLayout / AdminLayout）
-│       ├── views              # 页面组件（12 个业务视图模块）
+│       ├── views              # 页面组件（13 个页面目录）
 │       ├── router             # 路由配置（History 模式）
 │       ├── store              # Pinia 状态管理
 │       └── utils              # 工具函数
@@ -173,7 +163,6 @@ wealth-service-platform
 | /product/** | /product | 产品 + 行情 + 自选 |
 | /trade/** | /trade | 交易委托 |
 | /message/** | /message | 资讯 + 消息 |
-| /search/** | /search | 产品搜索 |
 
 ### 端口分配
 
@@ -249,7 +238,7 @@ wealth-service-platform
 ### 1. 启动基础设施
 
 ```bash
-docker start mysql redis nginx
+docker compose up -d mysql redis nginx
 ```
 
 ### 2. 初始化数据库
@@ -284,13 +273,13 @@ cd front && npm install && npx vite
 ### 验证启动
 
 ```bash
-curl -s localhost:8080/system/umsAdmin/login \
+curl -s localhost:8080/user/identify-login \
   -X POST \
   -H "Content-Type: application/json" \
   -d '{"username":"admin","password":"admin123"}'
 ```
 
-预期返回 JWT access_token + refresh_token。
+预期返回 `data` 中含 `token` / `refreshToken` / `userType`（admin 账号自动识别为管理员），并携带 `Set-Cookie`。
 
 ---
 
@@ -329,8 +318,8 @@ curl -s localhost:8080/system/umsAdmin/login \
 项目支持 Docker 容器化部署，CI/CD 通过 GitHub Actions 自动构建并推送至 GitHub Container Registry：
 
 ```bash
-# 使用 docker-compose 启动全部服务
-docker-compose up -d
+# 使用 docker compose 启动全部服务
+docker compose up -d
 ```
 
 详见 [docker-compose.yml](docker-compose.yml) 与 [nginx.conf](nginx.conf)。

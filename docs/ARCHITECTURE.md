@@ -37,15 +37,24 @@ front/
 ├── src/
 │   ├── api/           # API 接口层（TypeScript，每个业务域一个文件）
 │   ├── layouts/       # 布局组件
-│   │   ├── UnifiedLayout.vue     # 顶部导航布局（公开页 + 用户端）
+│   │   ├── UserLayout.vue        # 顶部导航布局（公开页 + 用户端）
 │   │   ├── AdminLayout.vue       # 侧栏导航布局（管理端）
 │   │   ├── Navbar.vue            # 导航栏组件
 │   │   └── Sidebar.vue           # 侧栏组件
-│   ├── views/         # 页面组件
+│   ├── views/         # 页面组件（13 个页面目录）
 │   │   ├── home/      # 首页（公开）
-│   │   ├── auth/      # 登录 / 注册（公开）
-│   │   ├── user/      # 用户端（行情、交易、自选、资讯、个人中心）
-│   │   └── admin/     # 管理端（用户管理、产品管理、行情管理、权限管理等）
+│   │   ├── auth/      # 登录
+│   │   ├── register/  # 注册
+│   │   ├── market/    # 行情
+│   │   ├── trade/     # 交易委托
+│   │   ├── products/  # 产品列表
+│   │   ├── news/      # 财经资讯
+│   │   ├── message/   # 站内消息
+│   │   ├── dashboard/ # 仪表盘（用户/管理）
+│   │   ├── profile/   # 个人中心
+│   │   ├── favorite/  # 我的自选
+│   │   ├── error/     # 404 / 403
+│   │   └── admin/     # 管理端（用户/产品/权限等）
 │   ├── router/        # 路由配置（公开路由 + 用户路由 + 管理路由）
 │   ├── store/         # Pinia 状态管理（auth、user）
 │   └── utils/         # 工具函数（auth、request、sse）
@@ -55,8 +64,8 @@ front/
 
 ```
 用户打开 http://localhost:3000/auth/login
-  → 输入用户名密码 → POST /system/umsAdmin/login 或 /user/login
-  → 后端返回 JWT access_token + refresh_token
+  → 输入用户名密码 → POST /user/identify-login（统一登录，自动识别用户/管理员）
+  → 后端返回 token + refreshToken + userType，并写入 Cookie
   → 前端存入 sessionStorage，设置 wealth_logged_in + wealth_role 标志
   → 路由守卫根据 role 自动跳转：
        - admin  → /admin/dashboard
@@ -77,7 +86,7 @@ v1.7.2 (微服务)                  v1.8.0+ (单体聚合)
 wealth-system (8082)             
 wealth-user   (8083)             
 wealth-product (8084)            →  wealth-service (8081)
-wealth-trade   (8085)             →  （6 个业务域包）
+wealth-trade   (8085)             →  （5 个业务域包）
 wealth-message (8087)             
 wealth-search  (8089)            
 wealth-gateway (8080)            →  wealth-gateway (8080)
@@ -123,7 +132,6 @@ Gateway 使用静态 HTTP 路由，无需 Nacos。所有请求转发到同一 `w
 | /product/** | http://localhost:8081 | 产品行情 |
 | /trade/** | http://localhost:8081 | 交易委托 |
 | /message/** | http://localhost:8081 | 消息推送 |
-| /search/** | http://localhost:8081 | 搜索服务 |
 
 > 不同前缀在服务端通过 context-path 区分。
 
@@ -133,11 +141,11 @@ Gateway 使用静态 HTTP 路由，无需 Nacos。所有请求转发到同一 `w
 |------|------|------|------|
 | `/auth/login` | — | 公开 | 登录页 |
 | `/auth/register` | — | 公开 | 注册页 |
-| `/home` | UnifiedLayout | 公开 | 首页 |
-| `/products` | UnifiedLayout | 公开 | 产品列表 |
-| `/market/:code` | UnifiedLayout | 公开 | 行情详情 |
-| `/news` | UnifiedLayout | 公开 | 资讯列表 |
-| `/user/*` | UnifiedLayout | 用户 | 用户端页面 |
+| `/home` | UserLayout | 公开 | 首页 |
+| `/products` | UserLayout | 公开 | 产品列表 |
+| `/market/:code` | UserLayout | 公开 | 行情详情 |
+| `/news` | UserLayout | 公开 | 资讯列表 |
+| `/user/*` | UserLayout | 用户 | 用户端页面 |
 | `/admin/*` | AdminLayout | 管理员 | 管理端页面 |
 
 ---
@@ -153,7 +161,6 @@ Gateway 使用静态 HTTP 路由，无需 Nacos。所有请求转发到同一 `w
 | 产品行情 | product | wea_product, wea_market_data, wea_user_favorite | 产品管理、行情 SSE 推送、用户自选 |
 | 交易委托 | trade | wea_trade_order | 交易订单发起、撤单、查询 |
 | 消息推送 | message | wea_news, wea_message | 财经资讯、站内消息（DB 轮询）|
-| 搜索服务 | search | — | ES 全文检索（降级 MySQL LIKE）|
 
 ---
 
@@ -176,7 +183,7 @@ application-prod.yml（生产环境配置覆盖）
 ### Spring 配置加载顺序
 
 ```
-application.yml              # 1. 本地配置 —— 端口、数据源、Redis、ES
+application.yml              # 1. 本地配置 —— 端口、数据源、Redis
   └─→ application-prod.yml   # 2. 生产环境覆盖（spring.profiles.active=prod）
        └─→ .env 环境变量     # 3. 环境变量注入 ${VAR:default}
 ```
@@ -215,7 +222,6 @@ spring:
 | MySQL | mysql:8.0 | 3306 | 是 | 数据库 |
 | Redis | redis:latest | 6379 | 是 | 缓存 |
 | Nginx | nginx:latest | 80, 443 | 是 | 反向代理 |
-| Elasticsearch | elasticsearch:8.8.2 | 9200, 9300 | 否 | 搜索引擎（search 域降级 MySQL 可关）|
 | Zipkin | openzipkin/zipkin:latest | 9411 | 否 | 链路追踪 |
 | Prometheus | prom/prometheus:latest | 9090 | 否 | 监控指标存储 |
 | Grafana | grafana/grafana:latest | 3001 | 否 | 监控仪表盘 |
@@ -245,11 +251,11 @@ spring:
                    │  (8081)      │
                    └──────┬───────┘
                           │
-     ┌─────────┬──────────┼──────────┬──────────┐
-┌────▼───┐┌───▼────┐┌────▼────┐┌───▼────┐┌───▼─────┐
-│ MySQL  ││ Redis  ││Elastic ││ Zipkin ││Prometheus│
-│ (3306) ││ (6379) ││(9200)  ││ (9411) ││ (9090)   │
-└────────┘└────────┘└────────┘└────────┘└──────────┘
+     ┌─────────┬──────────┬─────────┐
+┌────▼───┐┌───▼────┐┌───▼────┐┌───▼─────┐
+│ MySQL  ││ Redis  ││ Zipkin ││Prometheus│
+│ (3306) ││ (6379) ││ (9411) ││ (9090)   │
+└────────┘└────────┘└────────┘└──────────┘
 ```
 
 > 生产环境 Nginx 负责 SSL 终止，静态 SPA 资源由 Nginx 直接 serve（`front/dist`），API 请求转发至 Gateway 内部端口 8080。
