@@ -54,8 +54,9 @@
 项目依赖 MySQL、Redis、Nginx 三个必需中间件，推荐通过 Docker 运行：
 
 ```bash
-# 启动必需中间件（容器名与编排见 docker-compose.yml）
-docker compose up -d mysql redis nginx
+# 启动必需中间件（容器名与编排见 deploy/docker-compose.yml）
+cd deploy
+docker compose --env-file env/.env up -d mysql redis nginx
 ```
 
 ### 容器详情
@@ -78,12 +79,12 @@ docker compose up -d mysql redis nginx
 项目使用 `.env` 文件管理敏感配置，需创建以下文件：
 
 ```
-根目录 .env                  # MySQL/Redis 密码
-wealth-gateway/.env          # JWT 密钥、路由配置
-wealth-service/.env          # JWT 密钥、数据源、Redis 配置
+deploy/env/.env                # MySQL/Redis 密码（docker-compose 注入）
+backend/wealth-gateway/.env    # JWT 密钥、路由配置
+backend/wealth-service/.env    # JWT 密钥、数据源、Redis 配置
 ```
 
-模板参考根目录 `.env.example`。
+模板参考 `deploy/env/.env.example`。
 
 关键变量：
 
@@ -104,7 +105,7 @@ mysql -u root -p"${MYSQL_ROOT_PASSWORD}" -e \
 
 # 导入建表语句 + 测试数据
 mysql -u root -p"${MYSQL_ROOT_PASSWORD}" wealth \
-  < wealth-common/src/main/resources/sql/init.sql
+  < backend/wealth-common/src/main/resources/sql/init.sql
 ```
 
 ---
@@ -118,7 +119,7 @@ mysql -u root -p"${MYSQL_ROOT_PASSWORD}" wealth \
 ```bash
 # 1. 编译公共模块并安装到本地仓库
 # （修改 common 后必须重新执行此步）
-mvn clean install -pl wealth-common -DskipTests
+mvn clean install -pl backend/wealth-common -DskipTests
 
 # 2. 全量编译
 mvn clean compile
@@ -128,17 +129,17 @@ mvn clean package -DskipTests
 ```
 
 JAR 包路径：
-- `wealth-gateway/target/wealth-gateway-1.0.0.jar`
-- `wealth-service/target/wealth-service-1.0.0.jar`
+- `backend/wealth-gateway/target/wealth-gateway-1.0.0.jar`
+- `backend/wealth-service/target/wealth-service-1.0.0.jar`
 
 ### 启动（按顺序）
 
 ```bash
 # 1. 启动网关（端口 8080）
-mvn spring-boot:run -pl wealth-gateway
+mvn spring-boot:run -pl backend/wealth-gateway
 
 # 2. 启动业务服务（端口 8081）
-mvn spring-boot:run -pl wealth-service
+mvn spring-boot:run -pl backend/wealth-service
 ```
 
 所有业务域（system / user / product / trade / message）聚合在 `wealth-service` 中，无需分别启动。
@@ -290,7 +291,7 @@ curl -s -H "Authorization: Bearer $TOKEN" \
 | Redis 连接拒绝 | Redis 未启动 | 检查容器状态 + `.env` 中的 `REDIS_HOST` |
 | 表不存在 | 未执行 `init.sql` | 确认已导入建表脚本 |
 | JWT 密钥异常 | `JWT_SECRET` 缺失或不足 32 字节 | 检查 `.env` 文件 |
-| 启动时 ClassNotFoundException | Common 未 install | 执行 `mvn clean install -pl wealth-common -DskipTests` |
+| 启动时 ClassNotFoundException | Common 未 install | 执行 `mvn clean install -pl backend/wealth-common -DskipTests` |
 
 ### 前端无法启动
 
@@ -324,7 +325,7 @@ Docker 容器
   mysql → redis → nginx
   （可选：zipkin / prometheus / grafana）
        ↓
-mvn install -pl wealth-common（必须先编译公共依赖）
+mvn install -pl backend/wealth-common（必须先编译公共依赖）
        ↓
 wealth-gateway（端口 8080，最先启动）
        ↓
@@ -333,4 +334,4 @@ wealth-service（端口 8081，所有业务域聚合）
 front/（端口 3000，Vite 开发服务器）
 ```
 
-> 每次修改 `wealth-common` 后，必须重新执行 `mvn clean install -pl wealth-common -DskipTests` 才能被其他模块引用。
+> 每次修改 `wealth-common` 后，必须重新执行 `mvn clean install -pl backend/wealth-common -DskipTests` 才能被其他模块引用。

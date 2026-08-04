@@ -20,14 +20,14 @@ wealth-service-platform
 
 ```bash
 # 编译公共模块（修改 common 后必须执行）
-mvn clean install -pl wealth-common -DskipTests
+mvn clean install -pl backend/wealth-common -DskipTests
 
 # 全量编译
 mvn clean install -DskipTests
 
 # 启动（顺序：gateway → service）
-mvn spring-boot:run -pl wealth-gateway
-mvn spring-boot:run -pl wealth-service
+mvn spring-boot:run -pl backend/wealth-gateway
+mvn spring-boot:run -pl backend/wealth-service
 
 # 前端
 cd front && npm install && npx vite
@@ -65,5 +65,5 @@ docs: 更新 README 部署说明
 
 ## 数据库
 
-- 表结构以 `wealth-common/src/main/resources/sql/init.sql` 为准
+- 表结构以 `backend/wealth-common/src/main/resources/sql/init.sql` 为准
 - 字段映射参考 [DATABASE-SCHEMA.md](docs/DATABASE-SCHEMA.md)

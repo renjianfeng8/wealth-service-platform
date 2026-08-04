@@ -1,9 +1,11 @@
 #!/bin/bash
 # MySQL 恢复脚本
-# 用法: ./scripts/restore-mysql.sh <backup-file>
-# 示例: ./scripts/restore-mysql.sh backups/wealth_20260517_020000.sql.gz
+# 用法: ./scripts/db/restore-mysql.sh <backup-file>
+# 示例: ./scripts/db/restore-mysql.sh backups/wealth_20260517_020000.sql.gz
 
 set -euo pipefail
+
+ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 
 if [ $# -lt 1 ]; then
     echo "Usage: $0 <backup-file>"
@@ -23,8 +25,8 @@ if [ ! -f "$BACKUP_FILE" ]; then
 fi
 
 if [ -z "$PASSWORD" ]; then
-    if [ -f .env ]; then
-        PASSWORD=$(grep "^MYSQL_ROOT_PASSWORD=" .env | cut -d'=' -f2)
+    if [ -f "$ROOT/deploy/env/.env" ]; then
+        PASSWORD=$(grep "^MYSQL_ROOT_PASSWORD=" "$ROOT/deploy/env/.env" | cut -d'=' -f2)
     fi
 fi
 

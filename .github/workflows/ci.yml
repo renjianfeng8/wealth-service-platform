@@ -61,8 +61,8 @@ jobs:
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: docker/build-push-action@v5
         with:
-          context: ./wealth-gateway
-          file: wealth-gateway/Dockerfile
+          context: ./backend/wealth-gateway
+          file: backend/wealth-gateway/Dockerfile
           push: true
           tags: |
             ghcr.io/renjianfeng8/wealth-service-platform/wealth-gateway:latest
@@ -74,8 +74,8 @@ jobs:
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: docker/build-push-action@v5
         with:
-          context: ./wealth-service
-          file: wealth-service/Dockerfile
+          context: ./backend/wealth-service
+          file: backend/wealth-service/Dockerfile
           push: true
           tags: |
             ghcr.io/renjianfeng8/wealth-service-platform/wealth-service:latest

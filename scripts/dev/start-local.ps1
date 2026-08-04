@@ -23,7 +23,7 @@ function Load-EnvString($file) {
     return $lines -join "; "
 }
 
-$root = Split-Path -Parent $PSScriptRoot
+$root = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host "  理财服务平台 - 本地开发启动" -ForegroundColor Cyan
@@ -32,15 +32,15 @@ Write-Host ""
 
 if ($Target -eq "all" -or $Target -eq "gateway") {
     Write-Host "[gateway] 启动 wealth-gateway (端口 8080)..." -ForegroundColor Yellow
-    $envStr = Load-EnvString "$root\wealth-gateway\.env"
-    $cmd = "cd '$root'; $envStr; mvn spring-boot:run -pl wealth-gateway"
+    $envStr = Load-EnvString "$root\backend\wealth-gateway\.env"
+    $cmd = "cd '$root'; $envStr; mvn spring-boot:run -pl backend/wealth-gateway"
     Start-Process powershell -ArgumentList "-NoExit", "-Command", $cmd
 }
 
 if ($Target -eq "all" -or $Target -eq "service") {
     Write-Host "[service] 启动 wealth-service (端口 8081)..." -ForegroundColor Yellow
-    $envStr = Load-EnvString "$root\wealth-service\.env"
-    $cmd = "cd '$root'; $envStr; mvn spring-boot:run -pl wealth-service"
+    $envStr = Load-EnvString "$root\backend\wealth-service\.env"
+    $cmd = "cd '$root'; $envStr; mvn spring-boot:run -pl backend/wealth-service"
     Start-Process powershell -ArgumentList "-NoExit", "-Command", $cmd
 }
 

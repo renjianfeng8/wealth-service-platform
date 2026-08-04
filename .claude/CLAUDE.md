@@ -28,7 +28,7 @@
 
 | 关键文档 | 路径 |
 |---------|------|
-| **建表 SQL（唯一真理）** | `wealth-common/src/main/resources/sql/init.sql` |
+| **建表 SQL（唯一真理）** | `backend/wealth-common/src/main/resources/sql/init.sql` |
 | 架构文档 | `docs/ARCHITECTURE.md` |
 | 表结构 / BaseEntity 规范 | `docs/DATABASE-SCHEMA.md` |
 | 已知问题 | `docs/BUG.md` |
@@ -113,21 +113,21 @@ vo / dto / config / constant / interceptor
 
 ```bash
 # 1. 编译公共模块（修改 common 后必须执行）
-mvn clean install -pl wealth-common -DskipTests
+mvn clean install -pl backend/wealth-common -DskipTests
 
 # 2. 全量编译 / 安装
 mvn clean install -DskipTests
 
 # 3. 运行（先 gateway 后 service）
-mvn spring-boot:run -pl wealth-gateway
-mvn spring-boot:run -pl wealth-service
+mvn spring-boot:run -pl backend/wealth-gateway
+mvn spring-boot:run -pl backend/wealth-service
 
 # 4. 前端
 cd front && npm install && npx vite
 
 # 5. 测试
-mvn test -pl wealth-service -DskipTests=false
-mvn test -pl wealth-service -Dtest=XxxTest -DskipTests=false
+mvn test -pl backend/wealth-service -DskipTests=false
+mvn test -pl backend/wealth-service -Dtest=XxxTest -DskipTests=false
 ```
 
 > 配置修改需审批：application.yml / application-prod.yml / pom.xml 默认锁定，改前询问用户并给出强理由。

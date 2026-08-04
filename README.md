@@ -132,26 +132,28 @@ wealth-gateway (8080)             →   wealth-gateway (8080)
 
 ```
 wealth-service-platform
-├── wealth-common              # 公共模块：工具类、全局配置、统一返回、异常处理、Contract 接口
-├── wealth-gateway (8080)      # 网关层：统一入口、路由、CORS、白名单
-├── wealth-service (8081)      # 业务服务：5 个业务域聚合
-│   ├── system                 # 后台权限管理（管理员、角色、资源）
-│   ├── user                   # 前端用户管理（注册、登录、个人信息）
-│   ├── product                # 产品管理、行情数据、用户自选
-│   ├── trade                  # 交易委托（下单、撤单、查询）
-│   └── message                # 财经资讯、站内消息
-├── front                      # 前端 SPA（Vue 3 + Element Plus + TypeScript）
+├── backend                     # 后端 Maven 多模块
+│   ├── wealth-common           # 公共模块：工具类、全局配置、统一返回、异常处理、Contract 接口
+│   ├── wealth-gateway (8080)   # 网关层：统一入口、路由、CORS、白名单
+│   └── wealth-service (8081)   # 业务服务：5 个业务域聚合
+│       ├── system              # 后台权限管理（管理员、角色、资源）
+│       ├── user                # 前端用户管理（注册、登录、个人信息）
+│       ├── product             # 产品管理、行情数据、用户自选
+│       ├── trade               # 交易委托（下单、撤单、查询）
+│       └── message             # 财经资讯、站内消息
+├── front                       # 前端 SPA（Vue 3 + Element Plus + TypeScript）
 │   └── src
-│       ├── api                # API 接口层
-│       ├── layouts            # 布局组件（UserLayout / AdminLayout）
-│       ├── views              # 页面组件（13 个页面目录）
-│       ├── router             # 路由配置（History 模式）
-│       ├── store              # Pinia 状态管理
-│       └── utils              # 工具函数
-├── docs                       # 项目文档
-├── grafana                    # Grafana 仪表盘配置
-├── scripts                    # 运维脚本（备份/恢复/本地启动，部署脚本不入库）
-└── ssl                        # TLS 证书与生成脚本（私钥/密钥库不入库）
+│       ├── api                 # API 接口层
+│       ├── layouts             # 布局组件（UserLayout / AdminLayout）
+│       ├── views               # 页面组件（13 个页面目录）
+│       ├── router              # 路由配置（History 模式）
+│       ├── store               # Pinia 状态管理
+│       └── utils               # 工具函数
+├── deploy                      # 部署与基础设施配置（docker-compose / nginx / 监控 / ssl / env）
+├── docs                        # 项目文档
+├── scripts                     # 工具脚本（dev 本地启动 / db 备份恢复 / deploy 运维不入库）
+├── backups                     # 备份产物（运行时生成，不入库）
+└── logs                        # 运行时日志（不入库）
 ```
 
 ### 路由架构
@@ -238,7 +240,7 @@ wealth-service-platform
 ### 1. 启动基础设施
 
 ```bash
-docker compose up -d mysql redis nginx
+cd deploy && docker compose --env-file env/.env up -d mysql redis nginx
 ```
 
 ### 2. 初始化数据库
@@ -246,7 +248,7 @@ docker compose up -d mysql redis nginx
 创建 `wealth` 库（字符集 `utf8mb4`），执行建表脚本：
 
 ```bash
-mysql -u root -p wealth < wealth-common/src/main/resources/sql/init.sql
+mysql -u root -p wealth < backend/wealth-common/src/main/resources/sql/init.sql
 ```
 
 ### 3. 编译项目
@@ -258,8 +260,8 @@ mvn clean install -DskipTests
 ### 4. 启动后端（按顺序）
 
 ```bash
-mvn spring-boot:run -pl wealth-gateway
-mvn spring-boot:run -pl wealth-service
+mvn spring-boot:run -pl backend/wealth-gateway
+mvn spring-boot:run -pl backend/wealth-service
 ```
 
 ### 5. 启动前端
@@ -319,10 +321,10 @@ curl -s localhost:8080/user/identify-login \
 
 ```bash
 # 使用 docker compose 启动全部服务
-docker compose up -d
+cd deploy && docker compose --env-file env/.env up -d
 ```
 
-详见 [docker-compose.yml](docker-compose.yml) 与 [nginx.conf](nginx.conf)。
+详见 [docker-compose.yml](deploy/docker-compose.yml) 与 [nginx.conf](deploy/nginx/nginx.conf)。
 
 ---
 

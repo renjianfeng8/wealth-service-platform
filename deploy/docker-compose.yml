@@ -23,8 +23,8 @@ services:
       LANG: C.UTF-8
     volumes:
       - mysql-data:/var/lib/mysql
-      - ./wealth-common/src/main/resources/sql/init.sql:/docker-entrypoint-initdb.d/init.sql
-      - ./wealth-common/src/main/resources/sql/test-data.sql:/docker-entrypoint-initdb.d/test-data.sql
+      - ../backend/wealth-common/src/main/resources/sql/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ../backend/wealth-common/src/main/resources/sql/test-data.sql:/docker-entrypoint-initdb.d/test-data.sql
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
       interval: 10s
@@ -73,7 +73,7 @@ services:
       - "443:443"
     volumes:
       # nginx.conf is a full config (worker_processes, events, http), not site-specific
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./ssl:/etc/nginx/ssl:ro
     healthcheck:
       test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/nginx-health"]
@@ -214,8 +214,8 @@ services:
         exec /scripts/backup-scheduler.sh
       '
     volumes:
-      - ./scripts:/scripts:ro
-      - ./backups:/backups
+      - ../scripts/db:/scripts:ro
+      - ../backups:/backups
     environment:
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
     depends_on:
@@ -238,7 +238,7 @@ services:
     ports:
       - "127.0.0.1:9090:9090"
     volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - prometheus-data:/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
@@ -267,7 +267,7 @@ services:
     ports:
       - "127.0.0.1:3001:3000"
     volumes:
-      - ./grafana/datasources:/etc/grafana/provisioning/datasources:ro
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources:ro
       - grafana-data:/var/lib/grafana
     environment:
       - GF_SERVER_ROOT_URL=https://rjfwealth.cn

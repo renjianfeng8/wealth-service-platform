@@ -105,7 +105,7 @@ front/         (3000)
 
 ## 依赖层级
 
-- `wealth-common` 被所有模块依赖（修改后需先 `mvn clean install -pl wealth-common -DskipTests`）
+- `wealth-common` 被所有模块依赖（修改后需先 `mvn clean install -pl backend/wealth-common -DskipTests`）
 - `wealth-gateway` 依赖 `wealth-common`（工具类、DTO、常量）
 - 跨域调用通过 contract 接口（`com.wealth.common.contract`）直接调用，无需 Feign
 
@@ -171,9 +171,9 @@ Gateway 使用静态 HTTP 路由，无需 Nacos。所有请求转发到同一 `w
 项目采用**环境变量 + application.yml 本地配置**模式，不依赖外部配置中心：
 
 ```
-.env（项目根目录，docker-compose 注入）
-  ├── wealth-gateway/.env（网关专用）
-  └── wealth-service/.env  （业务服务专用）
+deploy/env/.env（docker-compose 注入）
+  ├── backend/wealth-gateway/.env（网关专用）
+  └── backend/wealth-service/.env  （业务服务专用）
          ↓
 application.yml（本地配置，引用 ${ENV_VAR} 占位符）
          ↓

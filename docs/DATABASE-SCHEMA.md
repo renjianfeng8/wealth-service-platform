@@ -2,7 +2,7 @@
 # 数据库表结构与字段
 
 > BaseEntity 继承规则、表结构速查。
-> **⚠️ 字段列名以 [init.sql](../wealth-common/src/main/resources/sql/init.sql) 为准，本文档为衍生参考。二者不一致时以 init.sql 为准。**
+> **⚠️ 字段列名以 [init.sql](../backend/wealth-common/src/main/resources/sql/init.sql) 为准，本文档为衍生参考。二者不一致时以 init.sql 为准。**
 
 ---
 
@@ -291,7 +291,7 @@ CREATE TABLE ums_role_resource_relation (
 
 ### BaseEntity 定义
 
-位于 `wealth-common/entity/BaseEntity.java`：
+位于 `backend/wealth-common/entity/BaseEntity.java`：
 
 ```java
 @Data

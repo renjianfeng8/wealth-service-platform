@@ -105,9 +105,9 @@
     </dependencyManagement>
 
     <modules>
-        <module>wealth-common</module>
-        <module>wealth-gateway</module>
-        <module>wealth-service</module>
+        <module>backend/wealth-common</module>
+        <module>backend/wealth-gateway</module>
+        <module>backend/wealth-service</module>
     </modules>
 
     <build>

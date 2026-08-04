@@ -1,11 +1,12 @@
 #!/bin/bash
 # MySQL 定时备份脚本
-# 用法: ./scripts/backup-mysql.sh [backup-dir]
+# 用法: ./scripts/db/backup-mysql.sh [backup-dir]
 # 默认备份到 ./backups/
 
 set -euo pipefail
 
-BACKUP_DIR="${1:-$(cd "$(dirname "$0")/.." && pwd)/backups}"
+ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+BACKUP_DIR="${1:-$ROOT/backups}"
 MYSQL_CONTAINER="wealth-mysql"
 MYSQL_USER="root"
 MYSQL_DB="wealth"
@@ -23,8 +24,8 @@ PASSWORD="${MYSQL_ROOT_PASSWORD:-}"
 mkdir -p "$BACKUP_DIR"
 
 if [ -z "$PASSWORD" ]; then
-    if [ -f .env ]; then
-        PASSWORD=$(grep "^MYSQL_ROOT_PASSWORD=" .env | cut -d'=' -f2)
+    if [ -f "$ROOT/deploy/env/.env" ]; then
+        PASSWORD=$(grep "^MYSQL_ROOT_PASSWORD=" "$ROOT/deploy/env/.env" | cut -d'=' -f2)
     fi
 fi
 

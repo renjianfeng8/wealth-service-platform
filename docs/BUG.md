@@ -138,14 +138,14 @@ public Result<Boolean> deleteBatch(@Valid @NotEmpty(message = "ID列表不能为
 ### Bug-012: Alpine MariaDB 客户端连接 MySQL 8 失败
 
 **日期**: 2026-05-17 | **状态**: 已修复
-**文件**: `scripts/backup-scheduler.sh:26` 确认 `--ssl=0`。
+**文件**: `scripts/db/backup-scheduler.sh:26` 确认 `--ssl=0`。
 
 ---
 
 ### Bug-011: Nginx 启动时上游 DNS 解析失败导致 crash
 
 **日期**: 2026-05-17 | **状态**: 已修复
-**文件**: `nginx.conf:12-14` 确认 `resolver 127.0.0.11` + `set $gateway_upstream`。
+**文件**: `deploy/nginx/nginx.conf:12-14` 确认 `resolver 127.0.0.11` + `set $gateway_upstream`。
 
 ---
 
