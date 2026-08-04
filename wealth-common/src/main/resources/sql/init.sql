@@ -1,16 +1,9 @@
--- ============================================================
 -- 理财服务系统 数据库初始化脚本
--- 数据库: wealth (utf8mb4)
--- 说明: 执行本脚本会删除现有表并重新创建
--- ============================================================
-
--- 创建数据库
+-- 库: wealth（utf8mb4） | 执行会删除现有表并重建
 CREATE DATABASE IF NOT EXISTS wealth DEFAULT CHARSET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE wealth;
 
--- ============================================================
--- 1. 用户模块 (wealth-user) — 系统用户表
--- ============================================================
+-- 1. sys_user 系统用户表
 DROP TABLE IF EXISTS sys_user;
 CREATE TABLE sys_user (
     id          BIGINT       NOT NULL AUTO_INCREMENT COMMENT '主键ID',
@@ -27,9 +20,7 @@ CREATE TABLE sys_user (
     UNIQUE KEY idx_username (username)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='系统用户表';
 
--- ============================================================
--- 2. 产品&行情模块 (wealth-product) — 产品表
--- ============================================================
+-- 2. wea_product 理财/贵金属产品表
 DROP TABLE IF EXISTS wea_product;
 CREATE TABLE wea_product (
     id             BIGINT       NOT NULL AUTO_INCREMENT COMMENT '主键ID',
@@ -48,9 +39,7 @@ CREATE TABLE wea_product (
     UNIQUE KEY idx_product_code (product_code)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='理财/贵金属产品表';
 
--- ============================================================
--- 3. 产品&行情模块 (wealth-product) — 行情数据表
--- ============================================================
+-- 3. wea_market_data 行情数据表
 DROP TABLE IF EXISTS wea_market_data;
 CREATE TABLE wea_market_data (
     id             BIGINT       NOT NULL AUTO_INCREMENT COMMENT '主键ID',
@@ -69,9 +58,7 @@ CREATE TABLE wea_market_data (
     KEY idx_product_time (product_code, market_time)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='行情数据表';
 
--- ============================================================
--- 4. 自选模块 (wealth-product) — 用户自选表
--- ============================================================
+-- 4. wea_user_favorite 用户自选关注表
 DROP TABLE IF EXISTS wea_user_favorite;
 CREATE TABLE wea_user_favorite (
     id           BIGINT      NOT NULL AUTO_INCREMENT COMMENT '主键ID',
@@ -82,9 +69,7 @@ CREATE TABLE wea_user_favorite (
     UNIQUE KEY idx_user_product (user_id, product_code)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户自选关注表';
 
--- ============================================================
--- 5. 交易模块 (wealth-trade) — 交易委托单
--- ============================================================
+-- 5. wea_trade_order 模拟委托交易单
 DROP TABLE IF EXISTS wea_trade_order;
 CREATE TABLE wea_trade_order (
     id             BIGINT       NOT NULL AUTO_INCREMENT COMMENT '主键ID',
@@ -104,9 +89,7 @@ CREATE TABLE wea_trade_order (
     KEY idx_status_type (order_status, trade_type)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='模拟委托交易单';
 
--- ============================================================
--- 6. 资讯&消息模块 (wealth-message) — 财经资讯
--- ============================================================
+-- 6. wea_news 财经资讯公告表
 DROP TABLE IF EXISTS wea_news;
 CREATE TABLE wea_news (
     id           BIGINT       NOT NULL AUTO_INCREMENT COMMENT '主键ID',
@@ -122,9 +105,7 @@ CREATE TABLE wea_news (
     KEY idx_news_type (news_type)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='财经资讯公告表';
 
--- ============================================================
--- 7. 资讯&消息模块 (wealth-message) — 站内消息
--- ============================================================
+-- 7. wea_message 站内消息推送表
 DROP TABLE IF EXISTS wea_message;
 CREATE TABLE wea_message (
     id          BIGINT       NOT NULL AUTO_INCREMENT COMMENT '主键ID',
@@ -139,9 +120,7 @@ CREATE TABLE wea_message (
     KEY idx_user_read (user_id, read_flag, msg_type)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='站内消息推送表';
 
--- ============================================================
--- 8. 后台权限模块 (wealth-system) — 管理员表
--- ============================================================
+-- 8. ums_admin 后台用户表
 DROP TABLE IF EXISTS ums_admin;
 CREATE TABLE ums_admin (
     id          BIGINT       NOT NULL AUTO_INCREMENT COMMENT '主键ID',
@@ -158,9 +137,7 @@ CREATE TABLE ums_admin (
     PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='后台用户表';
 
--- ============================================================
--- 9. 后台权限模块 (wealth-system) — 角色表
--- ============================================================
+-- 9. ums_role 后台角色表
 DROP TABLE IF EXISTS ums_role;
 CREATE TABLE ums_role (
     id          BIGINT       NOT NULL AUTO_INCREMENT COMMENT '主键ID',
@@ -173,9 +150,7 @@ CREATE TABLE ums_role (
     PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='后台角色表';
 
--- ============================================================
--- 10. 后台权限模块 (wealth-system) — 资源表
--- ============================================================
+-- 10. ums_resource 后台资源表
 DROP TABLE IF EXISTS ums_resource;
 CREATE TABLE ums_resource (
     id          BIGINT       NOT NULL AUTO_INCREMENT COMMENT '主键ID',
@@ -188,9 +163,7 @@ CREATE TABLE ums_resource (
     PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='后台资源表';
 
--- ============================================================
--- 11. 后台权限模块 (wealth-system) — 管理员角色关联表
--- ============================================================
+-- 11. ums_admin_role_relation 后台用户和角色关系表
 DROP TABLE IF EXISTS ums_admin_role_relation;
 CREATE TABLE ums_admin_role_relation (
     id       BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键ID',
@@ -200,9 +173,7 @@ CREATE TABLE ums_admin_role_relation (
     PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='后台用户和角色关系表';
 
--- ============================================================
--- 12. 后台权限模块 (wealth-system) — 角色资源关联表
--- ============================================================
+-- 12. ums_role_resource_relation 后台角色资源关系表
 DROP TABLE IF EXISTS ums_role_resource_relation;
 CREATE TABLE ums_role_resource_relation (
     id          BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键ID',
@@ -212,53 +183,7 @@ CREATE TABLE ums_role_resource_relation (
     PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='后台角色资源关系表';
 
--- ============================================================
--- 13. Seata AT 模式 — undo_log 表（参与分布式事务的模块均需此表）
--- ============================================================
-DROP TABLE IF EXISTS undo_log;
-CREATE TABLE undo_log (
-    id            BIGINT       NOT NULL AUTO_INCREMENT COMMENT '主键',
-    branch_id     BIGINT       NOT NULL                COMMENT '分支事务ID',
-    xid           VARCHAR(128) NOT NULL                COMMENT '全局事务ID',
-    context       VARCHAR(128) NOT NULL                COMMENT '上下文',
-    rollback_info LONGBLOB     NOT NULL                COMMENT '回滚日志',
-    log_status    INT          NOT NULL                COMMENT '状态 0正常 1已回滚',
-    log_created   DATETIME     NOT NULL                COMMENT '创建时间',
-    log_modified  DATETIME     NOT NULL                COMMENT '修改时间',
-    ext           VARCHAR(100) DEFAULT NULL            COMMENT '扩展',
-    PRIMARY KEY (id),
-    UNIQUE KEY ux_undo_log (xid, branch_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Seata AT 模式回滚日志表';
-
--- ============================================================
--- 14. 审计日志表（由 @AuditLog 注解自动记录）
--- ============================================================
-DROP TABLE IF EXISTS audit_log;
-CREATE TABLE audit_log (
-    id          BIGINT       NOT NULL AUTO_INCREMENT COMMENT '主键ID',
-    user_id     BIGINT       DEFAULT NULL            COMMENT '用户ID',
-    username    VARCHAR(100) DEFAULT NULL            COMMENT '用户名',
-    module      VARCHAR(100) DEFAULT NULL            COMMENT '模块名',
-    operation   VARCHAR(200) DEFAULT NULL            COMMENT '操作描述',
-    method_name VARCHAR(200) DEFAULT NULL            COMMENT '请求方法',
-    request_url VARCHAR(255) DEFAULT NULL            COMMENT '请求URL',
-    http_method VARCHAR(10)  DEFAULT NULL            COMMENT 'HTTP方法',
-    params      TEXT         DEFAULT NULL            COMMENT '请求参数(JSON)',
-    result      TEXT         DEFAULT NULL            COMMENT '响应结果(JSON)',
-    ip          VARCHAR(50)  DEFAULT NULL            COMMENT '客户端IP',
-    duration    BIGINT       DEFAULT NULL            COMMENT '执行耗时(ms)',
-    status      TINYINT      DEFAULT '1'             COMMENT '状态 1成功 0失败',
-    error_msg   VARCHAR(1000) DEFAULT NULL           COMMENT '错误信息',
-    create_time DATETIME     DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    PRIMARY KEY (id),
-    KEY idx_user (user_id),
-    KEY idx_module (module),
-    KEY idx_create_time (create_time)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='操作审计日志表';
-
--- ============================================================
 -- 搜索索引（LIKE 查询优化）
--- ============================================================
 CREATE INDEX idx_product_name ON wea_product(product_name);
 CREATE INDEX idx_news_title ON wea_news(title);
 CREATE INDEX idx_news_source ON wea_news(source);
@@ -268,11 +193,3 @@ CREATE UNIQUE INDEX idx_ums_admin_username ON ums_admin(username);
 CREATE INDEX idx_ums_role_name ON ums_role(name);
 CREATE INDEX idx_ums_resource_name ON ums_resource(name);
 CREATE INDEX idx_ums_resource_url ON ums_resource(url);
-
--- ============================================================
--- 现有库迁移记录（2026-08-03，精度对齐 M2）
--- 涨跌幅字段精度 DECIMAL(5,2) → DECIMAL(8,4)，与代码 setScale(4) 对齐
--- 对已初始化库执行：
--- ============================================================
--- ALTER TABLE wea_product MODIFY COLUMN rise_fall_rate DECIMAL(8,4) DEFAULT NULL COMMENT '涨跌幅';
--- ALTER TABLE wea_market_data MODIFY COLUMN rise_fall_rate DECIMAL(8,4) DEFAULT NULL COMMENT '涨跌幅';

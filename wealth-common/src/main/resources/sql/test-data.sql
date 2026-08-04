@@ -1,14 +1,9 @@
--- ============================================================
 -- 理财服务系统 测试数据（追加数据，不冲突唯一键）
--- 数据库: wealth
--- 说明：先执行 init.sql 建表，再执行本脚本插入测试数据
--- ============================================================
+-- 库: wealth | 先执行 init.sql 建表，再执行本脚本插入测试数据
 
 USE wealth;
 
--- ============================================================
--- 1. sys_user — 系统用户（8条）
--- ============================================================
+-- 1. sys_user 系统用户（8条）
 INSERT INTO sys_user (username, password, nickname, phone, status, del_flag) VALUES
 ('admin',     '$2b$04$hy8tzH1X1GAaVNI/NH/YV.burYsETKkkXwpC4yQkYfh/TDSws.Cv2', '系统管理员', '13800000001', 1, 0),
 ('zhangwei',  '$2b$04$hy8tzH1X1GAaVNI/NH/YV.burYsETKkkXwpC4yQkYfh/TDSws.Cv2', '张伟',       '13800000002', 1, 0),
@@ -20,35 +15,29 @@ INSERT INTO sys_user (username, password, nickname, phone, status, del_flag) VAL
 ('zhouqiang', '$2b$04$hy8tzH1X1GAaVNI/NH/YV.burYsETKkkXwpC4yQkYfh/TDSws.Cv2', '周强',       '13800000008', 1, 0);
 -- 密码对照: admin/zhangwei/wangfei/zhouqiang=123456, lixia=abc123, zhaoming=test123, liujun=hello123, sunlin=password
 
--- ============================================================
--- 2. wea_product — 产品（8条）
--- ============================================================
+-- 2. wea_product 产品（8条）
 INSERT INTO wea_product (product_name, product_code, product_type, price, rise_fall, rise_fall_rate, status, sort) VALUES
 ('黄金ETF',     'GOLD001', 1,  458.50,   2.30,    0.50,  1, 1),
 ('白银期货',    'SILV001', 2,  5.82,     0.08,    1.39,  1, 2),
-('稳健理财A',   'FUND001', 3,  1.2350,   0.0012,  0.10,  1, 3),
-('进取理财B',   'FUND002', 3,  2.1680,  -0.0050, -0.23,  1, 4),
+('稳健理财A',   'FUND001', 3,  1.24,    0.00,    0.10,  1, 3),
+('进取理财B',   'FUND002', 3,  2.17,    -0.01,   -0.23,  1, 4),
 ('纸黄金',      'GOLD002', 1,  456.20,  -1.80,   -0.39,  1, 5),
 ('白银T+D',     'SILV002', 2,  5.78,    -0.04,   -0.69,  0, 6),
-('货币理财C',   'FUND003', 3,  1.0000,   0.0001,  0.01,  1, 7),
+('货币理财C',   'FUND003', 3,  1.00,    0.00,    0.01,  1, 7),
 ('黄金现货',    'GOLD003', 1,  459.80,   0.50,    0.11,  1, 8);
 
--- ============================================================
--- 3. wea_market_data — 行情数据（8条，每个产品1条最近行情）
--- ============================================================
+-- 3. wea_market_data 行情数据（8条，每个产品1条最近行情）
 INSERT INTO wea_market_data (product_code, current_price, open_price, close_price, highest_price, lowest_price, rise_fall, rise_fall_rate, market_time) VALUES
 ('GOLD001', 458.50, 456.20, 456.20, 459.80, 455.60,  2.30,   0.50,  '2026-05-10 15:30:00'),
 ('SILV001', 5.82,   5.74,   5.74,   5.85,   5.72,    0.08,   1.39,  '2026-05-10 15:00:00'),
-('FUND001', 1.2350, 1.2338, 1.2338, 1.2360, 1.2335,  0.0012, 0.10,  '2026-05-10 15:00:00'),
-('FUND002', 2.1680, 2.1730, 2.1730, 2.1750, 2.1660, -0.0050,-0.23,  '2026-05-10 15:00:00'),
+('FUND001', 1.24,   1.23,   1.23,   1.24,   1.23,    0.00,   0.10,  '2026-05-10 15:00:00'),
+('FUND002', 2.17,   2.17,   2.17,   2.18,   2.17,   -0.01,  -0.23,  '2026-05-10 15:00:00'),
 ('GOLD002', 456.20, 458.00, 458.00, 458.50, 455.80, -1.80,  -0.39,  '2026-05-10 14:30:00'),
 ('SILV002', 5.78,   5.82,   5.82,   5.83,   5.76,   -0.04,  -0.69,  '2026-05-10 14:00:00'),
-('FUND003', 1.0000, 0.9999, 0.9999, 1.0001, 0.9998,  0.0001, 0.01,  '2026-05-10 15:00:00'),
+('FUND003', 1.00,   1.00,   1.00,   1.00,   1.00,    0.00,   0.01,  '2026-05-10 15:00:00'),
 ('GOLD003', 459.80, 459.30, 459.30, 460.20, 458.90,  0.50,   0.11,  '2026-05-10 15:30:00');
 
--- ============================================================
--- 4. wea_user_favorite — 用户自选（8条，唯一键: user_id + product_code）
--- ============================================================
+-- 4. wea_user_favorite 用户自选（8条，唯一键: user_id + product_code）
 INSERT INTO wea_user_favorite (user_id, product_code) VALUES
 (1, 'GOLD001'),
 (1, 'FUND001'),
@@ -59,23 +48,19 @@ INSERT INTO wea_user_favorite (user_id, product_code) VALUES
 (3, 'FUND003'),
 (4, 'GOLD003');
 
--- ============================================================
--- 5. wea_trade_order — 交易委托单（8条）
--- ============================================================
+-- 5. wea_trade_order 交易委托单（8条）
 INSERT INTO wea_trade_order (order_no, user_id, product_code, trade_type, entrust_price, entrust_num, order_status) VALUES
 ('ORD202605100001', 1, 'GOLD001', 1, 458.00, 10, 2),
 ('ORD202605100002', 2, 'SILV001', 1, 5.80,   50, 2),
 ('ORD202605100003', 1, 'GOLD001', 2, 459.00, 5,  1),
-('ORD202605100004', 3, 'FUND001', 1, 1.2340,  200, 1),
-('ORD202605100005', 2, 'FUND002', 2, 2.1700,  100, 2),
+('ORD202605100004', 3, 'FUND001', 1, 1.23,  200, 1),
+('ORD202605100005', 2, 'FUND002', 2, 2.17,  100, 2),
 ('ORD202605100006', 4, 'GOLD003', 1, 459.50, 8,  3),
 ('ORD202605100007', 5, 'GOLD002', 1, 456.00, 3,  1),
 ('ORD202605100008', 3, 'SILV001', 2, 5.83,   20, 2);
 -- trade_type: 1=买入 2=卖出; order_status: 1=待委托 2=已完成 3=已撤销
 
--- ============================================================
--- 6. wea_news — 财经资讯（8条）
--- ============================================================
+-- 6. wea_news 财经资讯（8条）
 INSERT INTO wea_news (title, content, news_type, source, status, publish_time) VALUES
 ('黄金价格突破460元关口，创年内新高', '受国际地缘政治紧张局势影响，今日黄金价格持续走强，盘中一度突破460元/克关口，创下年内新高。分析师认为短期内仍有上涨空间。', 1, '财经日报', 1, '2026-05-10 09:00:00'),
 ('央行发布最新LPR报价，维持不变', '中国人民银行今日公布最新贷款市场报价利率（LPR），1年期和5年期以上品种均维持不变，符合市场预期。', 2, '央行官网', 1, '2026-05-10 09:15:00'),
@@ -86,9 +71,7 @@ INSERT INTO wea_news (title, content, news_type, source, status, publish_time) V
 ('黄金短期回调风险提示', '尽管黄金长期看涨，但短期内涨幅较大，技术面存在回调需求。建议投资者合理控制仓位，注意风险。', 1, '风控提示', 1, '2026-05-10 13:00:00'),
 ('二季度GDP数据即将公布（草稿）', '国家统计局将于下周公布二季度GDP数据，市场普遍预期增长5.0%左右。（待审核）', 2, '编辑部', 0, NULL);
 
--- ============================================================
--- 7. wea_message — 站内消息（8条）
--- ============================================================
+-- 7. wea_message 站内消息（8条）
 INSERT INTO wea_message (user_id, msg_type, msg_title, msg_content, read_flag) VALUES
 (0, 1, '黄金行情提醒', '黄金ETF(GOLD001)当前涨幅0.50%，报458.50元。', 0),
 (1, 1, '白银异动提醒', '白银期货(SILV001)涨幅扩大至1.39%，报5.82元。', 0),
@@ -99,9 +82,7 @@ INSERT INTO wea_message (user_id, msg_type, msg_title, msg_content, read_flag) V
 (1, 1, '黄金现货行情提醒', '黄金现货(GOLD003)报459.80元，上涨0.11%。', 0),
 (4, 3, '委托已撤销', '您对黄金现货(GOLD003)的买入委托已成功撤销。', 1);
 
--- ============================================================
--- 8. ums_admin — 后台管理员（6条）
--- ============================================================
+-- 8. ums_admin 后台管理员（6条）
 INSERT INTO ums_admin (username, password, email, nick_name, status, login_time, create_time) VALUES
 ('admin',    '$2b$04$.IbVq3aPZ5lZnfaoo22sJeECer7ertr5zY7fB1l2J8ZlGGYn.UVmy', 'admin@wealth.com',    '超级管理员', 1, '2026-05-10 08:30:00', '2026-04-01 08:00:00'),
 ('zhangsan', '$2b$04$hy8tzH1X1GAaVNI/NH/YV.burYsETKkkXwpC4yQkYfh/TDSws.Cv2', 'zhangsan@wealth.com', '张三',       1, '2026-05-09 16:00:00', '2026-04-02 10:00:00'),
@@ -111,9 +92,7 @@ INSERT INTO ums_admin (username, password, email, nick_name, status, login_time,
 ('sunjiu',   '$2b$04$sdW2N6KoDwdV753sh7eFduKcJg9s5aAinXPiEylrqlQI1VOsGulyS', 'sunjiu@wealth.com',   '孙九',       1, NULL,                '2026-04-06 10:00:00');
 -- 密码对照: admin=admin123, zhangsan=123456, lisi=abc123, wangwu=test123, zhaoqi=password, sunjiu=hello123
 
--- ============================================================
--- 9. ums_role — 后台角色（5条）
--- ============================================================
+-- 9. ums_role 后台角色（5条）
 INSERT INTO ums_role (name, description, status, sort, create_time) VALUES
 ('超级管理员', '拥有所有权限',         1, 1, '2026-04-20 08:00:00'),
 ('内容管理员', '管理资讯和消息发布',   1, 2, '2026-04-21 08:00:00'),
@@ -121,9 +100,7 @@ INSERT INTO ums_role (name, description, status, sort, create_time) VALUES
 ('数据查询员', '仅查看看板和数据报表', 1, 4, '2026-04-23 08:00:00'),
 ('实习运营',   '有限的内容管理权限',   0, 5, '2026-04-24 08:00:00');
 
--- ============================================================
--- 10. ums_resource — 后台资源（8条）
--- ============================================================
+-- 10. ums_resource 后台资源（8条）
 INSERT INTO ums_resource (name, url, description, category_id, create_time) VALUES
 ('用户管理',   '/user/**',     '系统用户管理',    1, '2026-04-15 08:00:00'),
 ('产品管理',   '/product/**',  '产品上下架管理',  2, '2026-04-15 08:01:00'),
@@ -134,9 +111,7 @@ INSERT INTO ums_resource (name, url, description, category_id, create_time) VALU
 ('数据报表',   '/report/**',   '数据统计报表',    5, '2026-04-15 08:06:00'),
 ('系统配置',   '/system/**',   '系统参数配置',    1, '2026-04-15 08:07:00');
 
--- ============================================================
--- 11. ums_admin_role_relation — 管理员角色关联（8条）
--- ============================================================
+-- 11. ums_admin_role_relation 管理员角色关联（8条）
 INSERT INTO ums_admin_role_relation (admin_id, role_id) VALUES
 (1, 1),   -- admin → 超级管理员
 (2, 2),   -- zhangsan → 内容管理员
@@ -147,9 +122,7 @@ INSERT INTO ums_admin_role_relation (admin_id, role_id) VALUES
 (6, 2),   -- sunjiu → 内容管理员
 (6, 4);   -- sunjiu → 数据查询员
 
--- ============================================================
--- 12. ums_role_resource_relation — 角色资源关联（10条）
--- ============================================================
+-- 12. ums_role_resource_relation 角色资源关联（15条）
 INSERT INTO ums_role_resource_relation (role_id, resource_id) VALUES
 -- 超级管理员拥有全部资源
 (1, 1), (1, 2), (1, 3), (1, 4), (1, 5), (1, 6), (1, 7), (1, 8),
