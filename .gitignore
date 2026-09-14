@@ -95,6 +95,9 @@ scripts/**
 # Superpowers brainstorm 可视化工具运行时状态
 .superpowers/
 
+# Local agent worktrees
+.worktrees/
+
 # Runtime process id files (never commit)
 *.pid
 
@@ -103,4 +106,3 @@ JIANLI.md
 
 # Old UI prototype
 UI.html
-
