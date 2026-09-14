@@ -4,7 +4,7 @@
       <div class="logo-icon">
         <el-icon :size="24"><TrendCharts /></el-icon>
       </div>
-      <span v-show="!isCollapsed" class="logo-text">财富管理平台</span>
+      <span v-show="!isCollapsed" class="logo-text">理财服务平台</span>
     </div>
 
     <el-menu
@@ -12,9 +12,6 @@
       router
       :collapse="isCollapsed"
       :collapse-transition="false"
-      background-color="#1a365d"
-      text-color="#ffffffb3"
-      active-text-color="#ffffff"
     >
       <el-menu-item index="/admin/dashboard">
         <el-icon><Odometer /></el-icon>
@@ -115,6 +112,7 @@ function handleLogout() {
   width: var(--fl-sidebar-width);
   height: 100vh;
   background: var(--fl-sidebar-bg);
+  border-right: 1px solid var(--fl-border);
   display: flex;
   flex-direction: column;
   transition: width 0.3s ease;
@@ -141,47 +139,57 @@ function handleLogout() {
   justify-content: center;
   gap: 8px;
   cursor: pointer;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
+  border-bottom: 1px solid var(--fl-border);
   flex-shrink: 0;
 }
 .logo-icon {
-  color: #fff;
+  color: var(--fl-primary);
   display: flex;
   align-items: center;
 }
 .logo-text {
-  color: #fff;
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 700;
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
   white-space: nowrap;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 .sidebar :deep(.el-menu) {
   border-right: none !important;
   flex: 1;
   overflow-y: auto;
+  background: transparent !important;
 }
 .sidebar :deep(.el-menu-item),
 .sidebar :deep(.el-sub-menu__title) {
   height: 44px;
   line-height: 44px;
   margin: 2px 8px;
-  border-radius: 6px;
+  border-radius: 8px;
   width: auto !important;
+  color: var(--fl-sidebar-text);
 }
 .sidebar :deep(.el-menu-item:hover),
 .sidebar :deep(.el-sub-menu__title:hover) {
   background: var(--fl-sidebar-hover-bg) !important;
+  color: var(--fl-primary);
 }
 .sidebar :deep(.el-menu-item.is-active) {
   background: var(--fl-sidebar-active-bg) !important;
-  color: #fff !important;
+  color: var(--fl-sidebar-active) !important;
+  font-weight: 600;
 }
 .sidebar :deep(.el-menu-item.is-active .el-icon) {
-  color: #fff !important;
+  color: var(--fl-sidebar-active) !important;
+}
+.sidebar :deep(.el-sub-menu.is-active > .el-sub-menu__title) {
+  color: var(--fl-primary);
 }
 .sidebar :deep(.el-sub-menu .el-menu) {
-  background: rgba(0,0,0,0.15) !important;
+  background: transparent !important;
 }
 .sidebar :deep(.el-sub-menu .el-menu .el-menu-item) {
   padding-left: 48px !important;
@@ -190,7 +198,7 @@ function handleLogout() {
 }
 .sidebar-footer {
   padding: 12px;
-  border-top: 1px solid rgba(255,255,255,0.1);
+  border-top: 1px solid var(--fl-border);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -207,7 +215,7 @@ function handleLogout() {
   min-width: 0;
 }
 .user-name {
-  color: #fff;
+  color: var(--fl-text);
   font-size: 13px;
   font-weight: 500;
   white-space: nowrap;
@@ -215,13 +223,13 @@ function handleLogout() {
   text-overflow: ellipsis;
 }
 .user-role {
-  color: #ffffff80;
+  color: var(--fl-text-dim);
   font-size: 11px;
 }
 .logout-btn {
-  color: #ffffff80 !important;
+  color: var(--fl-text-dim) !important;
 }
 .logout-btn:hover {
-  color: #fff !important;
+  color: var(--fl-primary) !important;
 }
 </style>

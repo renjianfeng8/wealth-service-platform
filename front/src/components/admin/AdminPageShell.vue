@@ -38,15 +38,27 @@ defineProps<{
 
 .admin-page-shell__header h2 {
   margin: 0;
-  color: #1f2937;
+  color: var(--fl-text);
   font-size: 22px;
-  font-weight: 650;
+  font-weight: 700;
   line-height: 1.3;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.admin-page-shell__header h2::before {
+  content: '';
+  width: 4px;
+  height: 20px;
+  background: var(--fl-primary);
+  border-radius: 2px;
+  flex-shrink: 0;
 }
 
 .admin-page-shell__header p {
   margin: 6px 0 0;
-  color: #64748b;
+  color: var(--fl-text-secondary);
   font-size: 13px;
   line-height: 1.5;
 }

@@ -9,11 +9,13 @@
       stripe
       border
       v-loading="loading"
-      :empty-text="emptyText"
       @selection-change="handleSelectionChange"
     >
       <el-table-column v-if="selectable" type="selection" width="55" />
       <slot />
+      <template #empty>
+        <el-empty :description="emptyText" :image-size="50" />
+      </template>
     </el-table>
 
     <div class="admin-data-table__pagination">
@@ -71,10 +73,10 @@ function handleCurrentChange() {
 
 <style scoped>
 .admin-data-table {
-  padding: 16px;
-  background: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
+  padding: 20px 24px;
+  background: var(--fl-card-bg);
+  border: 1px solid var(--fl-border);
+  border-radius: var(--fl-radius);
 }
 
 .admin-data-table__toolbar {
@@ -89,5 +91,15 @@ function handleCurrentChange() {
   display: flex;
   justify-content: flex-end;
   padding-top: 16px;
+}
+
+/* el-table 的 .el-table__empty-text 带 line-height:60px，会被空态子树继承 */
+.admin-data-table :deep(.el-table__empty-text) {
+  line-height: normal;
+}
+
+.admin-data-table :deep(.el-empty) {
+  --el-empty-padding: 16px 0;
+  --el-empty-description-margin-top: 8px;
 }
 </style>

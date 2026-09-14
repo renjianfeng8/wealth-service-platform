@@ -81,7 +81,7 @@ import { getProductPage } from '@/api/product'
 import type { WeaProduct } from '@/types'
 import {
   Fold, Expand, Search,
-  ArrowDown, User, SwitchButton, UserFilled, View,
+  ArrowDown, User, SwitchButton, View,
 } from '@element-plus/icons-vue'
 
 defineProps<{ collapsed: boolean }>()
@@ -281,9 +281,9 @@ function handleLogout() {
 .search-shortcut-hint kbd {
   font-size: 11px;
   padding: 1px 6px;
-  background: #e4e7ed;
+  background: var(--el-fill-color-darker);
   border-radius: 4px;
-  color: var(--fl-text-placeholder);
+  color: var(--fl-text-secondary);
   font-family: inherit;
 }
 
@@ -299,27 +299,19 @@ function handleLogout() {
   color: var(--fl-primary);
 }
 
-.search-box .el-input__wrapper {
-  background: #f5f7fa;
-  border-radius: 6px;
+.search-box :deep(.el-input__wrapper) {
+  background: var(--el-fill-color-light);
+  border-radius: 8px;
   box-shadow: none;
 }
 
-.search-box .el-input__wrapper:hover {
-  background: #eef1f6;
+.search-box :deep(.el-input__wrapper):hover {
+  background: var(--el-fill-color);
 }
 
-.search-box .el-input__wrapper.is-focus {
-  background: #fff;
-  box-shadow: 0 0 0 1px var(--el-color-primary) inset;
-}
-
-.search-shortcut {
-  font-size: 11px;
-  padding: 1px 6px;
-  background: #e4e7ed;
-  border-radius: 4px;
-  color: var(--fl-text-placeholder);
+.search-box :deep(.el-input__wrapper.is-focus) {
+  background: var(--fl-card-bg);
+  box-shadow: 0 0 0 1px var(--fl-primary) inset;
 }
 
 .user-dropdown {
@@ -333,12 +325,12 @@ function handleLogout() {
 }
 
 .user-dropdown:hover {
-  background: #f5f7fa;
+  background: var(--border-light);
 }
 
 .username {
   font-size: 13px;
-  color: var(--fl-text-secondary);
+  color: var(--fl-text);
   font-weight: 500;
 }
 </style>

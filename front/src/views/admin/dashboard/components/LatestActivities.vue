@@ -55,27 +55,6 @@ function tagType(type?: number): string {
 </script>
 
 <style scoped>
-.fl-card-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-bottom: 14px;
-}
-
-.fl-card-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--fl-text);
-}
-
-.fl-card-subtitle {
-  font-size: 11px;
-  color: var(--fl-text-dim);
-  margin-top: 2px;
-}
-
 .activity-list {
   display: flex;
   flex-direction: column;
@@ -89,7 +68,7 @@ function tagType(type?: number): string {
   border-bottom: 1px solid var(--fl-border-light);
   cursor: pointer;
   transition: background 0.15s;
-  border-radius: 6px;
+  border-radius: 8px;
   margin: 0 -8px;
 }
 
@@ -98,7 +77,7 @@ function tagType(type?: number): string {
 }
 
 .activity-item:hover {
-  background: #f5f7fa;
+  background: var(--el-fill-color-lighter);
 }
 
 .activity-dot {
@@ -111,7 +90,7 @@ function tagType(type?: number): string {
 
 .dot-blue { background: var(--fl-primary); }
 .dot-green { background: var(--fl-rise); }
-.dot-orange { background: #f5a623; }
+.dot-orange { background: var(--warning); }
 .dot-purple { background: #8b5cf6; }
 .dot-gray { background: var(--fl-text-placeholder); }
 

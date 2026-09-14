@@ -1,7 +1,7 @@
 <template>
   <div class="metric-grid">
     <div class="metric-card" @click="$router.push('/admin/user')">
-      <div class="metric-icon metric-icon-blue">
+      <div class="metric-icon">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
           <circle cx="9" cy="7" r="4" />
@@ -16,7 +16,7 @@
     </div>
 
     <div class="metric-card" @click="$router.push('/admin/product')">
-      <div class="metric-icon metric-icon-green">
+      <div class="metric-icon">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
           <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
@@ -30,7 +30,7 @@
     </div>
 
     <div class="metric-card" @click="$router.push('/admin/trade')">
-      <div class="metric-icon metric-icon-orange">
+      <div class="metric-icon">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <line x1="12" y1="1" x2="12" y2="23" />
           <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
@@ -43,7 +43,7 @@
     </div>
 
     <div class="metric-card" @click="$router.push('/admin/message')">
-      <div class="metric-icon metric-icon-red">
+      <div class="metric-icon">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
         </svg>
@@ -55,7 +55,7 @@
     </div>
 
     <div class="metric-card metric-card-static">
-      <div class="metric-icon metric-icon-purple">
+      <div class="metric-icon">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <rect x="2" y="6" width="20" height="14" rx="2" />
           <path d="M2 10h20" />
@@ -68,7 +68,7 @@
     </div>
 
     <div class="metric-card metric-card-static">
-      <div class="metric-icon metric-icon-cyan">
+      <div class="metric-icon">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M12 1v22" />
           <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
@@ -126,31 +126,8 @@ defineProps<{
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-}
-
-.metric-icon-blue {
-  background: rgba(26, 109, 255, 0.08);
+  background: var(--primary-light);
   color: var(--fl-primary);
-}
-.metric-icon-green {
-  background: rgba(52, 199, 89, 0.08);
-  color: var(--fl-rise);
-}
-.metric-icon-orange {
-  background: rgba(245, 166, 35, 0.1);
-  color: #f5a623;
-}
-.metric-icon-red {
-  background: rgba(255, 59, 48, 0.08);
-  color: var(--fl-fall);
-}
-.metric-icon-purple {
-  background: rgba(124, 77, 255, 0.1);
-  color: #7c4dff;
-}
-.metric-icon-cyan {
-  background: rgba(0, 191, 165, 0.1);
-  color: #00bfa5;
 }
 
 .metric-card-static {
@@ -181,7 +158,7 @@ defineProps<{
   font-weight: 700;
   color: var(--fl-text);
   line-height: 1.2;
-  font-family: 'Courier New', monospace;
+  font-family: 'DIN Pro', monospace;
 }
 
 @media (max-width: 1024px) {

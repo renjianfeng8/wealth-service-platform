@@ -29,7 +29,6 @@ import {
   List,
   Message,
   Star,
-  Search,
   Setting,
 } from '@element-plus/icons-vue'
 
@@ -43,21 +42,21 @@ interface QuickEntry {
 const router = useRouter()
 
 const entries: QuickEntry[] = [
-  { label: '用户管理', path: '/admin/user', icon: User, bg: '#1a6dff' },
-  { label: '产品管理', path: '/admin/product', icon: Goods, bg: '#19be6b' },
-  { label: '行情数据', path: '/admin/market', icon: DataLine, bg: '#f5a623' },
-  { label: '交易管理', path: '/admin/trade', icon: List, bg: '#ed4014' },
-  { label: '自选管理', path: '/admin/favorite', icon: Star, bg: '#d29922' },
-  { label: '消息管理', path: '/admin/message', icon: Message, bg: '#00b894' },
-  { label: '管理员', path: '/admin/system/admin', icon: Setting, bg: '#8b5cf6' },
+  { label: '用户管理', path: '/admin/user', icon: User, bg: 'linear-gradient(135deg, #1a6dff, #0a4dcc)' },
+  { label: '产品管理', path: '/admin/product', icon: Goods, bg: 'linear-gradient(135deg, #34c759, #28a745)' },
+  { label: '行情数据', path: '/admin/market', icon: DataLine, bg: 'linear-gradient(135deg, #ff9500, #e68a00)' },
+  { label: '交易管理', path: '/admin/trade', icon: List, bg: 'linear-gradient(135deg, #8e44ad, #6c3483)' },
+  { label: '自选管理', path: '/admin/favorite', icon: Star, bg: 'linear-gradient(135deg, #1a6dff, #0a4dcc)' },
+  { label: '消息管理', path: '/admin/message', icon: Message, bg: 'linear-gradient(135deg, #34c759, #28a745)' },
+  { label: '管理员', path: '/admin/system/admin', icon: Setting, bg: 'linear-gradient(135deg, #ff9500, #e68a00)' },
 ]
 </script>
 
 <style scoped>
 .fl-entry-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 12px;
 }
 
 .fl-entry-item {
@@ -66,18 +65,18 @@ const entries: QuickEntry[] = [
   align-items: center;
   gap: 8px;
   padding: 16px 8px;
-  border-radius: 10px;
+  border-radius: var(--fl-radius);
   cursor: pointer;
   transition: background 0.2s;
 }
 
 .fl-entry-item:hover {
-  background: #f5f7fa;
+  background: var(--el-fill-color-lighter);
 }
 
 .fl-entry-icon {
-  width: 42px;
-  height: 42px;
+  width: 48px;
+  height: 48px;
   border-radius: 12px;
   display: flex;
   align-items: center;
@@ -91,7 +90,7 @@ const entries: QuickEntry[] = [
 }
 
 .fl-entry-label {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--fl-text-secondary);
   white-space: nowrap;
 }

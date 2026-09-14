@@ -1,5 +1,5 @@
 <template>
-  <div class="fl-chart-col-list">
+  <div class="fl-market-panel">
     <div class="fl-card fl-card-list">
       <div class="fl-card-header">
         <span class="fl-card-title">实时行情</span>
@@ -22,7 +22,7 @@
             </div>
           </div>
         </div>
-        <el-empty v-if="!filteredList.length" description="暂无数据" :image-size="50" />
+        <el-empty v-if="!filteredList.length" class="fl-list-empty" description="暂无数据" :image-size="50" />
       </div>
     </div>
   </div>
@@ -49,7 +49,7 @@ const filteredList = computed(() => {
 </script>
 
 <style scoped>
-.fl-chart-col-list {
+.fl-market-panel {
   display: flex;
   flex-direction: column;
 }
@@ -62,6 +62,10 @@ const filteredList = computed(() => {
   max-height: 420px;
   overflow-y: auto;
   padding-right: 4px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 0 24px;
+  align-content: start;
 }
 
 .fl-list-row {
@@ -76,6 +80,11 @@ const filteredList = computed(() => {
   border-bottom: none;
 }
 
+/* 多列网格下空态需跨满整行，否则会被压进单列 */
+.fl-list-empty {
+  grid-column: 1 / -1;
+}
+
 .fl-list-name {
   font-size: 13px;
   font-weight: 600;
@@ -83,7 +92,7 @@ const filteredList = computed(() => {
 }
 
 .fl-list-code {
-  font-size: 10px;
+  font-size: 11px;
   color: var(--fl-text-dim);
 }
 
@@ -92,14 +101,14 @@ const filteredList = computed(() => {
 }
 
 .fl-list-price {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--fl-text);
-  font-family: 'Courier New', monospace;
+  font-family: 'DIN Pro', monospace;
 }
 
 .fl-list-chg {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   margin-top: 1px;
 }

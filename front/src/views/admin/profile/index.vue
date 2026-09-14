@@ -557,7 +557,7 @@ onUnmounted(() => {
 .strength-bar {
   flex: 1;
   height: 4px;
-  background: #e4e7ed;
+  background: var(--fl-border);
   border-radius: 2px;
   overflow: hidden;
 }
@@ -573,7 +573,7 @@ onUnmounted(() => {
 }
 
 .strength-fill.medium {
-  background: #f5a623;
+  background: var(--warning);
 }
 
 .strength-fill.strong {
@@ -588,6 +588,6 @@ onUnmounted(() => {
 }
 
 .strength-text.weak { color: var(--fl-fall); }
-.strength-text.medium { color: #f5a623; }
+.strength-text.medium { color: var(--warning); }
 .strength-text.strong { color: var(--fl-rise); }
 </style>

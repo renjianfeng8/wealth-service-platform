@@ -69,10 +69,11 @@ const emit = defineEmits<{
 
 <style scoped>
 .admin-filter-bar {
-  padding: 16px 16px 2px;
-  background: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
+  /* 底部 6px + 末行 .el-form-item 的 14px = 20px，与其余三边留白齐平 */
+  padding: 20px 24px 6px;
+  background: var(--fl-card-bg);
+  border: 1px solid var(--fl-border);
+  border-radius: var(--fl-radius);
 }
 
 .admin-filter-bar :deep(.el-form-item) {

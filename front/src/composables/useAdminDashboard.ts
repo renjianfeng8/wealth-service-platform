@@ -4,7 +4,7 @@ import { getProductPage } from '@/api/product'
 import { getUserPage } from '@/api/user'
 import { getTradeOrderPage } from '@/api/trade'
 import { getMessagePage } from '@/api/message'
-import { getDashboardOverview, getDashboardTrend, type DashboardOverview } from '@/api/dashboard'
+import { getDashboardOverview, type DashboardOverview } from '@/api/dashboard'
 import { useUserStore } from '@/store'
 import type { WeaProduct, WeaTradeOrder, WeaMessage } from '@/types'
 
@@ -23,9 +23,8 @@ export function useAdminDashboard() {
   const totalOrders = ref(0)
   const overview = ref<DashboardOverview | null>(null)
 
-  /* ---- Row 3: Charts ---- */
+  /* ---- Row 3: Market ---- */
   const marketProducts = ref<WeaProduct[]>([])
-  const trendData = ref<{ series: { date: string; assetValue: number; balanceValue: number; income: number }[] } | null>(null)
 
   /* ---- Row 4: Tables ---- */
   const latestOrders = ref<WeaTradeOrder[]>([])
@@ -71,11 +70,6 @@ export function useAdminDashboard() {
     recentMessages.value = (res?.records || []) as WeaMessage[]
   }
 
-  async function loadTrend(period = '7D') {
-    const res = await getDashboardTrend(period)
-    if (res) trendData.value = res
-  }
-
   async function loadOverview() {
     try {
       const res = await getDashboardOverview()
@@ -94,7 +88,6 @@ export function useAdminDashboard() {
     await Promise.allSettled([
       loadAdminCounts(),
       loadProducts(),
-      loadTrend(),
       loadLatestOrders(),
       loadUnreadMessages(),
       loadRecentMessages(),
@@ -114,11 +107,9 @@ export function useAdminDashboard() {
     totalProducts,
     totalOrders,
     overview,
-    trendData,
     marketProducts,
     latestOrders,
     recentMessages,
-    loadTrend,
     fetchData,
   }
 }

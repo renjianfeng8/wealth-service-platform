@@ -5,7 +5,9 @@
     <div class="layout-main">
       <Navbar :collapsed="isCollapsed" @toggle="handleToggle" />
       <div class="layout-content">
-        <router-view />
+        <div class="layout-content-inner">
+          <router-view />
+        </div>
       </div>
     </div>
   </div>
@@ -63,9 +65,14 @@ onUnmounted(() => {
 }
 .layout-content {
   flex: 1;
-  padding: 16px 20px;
+  padding: 24px;
   overflow-y: auto;
   scroll-behavior: smooth;
+}
+.layout-content-inner {
+  max-width: 1280px;
+  width: 100%;
+  margin: 0 auto;
 }
 .sidebar-mask {
   display: none;

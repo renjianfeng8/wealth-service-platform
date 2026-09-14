@@ -103,9 +103,7 @@ const greeting = computed(() => {
 
 <style scoped>
 .welcome-banner {
-  background:
-    linear-gradient(135deg, rgba(26, 109, 255, 0.07) 0%, rgba(25, 190, 107, 0.05) 100%),
-    var(--fl-card-bg);
+  background: linear-gradient(135deg, #f0f5ff 0%, #e6f7ff 100%);
   border: 1px solid rgba(26, 109, 255, 0.12);
   border-radius: var(--fl-radius);
   padding: 20px 24px;
@@ -151,8 +149,8 @@ const greeting = computed(() => {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: var(--fl-rise);
-  box-shadow: 0 0 0 3px rgba(52, 199, 89, 0.15);
+  background: var(--fl-primary);
+  box-shadow: 0 0 0 3px var(--primary-light);
 }
 
 .meta-time {
@@ -212,17 +210,11 @@ const greeting = computed(() => {
   flex-shrink: 0;
 }
 
-.alert-warning .alert-icon-wrap {
-  background: rgba(245, 166, 35, 0.1);
-  color: #f5a623;
-}
-.alert-danger .alert-icon-wrap {
-  background: rgba(255, 59, 48, 0.08);
-  color: var(--fl-fall);
-}
+.alert-warning .alert-icon-wrap,
+.alert-danger .alert-icon-wrap,
 .alert-done .alert-icon-wrap {
-  background: rgba(52, 199, 89, 0.08);
-  color: var(--fl-rise);
+  background: var(--primary-light);
+  color: var(--fl-primary);
 }
 
 .alert-body {
@@ -241,13 +233,13 @@ const greeting = computed(() => {
 .alert-count {
   font-size: 22px;
   font-weight: 700;
-  font-family: 'Courier New', monospace;
+  font-family: 'DIN Pro', monospace;
   line-height: 1;
 }
 
-.alert-warning .alert-count { color: #f5a623; }
+.alert-warning .alert-count { color: var(--warning); }
 .alert-danger .alert-count { color: var(--fl-fall); }
-.alert-done .alert-count { color: var(--fl-rise); }
+.alert-done .alert-count { color: var(--fl-text-dim); }
 
 @media (max-width: 768px) {
   .alert-row {

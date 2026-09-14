@@ -1,39 +1,42 @@
+/* ====================================
+   后台令牌兼容层 — 色彩真源在 global.css
+   本文件的 --fl-* 全部是别名，且全站生效：
+   前台 views/profile/index.vue 与 components/FloatingActions.vue 也在消费
+   删除任一 --fl-* 前必须全量 grep 引用
+   ==================================== */
+
 :root {
-  --fl-sidebar-bg: #1a365d;
-  --fl-sidebar-text: #ffffffb3;
-  --fl-sidebar-active: #ffffff;
-  --fl-sidebar-active-bg: #2563eb;
-  --fl-sidebar-hover-bg: rgba(255,255,255,0.08);
+  /* 侧栏 — 前台同源白底，激活态用浅蓝底 + 品牌蓝字 */
+  --fl-sidebar-bg: var(--bg-card);
+  --fl-sidebar-text: var(--text-regular);
+  --fl-sidebar-active: var(--primary);
+  --fl-sidebar-active-bg: var(--primary-light);
+  --fl-sidebar-hover-bg: var(--el-fill-color-lighter);
   --fl-sidebar-width: 220px;
   --fl-sidebar-collapsed-width: 64px;
 
-  --fl-header-bg: #ffffff;
-  --fl-header-height: 56px;
-  --fl-header-border: #e4e7ed;
+  --fl-header-bg: var(--bg-navbar);
+  --fl-header-height: var(--navbar-height);
+  --fl-header-border: var(--border-color);
 
-  --fl-content-bg: #f0f2f5;
-  --fl-card-bg: #ffffff;
-  --fl-border: #e4e7ed;
-  --fl-border-light: #dcdfe6;
+  --fl-content-bg: var(--bg-page);
+  --fl-card-bg: var(--bg-card);
+  --fl-border: var(--border-color);
+  --fl-border-light: var(--border-light);
 
-  --fl-text: #303133;
-  --fl-text-secondary: #606266;
-  --fl-text-dim: #909399;
-  --fl-text-placeholder: #c0c4cc;
+  /* 注意词表不对应：fl-secondary→前台 regular(#3a3a3c)、fl-dim→前台 secondary(#8e8e93) */
+  --fl-text: var(--text-primary);
+  --fl-text-secondary: var(--text-regular);
+  --fl-text-dim: var(--text-secondary);
+  --fl-text-placeholder: var(--text-placeholder);
 
-  --fl-primary: #1a6dff;
-  --fl-primary-hover: #4a8aff;
-  --fl-primary-light: rgba(26, 109, 255, 0.08);
+  --fl-primary: var(--primary);
 
-  --fl-rise: #34c759;   /* B8: 涨绿 — 与 --rise-color 统一 */
-  --fl-fall: #ff3b30;   /* B8: 跌红 — 与 --fall-color 统一 */
-  --fl-rise-bg: rgba(52, 199, 89, 0.08);
-  --fl-fall-bg: rgba(255, 59, 48, 0.08);
+  --fl-rise: var(--rise-color);   /* 涨跌 — 与前台 --rise-color / --fall-color 同源 */
+  --fl-fall: var(--fall-color);
 
-  --fl-radius: 10px;
-  --fl-radius-sm: 6px;
-  --fl-shadow: 0 2px 12px rgba(0,0,0,0.06);
-  --fl-shadow-hover: 0 4px 20px rgba(0,0,0,0.10);
+  --fl-radius: var(--radius);
+  --fl-shadow-hover: var(--shadow-md);
 }
 
 /* ===== 卡片 ===== */
@@ -52,78 +55,23 @@
   font-weight: 600;
   color: var(--fl-text);
 }
-
-/* ===== 统计卡片 ===== */
-.fl-stat-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-}
-.fl-stat-card {
-  background: var(--fl-card-bg);
-  border: 1px solid var(--fl-border);
-  border-radius: var(--fl-radius);
-  padding: 16px 20px;
+.fl-card-header {
   display: flex;
   align-items: center;
-  gap: 16px;
-  cursor: pointer;
-  transition: all 0.25s ease;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 14px;
 }
-.fl-stat-card:hover {
-  box-shadow: var(--fl-shadow-hover);
-  transform: translateY(-2px);
-}
-.fl-stat-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-.fl-stat-value {
-  font-size: 24px;
-  font-weight: 700;
-  color: var(--fl-text);
-  line-height: 1.2;
-}
-.fl-stat-label {
-  font-size: 13px;
+.fl-card-subtitle {
+  font-size: 12px;
   color: var(--fl-text-dim);
-  margin-bottom: 2px;
+  margin-top: 2px;
 }
 
 /* ===== 涨跌颜色 ===== */
 .fl-rise { color: var(--fl-rise); }
 .fl-fall { color: var(--fl-fall); }
-.fl-rise-bg { background: var(--fl-rise-bg); }
-.fl-fall-bg { background: var(--fl-fall-bg); }
-.fl-text-primary { color: var(--fl-primary); }
-
-/* ===== 分页 ===== */
-.pagination-wrap {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 16px;
-}
-
-/* ===== 页面标题 ===== */
-.page-header h3 {
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--fl-text);
-  margin: 0 0 16px 0;
-}
-
-/* ===== 搜索卡片 ===== */
-.search-card {
-  margin-bottom: 0;
-}
-.search-card .el-form-item {
-  margin-bottom: 0;
-}
 
 /* ===== 滚动条 ===== */
 * { scrollbar-width: thin; scrollbar-color: var(--fl-border) transparent; }
@@ -131,4 +79,3 @@
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--fl-border); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--fl-text-placeholder); }
-

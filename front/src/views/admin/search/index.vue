@@ -164,7 +164,7 @@ onMounted(() => {
 }
 
 .search-header-info strong {
-  color: var(--fl-text-primary);
+  color: var(--fl-primary);
 }
 
 .search-inline-input {
